@@ -18,6 +18,32 @@ The first target source is the OptiSweep Operation and Maintenance Manual. The f
 - Track the intended ingestion stages.
 - Keep the README current as the project evolves.
 
+## Current Stage: Stage 1 - Source Bundle
+
+The current implementation builds a deterministic source bundle from a PDF manual.
+
+Output:
+
+```text
+data/output/manual_optisweep_om_v3/source_bundle.json
+```
+
+Run:
+
+```bash
+python scripts/extract_manual.py \
+  --source-pdf "data/input/manuals/OptiSweep Operation and Maintenance Manual - Final 1.pdf" \
+  --output-dir data/output/manual_optisweep_om_v3
+```
+
+This stage does not use an LLM and does not extract actual images yet.
+
+Stage 1 now includes quality checks for:
+- conservative section heading detection
+- front matter filtering
+- canonical figure/table reference selection
+- heartbeat detectability smoke checks
+
 ## Out of Scope For Now
 
 - Running the production assistant.
@@ -90,7 +116,7 @@ The hook refreshes the marked pipeline and development log sections while preser
 
 ## Current Status
 
-The project is scaffolded for local ingestion work. The real ingestion pipeline has not been implemented yet.
+Stage 1 source bundle extraction is implemented. Later ingestion stages remain placeholders.
 
 <!-- AUTO:DEVELOPMENT_LOG_START -->
 # Development Log
