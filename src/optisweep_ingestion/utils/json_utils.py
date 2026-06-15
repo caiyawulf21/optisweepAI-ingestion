@@ -12,6 +12,12 @@ def _to_jsonable(data: Any) -> Any:
         return data.model_dump(mode="json")
     if hasattr(data, "dict"):
         return data.dict()
+    if isinstance(data, list):
+        return [_to_jsonable(item) for item in data]
+    if isinstance(data, tuple):
+        return [_to_jsonable(item) for item in data]
+    if isinstance(data, dict):
+        return {key: _to_jsonable(value) for key, value in data.items()}
     return data
 
 

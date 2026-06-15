@@ -18,25 +18,68 @@ The first target source is the OptiSweep Operation and Maintenance Manual. The f
 - Track the intended ingestion stages.
 - Keep the README current as the project evolves.
 
-## Current Stage: Stage 1 - Source Bundle
+## Current Stage: Stage 3 - LLM Source Artifact Enrichment
 
-The current implementation builds a deterministic source bundle from a PDF manual.
+Stage 3 uses an LLM to enrich extracted source artifact records with descriptions, what-to-look-at guidance, tags, and retrieval text.
 
-Output:
+Inputs:
 
 ```text
-data/output/manual_optisweep_om_v3/source_bundle.json
+data/output/manual_optisweep_om_v3/source_artifacts.json
+data/output/manual_optisweep_om_v3/artifact_extraction_report.json
+```
+
+Outputs:
+
+```text
+data/output/manual_optisweep_om_v3/source_artifacts_enriched.json
+data/output/manual_optisweep_om_v3/artifact_enrichment_report.json
 ```
 
 Run:
+
+```bash
+python scripts/enrich_source_artifacts.py \
+  --source-artifacts data/output/manual_optisweep_om_v3/source_artifacts.json \
+  --artifact-report data/output/manual_optisweep_om_v3/artifact_extraction_report.json \
+  --output-dir data/output/manual_optisweep_om_v3 \
+  --llm
+```
+
+This stage does not create operational context, runbooks, workflows, or relationship links.
+
+## Previous Stage: Stage 2 - Source Artifact / Image Extraction
+
+Stage 2 reads the Stage 1 `source_bundle.json` and the original PDF manual, extracts available embedded images, and creates traceable source artifact records.
+If a figure cannot be extracted as a standalone embedded image, Stage 2 renders the full PDF page under `images/fallback_pages/` and marks the artifact for crop/visual review.
+
+Outputs:
+
+```text
+data/output/manual_optisweep_om_v3/source_bundle.json
+data/output/manual_optisweep_om_v3/source_artifacts.json
+data/output/manual_optisweep_om_v3/artifact_extraction_report.json
+data/output/manual_optisweep_om_v3/images/
+```
+
+Run:
+
+```bash
+python scripts/extract_manual_artifacts.py \
+  --source-bundle data/output/manual_optisweep_om_v3/source_bundle.json \
+  --source-pdf "data/input/manuals/OptiSweep Operation and Maintenance Manual - Final 1.pdf" \
+  --output-dir data/output/manual_optisweep_om_v3
+```
+
+This stage is deterministic. It does not call an LLM and does not populate linked context or runbook IDs yet.
+
+Stage 1 source bundle generation remains available:
 
 ```bash
 python scripts/extract_manual.py \
   --source-pdf "data/input/manuals/OptiSweep Operation and Maintenance Manual - Final 1.pdf" \
   --output-dir data/output/manual_optisweep_om_v3
 ```
-
-This stage does not use an LLM and does not extract actual images yet.
 
 Stage 1 now includes quality checks for:
 - conservative section heading detection
@@ -49,7 +92,7 @@ Stage 1 now includes quality checks for:
 - Running the production assistant.
 - Writing to Cosmos or PostgreSQL.
 - Connecting to Teams, SharePoint, Salesforce, Azure storage, or other runtime services.
-- Implementing real parsing, LLM calls, data extraction, or LangGraph agents.
+- Implementing LLM calls, operational context extraction, runbook extraction, database writes, or LangGraph runtime orchestration.
 
 ## Target Outputs
 
@@ -116,7 +159,7 @@ The hook refreshes the marked pipeline and development log sections while preser
 
 ## Current Status
 
-Stage 1 source bundle extraction is implemented. Later ingestion stages remain placeholders.
+Stage 2 source artifact/image extraction is implemented. Later ingestion stages remain placeholders.
 
 <!-- AUTO:DEVELOPMENT_LOG_START -->
 # Development Log
