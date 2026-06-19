@@ -59,6 +59,7 @@ def test_source_bundle_from_fake_pages_deduplicates_refs() -> None:
 
     assert set(data) == {
         "source_bundle_id",
+        "source_metadata",
         "source_document",
         "pages",
         "sections",
@@ -67,6 +68,8 @@ def test_source_bundle_from_fake_pages_deduplicates_refs() -> None:
         "build_metadata",
     }
     assert data["source_bundle_id"] == "manual_optisweep_om_v3"
+    assert data["source_metadata"]["source_id"] == "manual_optisweep_om_v3"
+    assert data["source_metadata"]["source_type"] == "manual"
     assert data["build_metadata"]["llm_used"] is False
     assert len(data["pages"]) == 2
     assert len(data["sections"]) >= 2

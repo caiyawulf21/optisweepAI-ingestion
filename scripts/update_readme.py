@@ -1,12 +1,12 @@
 """Update generated README sections from project docs."""
 
 from pathlib import Path
+from typing import Mapping
 
 
 ROOT = Path(__file__).resolve().parents[1]
 README_PATH = ROOT / "README.md"
 AUTO_SECTIONS = {
-    "INGESTION_PLAN": ROOT / "docs" / "ingestion_plan.md",
     "DEVELOPMENT_LOG": ROOT / "docs" / "development_log.md",
 }
 
@@ -28,16 +28,27 @@ def replace_auto_section(readme_text: str, section_name: str, section_text: str)
     return f"{before}{replacement}{after}"
 
 
-def main() -> None:
+def refresh_readme(
+    readme_path: Path = README_PATH,
+    auto_sections: Mapping[str, Path] = AUTO_SECTIONS,
+) -> list[str]:
     """Refresh auto-generated README sections from source docs."""
-    readme_text = README_PATH.read_text(encoding="utf-8")
+    readme_text = readme_path.read_text(encoding="utf-8")
+    refreshed: list[str] = []
 
-    for section_name, source_path in AUTO_SECTIONS.items():
+    for section_name, source_path in auto_sections.items():
         section_text = source_path.read_text(encoding="utf-8")
         readme_text = replace_auto_section(readme_text, section_name, section_text)
+        refreshed.append(section_name)
 
-    README_PATH.write_text(readme_text, encoding="utf-8")
-    print("README.md updated.")
+    readme_path.write_text(readme_text, encoding="utf-8")
+    return refreshed
+
+
+def main() -> None:
+    """Refresh auto-generated README sections from source docs."""
+    refreshed = refresh_readme()
+    print("README.md updated: " + ", ".join(refreshed))
 
 
 if __name__ == "__main__":

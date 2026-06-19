@@ -83,7 +83,11 @@ def test_enrichment_report_counts() -> None:
 
 def _artifact() -> dict:
     return {
-        "artifact_id": "artifact_fig_4_22_operator_station_hmi_data_screen_heartbeat_stats",
+        "artifact_id": "artifact_manual_manual_optisweep_om_v3_fig_4_22_operator_station_hmi_data_screen_heartbeat_stats",
+        "source_id": "manual_optisweep_om_v3",
+        "source_type": "manual",
+        "source_title": "OptiSweep Operation and Maintenance Manual",
+        "ingestion_batch_id": "batch_test",
         "figure_id": "fig_4_22",
         "title": "Operator Station HMI Data Screen-Heartbeat Stats",
         "source_refs": [{"figure_id": "fig_4_22"}],

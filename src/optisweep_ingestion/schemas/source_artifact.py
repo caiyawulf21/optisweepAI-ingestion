@@ -28,6 +28,11 @@ ALLOWED_IMAGE_TYPES = {
 
 class SourceArtifact(BaseModel):
     artifact_id: str
+    source_id: str
+    source_type: str
+    source_title: str | None = None
+    source_version: str | None = None
+    ingestion_batch_id: str
     source_document_id: str
     source_bundle_id: str
 

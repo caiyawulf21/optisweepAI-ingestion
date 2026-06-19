@@ -1,1 +1,1 @@
-"""Future graph definition for manual ingestion stages."""
+"""Future graph definition for source knowledge extraction stages."""

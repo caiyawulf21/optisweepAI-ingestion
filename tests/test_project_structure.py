@@ -8,7 +8,7 @@ def test_expected_project_structure_exists() -> None:
     expected_paths = [
         "README.md",
         "pyproject.toml",
-        "docs/ingestion_plan.md",
+        "docs/operational_knowledge_pipeline_architecture.md",
         "docs/development_log.md",
         "scripts/update_readme.py",
         "src/optisweep_ingestion",

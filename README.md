@@ -18,7 +18,73 @@ The first target source is the OptiSweep Operation and Maintenance Manual. The f
 - Track the intended ingestion stages.
 - Keep the README current as the project evolves.
 
-## Current Stage: Stage 3 - LLM Source Artifact Enrichment
+## Current Stage: Stage 5 — LLM Runbook Candidate Discovery
+
+Stage 5 uses the source bundle, enriched source artifacts, and operational context records to identify reusable runbook/procedure candidates.
+
+A runbook candidate is not a final runbook. It is a lightweight record that identifies a reusable procedure opportunity, rough steps, likely role, likely procedure type, source refs, related context, and related artifacts.
+
+This stage does not create workflows, routing rules, trigger conditions, or final approved runbooks.
+
+Inputs:
+
+```text
+data/output/manual_optisweep_om_v3/source_bundle.json
+data/output/manual_optisweep_om_v3/source_artifacts_enriched.json
+data/output/manual_optisweep_om_v3/operational_context.json
+```
+
+Outputs:
+
+```text
+data/output/manual_optisweep_om_v3/runbook_candidates.json
+data/output/manual_optisweep_om_v3/runbook_candidate_extraction_report.json
+```
+
+Run:
+
+```bash
+python scripts/extract_runbook_candidates.py \
+  --source-bundle data/output/manual_optisweep_om_v3/source_bundle.json \
+  --source-artifacts data/output/manual_optisweep_om_v3/source_artifacts_enriched.json \
+  --operational-context data/output/manual_optisweep_om_v3/operational_context.json \
+  --output-dir data/output/manual_optisweep_om_v3 \
+  --llm
+```
+
+## Previous Stage: Stage 4 — LLM Operational Context Extraction
+
+Stage 4 uses the source bundle and enriched source artifacts to extract reusable operational context records.
+
+Operational context explains systems, components, screens, metrics, alarms, statuses, and stable operating concepts.
+
+It does not create runbooks, procedures, workflows, routing rules, or trigger conditions.
+
+Inputs:
+
+```text
+data/output/manual_optisweep_om_v3/source_bundle.json
+data/output/manual_optisweep_om_v3/source_artifacts_enriched.json
+```
+
+Outputs:
+
+```text
+data/output/manual_optisweep_om_v3/operational_context.json
+data/output/manual_optisweep_om_v3/operational_context_extraction_report.json
+```
+
+Run:
+
+```bash
+python scripts/extract_operational_context.py \
+  --source-bundle data/output/manual_optisweep_om_v3/source_bundle.json \
+  --source-artifacts data/output/manual_optisweep_om_v3/source_artifacts_enriched.json \
+  --output-dir data/output/manual_optisweep_om_v3 \
+  --llm
+```
+
+## Previous Stage: Stage 3 — LLM Source Artifact Enrichment
 
 Stage 3 uses an LLM to enrich extracted source artifact records with descriptions, what-to-look-at guidance, tags, and retrieval text.
 
@@ -105,19 +171,8 @@ Stage 1 now includes quality checks for:
 
 LangGraph will be used later to orchestrate ingestion stages, but the graph is not implemented yet.
 
-<!-- AUTO:INGESTION_PLAN_START -->
-# Ingestion Plan
-
-1. Build source bundle
-2. Extract source artifacts / images / tables
-3. Enrich source artifacts
-4. Extract operational context
-5. Discover runbook candidates
-6. Draft or update runbooks
-7. Link artifacts, context, and runbooks
-8. Validate outputs
-9. Write extraction report
-<!-- AUTO:INGESTION_PLAN_END -->
+Detailed stage planning lives in `cursorprompts/manual_ingestion_prompts/manual_ingestion_plan.md`.
+Future architecture decisions live in `docs/operational_knowledge_pipeline_architecture.md`.
 
 ## Folder Structure
 
@@ -155,11 +210,11 @@ Run the README update hook after meaningful project changes:
 python scripts/update_readme.py
 ```
 
-The hook refreshes the marked pipeline and development log sections while preserving the rest of this README.
+The hook refreshes the marked development log section while preserving the rest of this README.
 
 ## Current Status
 
-Stage 2 source artifact/image extraction is implemented. Later ingestion stages remain placeholders.
+Stages 1–4 are implemented. Stage 4 (operational context extraction) produces `operational_context.json` from the source bundle and enriched artifacts using an LLM. Later ingestion stages remain placeholders.
 
 <!-- AUTO:DEVELOPMENT_LOG_START -->
 # Development Log
@@ -167,12 +222,16 @@ Stage 2 source artifact/image extraction is implemented. Later ingestion stages 
 ## Unreleased
 
 ### Added
-- Initial project scaffold.
+- Stage 1 source bundle extraction for the OptiSweep Operation and Maintenance Manual.
+- Stage 2 source artifact and image extraction with artifact reports and priority figure checks.
+- Stage 3 Azure AI Foundry source artifact enrichment with descriptions, tags, what-to-look-at guidance, and retrieval text.
+- Stage 4 operational context extraction scaffolding for reusable context records.
 
 ### Changed
-- None yet.
+- README current-stage guidance now reflects the implemented ingestion stages.
 
 ### Decisions
 - Keep this repo focused on local ingestion and data quality before database writes.
 - Use one future LangGraph pipeline with multiple stage nodes.
+- Keep source artifact enrichment separate from operational context, runbooks, workflows, and relationship linking.
 <!-- AUTO:DEVELOPMENT_LOG_END -->

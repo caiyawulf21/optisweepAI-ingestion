@@ -1,4 +1,4 @@
-"""Deterministic Stage 1 source bundle builder."""
+"""Deterministic Stage 1 source bundle builder for source knowledge extraction."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ from optisweep_ingestion.schemas.source_bundle import (
     SourceBundle,
     SourceDocument,
     SourceFigureRef,
+    SourceMetadata,
     SourcePage,
     SourceSection,
     SourceTableRef,
@@ -21,6 +22,7 @@ from optisweep_ingestion.services.id_generator import (
     make_source_bundle_id,
     make_table_id,
 )
+from optisweep_ingestion.services.source_ref_service import make_ingestion_batch_id
 from optisweep_ingestion.tools.pdf_parser import parse_pdf
 from optisweep_ingestion.utils.json_utils import write_json
 
@@ -63,6 +65,11 @@ def build_source_bundle(
     output_dir: str | Path,
     source_bundle_id: str | None = None,
     source_document_id: str | None = None,
+    source_id: str | None = None,
+    source_type: str = "manual",
+    source_title: str | None = None,
+    source_version: str | None = None,
+    ingestion_batch_id: str | None = None,
 ) -> SourceBundle:
     parsed = parse_pdf(source_pdf)
     bundle = build_source_bundle_from_pages(
@@ -71,6 +78,11 @@ def build_source_bundle(
         metadata=parsed.get("metadata") or {},
         source_bundle_id=source_bundle_id,
         source_document_id=source_document_id,
+        source_id=source_id,
+        source_type=source_type,
+        source_title=source_title,
+        source_version=source_version,
+        ingestion_batch_id=ingestion_batch_id,
     )
     output_path = Path(output_dir)
     write_json(output_path / "source_bundle.json", bundle)
@@ -84,18 +96,35 @@ def build_source_bundle_from_pages(
     metadata: dict[str, Any] | None = None,
     source_bundle_id: str | None = None,
     source_document_id: str | None = None,
+    source_id: str | None = None,
+    source_type: str = "manual",
+    source_title: str | None = None,
+    source_version: str | None = None,
+    ingestion_batch_id: str | None = None,
 ) -> SourceBundle:
     metadata = metadata or {}
     bundle_id = source_bundle_id or make_source_bundle_id(source_path)
     document_id = source_document_id or bundle_id
+    resolved_source_id = source_id or bundle_id
+    resolved_title = source_title or _clean_metadata_value(metadata.get("title")) or _title_from_path(source_path) or bundle_id
+    resolved_version = source_version or _extract_document_version(pages) or _clean_metadata_value(metadata.get("version"))
+    batch_id = ingestion_batch_id or make_ingestion_batch_id()
+    source_metadata = SourceMetadata(
+        source_id=resolved_source_id,
+        source_type=source_type,
+        source_title=resolved_title,
+        source_version=resolved_version,
+        ingestion_batch_id=batch_id,
+        source_document_id=document_id,
+    )
     source_document = SourceDocument(
         source_document_id=document_id,
-        title=_clean_metadata_value(metadata.get("title")) or _title_from_path(source_path),
+        title=resolved_title,
         document_type="operation_maintenance_manual",
-        version=_extract_document_version(pages) or _clean_metadata_value(metadata.get("version")),
+        version=resolved_version,
         document_date=_extract_document_date(pages)
         or _normalize_pdf_date(_clean_metadata_value(metadata.get("creationDate") or metadata.get("modDate"))),
-        source_type="official_manual",
+        source_type=source_type,
         source_path=source_path,
     )
 
@@ -107,6 +136,7 @@ def build_source_bundle_from_pages(
 
     return SourceBundle(
         source_bundle_id=bundle_id,
+        source_metadata=source_metadata,
         source_document=source_document,
         pages=source_pages,
         sections=sections,
@@ -115,6 +145,7 @@ def build_source_bundle_from_pages(
         build_metadata={
             "builder": "source_bundle_builder",
             "stage": "stage_1_source_bundle",
+            "pipeline": "source_knowledge_extraction",
             "llm_used": False,
             "built_at": datetime.now(timezone.utc).isoformat(),
         },

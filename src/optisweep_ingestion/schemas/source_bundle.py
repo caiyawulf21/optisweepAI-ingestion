@@ -2,7 +2,25 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from optisweep_ingestion.schemas.source_lineage import ALLOWED_SOURCE_TYPES
+
+
+class SourceMetadata(BaseModel):
+    source_id: str
+    source_type: str = "manual"
+    source_title: str
+    source_version: str | None = None
+    ingestion_batch_id: str
+    source_document_id: str
+
+    @field_validator("source_type")
+    @classmethod
+    def validate_source_type(cls, value: str) -> str:
+        if value not in ALLOWED_SOURCE_TYPES:
+            raise ValueError(f"Unsupported source_type: {value}")
+        return value
 
 
 class SourceDocument(BaseModel):
@@ -11,8 +29,15 @@ class SourceDocument(BaseModel):
     document_type: str | None = None
     version: str | None = None
     document_date: str | None = None
-    source_type: str
+    source_type: str = "manual"
     source_path: str
+
+    @field_validator("source_type")
+    @classmethod
+    def validate_source_type(cls, value: str) -> str:
+        if value not in ALLOWED_SOURCE_TYPES:
+            raise ValueError(f"Unsupported source_type: {value}")
+        return value
 
 
 class SourcePage(BaseModel):
@@ -53,6 +78,7 @@ class SourceTableRef(BaseModel):
 
 class SourceBundle(BaseModel):
     source_bundle_id: str
+    source_metadata: SourceMetadata
     source_document: SourceDocument
     pages: list[SourcePage] = Field(default_factory=list)
     sections: list[SourceSection] = Field(default_factory=list)

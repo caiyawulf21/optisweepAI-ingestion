@@ -1,4 +1,4 @@
-"""Simple PyMuPDF parser for Stage 1 manual ingestion."""
+"""Simple PyMuPDF parser for Stage 1 source knowledge extraction."""
 
 from __future__ import annotations
 

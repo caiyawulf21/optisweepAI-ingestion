@@ -1,4 +1,4 @@
-"""Deterministic Stage 2 source artifact extraction."""
+"""Deterministic Stage 2 source artifact extraction for source knowledge extraction."""
 
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ from optisweep_ingestion.services.id_generator import (
     make_artifact_id_from_figure,
     make_artifact_id_from_page_image,
 )
+from optisweep_ingestion.services.source_ref_service import build_source_ref, lineage_from_bundle
 from optisweep_ingestion.tools.source_bundle_loader import load_source_bundle
 from optisweep_ingestion.utils.json_utils import write_json
 
@@ -63,6 +64,7 @@ def extract_source_artifacts(
     artifacts: list[SourceArtifact] = []
     low_confidence_matches: list[dict[str, Any]] = []
     saved_count = 0
+    lineage = lineage_from_bundle(bundle)
     for page_number, figure_refs in _figure_refs_by_page(bundle).items():
         page_images = images_by_page.get(page_number, [])
         page = _page_by_number(bundle).get(page_number)
@@ -84,6 +86,8 @@ def extract_source_artifacts(
             file_format = None
             if image:
                 artifact_id_for_file = make_artifact_id_from_figure(
+                    lineage.source_id,
+                    lineage.source_type,
                     figure_ref.figure_number or figure_ref.figure_id,
                     figure_ref.title,
                 )
@@ -94,6 +98,8 @@ def extract_source_artifacts(
                 saved_count += 1
             else:
                 fallback_id = make_artifact_id_from_figure(
+                    lineage.source_id,
+                    lineage.source_type,
                     figure_ref.figure_number or figure_ref.figure_id,
                     figure_ref.title,
                 )
@@ -123,7 +129,12 @@ def extract_source_artifacts(
             continue
         page = _page_by_number(bundle).get(page_number)
         for image in page_images:
-            artifact_id = make_artifact_id_from_page_image(page_number, image.image_index)
+            artifact_id = make_artifact_id_from_page_image(
+                lineage.source_id,
+                lineage.source_type,
+                page_number,
+                image.image_index,
+            )
             file_name = f"{artifact_id}.{image.ext}"
             storage_path = str(images_dir / file_name)
             Path(storage_path).write_bytes(image.data)
@@ -250,10 +261,21 @@ def build_artifact_from_figure_ref(
     file_format: str | None = None,
     extraction_metadata: dict[str, Any] | None = None,
 ) -> SourceArtifact:
+    lineage = lineage_from_bundle(bundle)
     title = figure_ref.title or _title_from_caption(figure_ref.caption_text, figure_ref.figure_number)
     nearby_text = get_nearby_text(page.text if page else "", figure_ref.caption_text or title)
     return SourceArtifact(
-        artifact_id=make_artifact_id_from_figure(figure_ref.figure_number or figure_ref.figure_id, title),
+        artifact_id=make_artifact_id_from_figure(
+            lineage.source_id,
+            lineage.source_type,
+            figure_ref.figure_number or figure_ref.figure_id,
+            title,
+        ),
+        source_id=lineage.source_id,
+        source_type=lineage.source_type,
+        source_title=lineage.source_title,
+        source_version=lineage.source_version,
+        ingestion_batch_id=lineage.ingestion_batch_id,
         source_document_id=bundle.source_document.source_document_id,
         source_bundle_id=bundle.source_bundle_id,
         artifact_type="manual_figure",
@@ -270,7 +292,19 @@ def build_artifact_from_figure_ref(
         nearby_text=nearby_text,
         retrieval_text=build_retrieval_text(bundle, figure_ref.figure_number, title, figure_ref.page_number, figure_ref.section_id, nearby_text),
         summary=build_summary(bundle, title, figure_ref.section_id, nearby_text),
-        source_refs=[build_source_ref(bundle, figure_ref.page_number, figure_ref.section_id, figure_ref.figure_id, figure_ref.figure_number)],
+        source_refs=[
+            build_source_ref(
+                lineage,
+                page=figure_ref.page_number,
+                section_id=figure_ref.section_id,
+                figure_id=figure_ref.figure_id,
+                figure_number=figure_ref.figure_number,
+                quote_or_summary=(
+                    f"{figure_ref.figure_number or 'Artifact'} appears on page {figure_ref.page_number}"
+                    + (f" in section {figure_ref.section_id}." if figure_ref.section_id else ".")
+                ),
+            )
+        ],
         extraction_metadata=extraction_metadata or {},
     )
 
@@ -282,10 +316,21 @@ def build_artifact_from_page_image(
     storage_path: str,
     file_name: str,
 ) -> SourceArtifact:
+    lineage = lineage_from_bundle(bundle)
     nearby_text = get_nearby_text(page.text if page else "", None)
     section_id = page.section_id if page else None
     return SourceArtifact(
-        artifact_id=make_artifact_id_from_page_image(image.page_number, image.image_index),
+        artifact_id=make_artifact_id_from_page_image(
+            lineage.source_id,
+            lineage.source_type,
+            image.page_number,
+            image.image_index,
+        ),
+        source_id=lineage.source_id,
+        source_type=lineage.source_type,
+        source_title=lineage.source_title,
+        source_version=lineage.source_version,
+        ingestion_batch_id=lineage.ingestion_batch_id,
         source_document_id=bundle.source_document.source_document_id,
         source_bundle_id=bundle.source_bundle_id,
         artifact_type="manual_page_image",
@@ -298,7 +343,13 @@ def build_artifact_from_page_image(
         nearby_text=nearby_text,
         retrieval_text=build_retrieval_text(bundle, None, None, image.page_number, section_id, nearby_text),
         summary=build_summary(bundle, None, section_id, nearby_text),
-        source_refs=[build_source_ref(bundle, image.page_number, section_id)],
+        source_refs=[
+            build_source_ref(
+                lineage,
+                page=image.page_number,
+                section_id=section_id,
+            )
+        ],
         extraction_metadata={"image_extraction_status": "saved", "matching_confidence": "page_only"},
     )
 
@@ -416,30 +467,6 @@ def build_summary(bundle: SourceBundle, title: str | None, section_id: str | Non
     return f"This source artifact is associated with {subject}."
 
 
-def build_source_ref(
-    bundle: SourceBundle,
-    page_number: int | None,
-    section_id: str | None,
-    figure_id: str | None = None,
-    figure_number: str | None = None,
-) -> dict[str, Any]:
-    ref: dict[str, Any] = {
-        "source_document_id": bundle.source_document.source_document_id,
-        "source_type": bundle.source_document.source_type,
-        "page": page_number,
-        "section_id": section_id,
-    }
-    if figure_id:
-        ref["figure_id"] = figure_id
-    if figure_number:
-        ref["figure_number"] = figure_number
-    ref["quote_or_summary"] = (
-        f"{figure_number or 'Artifact'} appears on page {page_number}"
-        + (f" in section {section_id}." if section_id else ".")
-    )
-    return ref
-
-
 def build_artifact_extraction_report(
     bundle: SourceBundle,
     pdf_path: str,
@@ -452,8 +479,12 @@ def build_artifact_extraction_report(
     skipped_images: list[dict[str, Any]],
     warnings: list[str] | None = None,
 ) -> dict[str, Any]:
+    lineage = lineage_from_bundle(bundle)
     by_image_type = Counter(artifact.image_type or "unknown" for artifact in artifacts)
     return {
+        "source_id": lineage.source_id,
+        "source_type": lineage.source_type,
+        "ingestion_batch_id": lineage.ingestion_batch_id,
         "source_bundle_id": bundle.source_bundle_id,
         "source_document_id": bundle.source_document.source_document_id,
         "pdf_path": pdf_path,

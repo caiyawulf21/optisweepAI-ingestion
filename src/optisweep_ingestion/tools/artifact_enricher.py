@@ -1,4 +1,4 @@
-"""Stage 3 LLM enrichment helpers for extracted source artifacts."""
+"""Stage 3 LLM enrichment helpers for source knowledge extraction artifacts."""
 
 from __future__ import annotations
 
@@ -206,6 +206,10 @@ def _clean_env_value(value: str | None) -> str:
 def compact_artifact_packet(artifact: dict[str, Any]) -> dict[str, Any]:
     return {
         "artifact_id": artifact.get("artifact_id"),
+        "source_id": artifact.get("source_id"),
+        "source_type": artifact.get("source_type"),
+        "source_title": artifact.get("source_title"),
+        "ingestion_batch_id": artifact.get("ingestion_batch_id"),
         "figure_id": artifact.get("figure_id"),
         "title": artifact.get("title"),
         "caption_text": artifact.get("caption_text"),
@@ -250,7 +254,18 @@ def merge_enrichment(artifact: dict[str, Any], enrichment: dict[str, Any]) -> di
     normalized = normalize_enrichment(enrichment)
     merged.update(normalized)
     merged["artifact_id"] = artifact.get("artifact_id")
-    merged["source_refs"] = artifact.get("source_refs", [])
+    for field in (
+        "source_id",
+        "source_type",
+        "source_title",
+        "source_version",
+        "ingestion_batch_id",
+        "source_document_id",
+        "source_bundle_id",
+        "source_refs",
+    ):
+        if field in artifact:
+            merged[field] = artifact[field]
     merged["linked_context_ids"] = []
     merged["linked_runbook_ids"] = []
     merged["linked_procedure_ids"] = []

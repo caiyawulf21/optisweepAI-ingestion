@@ -4,6 +4,7 @@ from optisweep_ingestion.schemas.source_bundle import (
     SourceBundle,
     SourceDocument,
     SourceFigureRef,
+    SourceMetadata,
     SourcePage,
     SourceSection,
 )
@@ -24,15 +25,20 @@ from optisweep_ingestion.tools.artifact_extractor import (
 def test_artifact_id_from_figure() -> None:
     assert (
         make_artifact_id_from_figure(
+            "manual_optisweep_om_v3",
+            "manual",
             "Figure 4-22",
             "Operator Station HMI Data Screen-Heartbeat Stats",
         )
-        == "artifact_fig_4_22_operator_station_hmi_data_screen_heartbeat_stats"
+        == "artifact_manual_manual_optisweep_om_v3_fig_4_22_operator_station_hmi_data_screen_heartbeat_stats"
     )
 
 
 def test_artifact_id_from_page_image() -> None:
-    assert make_artifact_id_from_page_image(52, 1) == "artifact_page_52_image_1"
+    assert (
+        make_artifact_id_from_page_image("manual_optisweep_om_v3", "manual", 52, 1)
+        == "artifact_manual_manual_optisweep_om_v3_page_52_image_1"
+    )
 
 
 def test_deterministic_image_type_classification() -> None:
@@ -81,13 +87,16 @@ def test_source_artifact_record_from_fake_source_bundle_figure_ref() -> None:
         bundle=bundle,
         figure_ref=figure_ref,
         page=page,
-        storage_path="data/output/manual_optisweep_om_v3/images/artifact_fig_4_22_operator_station_hmi_data_screen_heartbeat_stats.png",
-        file_name="artifact_fig_4_22_operator_station_hmi_data_screen_heartbeat_stats.png",
+        storage_path="data/output/manual_optisweep_om_v3/images/artifact_manual_manual_optisweep_om_v3_fig_4_22_operator_station_hmi_data_screen_heartbeat_stats.png",
+        file_name="artifact_manual_manual_optisweep_om_v3_fig_4_22_operator_station_hmi_data_screen_heartbeat_stats.png",
         file_format="png",
         extraction_metadata={"matching_confidence": "high"},
     )
 
-    assert artifact.artifact_id == "artifact_fig_4_22_operator_station_hmi_data_screen_heartbeat_stats"
+    assert artifact.artifact_id == "artifact_manual_manual_optisweep_om_v3_fig_4_22_operator_station_hmi_data_screen_heartbeat_stats"
+    assert artifact.source_id == "manual_optisweep_om_v3"
+    assert artifact.source_type == "manual"
+    assert artifact.ingestion_batch_id
     assert artifact.figure_id == "fig_4_22"
     assert artifact.page_number == 52
     assert artifact.section_id == "manual_4_1_2_2_visu_data_screen"
@@ -111,7 +120,7 @@ def test_linked_ids_default_to_empty_lists() -> None:
 
 def test_extraction_report_includes_heartbeat_artifact_check(tmp_path: Path) -> None:
     bundle = _fake_bundle()
-    image_path = tmp_path / "artifact_fig_4_22_operator_station_hmi_data_screen_heartbeat_stats.png"
+    image_path = tmp_path / "artifact_manual_manual_optisweep_om_v3_fig_4_22_operator_station_hmi_data_screen_heartbeat_stats.png"
     image_path.write_bytes(b"fake image")
     artifact = build_artifact_from_figure_ref(
         bundle=bundle,
@@ -219,13 +228,21 @@ def _fake_bundle() -> SourceBundle:
     section_id = "manual_4_1_2_2_visu_data_screen"
     return SourceBundle(
         source_bundle_id="manual_optisweep_om_v3",
+        source_metadata=SourceMetadata(
+            source_id="manual_optisweep_om_v3",
+            source_type="manual",
+            source_title="OptiSweep Operation and Maintenance Manual",
+            source_version="3",
+            ingestion_batch_id="batch_test",
+            source_document_id="optisweep_operation_and_maintenance_manual_final_1",
+        ),
         source_document=SourceDocument(
             source_document_id="optisweep_operation_and_maintenance_manual_final_1",
             title="OptiSweep Operation and Maintenance Manual",
             document_type="operation_maintenance_manual",
             version="3",
             document_date="2025-03-09",
-            source_type="official_manual",
+            source_type="manual",
             source_path="manual.pdf",
         ),
         pages=[
