@@ -1,32 +1,257 @@
 # OptiSweep Ingestion
 
-## Project Name
+`optisweep-ingestion` is the local ingestion workspace for turning OptiSweep operational source material into structured, traceable knowledge records.
 
-`optisweep-ingestion`
+The long-term goal is a repeatable LangGraph ingestion pipeline that product and operations teammates can use to add more OptiSweep operational knowledge without hand-building data records. The pipeline should produce reviewed JSON outputs locally first, then feed Azure Cosmos DB, vector search, and a future operational knowledge graph for retrieval-augmented generation (RAG) in the OptiSweep AI troubleshooting app.
 
-## Purpose
+## Why This Pipeline Exists
 
-This repo is focused only on local OptiSweep data ingestion and data quality. It will eventually turn source material into clean local JSON outputs that can be reviewed before any production system or database is involved.
+OptiSweep troubleshooting knowledge currently lives in manuals, figures, tables, screenshots, procedures, and engineering context. Those sources are useful to people, but they are not directly usable by a RAG assistant unless they are broken into reliable, source-linked records.
 
-The first target source is the OptiSweep Operation and Maintenance Manual. The first proof case will be the heartbeat diagnostic example.
+This project is building that bridge. Each ingestion stage keeps provenance back to the original source so product reviewers can answer:
 
-## Current Scope
+- What source document did this knowledge come from?
+- Which page, section, figure, table, or image supports it?
+- Is this a stable operational fact, a visual artifact, or a possible procedure?
+- Is it ready for retrieval, or does it need review before production use?
 
-- Organize source material for local ingestion.
-- Define the planned output records.
-- Prepare a clean Python project structure.
-- Track the intended ingestion stages.
-- Keep the README current as the project evolves.
+The first source is the OptiSweep Operation and Maintenance Manual, with the heartbeat diagnostic flow used as an early proof case.
 
-## Current Stage: Stage 5 — LLM Runbook Candidate Discovery
+## Pipeline At A Glance
 
-Stage 5 uses the source bundle, enriched source artifacts, and operational context records to identify reusable runbook/procedure candidates.
+The current pipeline is stage-based and writes local JSON files under `data/output/`. Some stages are deterministic, and some require Azure OpenAI through the project LLM client.
 
-A runbook candidate is not a final runbook. It is a lightweight record that identifies a reusable procedure opportunity, rough steps, likely role, likely procedure type, source refs, related context, and related artifacts.
+```text
+Stage 1: Source bundle extraction
+  -> Stage 2: Source artifact and image extraction
+  -> Stage 3: Source artifact enrichment
+  -> Stage 4: Operational context extraction
+  -> Stage 5: Runbook candidate discovery
+  -> Stage 6: Candidate pool generation
+  -> Stage 7: Canonical runbook drafting and merging
+  -> Stage 8: Relationship linking
+  -> Stage 9: Validation and repair
+  -> Stage 10: Final output writing
+  -> Stage 11: Vector embedding generation
+  -> Stage 12: Operational knowledge graph generation
+  -> Future: LangGraph orchestration and Cosmos DB publishing
+  -> Future: RAG retrieval in the OptiSweep AI troubleshooting app
+```
 
-This stage does not create workflows, routing rules, trigger conditions, or final approved runbooks.
+The intended production shape is one LangGraph pipeline with explicit nodes for source profiling, extraction, enrichment, validation, review, and publishing. The current scripts are the local, testable building blocks for those future graph nodes.
 
-Inputs:
+## Directed Stage Graph
+
+This graph shows the intended direction of data flow. Stages 1 through 6 are implemented as local scripts today. Stages 7 through 12 and the production publishing path are planned next steps.
+
+```mermaid
+flowchart TD
+    A["Source material<br/>manuals, PDFs, slide decks, support notes"] --> B["Future Stage 0<br/>source profiling"]
+    B --> C["Stage 1<br/>source_bundle.json"]
+    C --> D["Stage 2<br/>source_artifacts.json<br/>artifact_extraction_report.json<br/>images/"]
+    D --> E["Stage 3<br/>source_artifacts_enriched.json<br/>artifact_enrichment_report.json"]
+    C --> F["Stage 4<br/>operational_context.json<br/>operational_context_extraction_report.json"]
+    E --> F
+    C --> G["Stage 5<br/>runbook_candidates.json<br/>candidate reports"]
+    E --> G
+    F --> G
+    G --> H["Stage 6<br/>candidate_pool.json"]
+    H --> I["Stage 7<br/>canonical runbooks<br/>planned"]
+    E --> I
+    F --> I
+    I --> J["Stage 8<br/>relationship linking<br/>planned"]
+    E --> J
+    F --> J
+    G --> J
+    J --> K["Stage 9<br/>validation and repair<br/>planned"]
+    K --> L["Stage 10<br/>final reviewed outputs<br/>planned"]
+    L --> M["Stage 11<br/>vector embeddings<br/>planned"]
+    L --> N["Stage 12<br/>operational knowledge graph<br/>planned"]
+    M --> O["Azure Cosmos DB<br/>knowledge records + vectors + graph relationships"]
+    N --> O
+    O --> P["OptiSweep AI troubleshooting app<br/>RAG retrieval"]
+```
+
+## Standard Paths
+
+Examples below use the current manual output folder:
+
+```text
+data/input/manuals/OptiSweep Operation and Maintenance Manual - Final 1.pdf
+data/output/manual_optisweep_om_v3/
+```
+
+Generated images are written inside the output folder, usually under:
+
+```text
+data/output/manual_optisweep_om_v3/images/
+```
+
+## Stage 1: Source Bundle Extraction
+
+Stage 1 reads the source PDF and creates the canonical text and reference bundle for downstream stages.
+
+**Purpose**
+
+Create a stable source inventory: document metadata, pages, detected sections, figure references, table references, and source identifiers. This is the foundation for traceability.
+
+**Inputs**
+
+```text
+data/input/manuals/OptiSweep Operation and Maintenance Manual - Final 1.pdf
+```
+
+Optional CLI metadata can also be supplied, including source bundle ID, source document ID, source ID, source type, source title, source version, and ingestion batch ID.
+
+**Outputs**
+
+```text
+data/output/manual_optisweep_om_v3/source_bundle.json
+```
+
+`source_bundle.json` contains:
+
+- source metadata and ingestion batch metadata
+- page-level extracted text
+- section records
+- figure and table references
+- stable source references used by later records
+
+**Run**
+
+```bash
+python scripts/extract_manual.py \
+  --source-pdf "data/input/manuals/OptiSweep Operation and Maintenance Manual - Final 1.pdf" \
+  --output-dir data/output/manual_optisweep_om_v3
+```
+
+Stage 1 is deterministic and does not call an LLM.
+
+## Stage 2: Source Artifact And Image Extraction
+
+Stage 2 reads the Stage 1 bundle and the original PDF, then extracts source artifacts such as figures and page-rendered fallback images.
+
+**Purpose**
+
+Capture visual and structural artifacts that are important for troubleshooting, including screenshots, diagrams, figures, and fallback page renders when an embedded image cannot be extracted cleanly.
+
+**Inputs**
+
+```text
+data/output/manual_optisweep_om_v3/source_bundle.json
+data/input/manuals/OptiSweep Operation and Maintenance Manual - Final 1.pdf
+```
+
+**Outputs**
+
+```text
+data/output/manual_optisweep_om_v3/source_artifacts.json
+data/output/manual_optisweep_om_v3/artifact_extraction_report.json
+data/output/manual_optisweep_om_v3/images/
+```
+
+`source_artifacts.json` contains artifact records with IDs, source references, artifact type, page/figure linkage, image paths, extraction method, and review hints.
+
+`artifact_extraction_report.json` summarizes extraction counts, saved images, missing figure images, warnings, and priority checks such as whether the heartbeat artifact was found.
+
+**Run**
+
+```bash
+python scripts/extract_manual_artifacts.py \
+  --source-bundle data/output/manual_optisweep_om_v3/source_bundle.json \
+  --source-pdf "data/input/manuals/OptiSweep Operation and Maintenance Manual - Final 1.pdf" \
+  --output-dir data/output/manual_optisweep_om_v3
+```
+
+Stage 2 is deterministic and does not call an LLM.
+
+## Stage 3: Source Artifact Enrichment
+
+Stage 3 uses Azure OpenAI to make source artifacts more useful for review and retrieval.
+
+**Purpose**
+
+Turn raw artifact records into retrieval-friendly records. For example, a raw image reference becomes an enriched artifact with a plain-language description, tags, what-to-look-at guidance, and text that can later be embedded or indexed.
+
+**Inputs**
+
+```text
+data/output/manual_optisweep_om_v3/source_artifacts.json
+data/output/manual_optisweep_om_v3/artifact_extraction_report.json
+```
+
+**Outputs**
+
+```text
+data/output/manual_optisweep_om_v3/source_artifacts_enriched.json
+data/output/manual_optisweep_om_v3/artifact_enrichment_report.json
+```
+
+`source_artifacts_enriched.json` preserves the original artifact identity and source linkage while adding LLM-generated descriptions, retrieval text, tags, and reviewer-facing guidance.
+
+`artifact_enrichment_report.json` records input counts, enriched counts, failures, warnings, and priority checks.
+
+**Run**
+
+```bash
+python scripts/enrich_source_artifacts.py \
+  --source-artifacts data/output/manual_optisweep_om_v3/source_artifacts.json \
+  --artifact-report data/output/manual_optisweep_om_v3/artifact_extraction_report.json \
+  --output-dir data/output/manual_optisweep_om_v3 \
+  --llm
+```
+
+Stage 3 requires `--llm`.
+
+## Stage 4: Operational Context Extraction
+
+Stage 4 extracts reusable operational knowledge from the source bundle and enriched artifacts.
+
+**Purpose**
+
+Create retrieval-ready context records that explain systems, components, screens, metrics, alarms, statuses, constraints, and operating concepts. These records are meant to answer "what is this thing and how should support think about it?"
+
+Stage 4 does not create runbooks, workflows, trigger rules, or final procedures.
+
+**Inputs**
+
+```text
+data/output/manual_optisweep_om_v3/source_bundle.json
+data/output/manual_optisweep_om_v3/source_artifacts_enriched.json
+```
+
+**Outputs**
+
+```text
+data/output/manual_optisweep_om_v3/operational_context.json
+data/output/manual_optisweep_om_v3/operational_context_extraction_report.json
+```
+
+`operational_context.json` contains context records with source references, related artifact references, normalized topic fields, retrieval text, and evidence links.
+
+`operational_context_extraction_report.json` records context counts, failed packets, warnings, and priority coverage checks.
+
+**Run**
+
+```bash
+python scripts/extract_operational_context.py \
+  --source-bundle data/output/manual_optisweep_om_v3/source_bundle.json \
+  --source-artifacts data/output/manual_optisweep_om_v3/source_artifacts_enriched.json \
+  --output-dir data/output/manual_optisweep_om_v3 \
+  --llm
+```
+
+Stage 4 requires `--llm`.
+
+## Stage 5: Runbook Candidate Discovery
+
+Stage 5 identifies likely reusable troubleshooting or operational procedures.
+
+**Purpose**
+
+Create lightweight runbook candidate records for product review. A candidate is not an approved runbook. It is an evidence-linked suggestion that says, "this source material appears to describe a reusable procedure."
+
+**Inputs**
 
 ```text
 data/output/manual_optisweep_om_v3/source_bundle.json
@@ -34,14 +259,21 @@ data/output/manual_optisweep_om_v3/source_artifacts_enriched.json
 data/output/manual_optisweep_om_v3/operational_context.json
 ```
 
-Outputs:
+**Outputs**
 
 ```text
 data/output/manual_optisweep_om_v3/runbook_candidates.json
 data/output/manual_optisweep_om_v3/runbook_candidate_extraction_report.json
+data/output/manual_optisweep_om_v3/runbook_candidate_coverage_report.json
 ```
 
-Run:
+`runbook_candidates.json` contains candidate IDs, titles, likely procedure type, likely role, rough steps, source references, related context IDs, related artifact IDs, and review metadata.
+
+`runbook_candidate_extraction_report.json` records failed packets, dropped candidates, deduplicated candidates, warnings, and extraction statistics.
+
+`runbook_candidate_coverage_report.json` highlights source sections or priority areas that may still need candidate coverage.
+
+**Run**
 
 ```bash
 python scripts/extract_runbook_candidates.py \
@@ -52,155 +284,338 @@ python scripts/extract_runbook_candidates.py \
   --llm
 ```
 
-## Previous Stage: Stage 4 — LLM Operational Context Extraction
+Stage 5 requires `--llm`. Use `--backfill-missing-sections` only when conservative missing-section candidates are desired after the main LLM pass.
 
-Stage 4 uses the source bundle and enriched source artifacts to extract reusable operational context records.
+## Stage 6: Candidate Pool Generation
 
-Operational context explains systems, components, screens, metrics, alarms, statuses, and stable operating concepts.
+Stage 6 combines one or more runbook candidate files into a candidate pool.
 
-It does not create runbooks, procedures, workflows, routing rules, or trigger conditions.
+**Purpose**
 
-Inputs:
+Prepare candidates for cross-source review by grouping and summarizing discovered procedure opportunities. This matters once OptiSweep knowledge comes from more than one manual, slide deck, support note, or product source.
+
+**Inputs**
+
+```text
+data/output/manual_optisweep_om_v3/runbook_candidates.json
+```
+
+The `--candidates` option can be repeated for multiple sources.
+
+**Outputs**
+
+```text
+data/output/manual_optisweep_om_v3/candidate_pool.json
+```
+
+`candidate_pool.json` contains pooled candidates and generated cluster information for review.
+
+**Run**
+
+```bash
+python scripts/build_candidate_pool.py \
+  --candidates data/output/manual_optisweep_om_v3/runbook_candidates.json \
+  --output-dir data/output/manual_optisweep_om_v3
+```
+
+Stage 6 is deterministic and does not call an LLM.
+
+## Stage 7: Canonical Runbook Drafting And Merging
+
+Stage 7 is planned in [manual_ingestion_plan.md](cursorprompts/manual_ingestion_prompts/manual_ingestion_plan.md) as the point where source-specific runbook candidates become canonical runbooks.
+
+**Purpose**
+
+Create reusable runbooks from the candidate pool. Multiple source candidates may describe the same procedure, and the canonical runbook should merge evidence rather than treating one source as the owner.
+
+Examples from the plan:
+
+- a manual candidate named "Start Operator Station"
+- a training slide candidate named "Operator Startup"
+- an incident-derived candidate named "Restart Operator Station"
+
+These may consolidate into one canonical procedure such as `proc_start_operator_station`.
+
+**Inputs**
+
+```text
+data/output/manual_optisweep_om_v3/candidate_pool.json
+data/output/manual_optisweep_om_v3/source_artifacts_enriched.json
+data/output/manual_optisweep_om_v3/operational_context.json
+```
+
+In a multi-source run, this stage should also accept candidate pools from training slides, transcripts, incidents, SOPs, and SME-authored documentation.
+
+**Planned outputs**
+
+```text
+data/output/manual_optisweep_om_v3/runbooks.json
+data/output/manual_optisweep_om_v3/runbook_drafting_report.json
+```
+
+`runbooks.json` should contain canonical procedures with merged source references, supporting artifacts, related operational context, role, procedure type, steps, success criteria, escalation guidance, and review status.
+
+Stage 7 should not create workflow branches, trigger conditions, routing logic, or ML labels.
+
+## Stage 8: Relationship Linking
+
+Stage 8 is planned in [manual_ingestion_plan.md](cursorprompts/manual_ingestion_prompts/manual_ingestion_plan.md) as the final linking point after artifacts, operational context, candidates, and runbooks exist.
+
+**Purpose**
+
+Populate relationships conservatively so product reviewers and the future troubleshooting app can move between visual evidence, operational explanations, and procedures.
+
+**Inputs**
+
+```text
+data/output/manual_optisweep_om_v3/source_artifacts_enriched.json
+data/output/manual_optisweep_om_v3/operational_context.json
+data/output/manual_optisweep_om_v3/runbook_candidates.json
+data/output/manual_optisweep_om_v3/runbooks.json
+```
+
+**Planned outputs**
+
+```text
+data/output/manual_optisweep_om_v3/source_artifacts_linked.json
+data/output/manual_optisweep_om_v3/operational_context_linked.json
+data/output/manual_optisweep_om_v3/runbooks_linked.json
+data/output/manual_optisweep_om_v3/relationship_linking_report.json
+```
+
+The plan says `linked_context_ids` and `linked_runbook_ids` should remain empty until this stage. Links should prefer shared section IDs, source references, artifact references, title similarity, and component or screen tags.
+
+## Stage 9: Validation And Repair
+
+Stage 9 is planned in [manual_ingestion_plan.md](cursorprompts/manual_ingestion_prompts/manual_ingestion_plan.md) as the quality gate before final outputs are written.
+
+**Purpose**
+
+Validate schema shape, references, allowed values, forbidden fields, image references, source references, and relationship integrity. LLM repair may be used only for formatting or wording issues, not for inventing missing facts.
+
+**Inputs**
+
+```text
+data/output/manual_optisweep_om_v3/source_artifacts_linked.json
+data/output/manual_optisweep_om_v3/operational_context_linked.json
+data/output/manual_optisweep_om_v3/runbooks_linked.json
+```
+
+**Planned outputs**
+
+```text
+data/output/manual_optisweep_om_v3/validation_report.json
+data/output/manual_optisweep_om_v3/repaired_records.json
+```
+
+Validation should confirm that no runbook contains workflow, routing, decision-tree, or ML-label fields, and that linked IDs only appear after the relationship linking stage.
+
+## Stage 10: Final Output Writing
+
+Stage 10 is planned in [manual_ingestion_plan.md](cursorprompts/manual_ingestion_prompts/manual_ingestion_plan.md) as the final local write step.
+
+**Purpose**
+
+Write reviewed local JSON outputs and a final extraction report. This keeps the ingestion layer inspectable before anything is published to production storage.
+
+**Planned outputs**
+
+```text
+data/output/manual_optisweep_om_v3/source_artifacts.json
+data/output/manual_optisweep_om_v3/manual_references.json
+data/output/manual_optisweep_om_v3/operational_context.json
+data/output/manual_optisweep_om_v3/runbook_candidates.json
+data/output/manual_optisweep_om_v3/runbooks.json
+data/output/manual_optisweep_om_v3/extraction_report.json
+```
+
+`extraction_report.json` should include counts, missing images, unresolved references, possible duplicates, conflicts, warnings, and validation errors that could not be repaired.
+
+## Stage 11: Vector Embedding Generation
+
+Stage 11 will create vector embeddings for retrieval-ready knowledge records.
+
+**Purpose**
+
+Convert reviewed text fields into embedding vectors that can support semantic search in the OptiSweep AI troubleshooting app. This stage is where local, source-linked records become queryable RAG retrieval units.
+
+Stage 11 should embed the fields that best represent retrieval intent, not every raw source field. Likely embedding inputs include artifact retrieval text, operational context retrieval text, approved runbook summaries, runbook candidate summaries, candidate pool summaries, titles, tags, systems, components, and source metadata needed for filtering.
+
+**Inputs**
+
+```text
+data/output/manual_optisweep_om_v3/source_artifacts_enriched.json
+data/output/manual_optisweep_om_v3/operational_context.json
+data/output/manual_optisweep_om_v3/runbook_candidates.json
+data/output/manual_optisweep_om_v3/candidate_pool.json
+data/output/manual_optisweep_om_v3/runbooks.json
+```
+
+In the production pipeline, this stage should run after validation and product review so embeddings represent approved or reviewable knowledge, not discarded extraction noise.
+
+**Planned outputs**
+
+```text
+data/output/manual_optisweep_om_v3/embedding_records.json
+data/output/manual_optisweep_om_v3/embedding_generation_report.json
+```
+
+`embedding_records.json` should contain one record per retrievable knowledge unit, including:
+
+- stable record ID
+- source record type, such as artifact, operational context, runbook candidate, or approved runbook
+- source record ID
+- text that was embedded
+- vector embedding
+- embedding model name and version
+- source references for citation and review
+- filter metadata such as component, subsystem, procedure type, role, source document, and ingestion batch
+
+`embedding_generation_report.json` should summarize generated vectors, skipped records, model configuration, validation findings, and any records that need review before publishing.
+
+**Run**
+
+```bash
+# Planned; script not implemented yet.
+python scripts/generate_embeddings.py \
+  --source-artifacts data/output/manual_optisweep_om_v3/source_artifacts_enriched.json \
+  --operational-context data/output/manual_optisweep_om_v3/operational_context.json \
+  --runbook-candidates data/output/manual_optisweep_om_v3/runbook_candidates.json \
+  --candidate-pool data/output/manual_optisweep_om_v3/candidate_pool.json \
+  --output-dir data/output/manual_optisweep_om_v3
+```
+
+Stage 11 will require an embedding model provider, likely Azure OpenAI in the production path.
+
+## Stage 12: Operational Knowledge Graph Generation
+
+Stage 12 will create a graph of operational entities and relationships found across the ingested knowledge.
+
+**Purpose**
+
+Make the operational information navigable by relationship, not only by semantic similarity. A knowledge graph can help the troubleshooting app understand how systems, components, alarms, metrics, screens, artifacts, operating states, and procedures relate to each other.
+
+This should support questions like:
+
+- Which components are associated with this alarm?
+- Which procedures mention this screen or metric?
+- Which artifacts explain this subsystem?
+- Which operational contexts support this runbook candidate?
+- What upstream or downstream concepts should be retrieved with this issue?
+
+**Inputs**
 
 ```text
 data/output/manual_optisweep_om_v3/source_bundle.json
 data/output/manual_optisweep_om_v3/source_artifacts_enriched.json
+data/output/manual_optisweep_om_v3/operational_context.json
+data/output/manual_optisweep_om_v3/runbook_candidates.json
+data/output/manual_optisweep_om_v3/candidate_pool.json
+data/output/manual_optisweep_om_v3/runbooks.json
+data/output/manual_optisweep_om_v3/embedding_records.json
 ```
 
-Outputs:
+The graph stage should rely on stable IDs and source references from earlier stages so graph edges can be reviewed and explained.
+
+**Planned outputs**
 
 ```text
-data/output/manual_optisweep_om_v3/operational_context.json
-data/output/manual_optisweep_om_v3/operational_context_extraction_report.json
+data/output/manual_optisweep_om_v3/knowledge_graph.json
+data/output/manual_optisweep_om_v3/knowledge_graph_generation_report.json
 ```
 
-Run:
+`knowledge_graph.json` should contain graph nodes and edges, such as:
+
+- nodes for systems, subsystems, components, screens, metrics, alarms, statuses, source artifacts, operational context records, runbook candidates, and approved runbooks
+- edges such as `mentions`, `explains`, `depends_on`, `is_part_of`, `troubleshoots`, `uses_artifact`, `supports_context`, `has_metric`, and `has_alarm`
+- source references for each edge so relationships remain auditable
+- confidence or review status for LLM-inferred relationships
+
+`knowledge_graph_generation_report.json` should summarize graph size, inferred relationships, deterministic relationships, dropped edges, low-confidence edges, and review needs.
+
+**Run**
 
 ```bash
-python scripts/extract_operational_context.py \
+# Planned; script not implemented yet.
+python scripts/build_knowledge_graph.py \
   --source-bundle data/output/manual_optisweep_om_v3/source_bundle.json \
   --source-artifacts data/output/manual_optisweep_om_v3/source_artifacts_enriched.json \
-  --output-dir data/output/manual_optisweep_om_v3 \
-  --llm
-```
-
-## Previous Stage: Stage 3 — LLM Source Artifact Enrichment
-
-Stage 3 uses an LLM to enrich extracted source artifact records with descriptions, what-to-look-at guidance, tags, and retrieval text.
-
-Inputs:
-
-```text
-data/output/manual_optisweep_om_v3/source_artifacts.json
-data/output/manual_optisweep_om_v3/artifact_extraction_report.json
-```
-
-Outputs:
-
-```text
-data/output/manual_optisweep_om_v3/source_artifacts_enriched.json
-data/output/manual_optisweep_om_v3/artifact_enrichment_report.json
-```
-
-Run:
-
-```bash
-python scripts/enrich_source_artifacts.py \
-  --source-artifacts data/output/manual_optisweep_om_v3/source_artifacts.json \
-  --artifact-report data/output/manual_optisweep_om_v3/artifact_extraction_report.json \
-  --output-dir data/output/manual_optisweep_om_v3 \
-  --llm
-```
-
-This stage does not create operational context, runbooks, workflows, or relationship links.
-
-## Previous Stage: Stage 2 - Source Artifact / Image Extraction
-
-Stage 2 reads the Stage 1 `source_bundle.json` and the original PDF manual, extracts available embedded images, and creates traceable source artifact records.
-If a figure cannot be extracted as a standalone embedded image, Stage 2 renders the full PDF page under `images/fallback_pages/` and marks the artifact for crop/visual review.
-
-Outputs:
-
-```text
-data/output/manual_optisweep_om_v3/source_bundle.json
-data/output/manual_optisweep_om_v3/source_artifacts.json
-data/output/manual_optisweep_om_v3/artifact_extraction_report.json
-data/output/manual_optisweep_om_v3/images/
-```
-
-Run:
-
-```bash
-python scripts/extract_manual_artifacts.py \
-  --source-bundle data/output/manual_optisweep_om_v3/source_bundle.json \
-  --source-pdf "data/input/manuals/OptiSweep Operation and Maintenance Manual - Final 1.pdf" \
+  --operational-context data/output/manual_optisweep_om_v3/operational_context.json \
+  --runbook-candidates data/output/manual_optisweep_om_v3/runbook_candidates.json \
+  --candidate-pool data/output/manual_optisweep_om_v3/candidate_pool.json \
+  --embedding-records data/output/manual_optisweep_om_v3/embedding_records.json \
   --output-dir data/output/manual_optisweep_om_v3
 ```
 
-This stage is deterministic. It does not call an LLM and does not populate linked context or runbook IDs yet.
+Stage 12 may combine deterministic linking with LLM-assisted relationship extraction. Any inferred relationship should carry provenance and review metadata.
 
-Stage 1 source bundle generation remains available:
+## Future Production Flow
 
-```bash
-python scripts/extract_manual.py \
-  --source-pdf "data/input/manuals/OptiSweep Operation and Maintenance Manual - Final 1.pdf" \
-  --output-dir data/output/manual_optisweep_om_v3
-```
+The current local outputs are intended to become the reviewed source of truth for production publishing.
 
-Stage 1 now includes quality checks for:
-- conservative section heading detection
-- front matter filtering
-- canonical figure/table reference selection
-- heartbeat detectability smoke checks
+Future stages should:
 
-## Out of Scope For Now
+- orchestrate the stage scripts as LangGraph nodes
+- add source profiling so manuals, slide PDFs, native presentations, OCR-heavy files, and mixed source packages can route through the right extraction strategy
+- implement the remaining planned stages from [manual_ingestion_plan.md](cursorprompts/manual_ingestion_prompts/manual_ingestion_plan.md): canonical runbook drafting, relationship linking, validation and repair, and final output writing
+- validate records before publishing
+- support product team review and approval
+- generate vector embeddings for retrieval-ready records
+- generate an operational knowledge graph from reviewed records and relationships
+- publish approved records, vectors, and graph relationships into Azure Cosmos DB
+- support vector retrieval, graph-aware retrieval, and citation-backed answers in the OptiSweep AI troubleshooting app
 
-- Running the production assistant.
-- Writing to Cosmos or PostgreSQL.
-- Connecting to Teams, SharePoint, Salesforce, Azure storage, or other runtime services.
-- Implementing LLM calls, operational context extraction, runbook extraction, database writes, or LangGraph runtime orchestration.
+Cosmos publishing is intentionally not the first step. The pipeline needs to make the knowledge repeatable, inspectable, and explainable before production storage is introduced.
 
-## Target Outputs
+## Docs Guide
 
-- Source artifacts, images, and manual references.
-- Operational context records for retrieval.
-- Reusable runbooks and procedures.
-- Extraction reports.
+`docs/data_contracts.md`
 
-## Planned Pipeline
+Defines the main planned record types at a conceptual level: source bundles, source artifacts, manual references, operational context, runbooks, embedding records, knowledge graph records, and extraction reports. Start here when you need to understand what kinds of JSON records the pipeline is trying to produce.
 
-LangGraph will be used later to orchestrate ingestion stages, but the graph is not implemented yet.
+`docs/development_log.md`
 
-Detailed stage planning lives in `cursorprompts/manual_ingestion_prompts/manual_ingestion_plan.md`.
-Future architecture decisions live in `docs/operational_knowledge_pipeline_architecture.md`.
+Tracks what changed, what was added, and what decisions have been made. The README includes an auto-synced copy of this log at the bottom so newcomers can see the current project state quickly.
 
-## Folder Structure
+`docs/operational_knowledge_pipeline_architecture.md`
+
+Captures architecture decisions for the broader operational knowledge pipeline. It explains why the future system should profile sources before extraction, treat PyMuPDF as one adapter rather than the whole architecture, handle PowerPoint-exported PDFs differently from manuals, and treat OCR as additive provenance rather than replacement text.
+
+`cursorprompts/manual_ingestion_prompts/manual_ingestion_plan.md`
+
+Contains the manual-specific stage plan used while building the current ingestion path. It is the detailed planning reference for the staged source extraction model: source bundle, artifacts, enrichment, operational context, runbook candidates, candidate pool, canonical runbook drafting, relationship linking, validation/repair, and final output writing.
+
+## Project Layout
 
 ```text
 .
   README.md
   pyproject.toml
-  .env.example
-  .gitignore
   data/
-    input/
-    processed/
-    output/
-    review/
-  docs/
-  scripts/
+    input/      source files provided by product or engineering
+    output/     generated local JSON and image outputs
+    processed/  optional intermediate files
+    review/     reviewer-facing samples and validation outputs
+  docs/         project decisions, contracts, and architecture notes
+  scripts/      runnable stage entrypoints
   src/
     optisweep_ingestion/
-  tests/
+      graph/    future LangGraph orchestration pieces
+      prompts/  LLM prompts used by enrichment and extraction stages
+      schemas/  Pydantic data contracts
+      services/ shared clients and ID/reference helpers
+      tools/    stage implementations
+  tests/        unit tests for stage behavior and contracts
 ```
 
 ## Development Workflow
 
 1. Add source files under `data/input/`.
-2. Keep planned contracts and decisions in `docs/`.
-3. Add ingestion code under `src/optisweep_ingestion/` only when the design is ready.
-4. Write local JSON outputs under `data/output/`.
-5. Review samples and validation reports under `data/review/`.
+2. Run stages locally and write outputs under `data/output/`.
+3. Inspect extraction reports and review generated records before treating them as production-ready.
+4. Update schemas, prompts, and tools as the source material reveals new cases.
+5. Keep docs current so product teammates can understand what the pipeline expects and produces.
+6. Only publish to production storage after records are validated and reviewable.
 
 ## README Update Hook
 
@@ -214,7 +629,7 @@ The hook refreshes the marked development log section while preserving the rest 
 
 ## Current Status
 
-Stages 1–4 are implemented. Stage 4 (operational context extraction) produces `operational_context.json` from the source bundle and enriched artifacts using an LLM. Later ingestion stages remain placeholders.
+Stages 1 through 6 are implemented as local scripts. Stages 7 through 10 from [manual_ingestion_plan.md](cursorprompts/manual_ingestion_prompts/manual_ingestion_plan.md), Stage 11 vector embedding generation, Stage 12 operational knowledge graph generation, LangGraph orchestration, and Azure Cosmos DB publishing are the next production-shape milestones.
 
 <!-- AUTO:DEVELOPMENT_LOG_START -->
 # Development Log

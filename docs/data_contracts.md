@@ -22,6 +22,14 @@ Stores retrieval-ready operational facts, diagnostics, explanations, and constra
 
 Represents a reusable procedure or troubleshooting workflow drafted from validated operational context.
 
+## EmbeddingRecord
+
+Represents one retrievable knowledge unit prepared for semantic search. It should keep the embedded text, vector, embedding model metadata, source record ID, source record type, source references, and filter metadata needed by the OptiSweep AI troubleshooting app.
+
+## KnowledgeGraphRecord
+
+Represents operational graph nodes and relationships. It should capture entities such as systems, components, alarms, metrics, screens, artifacts, contexts, and procedures, plus auditable edges that explain how those entities relate.
+
 ## ExtractionReport
 
 Summarizes an ingestion run, including outputs produced, warnings, validation findings, and review notes.
