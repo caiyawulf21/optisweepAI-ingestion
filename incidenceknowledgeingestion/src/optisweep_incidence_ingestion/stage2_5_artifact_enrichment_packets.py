@@ -1,0 +1,324 @@
+"""Stage 2.5 - Artifact enrichment packet preparation.
+
+Builds deterministic joined packets from Stage 2 artifact records, page OCR,
+source-package metadata, and duplicate metadata. This stage does not enrich or
+interpret artifacts; Stage 3 owns LLM artifact enrichment.
+"""
+
+from __future__ import annotations
+
+from collections import Counter
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+from optisweep_incidence_ingestion.ocr import normalize_ocr_text, normalize_whitespace
+from optisweep_incidence_ingestion.utils.json_utils import read_json, write_json
+
+
+def build_artifact_enrichment_packets(
+    *,
+    source_package_path: str | Path,
+    page_inventory_path: str | Path,
+    source_artifacts_path: str | Path,
+    output_dir: str | Path,
+    artifact_extraction_report_path: str | Path | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    package = read_json(source_package_path)
+    page_inventory = read_json(page_inventory_path)
+    source_artifacts = read_json(source_artifacts_path)
+    extraction_report = read_json(artifact_extraction_report_path) if artifact_extraction_report_path else {}
+
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+    page_by_number = {int(page["page_number"]): page for page in page_inventory}
+    duplicate_by_artifact = _duplicate_group_index(extraction_report, source_artifacts)
+
+    packets = [
+        build_enrichment_packet(
+            artifact=artifact,
+            page=page_by_number.get(int(artifact["page_number"])),
+            duplicate_metadata=duplicate_by_artifact.get(artifact["artifact_id"]),
+        )
+        for artifact in source_artifacts
+    ]
+    report = build_packet_report(package, packets)
+
+    write_json(output_path / "artifact_enrichment_packets.json", packets)
+    write_json(output_path / "artifact_enrichment_packet_report.json", report)
+    write_json(output_path / "incident_source_package.json", _package_with_stage2_5_refs(package, output_path, report))
+    return packets, report
+
+
+def build_enrichment_packet(
+    *,
+    artifact: dict[str, Any],
+    page: dict[str, Any] | None,
+    duplicate_metadata: dict[str, Any] | None,
+) -> dict[str, Any]:
+    source_refs = _merge_source_refs(artifact.get("source_refs") or [], page.get("source_refs") if page else [])
+    artifact_ocr_text = artifact.get("ocr_text") or ""
+    page_ocr_text = page.get("ocr_text") if page else ""
+    artifact_ocr_quality = assess_ocr_quality(
+        text=artifact_ocr_text,
+        confidence=artifact.get("ocr_confidence"),
+        expected_context="artifact",
+    )
+    page_ocr_quality = assess_ocr_quality(
+        text=page_ocr_text or "",
+        confidence=page.get("ocr_confidence") if page else None,
+        expected_context="page",
+    )
+    return {
+        "packet_type": "incident_artifact_enrichment_packet",
+        "schema_version": "0.1",
+        "artifact_id": artifact["artifact_id"],
+        "image_path": artifact.get("storage_path"),
+        "artifact_ocr_text": artifact_ocr_text,
+        "artifact_ocr_clean_text": clean_ocr_text_for_llm(artifact_ocr_text),
+        "artifact_ocr_confidence": artifact.get("ocr_confidence"),
+        "artifact_ocr_word_count": artifact.get("ocr_word_count"),
+        "artifact_ocr_quality": artifact_ocr_quality,
+        "artifact_image_type": artifact.get("image_type"),
+        "artifact_type": artifact.get("artifact_type"),
+        "artifact_summary_hint": artifact.get("summary"),
+        "artifact_evidence_role_hint": artifact.get("evidence_role"),
+        "artifact_what_to_look_at_hint": artifact.get("what_to_look_at") or [],
+        "page_number": artifact.get("page_number"),
+        "page_ref": page.get("page_ref") if page else None,
+        "page_ocr_text": page_ocr_text or "",
+        "page_ocr_clean_text": clean_ocr_text_for_llm(page_ocr_text or ""),
+        "page_ocr_confidence": page.get("ocr_confidence") if page else None,
+        "page_ocr_quality": page_ocr_quality,
+        "page_detected_type": page.get("detected_page_type") if page else None,
+        "context_role": classify_context_role(page),
+        "state_assessment_request": {
+            "required_in_stage_3": artifact.get("image_type")
+            not in {"teams_chat_screenshot", "salesforce_case_screenshot", "unknown_incident_evidence"},
+            "allowed_states": ["healthy", "normal", "warning", "abnormal", "failure", "recovery_in_progress", "unknown"],
+            "instruction": "For screenshots of systems, tools, charts, services, APIs, RMS/HMI, or Ignition, Stage 3 should assess whether the visible state appears healthy/normal, warning, abnormal/failure, recovery-in-progress, or unknown, with source-supported rationale.",
+        },
+        "source_refs": source_refs,
+        "duplicate_group": duplicate_metadata,
+        "instruction": (
+            "Stage 3 must enrich the artifact using the image, artifact OCR, and page OCR context. "
+            "Raw OCR may be garbled; use clean OCR only as a readability aid, not as a source of new facts. "
+            "Page OCR is surrounding evidence only; do not describe surrounding Teams, Salesforce, "
+            "or case text as if it is visible inside the cropped artifact image."
+        ),
+        "stage2_artifact_record": artifact,
+    }
+
+
+def classify_context_role(page: dict[str, Any] | None) -> str:
+    if not page:
+        return "no_page_context"
+    text = normalize_ocr_text(page.get("ocr_text") or "")
+    detected = page.get("detected_page_type")
+    if detected == "teams_chat_screenshot" or _looks_like_teams_chat(text):
+        return "surrounding_teams_chat"
+    if detected == "salesforce_case_screenshot" or _looks_like_salesforce_case(text):
+        return "surrounding_salesforce_case"
+    if text:
+        return "same_page_context"
+    return "no_page_context"
+
+
+def build_packet_report(package: dict[str, Any], packets: list[dict[str, Any]]) -> dict[str, Any]:
+    contexts = Counter(packet.get("context_role") for packet in packets)
+    image_types = Counter(packet.get("artifact_image_type") for packet in packets)
+    duplicate_count = sum(1 for packet in packets if packet.get("duplicate_group"))
+    missing_context = [packet["artifact_id"] for packet in packets if packet.get("context_role") == "no_page_context"]
+    noisy_artifact_ocr = [
+        packet["artifact_id"]
+        for packet in packets
+        if packet.get("artifact_ocr_quality", {}).get("quality") in {"low", "garbled"}
+    ]
+    warnings = []
+    if duplicate_count:
+        warnings.append("Duplicate metadata is included; Stage 3 should prefer primary artifacts unless duplicates add unique page context.")
+    if missing_context:
+        warnings.append("One or more packets have no joined page OCR context.")
+    if noisy_artifact_ocr:
+        warnings.append("One or more artifact OCR strings are low quality or garbled; Stage 3 should rely on the image and mark OCR uncertainty.")
+    return {
+        "source_package_id": package["source_package_id"],
+        "source_id": package["source_id"],
+        "source_case_id": package["source_case_id"],
+        "ingestion_batch_id": package["ingestion_batch_id"],
+        "stage": "stage_2_5_artifact_enrichment_packet_preparation",
+        "llm_used": False,
+        "packet_count": len(packets),
+        "context_roles": dict(sorted(contexts.items())),
+        "artifact_image_types": dict(sorted(image_types.items())),
+        "duplicate_packet_count": duplicate_count,
+        "missing_page_context_artifact_ids": missing_context,
+        "noisy_artifact_ocr_ids": noisy_artifact_ocr,
+        "warnings": warnings,
+        "validation_errors": [],
+        "built_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def _package_with_stage2_5_refs(package: dict[str, Any], output_path: Path, report: dict[str, Any]) -> dict[str, Any]:
+    enriched_package = dict(package)
+    source_bundle = dict(enriched_package.get("source_bundle") or {})
+    stage_status = dict(source_bundle.get("stage_status") or {})
+    stage_status.update(
+        {
+            "stage_2_5": "complete",
+            "ready_for_stage_3_artifact_enrichment": True,
+            "ready_for_stage_4_create_canonical_incident_records_and_timeline": False,
+        }
+    )
+    file_refs = dict(source_bundle.get("file_refs") or {})
+    file_refs.update(
+        {
+            "artifact_enrichment_packets": str(output_path / "artifact_enrichment_packets.json"),
+            "artifact_enrichment_packet_report": str(output_path / "artifact_enrichment_packet_report.json"),
+        }
+    )
+    source_bundle["stage_status"] = stage_status
+    source_bundle["file_refs"] = file_refs
+    source_bundle["artifact_enrichment_packet_summary"] = {
+        "packet_count": report["packet_count"],
+        "context_roles": report["context_roles"],
+        "artifact_image_types": report["artifact_image_types"],
+    }
+    enriched_package["source_bundle"] = source_bundle
+    enriched_package["stage2_5_output_refs"] = {
+        "artifact_enrichment_packets": str(output_path / "artifact_enrichment_packets.json"),
+        "artifact_enrichment_packet_report": str(output_path / "artifact_enrichment_packet_report.json"),
+    }
+    return enriched_package
+
+
+def _duplicate_group_index(report: dict[str, Any], artifacts: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    index: dict[str, dict[str, Any]] = {}
+    for group in report.get("duplicate_groups") or []:
+        for artifact_id in group.get("artifact_ids") or []:
+            index[artifact_id] = group
+    for artifact in artifacts:
+        group_id = artifact.get("duplicate_group_id")
+        if group_id and artifact["artifact_id"] not in index:
+            index[artifact["artifact_id"]] = {
+                "duplicate_group_id": group_id,
+                "primary_artifact_id": artifact.get("extraction_metadata", {}).get("duplicate_group_primary_artifact_id"),
+                "artifact_ids": [],
+                "group_size": None,
+            }
+    return index
+
+
+def _merge_source_refs(*groups: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
+    merged: list[dict[str, Any]] = []
+    seen: set[tuple[Any, ...]] = set()
+    for group in groups:
+        for ref in group or []:
+            key = (
+                ref.get("source_id"),
+                ref.get("page_ref"),
+                ref.get("artifact_id"),
+                ref.get("quote_or_summary"),
+            )
+            if key in seen:
+                continue
+            seen.add(key)
+            merged.append(ref)
+    return merged
+
+
+def clean_ocr_text_for_llm(text: str) -> str:
+    """Repair common mojibake while preserving OCR as evidence text."""
+    cleaned = normalize_whitespace(text)
+    replacements = {
+        "â€™": "'",
+        "â€˜": "'",
+        "â€œ": '"',
+        "â€": '"',
+        "â€”": "-",
+        "â€“": "-",
+        "Ч": "-",
+        "У": ")",
+        "С": "'",
+        "Â®": "",
+        "Â©": "",
+        "Â£": "",
+        "Â°": "",
+        "Â": "",
+    }
+    for bad, good in replacements.items():
+        cleaned = cleaned.replace(bad, good)
+    return normalize_whitespace(cleaned)
+
+
+def assess_ocr_quality(*, text: str, confidence: float | int | None, expected_context: str) -> dict[str, Any]:
+    cleaned = clean_ocr_text_for_llm(text)
+    word_count = len(cleaned.split())
+    if not cleaned:
+        quality = "missing"
+    else:
+        suspicious_markers = ["â", "Â", "�", "|||", "___", "222222", "PRAIA", "TRRTERINER", "Bocevive", "cara0es", "sehdboit"]
+        suspicious_count = sum(marker in text for marker in suspicious_markers)
+        alpha_chars = sum(ch.isalpha() for ch in cleaned)
+        total_chars = max(len(cleaned), 1)
+        alpha_ratio = alpha_chars / total_chars
+        known_words = sum(
+            1
+            for word in normalize_ocr_text(cleaned).split()
+            if word
+            in {
+                "memory",
+                "trend",
+                "ignition",
+                "gateway",
+                "service",
+                "services",
+                "optisweep",
+                "api",
+                "response",
+                "status",
+                "error",
+                "errors",
+                "agv",
+                "rms",
+                "system",
+                "restart",
+                "command",
+                "history",
+            }
+        )
+        low_confidence = confidence is not None and float(confidence) < (55 if expected_context == "artifact" else 60)
+        if suspicious_count >= 2 or (suspicious_count >= 1 and low_confidence) or (word_count >= 8 and alpha_ratio < 0.45):
+            quality = "garbled"
+        elif suspicious_count >= 1 or low_confidence or (word_count >= 8 and known_words == 0 and alpha_ratio < 0.62):
+            quality = "low"
+        else:
+            quality = "usable"
+    return {
+        "quality": quality,
+        "clean_text": cleaned,
+        "note": _ocr_quality_note(quality, expected_context),
+    }
+
+
+def _ocr_quality_note(quality: str, expected_context: str) -> str:
+    if quality == "missing":
+        return f"No {expected_context} OCR text was extracted."
+    if quality == "garbled":
+        return f"{expected_context.title()} OCR appears garbled; Stage 3 should rely primarily on the image and mark OCR uncertainty."
+    if quality == "low":
+        return f"{expected_context.title()} OCR may be unreliable; Stage 3 should verify visually."
+    return f"{expected_context.title()} OCR appears usable as supporting evidence."
+
+
+def _looks_like_teams_chat(text: str) -> bool:
+    chat_terms = ["reply", "called", "tech support", "hotline", "rdp", "rejoin", "add me", "am", "pm"]
+    names = ["zane", "jinhao", "kevin", "christopher", "darrell", "michael", "mitchel"]
+    return sum(term in text for term in chat_terms) >= 2 or sum(name in text for name in names) >= 2
+
+
+def _looks_like_salesforce_case(text: str) -> bool:
+    strong_terms = ["case created", "case updated", "salesforce", "account name", "case number", "case owner"]
+    weak_terms = ["priority", "subject", "description", "status"]
+    return any(term in text for term in strong_terms) and sum(term in text for term in strong_terms + weak_terms) >= 2

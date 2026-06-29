@@ -1,4 +1,6 @@
-"""Update generated README sections from project docs."""
+"""Update generated sections in the root README."""
+
+from __future__ import annotations
 
 from pathlib import Path
 from typing import Mapping
@@ -7,7 +9,7 @@ from typing import Mapping
 ROOT = Path(__file__).resolve().parents[1]
 README_PATH = ROOT / "README.md"
 AUTO_SECTIONS = {
-    "DEVELOPMENT_LOG": ROOT / "docs" / "development_log.md",
+    "DEVELOPMENT_STATUS": ROOT / "docs" / "development_status.md",
 }
 
 
@@ -32,7 +34,7 @@ def refresh_readme(
     readme_path: Path = README_PATH,
     auto_sections: Mapping[str, Path] = AUTO_SECTIONS,
 ) -> list[str]:
-    """Refresh auto-generated README sections from source docs."""
+    """Refresh generated README sections from source docs."""
     readme_text = readme_path.read_text(encoding="utf-8")
     refreshed: list[str] = []
 
@@ -46,7 +48,6 @@ def refresh_readme(
 
 
 def main() -> None:
-    """Refresh auto-generated README sections from source docs."""
     refreshed = refresh_readme()
     print("README.md updated: " + ", ".join(refreshed))
 

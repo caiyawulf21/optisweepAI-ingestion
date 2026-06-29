@@ -1,0 +1,693 @@
+<!--
+Incidence pipeline planning prompt.
+Defines the initial sibling pipeline plan and should keep stage numbers visible
+when it is reused to generate implementation tasks.
+-->
+
+You are working in the `optisweepAI-ingestion` repository.
+
+Goal:
+Inspect the current codebase and create an implementation plan for adding a new `incidenceknowledgeingestion` folder/pipeline as a sibling to the existing `operationalknowledgeingestion` folder.
+
+Current repo structure observed:
+
+```text
+optisweepAI-ingestion/
+  operationalknowledgeingestion/
+    cursorprompts/
+      manual_ingestion_prompts/
+        manual_ingestion_plan.md
+        stage1prompt.md
+        stage2prompt.md
+        stage3prompt.md
+        stage4prompt.md
+        stage5prompt.md
+        stage6prompt.md
+        video_training_prompt.md
+      directory_readme_prompt.md
+    data/
+      input/
+      output/
+        manual_optisweep_om_v3/
+        training_video_day1/
+        training_video_day1_ocr/
+          images/
+          segmentation_samples/
+          candidate_cuts.json
+          segmentation_contact_sheet.jpg
+          segmentation_quality_report.json
+          source_artifacts.json
+          training_video_ingestion_report.json
+          training_video_slide_segments.json
+      processed/
+      review/
+    docs/
+    scripts/
+    src/
+    tests/
+    pyproject.toml
+    README.md
+```
+
+PowerPoint/stakeholder context:
+The latest weekly update says the project now has two separate codebases:
+
+1. Optisweep ingestion pipeline
+2. Optisweep troubleshooting app
+
+The ingestion repo should contain two separate LangGraph pipelines:
+
+1. Operational Data pipeline
+2. Incidence Data pipeline
+
+The operational knowledge pipeline currently produces:
+
+* stable operational information chunks
+* enriched visual artifacts
+* runbooks
+
+Operational Knowledge Manual Ingestion Pipeline stages:
+
+```text
+Stage 1: Source bundle extraction
+  - Deterministic
+  - PyMuPDF
+
+Stage 2: Source artifact and image extraction
+  - Deterministic
+  - PyMuPDF
+
+Stage 3: Source artifact enrichment
+  - LLM assisted
+
+Stage 4: Operational context extraction
+  - LLM assisted
+
+Stage 5: Runbook candidate discovery
+  - LLM assisted
+
+Stage 6: Candidate pool generation
+  - Deterministic
+  - Prepares runbook candidates for cross-source review
+  - Sources include operational manual, training slides, and runbooks generated from incidence data
+
+Stage 7: Canonical runbook drafting and merging
+  - LLM assisted
+
+Stage 8: Relationship linking
+  - LLM assisted
+  - Final linking point after artifacts, screenshots, images, tables, operational context, candidates, and runbooks
+  - Future: link playbooks
+
+Stage 9: Validation and repair
+  - Potentially LLM assisted
+
+Stage 10: Final output writing
+  - Deterministic
+
+Stage 11: Vector embedding generation
+  - Deterministic
+
+Stage 12: LangGraph orchestration and Cosmos DB publishing
+  - Orchestrates the stage scripts as LangGraph nodes
+
+Stage 13: RAG retrieval in the OptiSweep AI troubleshooting app
+
+Future:
+  - Operational knowledge graph generation
+```
+
+Operational pipeline current inputs:
+
+```text
+Current:
+- PDFs
+- Slides as PDFs
+- Attached transcripts if applicable
+
+Future:
+- Source profiling
+- LLM decision for content type
+- OCR capability
+```
+
+Incident Data Ingestion Pipeline purpose:
+Convert incident evidence packages into structured operational knowledge that can be reused for:
+
+Initial v1 source shape:
+
+* PDFs containing screenshots of Salesforce case events
+* PDFs containing screenshots of Teams chats related to an incident
+* Optional RCA/support screenshots or documents
+
+Important:
+
+* In v1, do not assume native Salesforce exports or native Teams export JSON exists.
+* Treat PDF pages as source evidence containers, not automatically as source artifacts.
+* Every page should be inventoried for lineage, OCR, and review.
+* Only meaningful screenshots, cropped evidence regions, attached images, tables, or other reusable visual/support evidence should become `source_artifacts.json` records.
+* Section divider pages, blank pages, duplicated screenshots, low-information pages, or pages that only serve package organization should remain in the source package manifest/evidence inventory and should not be promoted to artifacts unless they contain incident evidence.
+* Preserve page-level lineage even when the page is not promoted to an artifact.
+
+The pipeline should convert Salesforce case screenshots, Teams chat screenshots, RCA documents, screenshots, and support artifacts into structured operational knowledge that can be reused for:
+
+* historical incident retrieval
+* troubleshooting assistance
+* runbook creation
+* playbook/workflow creation
+* knowledge graph relationships
+
+Incident Data Ingestion Pipeline high-level flow:
+
+```text
+Incident Sources
+(PDF screenshot packages: Salesforce case events, Teams chats, RCA/support evidence)
+        ->
+Source Package Inventory
+(page inventory, section dividers, evidence pages, lineage)
+        ->
+OCR & Evidence Artifact Extraction
+(render/OCR pages as needed; promote only meaningful evidence to artifacts)
+        ->
+Incident Normalization
+(new)
+        ->
+Operational Context Extraction
+(reuse existing pipeline where safe)
+        ->
+Runbook & Workflow Candidate Discovery
+(reuse existing pipeline where safe)
+        ->
+Shared Candidate Pool
+        ->
+Cross-Source Merging, Deduplication, Synthesis
+        ->
+Canonical Runbooks & Canonical Workflows/Playbooks
+(Markdown for review + JSON for storage/runtime)
+        ->
+Relationship Linking
+        ->
+Validated Knowledge Assets
+        ->
+Embedding Records
+        ->
+Cosmos DB / Vector Search / App Retrieval
+```
+
+Important stakeholder framing:
+
+```text
+Manuals tell us:
+"What should be done."
+
+Incidents tell us:
+"What was actually done."
+
+Combining both creates:
+Reusable Runbooks + Validated Troubleshooting Playbooks + Historical Evidence
+```
+
+PMO demo direction:
+The team suggested shifting incidence data toward issues that happen more frequently with a new site or new customer.
+
+Examples:
+
+* re-enter a tote into the system
+* AGV/tote state mismatch
+* ghost tote
+* tote record mismatch
+* AGV remove/re-add
+* hospital station recovery flows
+
+Architecture rules:
+
+* Create a separate `incidenceknowledgeingestion` folder.
+* Do not modify or destabilize `operationalknowledgeingestion`.
+* Do not reuse old runtime/troubleshooting app code.
+* Reuse existing extraction, artifact, context, runbook candidate, validation, and candidate pool logic only where clean and low-risk.
+* Incident-specific logic must live in the new incidence folder.
+* Incident runbook candidates must feed the same shared candidate pool used by operational/manual/training candidates.
+* Incident workflow/playbook candidates should also be produced, but they are not approved canonical playbooks yet.
+* Final runbooks must come from the finalized canonical runbook library after shared candidate pooling, cross-source merging, deduplication, synthesis, validation, and SME review.
+* Incident-derived candidates may enrich canonical runbooks with observed failure modes, recovery details, validation checks, screenshots, logs, and escalation notes, but should not bypass the shared pool or create a separate final runbook library.
+* Final workflows/playbooks must likewise be synthesized from workflow/playbook candidates after review. They should use finalized canonical runbooks as reusable action/procedure blocks rather than duplicating runbook steps.
+* Draft workflow/playbook candidates must not contain detailed runbook instructions inside their nodes. Nodes should contain placeholders, short intent text, or "what this runbook/procedure should accomplish" descriptions so finalized runbooks can be pulled into playbooks later.
+* Both canonical runbooks and canonical workflows/playbooks should produce human-reviewable Markdown files plus matching structured JSON records.
+* Markdown files are for SME/product review and operational readability.
+* JSON records are for validation, embeddings, Cosmos DB publishing, graph relationships, and runtime use in the troubleshooting app.
+* Reviewed/approved runbooks, workflows/playbooks, operational context, source artifacts, and incident evidence records should be embedded and pushed to Cosmos DB/vector search only after validation gates pass.
+* Preserve source lineage everywhere.
+* Do not overwrite manual/operational outputs.
+* Do not invent commands, service names, screenshots, access paths, SQL, API endpoints, or root causes.
+* Separate observed signals from inferred causes.
+* Validation status should default to `needs_sme_review`.
+* Raw Salesforce, Teams, RCA, and screenshot data should not become final truth automatically.
+* Everything incident-derived should be candidate/review-gated.
+
+Operational pipeline reuse guidance:
+
+* Reuse structure from the existing `operationalknowledgeingestion` pipeline wherever it is clean and low-risk.
+* Prefer reusing or adapting established patterns for:
+  * source lineage and source refs
+  * deterministic JSON reading/writing
+  * stable ID generation
+  * artifact records and image refs
+  * operational context extraction packets
+  * runbook candidate schema shape
+  * shared candidate pool format and clustering
+  * Stage 7 canonical runbook Markdown + JSON output pattern
+  * relationship linking reports
+  * validation/repair reports
+  * embedding record shape
+  * final publishing reports
+* Do not copy manual-specific assumptions such as manual sections, figure numbers, heartbeat priority checks, manual-only source types, or manual figure artifact types into the incidence pipeline.
+* Incident-specific logic should wrap or adapt shared operational utilities rather than modifying operational behavior in place.
+* If a shared utility would require risky operational changes, copy/adapt the pattern into `incidenceknowledgeingestion` first and record the future refactor opportunity.
+
+Incident data structure prompt sources:
+
+* Existing incident database/data-structure prompts live under `cursorprompts/incidence_ingestion_prompts/datastructureprompts/`.
+* Use these files as source guidance for incident database schemas and extraction prompts:
+  * `Canonical Incident Record Example.md`
+  * `Timeline Events.md`
+* Treat these prompt files as examples and contract guidance, not as source truth for every incident.
+* The implementation plan should inspect these prompt files and map their fields/rules into the new incidence schemas, validators, stage prompts, smoke tests, and database/Cosmos publishing records.
+
+Important update: do not rely only on normalized Phase 0 case summaries.
+
+For incident-derived runbooks, the agent must ingest the original source case document directly when available, especially for Case 228086.
+
+Reason:
+The normalized CAT-1 dataset may compress detailed engineer actions into high-level summaries such as "Restart OptiSweep Windows service." That is not enough for reusable runbook generation.
+
+The incident pipeline must preserve procedural fidelity from the original source.
+
+For Case 228086 and similar cases, extract:
+
+* exact engineer actions
+* Windows service restart steps
+* service names if explicitly present
+* VPN/RDP/remote access steps if explicitly present
+* RMS navigation and AGV correction steps
+* Ignition or web application recovery steps
+* screenshots or attachment references
+* validation checks
+* log collection steps
+* escalation notes
+* unresolved follow-up items, such as infrastructure/log sizing
+
+Do not invent missing service names, hostnames, commands, URLs, RMS screens, Ignition screens, or access paths.
+
+If the source only says "restart the service," preserve it as a source-grounded action and record missing details in the extraction report.
+
+Use this flow for original case documents:
+
+```text
+Original Case Source Document
+        ->
+incident source artifact extraction
+        ->
+canonical incident record
+        ->
+timeline events
+        ->
+raw evidence chunks
+        ->
+procedure/runbook candidates
+        ->
+playbook/workflow candidates
+        ->
+escalation summary template
+        ->
+candidate pool
+```
+
+Case 228086 should be treated as a gold-standard test case for proving that the incident ingestion pipeline can extract detailed recovery procedures from original case evidence, not just summarized CAT-1 records.
+
+Final shared synthesis and publishing rules:
+
+```text
+Incident extraction produces source-specific evidence and candidates.
+
+Shared candidate pooling combines:
+- operational/manual candidates
+- training slide candidates
+- training transcript candidates
+- incident-derived candidates
+- SOP candidates
+- SME-authored candidates
+
+Canonical runbook synthesis consumes the finalized candidate pool after merge/dedupe/synthesis.
+
+Canonical workflow/playbook synthesis consumes reviewed workflow/playbook candidates and should reference finalized canonical runbooks as procedure blocks.
+
+Human review outputs:
+- review_markdown/runbooks/*.md
+- review_markdown/workflows/*.md
+
+Structured runtime outputs:
+- canonical_runbooks.json
+- canonical_workflows.json
+- relationship_links.json
+- embedding_records.json
+- cosmos_publish_report.json
+
+Only validated/reviewable records should be embedded and published to Cosmos/vector search for app use.
+```
+
+Recommended new folder structure:
+
+```text
+incidenceknowledgeingestion/
+  cursorprompts/
+    incidence_ingestion_prompts/
+      incidence_ingestion_plan.md
+      datastructureprompts/
+        Canonical Incident Record Example.md
+        Timeline Events.md
+      stage1_incident_source_package_prompt.md
+      stage2_incident_artifact_extraction_prompt.md
+      stage3_incident_normalization_prompt.md
+      stage4_incident_timeline_extraction_prompt.md
+      stage5_incident_operational_context_prompt.md
+      stage6_incident_runbook_candidate_prompt.md
+      stage7_incident_playbook_candidate_prompt.md
+      stage8_incident_candidate_pool_prompt.md
+      stage9_incident_validation_prompt.md
+      stage10_incident_final_output_prompt.md
+      stage11_cross_source_runbook_synthesis_prompt.md
+      stage12_workflow_synthesis_prompt.md
+      stage13_relationship_linking_prompt.md
+      stage14_embedding_generation_prompt.md
+      stage15_cosmos_publishing_prompt.md
+
+  data/
+    input/
+      incidents/
+    processed/
+    output/
+      review_markdown/
+    review/
+
+  docs/
+  scripts/
+    extract_incident_knowledge.py
+
+  src/
+    incidenceknowledgeingestion/
+      stages/
+        stage1_source_package.py
+        stage2_artifact_extraction.py
+        stage3_incident_normalization.py
+        stage4_timeline_extraction.py
+        stage5_operational_context.py
+        stage6_runbook_candidates.py
+        stage7_playbook_candidates.py
+        stage8_candidate_pool_contribution.py
+        stage9_validation.py
+        stage10_final_output.py
+        stage11_cross_source_runbook_synthesis.py
+        stage12_workflow_synthesis.py
+        stage13_relationship_linking.py
+        stage14_embedding_generation.py
+        stage15_cosmos_publishing.py
+      schemas/
+        incident_source_package_schema.py
+        canonical_incident_schema.py
+        incident_timeline_schema.py
+        incident_artifact_schema.py
+        incident_runbook_candidate_schema.py
+        incident_playbook_candidate_schema.py
+        candidate_pool_contribution_schema.py
+        canonical_runbook_review_schema.py
+        canonical_workflow_schema.py
+        markdown_review_artifact_schema.py
+        embedding_record_schema.py
+        cosmos_publish_report_schema.py
+        incident_extraction_report_schema.py
+      prompts/
+      validators/
+
+  tests/
+```
+
+Recommended CLI:
+
+```bash
+python incidenceknowledgeingestion/scripts/extract_incident_knowledge.py \
+  --source-dir incidenceknowledgeingestion/data/input/incidents/<incident_package> \
+  --output-dir incidenceknowledgeingestion/data/output/<incident_id> \
+  --llm
+```
+
+Recommended output files:
+
+```text
+source_artifacts.json
+canonical_incident_record.json
+timeline_events.json
+operational_context.json
+runbook_candidates.json
+playbook_candidates.json
+candidate_pool_contribution.json
+canonical_runbooks.json
+canonical_workflows.json
+review_markdown/runbooks/*.md
+review_markdown/workflows/*.md
+relationship_links.json
+embedding_records.json
+cosmos_publish_report.json
+extraction_report.json
+```
+
+Recommended incident pipeline stages:
+
+```text
+Stage 1: Incident source package loading
+- Load PDF screenshot packages and any optional RCA docs, screenshots, logs, and attachments.
+- Produce a source package manifest and page/evidence inventory.
+- Identify package sections such as Teams Chat Data and Salesforce Case Data when present.
+- Classify pages as section_divider, evidence_page, blank_or_low_information, duplicate, or unknown.
+- Preserve source IDs, file paths, source type, page numbers, timestamps when visible, and source refs.
+- Do not create source artifacts just because a page exists.
+
+Stage 2: OCR and artifact extraction
+- Reuse operational extraction where safe.
+- Render and OCR pages as needed.
+- Extract meaningful screenshots, cropped evidence regions, images, tables, logs, and attachment metadata.
+- Promote a page/image to an artifact only when it contains reusable incident evidence, such as a Salesforce case event, Teams chat exchange, RCA finding, error screenshot, system state screenshot, or support diagnostic evidence.
+- Keep non-promoted pages in the source package/page inventory with OCR text and skip reasons.
+- Output source_artifacts.json.
+- Do not link artifacts to runbooks/playbooks yet.
+
+Stage 3: Incident normalization
+- Create canonical incident record.
+- Capture symptoms, issue category candidate, component, site, severity, operational impact, observed signals, inferred causes, confirmed root cause if available, resolution, escalation, and validation status.
+- Separate observed signals from inferred causes.
+
+Stage 4: Timeline event extraction
+- Extract what happened in order.
+- Include reports, checks, actions taken, outcomes, escalations, log collection, and closure.
+- This stage is critical because incidents show what was actually done.
+- If the source contains detailed step-by-step recovery actions, do not collapse them into one generic summary event.
+- Preserve each meaningful human action as a separate timeline event with source refs.
+
+Stage 5: Operational context extraction
+- Reuse/adapt operational context logic.
+- Extract useful definitions, system behavior, screen meanings, alarm meanings, and operational facts discovered in the incident.
+
+Stage 6: Runbook candidate discovery
+- Extract reusable human procedures from the incident.
+- Preserve detailed source-grounded procedure steps when original case evidence provides them.
+- If an action is reusable but missing exact details, keep the source-grounded action and record missing details in the extraction report.
+- Only create candidates.
+- Do not create canonical runbooks here.
+- Examples: remove/re-add AGV, re-enter tote, check RMS state, clear stuck tote task, collect screenshots.
+
+Stage 7: Playbook/workflow candidate discovery
+- Extract possible troubleshooting flows from incident timelines.
+- These are workflow/playbook candidates only.
+- They require SME review before becoming canonical playbooks.
+- Keep draft workflow/playbook nodes lightweight. A node may name the desired procedure, describe the goal it should accomplish, or hold a placeholder for a future canonical runbook reference.
+- Do not place detailed runbook steps, commands, screen paths, or recovery instructions inside playbook/workflow nodes. Put reusable procedure details in Stage 6 runbook candidates instead.
+- Use node text such as "collect evidence needed to determine AGV state", "runbook placeholder: correct affected AGV state in RMS", or "verify that normal operation resumed" rather than full procedural instructions.
+
+Stage 8: Candidate pool contribution
+- Export incident-derived runbook candidates and playbook candidates into the shared candidate pool format.
+- Preserve incident source lineage.
+- Do not produce final runbooks or final workflows here.
+- The shared pool must support cross-source candidates from manuals, training slides, transcripts, incident records, SOPs, and SME-authored documentation.
+
+Stage 9: Validation and quality report
+- Check schema validity.
+- Check missing source refs.
+- Check invented values.
+- Check whether observed signals and inferred causes were mixed.
+- Check candidate quality.
+- Check procedural fidelity: if an incident source contains detailed step-by-step recovery actions, the output must not collapse them into one generic summary step. Preserve each meaningful human action as a timeline event and, where reusable, as a runbook candidate step.
+
+Stage 10: Final output writing
+- Deterministic output writer.
+- Write source-specific incident JSON files and extraction report.
+- This is the final output for incident source extraction, not the final canonical runbook/workflow library.
+
+Stage 11: Cross-source canonical runbook synthesis
+- Consume the finalized shared candidate pool after pooling, merging, deduplication, and synthesis across operational knowledge and incident data.
+- Create or update canonical runbooks from focused candidate packets, not from a single incident in isolation.
+- Incident-derived evidence may enrich existing canonical runbooks with observed recovery steps, failure modes, validation checks, screenshots, logs, and escalation notes.
+- Do not let incident data override official manual/SOP/SME-approved steps unless higher-priority evidence supports the change.
+- Produce both human-reviewable Markdown runbooks and matching structured JSON runbooks.
+- Markdown is the canonical authored artifact for SME/product review.
+- JSON is the storage/runtime artifact for validation, embeddings, Cosmos DB, graph relationships, and the troubleshooting app.
+
+Stage 12: Canonical workflow/playbook synthesis
+- Consume workflow/playbook candidates after review-oriented pooling, merging, deduplication, and synthesis.
+- Produce canonical workflow/playbook records only after review gates.
+- Workflows/playbooks should orchestrate finalized canonical runbooks as reusable procedure blocks where possible.
+- Do not duplicate long runbook steps inside workflows when a canonical runbook can be referenced.
+- Workflow/playbook nodes should remain orchestration nodes. They may reference canonical runbook IDs when available, or retain concise placeholders describing what the missing runbook should accomplish until the runbook library supplies the reusable procedure.
+- Produce both human-reviewable Markdown workflows/playbooks and matching structured JSON workflow/playbook records.
+- Preserve incident lineage and cite evidence for decisions, branches, escalation paths, and unresolved follow-up items.
+
+Stage 13: Relationship linking
+- Link source artifacts, canonical incident records, timeline events, operational context, runbook candidates, playbook candidates, canonical runbooks, and canonical workflows/playbooks.
+- Populate linked IDs only after canonical records exist.
+- Preserve source refs and confidence/review status for inferred links.
+
+Stage 14: Embedding generation
+- Generate embedding records for validated/reviewable retrieval units.
+- Include canonical runbooks, canonical workflows/playbooks, operational context, source artifacts, incident timelines, escalation summaries, and approved/reviewable evidence chunks as appropriate.
+- Embed the best retrieval text, not every raw source field.
+- Preserve source record type, source record ID, source refs, validation status, model metadata, and filter metadata.
+
+Stage 15: Cosmos DB and vector publishing
+- Publish only validated/reviewable records that passed quality gates.
+- Publish structured JSON records, embeddings, and relationship/graph records needed by the troubleshooting app.
+- Do not publish raw incident screenshots or unreviewed sensitive evidence as final truth.
+- Write a publishing report with created/updated/skipped records, validation blockers, unresolved refs, and records requiring SME review.
+```
+
+Core schemas needed:
+
+```text
+CanonicalIncidentRecord
+IncidentTimelineEvent
+IncidentSourceArtifact
+IncidentRunbookCandidate
+IncidentPlaybookCandidate
+CandidatePoolContribution
+CanonicalRunbookReviewArtifact
+CanonicalWorkflow
+MarkdownReviewArtifact
+EmbeddingRecord
+CosmosPublishReport
+IncidentExtractionReport
+```
+
+Canonical incident record should include:
+
+```text
+incident_id
+source_systems
+source_refs
+site
+customer
+case_id
+incident_date
+severity
+operational_impact
+issue_category_candidate
+component_candidates
+symptom_summary
+observed_signals
+inferred_causes
+confirmed_root_cause
+resolution_summary
+resolution_steps_observed
+failed_steps
+successful_steps
+escalated
+escalation_domains
+roles_involved
+support_tiers_involved
+source_artifacts
+related_timeline_events
+runbook_candidate_ids
+playbook_candidate_ids
+confidence_score
+validation_status
+retrieval_text
+```
+
+Timeline event should include:
+
+```text
+event_id
+incident_id
+event_order
+timestamp
+event_type
+actor_name
+actor_role
+event_summary
+observed_signals
+action_taken
+outcome
+next_action
+source_refs
+artifact_ids
+```
+
+Playbook candidate should include:
+
+```text
+playbook_candidate_id
+title
+incident_ids
+issue_category_candidate
+entry_symptoms
+observed_signals
+diagnostic_sequence_as_node_goals_or_placeholders
+decision_points
+action_nodes_as_runbook_placeholders
+successful_resolution_path
+failed_paths
+escalation_points
+required_roles
+support_safe_boundaries
+evidence_refs
+artifact_refs
+validation_status
+```
+
+Playbook/workflow node wording rule:
+
+```text
+Nodes should describe what needs to be accomplished, not how to perform the runbook.
+Use placeholders or concise intent text until a canonical runbook can be linked.
+Do not duplicate runbook steps inside playbook/workflow nodes.
+```
+
+Deliverables from this inspection task:
+
+1. Map the current operational pipeline codebase.
+2. Identify reusable modules/scripts/prompts.
+3. Inspect `cursorprompts/incidence_ingestion_prompts/datastructureprompts/` and map those prompt examples into schemas, validators, stage prompts, tests, and database/Cosmos records.
+4. Identify manual-specific assumptions that should not leak into incidence ingestion.
+5. Recommend whether to refactor shared utilities now or copy/adapt first to avoid breaking operational work.
+6. Propose the exact new `incidenceknowledgeingestion` folder/file structure.
+7. Define the incident pipeline stage order.
+8. Define schemas needed.
+9. Define prompts needed.
+10. Define CLI entry point.
+11. Define smoke tests.
+12. Identify code drift risks.
+13. Define how incident-derived runbook candidates feed the shared candidate pool and finalized canonical runbook synthesis.
+14. Define how workflow/playbook candidates become reviewed canonical workflows/playbooks that reference finalized canonical runbooks.
+15. Define Markdown review outputs for canonical runbooks and workflows/playbooks.
+16. Define embedding records and retrieval text strategy for runbooks, workflows, incidents, timelines, context, and artifacts.
+17. Define Cosmos DB/vector publishing outputs, quality gates, and publishing reports.
+18. Provide a step-by-step implementation order.
+
+Do not implement yet.
+First inspect the repository and return a concrete implementation plan.
