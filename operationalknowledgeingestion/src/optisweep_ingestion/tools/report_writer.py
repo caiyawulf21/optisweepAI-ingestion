@@ -17,10 +17,17 @@ def write_source_extraction_report(
     warnings: list[str] | None = None,
 ) -> dict[str, Any]:
     output_path = Path(output_dir)
-    bundle = read_json(_first_existing(output_path, "1", "source_bundle.json"))
+    bundle = read_json(
+        _first_existing_path(
+            output_path,
+            [("1", "source_bundle.json"), ("2", "source_bundle.json")],
+        )
+    )
     lineage = lineage_from_bundle(bundle)
 
     artifacts = _read_list(_first_existing(output_path, "3", "source_artifacts_enriched.json", required=False))
+    if not artifacts:
+        artifacts = _read_list(_first_existing(output_path, "2", "source_artifacts_enriched.json", required=False))
     if not artifacts:
         artifacts = _read_list(_first_existing(output_path, "2", "source_artifacts.json", required=False))
     contexts = _read_list(_first_existing(output_path, "4", "operational_context.json", required=False))
@@ -82,6 +89,18 @@ def _first_existing(output_path: Path, stage: str, filename: str, required: bool
     if required:
         raise FileNotFoundError(f"Missing {filename}. Checked: {', '.join(str(path) for path in candidates)}")
     return None
+
+
+def _first_existing_path(output_path: Path, stage_files: list[tuple[str, str]]) -> Path:
+    candidates = [
+        candidate
+        for stage, filename in stage_files
+        for candidate in (stage_dir(output_path, stage) / filename, output_path / filename)
+    ]
+    for path in candidates:
+        if path.exists():
+            return path
+    raise FileNotFoundError("Missing required file. Checked: " + ", ".join(str(path) for path in candidates))
 
 
 def _count_missing_lineage(records: list[dict[str, Any]], check) -> int:

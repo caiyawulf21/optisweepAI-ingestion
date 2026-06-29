@@ -24,7 +24,7 @@ app = typer.Typer(add_completion=False)
 
 def migrate_output_dir(output_dir: Path, source_id: str | None = None) -> dict[str, Any]:
     output_dir = output_dir.resolve()
-    bundle_path = _stage_file(output_dir, "1", "source_bundle.json")
+    bundle_path = _first_stage_file(output_dir, [("1", "source_bundle.json"), ("2", "source_bundle.json")])
     if not bundle_path.exists():
         raise FileNotFoundError(f"Missing source bundle: {bundle_path}")
 
@@ -134,6 +134,15 @@ def _stage_file(output_dir: Path, stage: str, filename: str) -> Path:
     if legacy.exists():
         return legacy
     return staged
+
+
+def _first_stage_file(output_dir: Path, stage_files: list[tuple[str, str]]) -> Path:
+    fallback = stage_dir(output_dir, stage_files[0][0]) / stage_files[0][1]
+    for stage, filename in stage_files:
+        candidate = _stage_file(output_dir, stage, filename)
+        if candidate.exists():
+            return candidate
+    return fallback
 
 
 def _migrate_artifact(record: dict[str, Any], lineage: dict[str, Any]) -> dict[str, Any]:
