@@ -11,6 +11,9 @@ shared_pipeline_stages/
     review/     reviewer-facing samples and validation outputs
   stage_6_5/    runbook pool, similarity, merge prep
   stage_prompts.py
+  scripts/
+    stage6_5_build_runbook_pool.py
+    update_readme.py
   tests/
 ```
 
@@ -44,7 +47,7 @@ stage_6_finalized_runbooks/finalized_runbooks/*.json
 From the repo root:
 
 ```powershell
-python scripts/stage6_5_build_runbook_pool.py `
+python shared_pipeline_stages/scripts/stage6_5_build_runbook_pool.py `
   --source-root operationalknowledgeingestion/data/output/manual_optisweep_om_v3 `
   --source-root operationalknowledgeingestion/data/output/training_video_day1 `
   --source-root incidenceknowledgeingestion/data/output/incidents/case_228086 `

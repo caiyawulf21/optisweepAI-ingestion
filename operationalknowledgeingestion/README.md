@@ -430,7 +430,7 @@ Per-source Stage 6.5 output under a single source directory is still supported w
 From the repo root:
 
 ```powershell
-python scripts/stage6_5_build_runbook_pool.py `
+python shared_pipeline_stages/scripts/stage6_5_build_runbook_pool.py `
   --source-root operationalknowledgeingestion/data/output/manual_optisweep_om_v3 `
   --source-root operationalknowledgeingestion/data/output/training_video_day1 `
   --output-dir shared_pipeline_stages/data/output/shared

@@ -124,7 +124,7 @@ When stage status changes:
 3. Run the relevant hook:
 
 ```bash
-python scripts/update_readme.py
+python shared_pipeline_stages/scripts/update_readme.py
 python incidenceknowledgeingestion/scripts/update_readme.py
 ```
 
@@ -173,6 +173,7 @@ operationalknowledgeingestion/
 
 shared_pipeline_stages/
   README.md                          shared stage code and review guide
+  scripts/                           shared stage entrypoints
   data/output/shared/                  cross-source shared stage outputs
   stage_6_5/
   tests/
@@ -186,10 +187,6 @@ sme_review_runbooks/
 
 stage_prompts/
   stage_6/                           shared Stage 6 LLM prompts
-
-scripts/
-  update_readme.py
-  stage6_5_build_runbook_pool.py
 ```
 
 ## Reviewing Data Outputs
@@ -240,7 +237,7 @@ incidenceknowledgeingestion/datastructureprompts/
 Run the root README update hook after meaningful stage changes:
 
 ```bash
-python scripts/update_readme.py
+python shared_pipeline_stages/scripts/update_readme.py
 ```
 
 The hook refreshes the marked development-status section from `docs/development_status.md` while preserving the rest of this README.

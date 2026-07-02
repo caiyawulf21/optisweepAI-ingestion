@@ -66,7 +66,7 @@ When stage status changes:
 3. Run the relevant hook:
 
 ```bash
-python scripts/update_readme.py
+python shared_pipeline_stages/scripts/update_readme.py
 python incidenceknowledgeingestion/scripts/update_readme.py
 ```
 
