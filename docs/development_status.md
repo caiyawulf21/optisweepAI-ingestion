@@ -12,13 +12,13 @@ Implemented today:
 - Stage 4: operational context extraction.
 - Stage 5: runbook candidate discovery.
 - Stage 6: source runbook finalization (LLM assisted).
-- Stage 6.5: legacy candidate pool generation (deterministic, pending refactor to finalized-runbook pool).
+- Stage 6.5: shared runbook pool generation over finalized runbooks.
 - Training video bundle generation and preparation for Stage 4 and Stage 5.
 
 Next milestones:
 
 - Run and review Stage 6 finalized runbooks against Runbook Example.md.
-- Shared Stage 6.5: refactor legacy candidate pool builder over finalized runbooks.
+- Shared Stage 6.5: runbook pool and merge preparation from finalized runbooks (`shared_pipeline_stages/`).
 - Shared Stage 7: selective cross-source runbook merge.
 - Stage 8+: relationship linking, validation, embeddings, and publishing.
 
@@ -41,7 +41,7 @@ Implemented today:
 Next milestones:
 
 - Run and review Stage 6 finalized runbooks for Case 228086.
-- Shared Stage 6.5: runbook pool and merge preparation from finalized runbooks.
+- Shared Stage 6.5: runbook pool and merge preparation from finalized runbooks (`shared_pipeline_stages/`).
 - Shared Stage 7: selective cross-source runbook merge.
 - Shared Stage 8: playbook linking and finalization.
 

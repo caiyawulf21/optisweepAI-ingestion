@@ -23,7 +23,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from shared.stage_prompts import (
+from shared_pipeline_stages.stage_prompts import (
     compose_stage6_system_prompt,
     load_prompt_file,
     resolve_stage6_operational_prompt_path,

@@ -5,13 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 import sys
 
-ROOT = Path(__file__).resolve().parents[1]
-PROJECT_PARENT = ROOT.parent
-REPO_ROOT = PROJECT_PARENT.parent
+REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
-if str(PROJECT_PARENT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_PARENT))
 
 import typer
 
@@ -36,7 +32,7 @@ def main(
     lexical_weight: float = typer.Option(0.3, "--lexical-weight"),
     opposing_action_penalty: float = typer.Option(0.5, "--opposing-action-penalty"),
     top_k: int = typer.Option(10, "--top-k"),
-    skip_embed: bool = typer.Option(False, "--skip-embed"),
+    skip_embed: bool = typer.Option(False, "--skip-embed", help="Use deterministic mock vectors for structural tests."),
     use_mock_embedder: bool = typer.Option(False, "--use-mock-embedder"),
 ) -> None:
     config = PoolBuildConfig(
@@ -49,10 +45,20 @@ def main(
         skip_embed=skip_embed,
         use_mock_embedder=use_mock_embedder,
     )
-    result = build_runbook_pool(source_roots=source_root, output_dir=output_dir, config=config)
+    result = build_runbook_pool(
+        source_roots=source_root,
+        output_dir=output_dir,
+        config=config,
+    )
     stage_dir = output_dir / "stage_6_5_runbook_pool"
     typer.echo(f"Runbook pool written:         {stage_dir / 'runbook_pool.json'}")
-    typer.echo(f"Merge clusters generated:     {result.merge_cluster_count}")
+    typer.echo(f"Retrieval cards written:      {stage_dir / 'retrieval_cards.json'}")
+    typer.echo(f"Retrieval index written:      {stage_dir / 'runbook_retrieval_index.json'}")
+    typer.echo(f"Merge clusters written:       {stage_dir / 'merge_clusters.json'}")
+    typer.echo(f"Pass-through runbooks written:{stage_dir / 'pass_through_runbooks.json'}")
+    typer.echo(f"Pool report written:          {stage_dir / 'runbook_pool_report.json'}")
+    typer.echo(f"Indexed runbooks:             {result.runbook_count}")
+    typer.echo(f"Merge clusters:               {result.merge_cluster_count}")
     typer.echo(f"Pass-through runbooks:        {result.pass_through_count}")
 
 

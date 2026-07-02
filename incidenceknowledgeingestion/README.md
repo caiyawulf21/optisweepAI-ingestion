@@ -9,7 +9,7 @@ Its purpose is to convert source-grounded incident packages into reviewable know
 <!-- AUTO:DEVELOPMENT_STATUS_START -->
 This section is generated from `incidenceknowledgeingestion/docs/development_status.md`. Update that file whenever an incident-ingestion stage moves from planned to implemented, changes scope, or gains new review outputs.
 
-Current position: Case 228086 is the proof case. Stages 1, 2, and 2.5 are implemented as deterministic local scripts. Stage 3 is the required LLM artifact enrichment step. Stage 4 prompts and CLI wiring are implemented for LLM-backed canonical incident record and timeline extraction. Stage 5 runbook candidate discovery is implemented and consumes Stage 4 outputs.
+Current position: Case 228086 is the proof case. Stages 1, 2, and 2.5 are implemented as deterministic local scripts. Stage 3 is the required LLM artifact enrichment step. Stage 4 prompts and CLI wiring are implemented for LLM-backed canonical incident record and timeline extraction. Stage 5 runbook and playbook candidate discovery is implemented and consumes Stage 4 outputs.
 
 ## Implemented Content
 
@@ -28,11 +28,12 @@ src/optisweep_incidence_ingestion/
   stage2_ocr_artifacts.py - Stage 2 OCR and evidence artifact extraction
   stage3_artifact_enrichment.py - Stage 3 LLM artifact enrichment
   stage4_canonical_incident_record.py - Stage 4 LLM canonical incident and timeline extraction
-  stage5_runbook_candidates.py - Stage 5 LLM incident runbook candidate discovery
+  stage5_runbook_candidates.py - Stage 5 LLM incident runbook and playbook candidate discovery
   prompts/stage3_artifact_enrichment_prompt.md - Stage 3 artifact enrichment prompt
   prompts/stage4_canonical_incident_record_prompt.md - Stage 4 canonical incident record prompt
   prompts/stage4_timeline_events_prompt.md - Stage 4 timeline event prompt
-  prompts/stage5_runbook_candidate_discovery_prompt.md - Stage 5 candidate prompt
+  prompts/stage5_runbook_candidate_discovery_prompt.md - Stage 5 runbook candidate prompt
+  prompts/stage5_playbook_candidate_discovery_prompt.md - Stage 5 playbook candidate prompt
 ```
 
 These files are prompt/schema examples, deterministic extraction code, and local proof outputs for Case 228086. They are contract guidance and extraction scaffolding, not source truth for every future incident.
@@ -46,11 +47,11 @@ These files are prompt/schema examples, deterministic extraction code, and local
 | Stage 2.5 | Artifact enrichment packet preparation | Implemented |
 | Stage 3 | Incident artifact enrichment | Ready for LLM run |
 | Stage 4 | Create canonical incident records and timeline | Implemented |
-| Stage 5 | Incident runbook candidate discovery | Implemented |
-| Stage 6 | Draft incident-derived workflow/playbook discovery | Planned |
-| Stage 7 | Candidate pool contribution | Planned |
-| Stage 8 | Source-specific validation and extraction report | Planned |
-| Stage 9 | Source-specific final output writing | Planned |
+| Stage 5 | Incident runbook and playbook candidate discovery | Implemented |
+| Stage 6 | Candidate pool contribution | Planned |
+| Stage 7 | Source-specific validation and extraction report | Planned |
+| Stage 8 | Source-specific final output writing | Planned |
+| Stage 9 | Reserved for source-specific handoff packaging | Planned |
 | Shared Stage 11 | Cross-source canonical runbook synthesis | Shared planned |
 | Shared Stage 12 | Canonical workflow/playbook synthesis | Shared planned |
 | Shared Stage 13 | Relationship linking | Shared planned |
@@ -68,8 +69,6 @@ Full-page renders and chat-wrapper screenshots stay in page/page OCR context and
 After Stage 2, `incident_source_package.json` also contains `source_bundle`, which is the compact handoff object for later stages. Stage 2.5 and later should read `incident_source_package.json.source_bundle` first and only open detailed files when deeper audit context is needed.
 
 Stage 2.5 builds `artifact_enrichment_packets.json` by joining clean artifact images/OCR with page-level OCR context. It does not enrich artifacts or turn OCR into English. Stage 3 reads those packets and requires `--llm`; fake enrichment is not supported. Stage 4 reads page OCR and Stage 3 enriched artifacts, builds compact `stage4_evidence_chunks.json`, then uses separate prompts to create the concise canonical incident record and detailed timeline events.
-
-Stage 5 reads the Stage 4 incident package, canonical incident record, timeline events, `stage4_evidence_chunks.json`, and Stage 3 enriched artifacts. It builds `stage5_runbook_candidate_packet.json`, calls the Stage 5 runbook candidate prompt, normalizes returned candidates, validates page/artifact/event/chunk references, drops invalid candidates, and writes reviewable candidate outputs. Stage 5 creates runbook candidates only: reusable procedure blocks a person can follow. It does not create canonical runbooks, playbooks, workflows, trigger conditions, routing logic, issue categories, decision trees, or ML labels. Image-supported steps must include inline `[Image support needed: ...]` notes that correspond to related artifact IDs. Generic post-processing folds API/endpoint/status-response validation diagnostics into the associated recovery runbook candidate when appropriate, instead of leaving validation as a standalone runbook. All incident-derived candidates remain `needs_review` and must flow through later shared candidate-pool and canonical runbook stages before production use.
 
 ## Current Proof Output
 
@@ -101,12 +100,6 @@ data/output/incidents/case_228086/
     timeline_events.json
     timeline_event_extraction_report.json
     incident_source_package.json
-  stage_5_runbook_candidates/
-    stage5_runbook_candidate_packet.json
-    runbook_candidates.json
-    runbook_candidate_extraction_report.json
-    runbook_candidate_review.md
-    incident_source_package.json
 ```
 
 ## Run Current Implemented Stages
@@ -122,6 +115,17 @@ python incidenceknowledgeingestion\scripts\extract_incident_knowledge.py `
   --tesseract-command "$env:LOCALAPPDATA\Programs\Tesseract-OCR\tesseract.exe" `
   --copy-source
 ```
+
+Stage 5 runs three Azure OpenAI calls in the same stage: one for
+incident-derived runbook candidates and two for incident-derived playbook
+candidate extraction modes. Runbook discovery may return zero candidates when
+the incident evidence does not support a reusable procedure. Playbook Prompt A
+forces one incident to one playbook candidate. Playbook Prompt B produces one
+or more candidates, but creates multiple only when separable troubleshooting
+flows are clearly present. Playbook discovery describes incident response logic and
+needed runbook capabilities without binding nodes to canonical runbook IDs. All
+candidates are needs-review source-specific discoveries, not finalized
+canonical runbooks or playbooks.
 
 Stage 2 defaults to `--stage2-artifact-gate qwen` and resolves the cached local `Qwen/Qwen2.5-VL-3B-Instruct` snapshot when present. To bypass Qwen for a faster deterministic-only run, add:
 
@@ -153,31 +157,50 @@ python incidenceknowledgeingestion\scripts\extract_incident_knowledge.py `
   --llm
 ```
 
-Run Stage 5 after Stage 4 completes:
-
-```powershell
-python incidenceknowledgeingestion\scripts\extract_incident_knowledge.py `
-  --source-pdf "incidenceknowledgeingestion\data\input\incidents\Case 228086 Data.pdf" `
-  --case-id 228086 `
-  --output-dir incidenceknowledgeingestion\data\output\incidents\case_228086 `
-  --stages 5 `
-  --llm
-```
-
-Stage 5 outputs:
-
-- `stage_5_runbook_candidates/stage5_runbook_candidate_packet.json`
-- `stage_5_runbook_candidates/runbook_candidates.json`
-- `stage_5_runbook_candidates/runbook_candidate_extraction_report.json`
-- `stage_5_runbook_candidates/runbook_candidate_review.md`
-- `stage_5_runbook_candidates/incident_source_package.json`
-
 Use `--include-detected-crops` only when a PDF does not expose useful embedded images and OpenCV fallback crops are needed. The default keeps artifact images focused on the actual embedded screenshots/photos and avoids surrounding document or chat text in the image file.
 
 ## Next Development Target
 
-Stage 5 should be reviewed for Case 228086 and Case 228723. The first quality gate is whether each candidate is source-grounded, preserves valid page/artifact/event refs, remains a `needs_review` candidate, and reads like a runbook procedure rather than a playbook, workflow, passive evidence card, or canonical runbook.
+Stage 4 should be run and reviewed for Case 228086. The first quality gate is whether it preserves source refs, handles Haslet/Alliance location ambiguity, keeps exact downtime warnings when needed, and avoids promoting restart guidance or case comments into canonical root cause.
 <!-- AUTO:DEVELOPMENT_STATUS_END -->
+
+## Reviewing Data Outputs
+
+Incident outputs live under `data/output/incidents/<case_id>/`. Review locally before treating records as production-ready.
+
+**Standard review order for any stage**
+
+1. Open the stage report first (`stage1_source_package_report.json`, `artifact_extraction_report.json`, `artifact_enrichment_report.json`, `canonical_incident_record_extraction_report.json`, `runbook_candidate_extraction_report.json`, `runbook_finalization_report.json`).
+2. Check dropped records, warnings, OCR failures, and invalid refs.
+3. Open the primary stage JSON for spot checks.
+4. Trace sample records back to pages, artifacts, timeline events, or images under `stage_2_ocr_artifacts/images/`.
+5. Confirm review metadata still shows `needs_sme_review` unless explicitly approved.
+
+**Stage-specific checks**
+
+| Stage | Start here | What to verify |
+| --- | --- | --- |
+| 1 | `stage_1_source_package/stage1_source_package_report.json` | Page inventory, source metadata, raw source copy |
+| 2 | `stage_2_ocr_artifacts/artifact_extraction_report.json` | Artifact count, duplicate groups, OCR quality |
+| 2.5 | `stage_2_5_artifact_enrichment_packets/artifact_enrichment_packet_report.json` | Packet count, image/OCR joins |
+| 3 | `stage_3_artifact_enrichment/artifact_enrichment_report.json` | Enrichment failures, source refs preserved |
+| 4 | `stage_4_canonical_incident_record/canonical_incident_record_extraction_report.json` | Incident summary grounding, timeline coverage |
+| 5 | `stage_5_runbook_candidates/runbook_candidate_extraction_report.json` and `runbook_candidate_review.md` | Candidate quality, invalid refs, procedure vs playbook shape |
+| 6 | `stage_6_finalized_runbooks/runbook_finalization_report.json` | Finalized runbook count, step grounding, validation status |
+
+**Markdown review files**
+
+- `stage_5_runbook_candidates/runbook_candidate_review.md` is the fastest SME review surface for Stage 5 candidates.
+- Compare markdown review notes against `runbook_candidates.json` before Stage 6 finalization.
+
+**Images and evidence**
+
+- Open linked images in `stage_2_ocr_artifacts/images/` when validating artifact refs.
+- Use `stage_4_canonical_incident_record/stage4_evidence_chunks.json` to confirm Stage 4/5 evidence grounding.
+
+**Shared stages**
+
+Cross-source Stage 6.5+ outputs and review instructions live in `../shared_pipeline_stages/README.md`.
 
 ## Source Shape
 
@@ -250,7 +273,7 @@ The incidence pipeline should reuse structure from `operationalknowledgeingestio
 - artifact records and image refs
 - operational context extraction packet patterns
 - runbook candidate schema shape
-- shared candidate pool format and clustering
+- shared candidate pool format and clustering in `shared_pipeline_stages/`
 - canonical runbook Markdown + JSON review pattern
 - relationship linking and validation report patterns
 - embedding and publishing report patterns

@@ -1,4 +1,4 @@
-from shared.stage_prompts import (
+from shared_pipeline_stages.stage_prompts import (
     STAGE_6_STRUCTURE_REFERENCE,
     compose_stage6_system_prompt,
     load_stage6_structure_reference,

@@ -8,7 +8,7 @@ from optisweep_ingestion.stage6_runbook_finalization import (
     write_runbook_review_markdown,
     _procedure_id_from_candidate,
 )
-from shared.stage_prompts import compose_stage6_system_prompt
+from shared_pipeline_stages.stage_prompts import compose_stage6_system_prompt
 
 
 class _Lineage:

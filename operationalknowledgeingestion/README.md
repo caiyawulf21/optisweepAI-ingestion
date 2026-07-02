@@ -392,37 +392,63 @@ Stage 6 requires `--llm`.
 
 ## Stage 6.5: Shared Runbook Pool Generation
 
-Stage 6.5 combines one or more runbook candidate files into a shared runbook pool.
+Stage 6.5 is implemented in `shared_pipeline_stages/stage_6_5/` and combines Stage 6 finalized runbooks from one or more source output roots into a shared runbook pool.
 
 **Purpose**
 
-Prepare candidates for cross-source review by grouping and summarizing discovered procedure opportunities. This matters once OptiSweep knowledge comes from more than one manual, slide deck, support note, or product source.
+Index finalized runbooks for retrieval, score cross-source similarity, and prepare merge clusters for Shared Stage 7. This stage runs after source-specific Stage 6 finalization across operational and incident sources.
 
 **Inputs**
 
+Each source root must contain:
+
 ```text
-data/output/manual_optisweep_om_v3/stage_5_runbook_candidates/runbook_candidates.json
+<output-dir>/stage_6_finalized_runbooks/finalized_runbooks/*.json
 ```
 
-The `--candidates` option can be repeated for multiple sources.
+Repeat `--source-root` for each operational or incident output directory.
 
 **Outputs**
 
+Shared outputs are written under:
+
 ```text
-data/output/manual_optisweep_om_v3/stage_6_5_runbook_pool/candidate_pool.json
+shared_pipeline_stages/data/output/shared/stage_6_5_runbook_pool/
+  runbook_pool.json
+  retrieval_cards.json
+  runbook_retrieval_index.json
+  merge_clusters.json
+  pass_through_runbooks.json
+  runbook_similarity.json
+  runbook_pool_report.json
 ```
 
-`candidate_pool.json` contains pooled candidates and generated cluster information for review.
+Per-source Stage 6.5 output under a single source directory is still supported when running through `extract_operational_knowledge.py --stages 6.5`, but cross-source review should use the shared output root above.
 
 **Run**
 
-```bash
-python scripts/stage6_5_build_runbook_pool.py \
-  --candidates data/output/manual_optisweep_om_v3/stage_5_runbook_candidates/runbook_candidates.json \
-  --output-dir data/output/manual_optisweep_om_v3
+From the repo root:
+
+```powershell
+python scripts/stage6_5_build_runbook_pool.py `
+  --source-root operationalknowledgeingestion/data/output/manual_optisweep_om_v3 `
+  --source-root operationalknowledgeingestion/data/output/training_video_day1 `
+  --output-dir shared_pipeline_stages/data/output/shared
 ```
 
-Stage 6.5 is deterministic and does not call an LLM.
+Or from this directory:
+
+```powershell
+python scripts/stage6_5_build_runbook_pool.py `
+  --source-root data/output/manual_optisweep_om_v3 `
+  --output-dir ../shared_pipeline_stages/data/output/shared
+```
+
+Stage 6.5 uses Azure OpenAI embeddings by default. Use `--skip-embed` or `--use-mock-embedder` for structural tests.
+
+**Review**
+
+See `shared_pipeline_stages/README.md` for the full Stage 6.5 review checklist. Start with `runbook_pool_report.json`, then inspect `merge_clusters.json` and `pass_through_runbooks.json`.
 
 ## Training Video Bundle Generation
 
@@ -792,6 +818,39 @@ Captures architecture decisions for the broader operational knowledge pipeline. 
 
 Contains the manual-specific stage plan used while building the current ingestion path. It is the detailed planning reference for the staged source extraction model: source bundle, artifacts, enrichment, operational context, runbook candidates, candidate pool, canonical runbook drafting, relationship linking, validation/repair, and final output writing.
 
+## Reviewing Data Outputs
+
+All operational stage outputs live under `data/output/<source_id>/`. Review locally before treating records as production-ready.
+
+**Standard review order for any stage**
+
+1. Open the stage report first (`artifact_extraction_report.json`, `artifact_enrichment_report.json`, `operational_context_extraction_report.json`, `runbook_candidate_extraction_report.json`, `runbook_finalization_report.json`).
+2. Check dropped records, warnings, failed packets, and coverage gaps.
+3. Open the primary stage JSON for spot checks.
+4. Trace sample records back to source refs in `source_bundle.json`, enriched artifacts, or images under `stage_2_source_artifacts/images/`.
+5. Confirm review metadata still shows `needs_sme_review` unless explicitly approved.
+
+**Stage-specific checks**
+
+| Stage | Start here | What to verify |
+| --- | --- | --- |
+| 1 | `stage_1_source_bundle/source_bundle.json` | Page coverage, section refs, figure/table inventory |
+| 2 | `stage_2_source_artifacts/artifact_extraction_report.json` | Artifact count, image paths, missing priority figures |
+| 3 | `stage_3_artifact_enrichment/artifact_enrichment_report.json` | Enrichment failures, retrieval text quality, source linkage preserved |
+| 4 | `stage_4_operational_context/operational_context_extraction_report.json` | Context count, artifact links, unsupported claims |
+| 5 | `stage_5_runbook_candidates/runbook_candidate_extraction_report.json` | Candidate quality, dedupe drops, coverage gaps |
+| 6 | `stage_6_finalized_runbooks/runbook_finalization_report.json` | Finalized runbook count, step grounding, validation status |
+| 6.5 | `shared_pipeline_stages/data/output/shared/stage_6_5_runbook_pool/runbook_pool_report.json` | Merge clusters, pass-through list, cross-source pairs |
+
+**Images and artifacts**
+
+- Open linked images in `stage_2_source_artifacts/images/` when reviewing artifact or runbook steps.
+- For training video sources, also inspect `stage_1_source_bundle/segmentation_samples/` and `segmentation_quality_report.json`.
+
+**Shared stages**
+
+Cross-source Stage 6.5+ outputs and review instructions live in `shared_pipeline_stages/README.md`.
+
 ## Project Layout
 
 ```text
@@ -813,6 +872,10 @@ Contains the manual-specific stage plan used while building the current ingestio
       services/ shared clients and ID/reference helpers
       tools/    stage implementations
   tests/        unit tests for stage behavior and contracts
+
+../shared_pipeline_stages/
+  data/output/shared/   cross-source shared stage outputs
+  stage_6_5/            shared Stage 6.5 implementation
 ```
 
 ## Development Workflow
@@ -851,6 +914,8 @@ Stages 1 through 6 are implemented as local scripts. Stages 7 through 10 from [m
 - V1 training video bundle builder for video plus external VTT transcript inputs.
 - Training video slide-segment normalization with cropped frame artifacts and timestamped transcript alignment.
 - CLI entrypoint for building local training video source artifacts and slide segment records.
+- Training video extraction preparation stage that emits a source-bundle-compatible shape for shared Stage 4 and Stage 5 reuse.
+- Local Tesseract OCR-assisted training video segmentation with inspection outputs and quality gates.
 
 ### Changed
 - README current-stage guidance now reflects the implemented ingestion stages.
@@ -860,5 +925,7 @@ Stages 1 through 6 are implemented as local scripts. Stages 7 through 10 from [m
 - Use one future LangGraph pipeline with multiple stage nodes.
 - Keep source artifact enrichment separate from operational context, runbooks, workflows, and relationship linking.
 - Training video ingestion should normalize video evidence first; Stage 4 context extraction and Stage 5 runbook candidate discovery should run afterward through the main pipeline.
+- Avoid separate semantic extractors for video unless the shared Stage 4/5 packet model proves insufficient.
+- Use local Tesseract OCR for training video slide-change assistance; do not use Azure Document Intelligence for this path.
 <!-- AUTO:DEVELOPMENT_LOG_END -->
 

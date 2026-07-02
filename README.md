@@ -2,11 +2,12 @@
 
 `optisweepAI-ingestion` is the local workspace for building source-grounded ingestion pipelines that turn OptiSweep operational and incident evidence into reviewable knowledge records for the troubleshooting app.
 
-The repository is organized around two sibling ingestion areas:
+The repository is organized around two sibling ingestion areas plus shared pipeline stages:
 
 ```text
 operationalknowledgeingestion/
 incidenceknowledgeingestion/
+shared_pipeline_stages/
 ```
 
 The long-term production shape is two coordinated LangGraph pipelines that share downstream review, synthesis, embedding, and publishing stages:
@@ -68,22 +69,22 @@ Implemented today:
 - Stage 3: Azure OpenAI source artifact enrichment.
 - Stage 4: operational context extraction.
 - Stage 5: runbook candidate discovery.
-- Stage 6: candidate pool generation.
+- Stage 6: source runbook finalization (LLM assisted).
+- Stage 6.5: shared runbook pool generation over finalized runbooks.
 - Training video bundle generation and preparation for Stage 4 and Stage 5.
 
 Next milestones:
 
-- Stage 7: canonical runbook drafting and merging from candidate pools.
-- Stage 8: relationship linking across artifacts, context, candidates, and runbooks.
-- Stage 9 and Stage 10: validation, repair, and final local outputs.
-- Stage 11 and Stage 12: vector embeddings and operational knowledge graph generation.
-- Future LangGraph orchestration and Cosmos DB/vector publishing after validation gates.
+- Run and review Stage 6 finalized runbooks against Runbook Example.md.
+- Shared Stage 6.5: runbook pool and merge preparation from finalized runbooks (`shared_pipeline_stages/`).
+- Shared Stage 7: selective cross-source runbook merge.
+- Stage 8+: relationship linking, validation, embeddings, and publishing.
 
 Primary details live in `operationalknowledgeingestion/README.md`.
 
 ## Incidence Knowledge Ingestion
 
-Current position: Case 228086 proof-path extraction is implemented through Stage 3 outputs, with Stage 4 prompts and scripts now implemented but not yet run.
+Current position: source-specific incident extraction is implemented through Stage 6 scripts; Case 228086/228723 have Stage 5 outputs and Stage 6 is ready to run with `--llm`.
 
 Implemented today:
 
@@ -91,25 +92,28 @@ Implemented today:
 - Stage 2: OCR and evidence artifact extraction with page inventory, artifact extraction report, source artifacts, duplicate grouping, and compact `incident_source_package.json.source_bundle` handoff.
 - Stage 2.5: deterministic artifact enrichment packet preparation.
 - Stage 3: Azure OpenAI incident artifact enrichment.
-- Stage 4: Azure OpenAI canonical incident record and timeline extraction prompts/scripts, pending first run and review.
-
-Current proof output:
-
-- `incidenceknowledgeingestion/data/output/incidents/case_228086/stage_1_source_package/incident_source_package.json`
-- `incidenceknowledgeingestion/data/output/incidents/case_228086/stage_2_ocr_artifacts/page_inventory.json`
-- `incidenceknowledgeingestion/data/output/incidents/case_228086/stage_2_ocr_artifacts/source_artifacts.json`
-- `incidenceknowledgeingestion/data/output/incidents/case_228086/stage_2_ocr_artifacts/artifact_extraction_report.json`
-- `incidenceknowledgeingestion/data/output/incidents/case_228086/stage_2_5_artifact_enrichment_packets/artifact_enrichment_packets.json`
-- `incidenceknowledgeingestion/data/output/incidents/case_228086/stage_3_artifact_enrichment/source_artifacts_enriched.json`
+- Stage 4: Azure OpenAI canonical incident record and timeline extraction.
+- Stage 5: incident runbook candidate discovery plus playbook candidate discovery (Prompt A/B).
+- Stage 6: source runbook finalization for runbook candidates only (LLM assisted).
 
 Next milestones:
 
-- Run and review Stage 4 for Case 228086.
-- Stage 5 through Stage 8: operational context, runbook candidates, playbook candidates, and candidate pool contribution.
-- Stage 9 and Stage 10: source-specific validation and final local outputs.
-- Stage 11 through Stage 15: shared canonical synthesis, relationship linking, embeddings, and publishing alignment with the operational pipeline.
+- Run and review Stage 6 finalized runbooks for Case 228086.
+- Shared Stage 6.5: runbook pool and merge preparation from finalized runbooks (`shared_pipeline_stages/`).
+- Shared Stage 7: selective cross-source runbook merge.
+- Shared Stage 8: playbook linking and finalization.
 
 Primary details live in `incidenceknowledgeingestion/README.md`.
+
+## Shared Design Notes
+
+- `docs/runbook_candidate_pool_and_azure_review_design.md` tracks the proposed
+  shared candidate pool, Stage 6.5 packet finalization, Azure retrieval,
+  local-first `RunbookRetriever` plan, merge-review, human approval, and
+  versioned publishing model for canonical runbooks.
+- `docs/design_decisions/stage_5_6_playbook_extraction_modes.md` tracks why
+  Stage 5 currently runs both playbook extraction modes and how Stage 6 should
+  compare them before choosing the default behavior.
 
 ## README Update Rule
 
@@ -153,22 +157,59 @@ docs/
 
 incidenceknowledgeingestion/
   README.md
-  docs/
-    development_status.md
-  datastructureprompts/
-    Canonical Incident Record Example.md
-    Timeline Events.md
-
-operationalknowledgeingestion/
-  README.md
+  data/output/incidents/<case_id>/   source-specific incident outputs
   docs/
   scripts/
   src/
   tests/
 
+operationalknowledgeingestion/
+  README.md
+  data/output/<source_id>/           source-specific operational outputs
+  docs/
+  scripts/
+  src/
+  tests/
+
+shared_pipeline_stages/
+  README.md                          shared stage code and review guide
+  data/output/shared/                  cross-source shared stage outputs
+  stage_6_5/
+  tests/
+
+stage_prompts/
+  stage_6/                           shared Stage 6 LLM prompts
+
 scripts/
   update_readme.py
+  stage6_5_build_runbook_pool.py
 ```
+
+## Reviewing Data Outputs
+
+Each pipeline writes local JSON, reports, and images first. Review locally before any Cosmos DB or vector publishing.
+
+**Where outputs live**
+
+| Area | Output root | Example |
+| --- | --- | --- |
+| Operational ingestion | `operationalknowledgeingestion/data/output/<source_id>/` | `manual_optisweep_om_v3/` |
+| Incident ingestion | `incidenceknowledgeingestion/data/output/incidents/<case_id>/` | `case_228086/` |
+| Shared pipeline stages | `shared_pipeline_stages/data/output/shared/` | `stage_6_5_runbook_pool/` |
+
+**General review order**
+
+1. Read the stage extraction report first (`*_report.json`, `*_extraction_report.json`, or `runbook_pool_report.json`).
+2. Check counts, warnings, dropped records, and failed packets before opening large JSON payloads.
+3. Open the primary stage JSON (`source_artifacts.json`, `runbook_candidates.json`, `merge_clusters.json`, etc.).
+4. Trace a sample record back to source refs (page, artifact, candidate, or case evidence).
+5. Confirm review status is still `needs_sme_review` unless a reviewer explicitly approved the record.
+
+**Area-specific review guides**
+
+- Operational stages 1–6: `operationalknowledgeingestion/README.md`
+- Incident stages 1–6: `incidenceknowledgeingestion/README.md`
+- Shared Stage 6.5 runbook pool and merge prep: `shared_pipeline_stages/README.md`
 
 ## Where To Start
 

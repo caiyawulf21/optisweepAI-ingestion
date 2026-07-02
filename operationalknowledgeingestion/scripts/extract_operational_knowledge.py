@@ -212,16 +212,30 @@ def main() -> None:
         print(f"Stage 6 failed candidates: {report.get('failed_candidate_count', 0)}")
 
     if "6.5" in stages:
-        from optisweep_ingestion.stage6_5_runbook_pool import build_candidate_pool
+        import sys
 
-        candidates_path = _require_existing(
-            "Stage 6.5 requires Stage 5 runbook_candidates.json or finalized runbook inputs. Run stage 5 first.",
-            stage5_dir / "runbook_candidates.json",
-            args.output_dir / "runbook_candidates.json",
+        repo_root = Path(__file__).resolve().parents[2]
+        if str(repo_root) not in sys.path:
+            sys.path.insert(0, str(repo_root))
+        from shared_pipeline_stages.stage_6_5.pool_builder import PoolBuildConfig, build_runbook_pool
+
+        finalized_dir = _require_existing(
+            "Stage 6.5 requires Stage 6 finalized runbooks. Run stage 6 first.",
+            stage6_dir / "finalized_runbooks",
         )
-        pool = build_candidate_pool(candidate_paths=[candidates_path], output_dir=stage6_5_dir)
-        print(f"Stage 6.5 runbook pool written: {stage6_5_dir / 'candidate_pool.json'}")
-        print(f"Stage 6.5 candidate clusters generated: {pool.candidate_cluster_count}")
+        if not any(finalized_dir.glob("*.json")):
+            raise FileNotFoundError(
+                "Stage 6.5 requires at least one finalized runbook JSON in "
+                f"{finalized_dir}"
+            )
+        pool = build_runbook_pool(
+            source_roots=[args.output_dir],
+            output_dir=stage6_5_dir,
+            config=PoolBuildConfig(use_mock_embedder=True),
+        )
+        print(f"Stage 6.5 runbook pool written: {stage6_5_dir / 'runbook_pool.json'}")
+        print(f"Stage 6.5 merge clusters generated: {pool.merge_cluster_count}")
+        print(f"Stage 6.5 pass-through runbooks: {pool.pass_through_count}")
 
 
 def _normalize_supported_stage(value: str) -> str:

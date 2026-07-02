@@ -10,4 +10,4 @@ stage_prompts/
     stage6_runbook_finalization_structure_reference.md
 ```
 
-Resolved by `shared/stage_prompts.py`.
+Resolved by `shared_pipeline_stages/stage_prompts.py`.
