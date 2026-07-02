@@ -200,7 +200,7 @@ Each pipeline writes local JSON, reports, and images first. Review locally befor
 | Operational ingestion | `operationalknowledgeingestion/data/output/<source_id>/` | `manual_optisweep_om_v3/` |
 | Incident ingestion | `incidenceknowledgeingestion/data/output/incidents/<case_id>/` | `case_228086/` |
 | Shared pipeline stages | `shared_pipeline_stages/data/output/shared/` | `stage_6_5_runbook_pool/` |
-| SME runbook review copies | `sme_review_runbooks/<source_id>/` | flat markdown per source |
+| SME runbook review copies | `sme_review_runbooks/<source_id>/` | runbook markdown + `assets/` images per source |
 
 **General review order**
 
