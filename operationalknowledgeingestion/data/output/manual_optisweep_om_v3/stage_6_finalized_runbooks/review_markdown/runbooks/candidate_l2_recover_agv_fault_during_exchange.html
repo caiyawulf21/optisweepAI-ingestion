@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Recover an AGV Fault During Exchange</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Recover an AGV Fault During Exchange</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_recover_an_agv_fault_during_exchange_v1</td></tr>
+<tr><th>Title</th><td>Recover an AGV Fault During Exchange</td></tr>
+<tr><th>Procedure Type</th><td>recovery</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>No</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Recover the exchange area after an AGV faults while lifted and leaving the RMS by stopping RMS, removing the faulted AGV through AGV API Controls, conditionally removing the following AGV if it does not back fill, introducing a new tote at the affected location, and placing an empty AGV in the zone.</p>
+<h2>When To Use</h2>
+<p>Use when an AGV faults during exchange while lifted and leaving the RMS, and the exchange area must be restored by removing the affected AGV, restoring tote presence at the location, and placing an empty AGV in the zone.</p>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — E-stop RMS</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>E-stop RMS before attempting to remove the faulted AGV or perform exchange-area recovery actions.</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS is E-stopped and recovery actions can proceed under the stopped condition referenced by the source.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_5_1_system_in_shut_down_mode.jpeg" alt="artifact_fig_5_1_system_in_shut_down_mode" /><figcaption>System stop or shut-down state context relevant to placing RMS into a stopped condition.</figcaption></figure>
+<figure><img src="assets/artifact_fig_5_4_faulted_agv_with_tote_screen.jpeg" alt="artifact_fig_5_4_faulted_agv_with_tote_screen" /><figcaption>Fault recovery screen context associated with AGV fault recovery procedures that begin with E-stop RMS.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>RMS cannot be E-stopped.</li>
+<li>The system does not enter a clear stopped state for recovery.</li>
+</ul>
+<hr>
+<h3>Step 2 — Remove the faulted lifted AGV from RMS</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Remove the lifted AGV that faulted while leaving from the RMS using the AGV API Controls.</p>
+<p><strong>Expected result:</strong></p>
+<p>The faulted lifted AGV is removed from RMS.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_4_12_agv_api_controls.jpeg" alt="artifact_fig_4_12_agv_api_controls" /><figcaption>AGV API Controls screen, specifically the Remove AGV function.</figcaption></figure>
+<figure><img src="assets/artifact_fig_5_4_faulted_agv_with_tote_screen.jpeg" alt="artifact_fig_5_4_faulted_agv_with_tote_screen" /><figcaption>Faulted AGV recovery screen context associated with removing a faulted AGV from RMS.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The lifted faulted AGV cannot be removed from RMS.</li>
+</ul>
+<hr>
+<h3>Step 3 — Remove the following AGV if it does not back fill</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the AGV behind the faulted AGV does not back fill, remove that AGV also.</p>
+<p><strong>Expected result:</strong></p>
+<p>If needed, the following AGV is also removed so the exchange area can be restored.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_4_12_agv_api_controls.jpeg" alt="artifact_fig_4_12_agv_api_controls" /><figcaption>AGV API Controls screen used if the following AGV must also be removed.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The AGV behind the faulted AGV does not back fill and cannot be safely removed.</li>
+</ul>
+<hr>
+<h3>Step 4 — Introduce a new tote at the affected location</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Introduce a new tote at that location.</p>
+<p><strong>Expected result:</strong></p>
+<p>A new tote is introduced at the affected location.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_page_93_image_2.png" alt="artifact_page_93_image_2" /><figcaption>Add Tote screen context for scanning or confirming tote introduction back into the system.</figcaption></figure>
+<figure><img src="assets/artifact_page_92_image_2.png" alt="artifact_page_92_image_2" /><figcaption>Hospital station tote-handling context relevant to tote handling and return to the system.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>A replacement tote cannot be introduced at the affected location.</li>
+</ul>
+<hr>
+<h3>Step 5 — Place an empty AGV in the zone</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Place an empty AGV in that zone.</p>
+<p><strong>Expected result:</strong></p>
+<p>An empty AGV is placed in the affected zone.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen" /><figcaption>Screen associated with adding an AGV to a zone during AGV recovery scenarios.</figcaption></figure>
+<figure><img src="assets/artifact_fig_4_12_agv_api_controls.jpeg" alt="artifact_fig_4_12_agv_api_controls" /><figcaption>AGV API Controls context if AGV addition or removal actions are needed as part of placing the AGV in the zone.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>An empty AGV cannot be placed in the zone.</li>
+</ul>
+<hr>
+</body>
+</html>

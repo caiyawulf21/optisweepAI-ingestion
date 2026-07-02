@@ -1,1 +1,1 @@
-"""Tool placeholders for parsing, extraction, validation, and reporting."""
+"""Shared non-stage helpers for parsing, loading, and artifact linking."""

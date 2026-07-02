@@ -1,9 +1,11 @@
 # Canonical Runbook Example — Start Operator Station
 
 <!--
-Stage 6 / Shared canonical runbook reference.
-Example prompt/schema for reviewable runbook structure; incident Stage 6 should
-produce candidates, while shared finalization later decides canonical runbooks.
+Stage 6 / source-finalized runbook reference.
+Stage 6 produces finalized source-specific runbooks matching this structure.
+Stage 6 LLM runtime reference (trimmed, appended to system prompt):
+`stage_prompts/stage_6/stage6_runbook_finalization_structure_reference.md`
+Shared Stage 7 merges clusters only; singleton runbooks pass through from Stage 6.5.
 -->
 
 File path:

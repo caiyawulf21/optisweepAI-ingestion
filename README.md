@@ -83,24 +83,28 @@ Primary details live in `operationalknowledgeingestion/README.md`.
 
 ## Incidence Knowledge Ingestion
 
-Current position: Case 228086 proof-path extraction is implemented through Stage 2 as deterministic local scripts.
+Current position: Case 228086 proof-path extraction is implemented through Stage 3 outputs, with Stage 4 prompts and scripts now implemented but not yet run.
 
 Implemented today:
 
 - Stage 1: incident source package loading and page/source inventory.
 - Stage 2: OCR and evidence artifact extraction with page inventory, artifact extraction report, source artifacts, duplicate grouping, and compact `incident_source_package.json.source_bundle` handoff.
+- Stage 2.5: deterministic artifact enrichment packet preparation.
+- Stage 3: Azure OpenAI incident artifact enrichment.
+- Stage 4: Azure OpenAI canonical incident record and timeline extraction prompts/scripts, pending first run and review.
 
 Current proof output:
 
-- `incidenceknowledgeingestion/data/output/incidents/case_228086/incident_source_package.json`
-- `incidenceknowledgeingestion/data/output/incidents/case_228086/page_inventory.json`
-- `incidenceknowledgeingestion/data/output/incidents/case_228086/source_artifacts.json`
-- `incidenceknowledgeingestion/data/output/incidents/case_228086/artifact_extraction_report.json`
+- `incidenceknowledgeingestion/data/output/incidents/case_228086/stage_1_source_package/incident_source_package.json`
+- `incidenceknowledgeingestion/data/output/incidents/case_228086/stage_2_ocr_artifacts/page_inventory.json`
+- `incidenceknowledgeingestion/data/output/incidents/case_228086/stage_2_ocr_artifacts/source_artifacts.json`
+- `incidenceknowledgeingestion/data/output/incidents/case_228086/stage_2_ocr_artifacts/artifact_extraction_report.json`
+- `incidenceknowledgeingestion/data/output/incidents/case_228086/stage_2_5_artifact_enrichment_packets/artifact_enrichment_packets.json`
+- `incidenceknowledgeingestion/data/output/incidents/case_228086/stage_3_artifact_enrichment/source_artifacts_enriched.json`
 
 Next milestones:
 
-- Stage 3: incident normalization from the Stage 2 source bundle.
-- Stage 4: timeline event extraction.
+- Run and review Stage 4 for Case 228086.
 - Stage 5 through Stage 8: operational context, runbook candidates, playbook candidates, and candidate pool contribution.
 - Stage 9 and Stage 10: source-specific validation and final local outputs.
 - Stage 11 through Stage 15: shared canonical synthesis, relationship linking, embeddings, and publishing alignment with the operational pipeline.

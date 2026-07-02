@@ -15,7 +15,7 @@ if str(SRC) not in sys.path:
 
 import typer
 
-from operationalknowledgeingestion.src.optisweep_ingestion.tools.operational_context_extractor import (
+from optisweep_ingestion.stage4_operational_context import (
     AzureOpenAIContextClient,
     extract_operational_context,
 )

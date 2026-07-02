@@ -1,0 +1,340 @@
+{
+  "procedure_id": "proc_recover_an_agv_fault_during_exchange_v1",
+  "candidate_id": "candidate_l2_recover_agv_fault_during_exchange",
+  "title": "Recover an AGV Fault During Exchange",
+  "procedure_type": "recovery",
+  "summary": "Recover the exchange area after an AGV faults while lifted and leaving the RMS by stopping RMS, removing the faulted AGV through AGV API Controls, conditionally removing the following AGV if it does not back fill, introducing a new tote at the affected location, and placing an empty AGV in the zone.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "support_safe": false,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when an AGV faults during exchange while lifted and leaving the RMS, and the exchange area must be restored by removing the affected AGV, restoring tote presence at the location, and placing an empty AGV in the zone.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibilities": [
+        "E-stop RMS for the recovery activity",
+        "Remove the faulted lifted AGV from RMS using AGV API Controls",
+        "Remove the following AGV if it does not back fill and removal is required",
+        "Introduce a new tote at the affected location",
+        "Place an empty AGV in the affected zone"
+      ]
+    }
+  ],
+  "safety_notes": [
+    "This procedure is not marked support-safe in the source candidate.",
+    "The procedure involves E-stop use and physical intervention in the exchange location or zone.",
+    "Stop and escalate if the faulted AGV cannot be removed from RMS.",
+    "Stop and escalate if the AGV behind the faulted AGV does not back fill and cannot be safely removed."
+  ],
+  "access_or_tools_needed": [
+    "Access to RMS E-stop control",
+    "Access to AGV API Controls",
+    "Physical access to the exchange location or zone",
+    "Replacement tote",
+    "Empty AGV"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "RMS E-stop control access",
+      "AGV API Controls access",
+      "Access to the affected exchange location or zone"
+    ],
+    "system_preconditions": [
+      "An AGV has faulted while lifted and leaving the RMS during exchange"
+    ],
+    "external_references": [
+      "AGV API Controls, page 24"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_agv_api_controls_reference_v1",
+    "ctx_manual_rms_estop_resume_reference_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+      "description": "Fault recovery screen showing a faulted AGV with tote context near the referenced recovery content.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "description": "AGV API Controls screen used to remove AGVs from RMS.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "description": "System screen relevant to RMS stop state context.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "description": "Screen related to adding an AGV to a zone during AGV recovery scenarios.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_93_image_2",
+      "description": "Add Tote screen context for introducing a tote back into the system.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_37_hospital_hmi_add_remove_agv_screen",
+      "description": "Hospital HMI add/remove AGV screen showing AGV removal and insertion concepts.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "E-stop RMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Place the RMS in a stopped state before performing AGV recovery actions in the exchange area.",
+      "instruction": "E-stop RMS before attempting to remove the faulted AGV or perform exchange-area recovery actions.",
+      "expected_result": "RMS is E-stopped and recovery actions can proceed under the stopped condition referenced by the source.",
+      "healthy_condition": "RMS is in the expected stopped state for fault recovery activity.",
+      "failure_condition": "RMS cannot be placed into the required E-stop state or the stopped state is unclear.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "E-stop RMS",
+          "exact_action": "E-stop RMS.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+          "what_to_look_at": "System stop or shut-down state context relevant to placing RMS into a stopped condition."
+        },
+        {
+          "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+          "what_to_look_at": "Fault recovery screen context associated with AGV fault recovery procedures that begin with E-stop RMS."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "RMS cannot be E-stopped.",
+        "The system does not enter a clear stopped state for recovery."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Remove the faulted lifted AGV from RMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Remove the AGV that faulted while lifted and leaving so the exchange area can be restored.",
+      "instruction": "Remove the lifted AGV that faulted while leaving from the RMS using the AGV API Controls.",
+      "expected_result": "The faulted lifted AGV is removed from RMS.",
+      "healthy_condition": "The affected AGV is no longer present in RMS after the removal action.",
+      "failure_condition": "The faulted AGV remains in RMS or cannot be removed using the AGV API Controls.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Remove faulted AGV in AGV API Controls",
+          "exact_action": "Remove the lifted AGV that faulted while leaving from the RMS using the AGV API Controls.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_12_agv_api_controls",
+          "what_to_look_at": "AGV API Controls screen, specifically the Remove AGV function."
+        },
+        {
+          "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+          "what_to_look_at": "Faulted AGV recovery screen context associated with removing a faulted AGV from RMS."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The lifted faulted AGV cannot be removed from RMS."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Remove the following AGV if it does not back fill",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Clear the exchange area if the AGV behind the faulted AGV does not back fill as expected.",
+      "instruction": "If the AGV behind the faulted AGV does not back fill, remove that AGV also.",
+      "expected_result": "If needed, the following AGV is also removed so the exchange area can be restored.",
+      "healthy_condition": "Either the AGV behind back fills as expected, or it is successfully removed when it does not back fill.",
+      "failure_condition": "The AGV behind does not back fill and cannot be safely removed.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Conditionally remove following AGV",
+          "exact_action": "If the AGV behind it does not back fill, remove that AGV also.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_12_agv_api_controls",
+          "what_to_look_at": "AGV API Controls screen used if the following AGV must also be removed."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The AGV behind the faulted AGV does not back fill and cannot be safely removed."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Introduce a new tote at the affected location",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Restore tote presence at the exchange location after AGV removal.",
+      "instruction": "Introduce a new tote at that location.",
+      "expected_result": "A new tote is introduced at the affected location.",
+      "healthy_condition": "The location has a replacement tote introduced.",
+      "failure_condition": "A new tote cannot be introduced or the source-supported confirmation method is not available.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Introduce replacement tote",
+          "exact_action": "Introduce a new tote at that location.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_93_image_2",
+          "what_to_look_at": "Add Tote screen context for scanning or confirming tote introduction back into the system."
+        },
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Hospital station tote-handling context relevant to tote handling and return to the system."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "A replacement tote cannot be introduced at the affected location."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Place an empty AGV in the zone",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Restore empty AGV availability in the affected zone after the exchange fault recovery.",
+      "instruction": "Place an empty AGV in that zone.",
+      "expected_result": "An empty AGV is placed in the affected zone.",
+      "healthy_condition": "The zone has an empty AGV placed as required by the recovery sequence.",
+      "failure_condition": "An empty AGV cannot be placed in the zone.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Place empty AGV in zone",
+          "exact_action": "Place an empty AGV in that zone.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+          "what_to_look_at": "Screen associated with adding an AGV to a zone during AGV recovery scenarios."
+        },
+        {
+          "artifact_id": "artifact_fig_4_12_agv_api_controls",
+          "what_to_look_at": "AGV API Controls context if AGV addition or removal actions are needed as part of placing the AGV in the zone."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "An empty AGV cannot be placed in the zone."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The faulted AGV is removed from the exchange area.",
+    "If required, the AGV behind the faulted AGV is also removed when it does not back fill.",
+    "A new tote is introduced at the affected location.",
+    "An empty AGV is placed in the affected zone."
+  ],
+  "healthy_conditions": [
+    "RMS is successfully placed into the required stopped state for recovery.",
+    "The faulted lifted AGV is removed from RMS.",
+    "The exchange location has tote presence restored.",
+    "The zone has an empty AGV placed."
+  ],
+  "failure_conditions": [
+    "The lifted faulted AGV cannot be removed from RMS.",
+    "The AGV behind the faulted AGV does not back fill and cannot be safely removed.",
+    "The source does not provide detailed confirmation checks after the tote and empty AGV are introduced."
+  ],
+  "escalation_guidance": [
+    "Escalate if the lifted faulted AGV cannot be removed from RMS.",
+    "Escalate if the AGV behind it does not back fill and cannot be safely removed.",
+    "Escalate for SME review if confirmation of tote introduction or empty AGV placement is required beyond what is stated in the source."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+      "what_to_look_at": "Faulted AGV recovery screen context."
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "what_to_look_at": "AGV API Controls used for AGV removal."
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "what_to_look_at": "Add AGV to zone recovery screen."
+    },
+    {
+      "artifact_id": "artifact_page_93_image_2",
+      "what_to_look_at": "Add Tote screen context."
+    }
+  ],
+  "source_refs": [],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_l2_recover_agv_fault_during_exchange"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source packet does not provide explicit confirmation checks after introducing the new tote.",
+    "The source packet does not provide explicit confirmation checks after placing the empty AGV in the zone.",
+    "The source packet does not provide a documented resume step for this specific procedure excerpt.",
+    "The source packet does not provide an estimated completion time.",
+    "The source packet does not specify whether production stop or LOTO is required."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

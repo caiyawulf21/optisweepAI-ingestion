@@ -22,6 +22,7 @@ class OCRResult:
     backend: str | None
     provenance: dict[str, Any] | None
     word_count: int
+    lines: list[dict[str, Any]] | None = None
 
 
 class TesseractOCRClient:
@@ -31,9 +32,10 @@ class TesseractOCRClient:
         self.command = command or os.getenv("TESSERACT_CMD") or _default_windows_command() or "tesseract"
         self.psm = psm
 
-    def extract(self, image_path: str | Path) -> OCRResult:
+    def extract(self, image_path: str | Path, psm: int | None = None) -> OCRResult:
         image = Path(image_path)
-        command = [self.command, str(image), "stdout", "--psm", str(self.psm), "tsv"]
+        psm_value = psm if psm is not None else self.psm
+        command = [self.command, str(image), "stdout", "--psm", str(psm_value), "tsv"]
         try:
             completed = subprocess.run(
                 command,
@@ -54,6 +56,8 @@ class TesseractOCRClient:
 
         words: list[str] = []
         confidences: list[float] = []
+        line_words: dict[tuple[str, str, str], list[str]] = {}
+        line_confidences: dict[tuple[str, str, str], list[float]] = {}
         for line in completed.stdout.splitlines()[1:]:
             parts = line.split("\t")
             if len(parts) < 12:
@@ -62,13 +66,27 @@ class TesseractOCRClient:
             if not text:
                 continue
             words.append(text)
+            line_key = (parts[2], parts[3], parts[4])
+            line_words.setdefault(line_key, []).append(text)
             try:
                 confidence = float(parts[10])
             except ValueError:
                 continue
             if confidence >= 0:
                 confidences.append(confidence)
+                line_confidences.setdefault(line_key, []).append(confidence)
         confidence_value = round(sum(confidences) / len(confidences), 2) if confidences else None
+        lines = []
+        for index, key in enumerate(line_words, start=1):
+            values = line_confidences.get(key) or []
+            lines.append(
+                {
+                    "line_number": index,
+                    "text": normalize_whitespace(" ".join(line_words[key])),
+                    "confidence": round(sum(values) / len(values), 2) if values else None,
+                    "word_count": len(line_words[key]),
+                }
+            )
         return OCRResult(
             text=normalize_whitespace(" ".join(words)),
             confidence=confidence_value,
@@ -76,11 +94,12 @@ class TesseractOCRClient:
             provenance={
                 "backend": "tesseract",
                 "command": self.command,
-                "psm": self.psm,
+                "psm": psm_value,
                 "source_image_path": str(image),
                 "confidence": confidence_value,
             },
             word_count=len(words),
+            lines=lines,
         )
 
 

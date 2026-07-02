@@ -11,7 +11,8 @@ STAGE_DIR_NAMES = {
     "3": "stage_3_artifact_enrichment",
     "4": "stage_4_operational_context",
     "5": "stage_5_runbook_candidates",
-    "6": "stage_6_candidate_pool",
+    "6": "stage_6_finalized_runbooks",
+    "6.5": "stage_6_5_runbook_pool",
     "7": "stage_7_canonical_runbooks",
     "8": "stage_8_relationship_linking",
     "9": "stage_9_validation_repair",
@@ -30,6 +31,8 @@ def stage_dir(output_dir: Path, stage: str) -> Path:
 def normalize_stage(value: str) -> str:
     stage = value.strip().lower().replace("stage_", "").replace("stage", "")
     stage = stage.replace("-", "_")
+    if stage in {"65", "6_5", "6-5"}:
+        return "6.5"
     if stage in STAGE_DIR_NAMES:
         return stage
     raise ValueError(f"Unsupported stage '{value}'. Supported stages: {', '.join(STAGE_DIR_NAMES)}")

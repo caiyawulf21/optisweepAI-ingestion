@@ -1,0 +1,450 @@
+[
+  {
+    "playbook_candidate_id": "playbook_candidate_incident_228723_zone5_pairing_amr_roster_recovery",
+    "title": "Zone unable to get a pair with AMRs diverting to hospital after recent robot replacement or remove/add activity",
+    "user_facing_summary": "Use this troubleshooting pattern when a site reports a zone cannot get a pair and AMRs begin diverting to the hospital lane after a low-battery robot event, replacement attempt, or recent robot remove/add activity. The response pattern is to confirm the observable fleet behavior, inspect RMS for abnormal robot roster or mapping state, use the approved robot isolation or remove-from-service procedure if an affected robot is identified and authorized, then validate that pairing and site operation recover during monitoring.",
+    "playbook_goal": "Restore normal zone pairing and fleet behavior by identifying whether a recently replaced, added, or abnormal robot should be isolated from active operation, then confirming the system remains operational after the corrective action.",
+    "observed_entry_symptoms": [
+      "Site reports the ACB system is down",
+      "A specific zone, especially zone 5 in this incident, is unable to get a pair",
+      "After a low-battery AMR event or replacement attempt, AMRs begin going to the hospital lane",
+      "The issue appears after recent robot replacement, remove/add, or attempted addition of one or more AGVs"
+    ],
+    "negative_or_absent_signals": [
+      "The low-battery condition itself was discussed as not necessarily being the current issue",
+      "Evidence does not confirm a software service crash or gateway outage",
+      "Evidence does not provide a confirmed database-only fix path",
+      "RMS screenshots are not legible enough to confirm exact table values directly from the packet"
+    ],
+    "support_user_language_examples": [
+      "Zone 5 is unable to get a pair",
+      "Every AMR goes to the hospital",
+      "They had a low battery AMR under the rack",
+      "They tried replacing or adding AGVs and now the system is acting up",
+      "Removing robot 158 may have fixed it"
+    ],
+    "tentative_internal_patterns": [
+      "Recent robot remove/add or replacement activity may have left one or more robots in an abnormal RMS roster or mapping state",
+      "A robot shown as not mapped may correlate with zone pairing failure and broad AMR diversion behavior",
+      "Leaving an affected robot out of service for the rest of the sort was discussed as a possible workaround shape"
+    ],
+    "internal_pattern_notes": "These are tentative interpretations from support discussion and reported resolution notes. They are not confirmed root cause and should not be used as mandatory entry criteria. The incident evidence most strongly supports a troubleshooting pattern around abnormal robot roster or mapping state in RMS after replacement or remove/add activity, with reported recovery after robot 158 was removed from the system.",
+    "affected_systems_or_components": [
+      "ACB system",
+      "AMR/robot fleet",
+      "RMS",
+      "Zone 5 pairing behavior",
+      "Specific robots discussed in incident evidence including robot 158 and robot 153"
+    ],
+    "confidence": "medium",
+    "confidence_reason": "The incident contains a coherent troubleshooting shape and a reported recovery action tied to robot 158 removal, but the evidence is partly chat-based, some OCR is degraded, and the exact RMS state and authorized recovery boundaries are not fully documented in the packet.",
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm the observable symptom pattern and recent robot-handling context",
+        "intent": "Determine whether the incident matches the pattern of zone pairing failure plus abnormal AMR hospital diversion after a recent low-battery event, replacement attempt, or robot remove/add activity.",
+        "goal": "Determine whether the incident matches the pattern of zone pairing failure plus abnormal AMR hospital diversion after a recent low-battery event, replacement attempt, or robot remove/add activity.",
+        "runbook_placeholder": "Procedure needed to confirm with the site which specific zone cannot get a pair, whether AMRs are actively going to the hospital lane, whether a low-battery robot was recently under the rack, and whether the site recently replaced, removed, or added one or more robots. In RMS, check the fleet or zone-related views available to support for signs that the reported zone and robot activity align with the site description.",
+        "allowed_roles": [
+          "L1_support",
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "The site reported zone 5 unable to get a pair; earlier low-battery AMR issues were discussed; after replacement attempts, AMRs were reportedly going to the hospital lane.",
+        "needed_runbook_capability": "Procedure needed to confirm with the site which specific zone cannot get a pair, whether AMRs are actively going to the hospital lane, whether a low-battery robot was recently under the rack, and whether the site recently replaced, removed, or added one or more robots. In RMS, check the fleet or zone-related views available to support for signs that the reported zone and robot activity align with the site description.",
+        "expected_or_observed_result": "In this incident, the site reported zone 5 unable to get a pair, earlier low-battery AMR issues, replacement attempts, and AMRs going to the hospital lane.",
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_228723_page_012_embedded_image_01",
+          "artifact_incident_228723_page_012_full_page_01"
+        ],
+        "related_event_ids": [
+          "incident_228723_event_002",
+          "incident_228723_event_003",
+          "incident_228723_event_023"
+        ],
+        "source_refs": []
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "diagnostic_decision",
+        "title": "Inspect RMS for abnormal robot roster, mapping, charging, or stuck-state indicators tied to the affected zone",
+        "intent": "Determine whether one or more specific robots appear to be in an abnormal state that could explain the pairing failure and broad AMR diversion behavior.",
+        "goal": "Determine whether one or more specific robots appear to be in an abnormal state that could explain the pairing failure and broad AMR diversion behavior.",
+        "runbook_placeholder": "Procedure needed to inspect RMS robot roster and status views for the affected site, including whether recently replaced or added robots appear not mapped, improperly rostered, not charging, stuck on tasks, not moving, or otherwise abnormal. The procedure should also cover how to correlate specific robot IDs with the affected zone and recent remove/add activity.",
+        "allowed_roles": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "Support chat discussed improper remove/add handling, possible roster issues in RMS, robot 158 removal, and robot 153 still reporting no charging or possibly stuck.",
+        "needed_runbook_capability": "Procedure needed to inspect RMS robot roster and status views for the affected site, including whether recently replaced or added robots appear not mapped, improperly rostered, not charging, stuck on tasks, not moving, or otherwise abnormal. The procedure should also cover how to correlate specific robot IDs with the affected zone and recent remove/add activity.",
+        "expected_or_observed_result": "In this incident, support discussion suggested robots may not have been removed and added properly, robot 158 was later reported as not mapped, and robot 153 was discussed as still reporting no charging and possibly stuck in zone 5.",
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_228723_page_006_embedded_image_01",
+          "artifact_incident_228723_page_010_embedded_image_01",
+          "artifact_incident_228723_page_012_embedded_image_01"
+        ],
+        "related_event_ids": [
+          "incident_228723_event_004",
+          "incident_228723_event_005",
+          "incident_228723_event_011",
+          "incident_228723_event_012",
+          "incident_228723_event_024"
+        ],
+        "source_refs": []
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "branching_condition",
+        "title": "Decide whether an identified robot should be isolated from active operation using an approved procedure",
+        "intent": "Choose whether to proceed with supported robot isolation or remove-from-system handling for a specific abnormal robot, or continue investigation if no supported target is identified.",
+        "goal": "Choose whether to proceed with supported robot isolation or remove-from-system handling for a specific abnormal robot, or continue investigation if no supported target is identified.",
+        "runbook_placeholder": "Decision rubric needed to determine whether a specific robot identified in RMS can be safely isolated, left out of service for the rest of the sort, or removed from the system under an approved support procedure. The rubric should reference RMS evidence, recent remove/add history, charging state, mapping state, and role authorization limits.",
+        "allowed_roles": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "Support discussed an easier way than deeper correction, including leaving the unit out for the rest of the sort, and later the site removed robot 158 from the system.",
+        "needed_runbook_capability": "Decision rubric needed to determine whether a specific robot identified in RMS can be safely isolated, left out of service for the rest of the sort, or removed from the system under an approved support procedure. The rubric should reference RMS evidence, recent remove/add history, charging state, mapping state, and role authorization limits.",
+        "expected_or_observed_result": "In this incident, support discussed leaving an affected unit out for the rest of the sort, and reported recovery later followed removal of robot 158 from the system.",
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_228723_page_010_embedded_image_01"
+        ],
+        "related_event_ids": [
+          "incident_228723_event_006",
+          "incident_228723_event_010",
+          "incident_228723_event_011",
+          "incident_228723_event_019"
+        ],
+        "source_refs": []
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "procedure_reference",
+        "title": "Perform the approved robot isolation or remove-from-system recovery action",
+        "intent": "Use the authorized operational procedure to remove the identified abnormal robot from active fleet participation or otherwise keep it out of service when that is the supported recovery path.",
+        "goal": "Use the authorized operational procedure to remove the identified abnormal robot from active fleet participation or otherwise keep it out of service when that is the supported recovery path.",
+        "runbook_placeholder": "Procedure needed for authorized robot isolation, remove-from-system handling, or equivalent supported recovery in RMS for a named robot, including any required safety preconditions, coordination with the site, charging or parking expectations, and limits on who may perform or direct the action.",
+        "allowed_roles": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "The reported recovery action was removal of robot 158 from the system, with the robot then on charger.",
+        "needed_runbook_capability": "Procedure needed for authorized robot isolation, remove-from-system handling, or equivalent supported recovery in RMS for a named robot, including any required safety preconditions, coordination with the site, charging or parking expectations, and limits on who may perform or direct the action.",
+        "expected_or_observed_result": "In this incident, the site removed robot 158 from the system, it was on charger, and the system reportedly began functioning again.",
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_228723_page_006_embedded_image_01",
+          "artifact_incident_228723_page_010_embedded_image_01",
+          "artifact_incident_228723_page_012_embedded_image_01"
+        ],
+        "related_event_ids": [
+          "incident_228723_event_011",
+          "incident_228723_event_018",
+          "incident_228723_event_019",
+          "incident_228723_event_024"
+        ],
+        "source_refs": []
+      },
+      {
+        "node_id": "node_5",
+        "node_order": 5,
+        "node_type": "validation_gate",
+        "title": "Validate that pairing and fleet behavior recover and remain stable during monitoring",
+        "intent": "Confirm that the affected zone can pair again, AMRs are no longer broadly diverting to the hospital lane, and the site remains operational after the recovery action.",
+        "goal": "Confirm that the affected zone can pair again, AMRs are no longer broadly diverting to the hospital lane, and the site remains operational after the recovery action.",
+        "runbook_placeholder": "Procedure needed to validate post-recovery state in RMS and with the site, including checking that the affected zone can obtain pairs again, confirming AMRs are no longer broadly routing to the hospital lane, reviewing the fleet roster for remaining abnormal robots, and monitoring for a defined observation period before declaring recovery.",
+        "allowed_roles": [
+          "L1_support",
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "Support remained on the call to monitor and reported the system remained operational after robot 158 was removed.",
+        "needed_runbook_capability": "Procedure needed to validate post-recovery state in RMS and with the site, including checking that the affected zone can obtain pairs again, confirming AMRs are no longer broadly routing to the hospital lane, reviewing the fleet roster for remaining abnormal robots, and monitoring for a defined observation period before declaring recovery.",
+        "expected_or_observed_result": "In this incident, after robot 158 was removed, the system reportedly began functioning again and remained operational during about 10 minutes of monitoring.",
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_228723_page_010_embedded_image_01",
+          "artifact_incident_228723_page_010_embedded_image_02"
+        ],
+        "related_event_ids": [
+          "incident_228723_event_018",
+          "incident_228723_event_019"
+        ],
+        "source_refs": []
+      },
+      {
+        "node_id": "node_6",
+        "node_order": 6,
+        "node_type": "escalation_gate",
+        "title": "Stop and escalate if no supported abnormal-robot recovery path is identified or validation fails",
+        "intent": "Hand off when RMS review does not reveal a supported robot isolation target, when authorized recovery cannot be performed, or when the zone and fleet behavior do not stabilize after the attempted action.",
+        "goal": "Hand off when RMS review does not reveal a supported robot isolation target, when authorized recovery cannot be performed, or when the zone and fleet behavior do not stabilize after the attempted action.",
+        "runbook_placeholder": "Procedure needed to prepare escalation evidence for higher-tier support, including the site symptom summary, recent robot replacement or remove/add history, RMS roster and status evidence for the affected robot IDs, any signs of not-mapped or not-charging state, actions already attempted, and post-action validation results showing whether pairing and hospital-lane behavior recovered.",
+        "allowed_roles": [
+          "L1_support",
+          "L2_support"
+        ],
+        "source_supported_description": "The incident included escalation and discussion that if robots were not properly rostered in RMS, available responders might have limited corrective options; however, the final recovery path still centered on robot removal and monitoring.",
+        "needed_runbook_capability": "Procedure needed to prepare escalation evidence for higher-tier support, including the site symptom summary, recent robot replacement or remove/add history, RMS roster and status evidence for the affected robot IDs, any signs of not-mapped or not-charging state, actions already attempted, and post-action validation results showing whether pairing and hospital-lane behavior recovered.",
+        "expected_or_observed_result": "In this incident, support discussion suggested that if the issue was rooted in improper RMS roster state, available responders might have limited corrective options; the case was also historically escalated before final recovery.",
+        "stop_or_escalation_note": "Use this gate only if the supported diagnostic and recovery path cannot continue safely or does not restore stable operation.",
+        "related_artifact_ids": [
+          "artifact_incident_228723_page_009_embedded_image_01"
+        ],
+        "related_event_ids": [
+          "incident_228723_event_005",
+          "incident_228723_event_016"
+        ],
+        "source_refs": []
+      }
+    ],
+    "branch_hints": [
+      {
+        "from_node_id": "node_1",
+        "condition_or_signal": "Site confirms zone pairing failure plus AMRs going to hospital after recent replacement or remove/add activity",
+        "suggested_next_node_id": "node_2",
+        "reason": "The incident evidence then focused on whether robots were improperly removed/added or otherwise abnormal in RMS.",
+        "source_refs": [
+          "case_228723:page_2",
+          "case_228723:page_3",
+          "case_228723:page_12"
+        ]
+      },
+      {
+        "from_node_id": "node_2",
+        "condition_or_signal": "A specific robot appears not mapped, improperly rostered, not charging, stuck, or otherwise abnormal",
+        "suggested_next_node_id": "node_3",
+        "reason": "The next troubleshooting decision is whether that robot should be isolated or removed from active operation using an approved procedure.",
+        "source_refs": [
+          "case_228723:page_2",
+          "case_228723:page_7",
+          "case_228723:page_12"
+        ]
+      },
+      {
+        "from_node_id": "node_3",
+        "condition_or_signal": "Approved evidence and role authorization support isolating the identified robot",
+        "suggested_next_node_id": "node_4",
+        "reason": "The reported recovery in this incident followed removal of robot 158 from the system.",
+        "source_refs": [
+          "case_228723:page_3",
+          "case_228723:page_10",
+          "case_228723:page_12"
+        ]
+      },
+      {
+        "from_node_id": "node_4",
+        "condition_or_signal": "Robot isolation or removal has been completed",
+        "suggested_next_node_id": "node_5",
+        "reason": "The incident evidence shows recovery was not declared until the system was monitored and remained operational.",
+        "source_refs": [
+          "case_228723:page_10"
+        ]
+      },
+      {
+        "from_node_id": "node_2",
+        "condition_or_signal": "No supported abnormal robot target is identified, or evidence is insufficient to proceed safely",
+        "suggested_next_node_id": "node_6",
+        "reason": "The packet does not provide a broader supported corrective path beyond abnormal-robot isolation and monitoring.",
+        "source_refs": [
+          "case_228723:page_5",
+          "case_228723:page_9"
+        ]
+      },
+      {
+        "from_node_id": "node_5",
+        "condition_or_signal": "Zone still cannot get a pair, AMRs still divert to hospital, or fleet remains unstable during monitoring",
+        "suggested_next_node_id": "node_6",
+        "reason": "Failed validation means the supported path in this incident has not restored stable operation.",
+        "source_refs": [
+          "case_228723:page_7",
+          "case_228723:page_10"
+        ]
+      }
+    ],
+    "escalation_gates": [
+      {
+        "condition_or_signal": "RMS review does not identify a supported abnormal robot or roster state that current-role support can act on safely",
+        "required_role": "L3_support",
+        "reason": "The incident discussion suggests limited corrective options when the issue may involve improper RMS roster state beyond the available supported path.",
+        "source_refs": [
+          "case_228723:page_5"
+        ]
+      },
+      {
+        "condition_or_signal": "Approved robot isolation or remove-from-system recovery is not authorized for the current responder role or cannot be completed",
+        "required_role": "L3_support",
+        "reason": "The packet reports the action occurred but does not define universal authorization boundaries, so unsupported execution should stop and hand off.",
+        "source_refs": [
+          "case_228723:page_10",
+          "case_228723:page_12"
+        ]
+      },
+      {
+        "condition_or_signal": "Post-action monitoring does not show restored pairing and stable operation",
+        "required_role": "L3_support",
+        "reason": "The incident only supports closure after observed recovery during monitoring.",
+        "source_refs": [
+          "case_228723:page_7",
+          "case_228723:page_10"
+        ]
+      }
+    ],
+    "validation_gates": [
+      {
+        "validation_goal": "Confirm the affected zone can pair again",
+        "expected_recovery_signal": "The site no longer reports that the affected zone is unable to get a pair",
+        "failure_outcome": "Continue troubleshooting or escalate because the primary operational symptom remains",
+        "source_refs": [
+          "case_228723:page_1",
+          "case_228723:page_12"
+        ]
+      },
+      {
+        "validation_goal": "Confirm fleet behavior is no longer broadly diverting to hospital",
+        "expected_recovery_signal": "AMRs are no longer all going to the hospital lane after the corrective action",
+        "failure_outcome": "Treat as incomplete recovery and escalate or continue supported diagnostics",
+        "source_refs": [
+          "case_228723:page_2",
+          "case_228723:page_12"
+        ]
+      },
+      {
+        "validation_goal": "Confirm the system remains operational after the robot isolation action",
+        "expected_recovery_signal": "The system begins functioning again and remains operational during a monitoring period",
+        "failure_outcome": "Do not declare recovery; escalate with evidence of failed validation",
+        "source_refs": [
+          "case_228723:page_10"
+        ]
+      }
+    ],
+    "runbook_placeholders": [
+      {
+        "needed_procedure": "Procedure to question the site about zone pairing failure, hospital-lane diversion, low-battery robot context, and recent robot replacement or remove/add activity, while correlating those reports with RMS site views",
+        "why_needed": "The first troubleshooting step depends on confirming that the incident matches this response pattern rather than a different outage type",
+        "suggested_role": "L1_support",
+        "risk_note": "Misidentifying the symptom pattern could send responders into the wrong recovery path",
+        "source_refs": [
+          "case_228723:page_1",
+          "case_228723:page_2",
+          "case_228723:page_12"
+        ]
+      },
+      {
+        "needed_procedure": "Procedure to inspect RMS robot roster and status information for not-mapped, not-charging, stuck-task, not-moving, or other abnormal robot states tied to the affected zone",
+        "why_needed": "The incident evidence points to RMS-visible abnormal robot state as the main technical decision point",
+        "suggested_role": "L2_support",
+        "risk_note": "Poor interpretation of RMS state could lead to isolating the wrong robot or missing the actual abnormal unit",
+        "source_refs": [
+          "case_228723:page_2",
+          "case_228723:page_6",
+          "case_228723:page_7",
+          "case_228723:page_12"
+        ]
+      },
+      {
+        "needed_procedure": "Decision rubric for when a robot should be left out for the rest of the sort or removed from the system based on RMS evidence and authorization limits",
+        "why_needed": "The incident suggests this was the practical recovery shape, but the packet does not define the exact authorization or selection criteria",
+        "suggested_role": "L2_support",
+        "risk_note": "Removing or isolating a robot without the right criteria or authority may create additional operational issues",
+        "source_refs": [
+          "case_228723:page_3",
+          "case_228723:page_10"
+        ]
+      },
+      {
+        "needed_procedure": "Authorized robot isolation or remove-from-system procedure in RMS, including safe handling of a robot that is then placed on charger or otherwise kept out of service",
+        "why_needed": "This was the reported corrective action associated with recovery in the incident",
+        "suggested_role": "L3_support",
+        "risk_note": "This is an operational recovery action and should not be improvised from incident notes alone",
+        "source_refs": [
+          "case_228723:page_10",
+          "case_228723:page_12"
+        ]
+      },
+      {
+        "needed_procedure": "Post-recovery validation and monitoring procedure using RMS and site confirmation for pairing restoration, hospital-lane behavior, and sustained operation",
+        "why_needed": "The incident was only considered resolved after monitoring showed the system remained operational",
+        "suggested_role": "L1_support",
+        "risk_note": "Declaring recovery too early may miss recurring instability",
+        "source_refs": [
+          "case_228723:page_7",
+          "case_228723:page_10"
+        ]
+      },
+      {
+        "needed_procedure": "Escalation handoff procedure with RMS evidence, affected robot IDs, recent remove/add history, attempted actions, and failed validation details",
+        "why_needed": "The packet does not support a broader self-contained recovery path if abnormal robot isolation is not available or does not work",
+        "suggested_role": "L2_support",
+        "risk_note": "Escalation without the right evidence may delay higher-tier diagnosis",
+        "source_refs": [
+          "case_228723:page_5",
+          "case_228723:page_9",
+          "case_228723:page_10"
+        ]
+      }
+    ],
+    "ignored_non_playbook_content": [
+      {
+        "content_type": "support_coordination",
+        "example_from_incident": "Requests to contact Shane, voicemail attempts, and moving to a Teams meeting with the site POC",
+        "reason_ignored": "These are collaboration details, not reusable troubleshooting orchestration nodes"
+      },
+      {
+        "content_type": "communication",
+        "example_from_incident": "Case comments, closure notification, and internal chat sharing",
+        "reason_ignored": "Administrative communication does not define the technical response path"
+      },
+      {
+        "content_type": "routing",
+        "example_from_incident": "Case status changes from New to In Progress to Escalated to Resolved to Closed",
+        "reason_ignored": "Case workflow state is not a troubleshooting step"
+      },
+      {
+        "content_type": "other",
+        "example_from_incident": "CBRE work order issuance and later dispatched maintenance work order evidence",
+        "reason_ignored": "Vendor and maintenance process context is incident-related but not part of the core technical troubleshooting path supported by this packet"
+      }
+    ],
+    "source_refs": [],
+    "evidence_source_refs": [],
+    "extraction_notes": [
+      "Exactly one playbook candidate was returned per instruction.",
+      "The candidate is framed from observable symptoms rather than a fixed internal label such as not-mapped robot or RMS roster mismatch.",
+      "The packet supports a broad troubleshooting pattern around abnormal robot state after replacement or remove/add activity, but does not provide enough detail to encode exact recovery steps.",
+      "Robot 158 removal is captured as a source-supported recovery reference, not as a universally confirmed root cause.",
+      "CBRE and case-management details were excluded from nodes because they are administrative rather than troubleshooting orchestration."
+    ],
+    "summary": "Use this troubleshooting pattern when a site reports a zone cannot get a pair and AMRs begin diverting to the hospital lane after a low-battery robot event, replacement attempt, or recent robot remove/add activity. The response pattern is to confirm the observable fleet behavior, inspect RMS for abnormal robot roster or mapping state, use the approved robot isolation or remove-from-service procedure if an affected robot is identified and authorized, then validate that pairing and site operation recover during monitoring.",
+    "separability_reason": "",
+    "likely_roles": [
+      "L1_support",
+      "L2_support",
+      "L3_support"
+    ],
+    "related_artifact_ids": [],
+    "related_event_ids": [],
+    "source_id": "source_case_228723",
+    "source_type": "incident_case",
+    "source_title": "Case 228723 - OptiSweep Incident Evidence",
+    "source_version": "0.1",
+    "ingestion_batch_id": "batch_20260629T223537Z",
+    "extraction_mode": "one_playbook_candidate_per_incident",
+    "incident_context": {
+      "case_id": "228723",
+      "site": "UPS Fort Worth, TX (Haslet)",
+      "incident_start_time": "2026-03-13T19:36:00",
+      "incident_resolved_time": "2026-03-13T21:20:00",
+      "time_to_resolve": 104,
+      "resolution_confirmed": true
+    }
+  }
+]

@@ -1,0 +1,417 @@
+{
+  "procedure_id": "proc_verify_agv_startup_readiness_and_correct_agv_zone_balance_v1",
+  "candidate_id": "candidate_agv_verify_startup_readiness_and_zone_balance",
+  "title": "Verify AGV Startup Readiness and Correct AGV Zone Balance",
+  "procedure_type": "recovery",
+  "summary": "Confirm before startup that there are nine AGVs without totes in the system, distributed as five under the north rack and four under the south rack. If a zone is missing an AGV, move an AGV without a tote into the missing zone and add that AGV to RMS after the move.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "support_safe": false,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use before starting the AGV system to verify the required AGV-without-tote count and rack distribution, and when correcting a missing-AGV zone condition described by the source.",
+  "not_for": [
+    "Do not use as a complete AGV movement method; the source does not provide safe-motion controls or relocation steps.",
+    "Do not use as a complete RMS operating procedure; the source does not provide the RMS access path, fields, or confirmation indicators.",
+    "Do not use this runbook to infer unsupported screen indicators from the shut-down mode image beyond the source-backed AGV startup context."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Verify AGV count and distribution before startup, determine whether a zone is missing an AGV, coordinate or perform the AGV move if supported locally, and add the moved AGV to RMS."
+    }
+  ],
+  "safety_notes": [
+    "This procedure is not support-safe based on the source packet because the source does not describe how to move an AGV safely.",
+    "Do not invent or apply unsupported safe-motion controls, movement methods, or system constraints when relocating an AGV.",
+    "Escalate if AGV relocation cannot be completed using approved local methods not documented in this source."
+  ],
+  "access_or_tools_needed": [
+    "Ability to verify AGV count and location under the north rack and south rack",
+    "Access to move an AGV without a tote",
+    "Access to RMS to add the moved AGV",
+    "Optional reference to the \"System in Shut-down Mode\" screen"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to AGV location/status information sufficient to verify count and rack distribution",
+      "Access to RMS to add the moved AGV"
+    ],
+    "system_preconditions": [
+      "Procedure is performed before starting the system",
+      "AGV readiness must be evaluated based on AGVs without totes in the system"
+    ],
+    "external_references": [
+      "ctx_manual_agv_status_screen_v1",
+      "ctx_manual_hmi_system_shutdown_mode_screen_v1",
+      "ctx_manual_agv_szonestaging_state_reference_v1"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_agv_status_screen_v1",
+    "ctx_manual_agv_szonestaging_state_reference_v1",
+    "ctx_manual_hmi_system_shutdown_mode_screen_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "description": "System screen reference associated with AGV system start-up and shut-down guidance on page 88.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "description": "Recovery-related screen showing an AGV-add workflow context that may support the RMS add step, though it is from a nearby recovery section rather than the startup section.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "description": "AGV API Controls screen reference that may help orient AGV-related HMI navigation, but does not directly document the startup count/distribution requirement.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Count AGVs without totes in the system",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Verify the documented pre-start AGV readiness count.",
+      "instruction": "Before starting the system, count the AGVs without totes in the system and verify that there are nine AGVs without totes total.",
+      "expected_result": "Nine AGVs without totes are present in the system before startup.",
+      "healthy_condition": "The count is exactly nine AGVs without totes.",
+      "failure_condition": "The count is not nine AGVs without totes.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify total AGV count without totes",
+          "exact_action": "Count AGVs without totes in the system and verify there are nine total before starting the system.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+          "what_to_look_at": "Use only as a startup-context visual reference for the AGV system in shut-down mode; do not infer unsupported counts or indicators beyond the source-backed context."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The total number of AGVs without totes is not nine.",
+        "AGV count cannot be verified from available system information."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "quote_or_summary": "Before starting the system, make sure there are enough AGVs without totes in the system. There should be nine (9) AGVs without totes in the system: five (5) under the north rack and four (4) under the south rack.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Verify north-rack and south-rack AGV distribution",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the documented zone balance required before startup.",
+      "instruction": "Verify that the nine AGVs without totes are distributed as five under the north rack and four under the south rack.",
+      "expected_result": "AGV distribution matches the documented startup requirement.",
+      "healthy_condition": "Five AGVs without totes are under the north rack and four are under the south rack.",
+      "failure_condition": "Either rack does not have the required number of AGVs without totes.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify rack distribution",
+          "exact_action": "Verify the AGV distribution is five under the north rack and four under the south rack.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+          "what_to_look_at": "Use as a startup/shut-down mode visual reference only where the source supports AGV-related rack-area context."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The north rack does not have five AGVs without totes.",
+        "The south rack does not have four AGVs without totes.",
+        "The expected zone distribution cannot be achieved or verified."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "quote_or_summary": "Before starting the system, make sure there are enough AGVs without totes in the system. There should be nine (9) AGVs without totes in the system: five (5) under the north rack and four (4) under the south rack.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Use the shut-down mode screen as an optional visual reference",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Provide source-backed visual support for the startup readiness check without over-interpreting the image.",
+      "instruction": "If using the associated shut-down mode screen as support, compare the visible AGV-related areas or indicators only to the extent supported by the source artifact and startup context.",
+      "expected_result": "The screen is used only as a contextual visual aid for the AGV startup readiness check.",
+      "healthy_condition": "The visual reference is used conservatively and only within the source-backed AGV startup/shut-down context.",
+      "failure_condition": "The screen is relied on for unsupported details, counts, controls, or indicators not documented in the source packet.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Reference shut-down mode screen",
+          "exact_action": "Compare the visible AGV-related areas or indicators on the \"System in Shut-down Mode\" screen to the expected north-rack and south-rack distribution only where supported by the source artifact.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+          "what_to_look_at": "System in Shut-down Mode screen associated with AGV startup guidance."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The screen does not provide enough supported detail to verify the AGV distribution.",
+        "Verification would require inferring unsupported indicators or controls from the image."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "figure_id": "fig_5_1",
+          "figure_number": "Figure 5-1",
+          "quote_or_summary": "Figure 5-1: System in Shut-down Mode.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "context_id": "ctx_manual_hmi_system_shutdown_mode_screen_v1",
+          "quote_or_summary": "Figure 5-1 in section 5.8.1 is a system screen titled 'System in Shut-down Mode' and is associated with AGV startup and shutdown guidance."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Move an AGV without a tote into the missing zone",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Correct a missing-AGV zone condition before startup.",
+      "instruction": "If a zone is missing an AGV, move an AGV without a tote into the zone that is missing an AGV.",
+      "expected_result": "The missing zone has an AGV without a tote positioned in it.",
+      "healthy_condition": "An AGV without a tote has been moved into the zone that was missing an AGV.",
+      "failure_condition": "The AGV cannot be moved, the correct zone cannot be reached, or the move cannot be completed safely using approved local methods.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Relocate AGV to missing zone",
+          "exact_action": "Move an AGV without a tote into the zone that is missing an AGV.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "AGV relocation cannot be completed.",
+        "Safe movement method details are required but not provided by the source.",
+        "The source-expected AGV count or zone distribution cannot be achieved."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "quote_or_summary": "If the system is started without nine totes, an AGV without a tote will need to be moved into the zone that is missing an AGV. Make sure to add the AGV to the RMS after moving the AGV.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Add the moved AGV to RMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Complete the documented corrective action after relocating the AGV.",
+      "instruction": "After moving the AGV, add the moved AGV to the RMS.",
+      "expected_result": "The moved AGV has been added to RMS.",
+      "healthy_condition": "RMS addition of the moved AGV is completed using approved local access and method.",
+      "failure_condition": "The AGV cannot be added to RMS or RMS confirmation cannot be obtained.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Add moved AGV in RMS",
+          "exact_action": "Add the AGV to the RMS after moving the AGV.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+          "what_to_look_at": "Optional nearby recovery visual showing an AGV-add workflow context; use only as supporting context because the startup source text does not provide RMS path, fields, or confirmation indicators."
+        },
+        {
+          "artifact_id": "artifact_fig_4_12_agv_api_controls",
+          "what_to_look_at": "Optional AGV-related controls reference; do not treat as direct evidence for the specific RMS add path unless locally validated."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "RMS addition cannot be completed.",
+        "The RMS access path, fields, or confirmation indicators are needed but not provided by the source."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "quote_or_summary": "If the system is started without nine totes, an AGV without a tote will need to be moved into the zone that is missing an AGV. Make sure to add the AGV to the RMS after moving the AGV.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+          "quote_or_summary": "Screen associated with the fault recovery procedure for adding an AGV to a zone when there is no empty AGV available."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Before startup, there are nine AGVs without totes in the system.",
+    "The AGV distribution is five under the north rack and four under the south rack.",
+    "If an AGV was moved to correct a missing zone, that AGV has been added to RMS."
+  ],
+  "healthy_conditions": [
+    "Nine AGVs without totes are present before startup.",
+    "Five AGVs without totes are under the north rack.",
+    "Four AGVs without totes are under the south rack.",
+    "Any relocated AGV has been added to RMS."
+  ],
+  "failure_conditions": [
+    "The total AGV count without totes is not nine.",
+    "The north/south rack distribution does not match five/four.",
+    "A missing-AGV zone cannot be corrected.",
+    "The moved AGV cannot be added to RMS.",
+    "Required movement or RMS details are needed but not provided by the source."
+  ],
+  "escalation_guidance": [
+    "Escalate if AGV relocation or RMS addition cannot be completed.",
+    "Escalate if the source-expected AGV count or zone distribution cannot be achieved.",
+    "Escalate when safe-motion controls or movement method details are required, because they are not provided by this source.",
+    "Escalate when RMS access path, fields, or confirmation indicators are required, because they are not provided by this source."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "what_to_look_at": "Startup/shut-down mode screen associated with AGV readiness guidance."
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "what_to_look_at": "Nearby recovery screen that may provide contextual support for adding an AGV after relocation."
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "what_to_look_at": "AGV-related controls reference for general orientation only."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 88,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+      "quote_or_summary": "Before starting the system, make sure there are enough AGVs without totes in the system. There should be nine (9) AGVs without totes in the system: five (5) under the north rack and four (4) under the south rack.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 88,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+      "quote_or_summary": "If the system is started without nine totes, an AGV without a tote will need to be moved into the zone that is missing an AGV. Make sure to add the AGV to the RMS after moving the AGV.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 88,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+      "figure_id": "fig_5_1",
+      "figure_number": "Figure 5-1",
+      "quote_or_summary": "Figure 5-1: System in Shut-down Mode.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_agv_verify_startup_readiness_and_zone_balance"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide the RMS access path, fields, or confirmation indicators for adding the moved AGV.",
+    "The source does not provide safe-motion controls or movement method details for relocating an AGV.",
+    "The source does not specify whether production must be stopped beyond the pre-start context.",
+    "The source does not provide a time estimate for completing this procedure.",
+    "The source text says \"started without nine totes,\" but the surrounding startup requirement is framed as AGVs without totes; SME review should confirm intended wording."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

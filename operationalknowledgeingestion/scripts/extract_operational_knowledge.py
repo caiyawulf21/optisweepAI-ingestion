@@ -20,19 +20,19 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from optisweep_ingestion.stage_paths import STAGE_DIR_NAMES, normalize_stage, stage_dir
-from optisweep_ingestion.tools.artifact_enricher import AzureOpenAIArtifactClient, enrich_source_artifacts
-from optisweep_ingestion.tools.artifact_extractor import extract_source_artifacts
-from optisweep_ingestion.tools.candidate_pool_builder import build_candidate_pool
-from optisweep_ingestion.tools.operational_context_extractor import AzureOpenAIContextClient, extract_operational_context
-from optisweep_ingestion.tools.runbook_candidate_extractor import AzureOpenAIRunbookCandidateClient, extract_runbook_candidates
-from optisweep_ingestion.tools.source_bundle_builder import build_source_bundle
+from optisweep_ingestion.stage3_artifact_enrichment import AzureOpenAIArtifactClient, enrich_source_artifacts
+from optisweep_ingestion.stage2_source_artifacts import extract_source_artifacts
+from optisweep_ingestion.stage6_runbook_finalization import AzureOpenAIRunbookFinalizationClient, finalize_operational_runbooks
+from optisweep_ingestion.stage4_operational_context import AzureOpenAIContextClient, extract_operational_context
+from optisweep_ingestion.stage5_runbook_candidates import AzureOpenAIRunbookCandidateClient, extract_runbook_candidates
+from optisweep_ingestion.stage1_source_bundle import build_source_bundle
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Extract operational knowledge from a source PDF.")
     parser.add_argument("--source-pdf", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--stages", default="1,2", help="Comma-separated stages to run. Supports 1,2,3,4,5,6.")
+    parser.add_argument("--stages", default="1,2", help="Comma-separated stages to run. Supports 1,2,3,4,5,6,6.5.")
     parser.add_argument("--llm", action="store_true", help="Use Azure OpenAI for LLM-backed stages 3, 4, and 5.")
     parser.add_argument("--max-workers", type=int, default=4, help="Concurrent LLM calls for stages that support it.")
     parser.add_argument("--backfill-missing-sections", action="store_true", help="Stage 5: add conservative candidates for missed procedural sections.")
@@ -53,6 +53,7 @@ def main() -> None:
     stage4_dir = stage_dir(args.output_dir, "4")
     stage5_dir = stage_dir(args.output_dir, "5")
     stage6_dir = stage_dir(args.output_dir, "6")
+    stage6_5_dir = stage_dir(args.output_dir, "6.5")
 
     if "1" in stages:
         bundle = build_source_bundle(
@@ -171,20 +172,62 @@ def main() -> None:
         print(f"Stage 5 failed packets: {len(report['failed_packets'])}")
 
     if "6" in stages:
+        if not args.llm:
+            raise ValueError("Stage 6 requires --llm. Fake runbook finalization is not supported.")
         candidates_path = _require_existing(
             "Stage 6 requires Stage 5 runbook_candidates.json. Run stage 5 first.",
             stage5_dir / "runbook_candidates.json",
             args.output_dir / "runbook_candidates.json",
         )
-        pool = build_candidate_pool(candidate_paths=[candidates_path], output_dir=stage6_dir)
-        print(f"Stage 6 candidate pool written: {stage6_dir / 'candidate_pool.json'}")
-        print(f"Stage 6 candidate clusters generated: {pool.candidate_cluster_count}")
+        source_artifacts_path = _require_existing(
+            "Stage 6 requires Stage 3 source_artifacts_enriched.json. Run stage 3 first.",
+            stage3_dir / "source_artifacts_enriched.json",
+            args.output_dir / "source_artifacts_enriched.json",
+        )
+        operational_context_path = _require_existing(
+            "Stage 6 requires Stage 4 operational_context.json. Run stage 4 first.",
+            stage4_dir / "operational_context.json",
+            args.output_dir / "operational_context.json",
+        )
+        source_bundle_path = _require_existing(
+            "Stage 6 requires Stage 1 source_bundle.json. Run stage 1 first.",
+            stage1_dir / "source_bundle.json",
+            args.output_dir / "source_bundle.json",
+        )
+        client = AzureOpenAIRunbookFinalizationClient()
+        finalized, report = finalize_operational_runbooks(
+            runbook_candidates_path=candidates_path,
+            source_artifacts_path=source_artifacts_path,
+            operational_context_path=operational_context_path,
+            source_bundle_path=source_bundle_path,
+            output_dir=stage6_dir,
+            llm_client=client,
+            llm_used=True,
+            max_workers=args.max_workers,
+        )
+        print(f"Stage 6 finalized runbooks written: {stage6_dir / 'finalized_runbooks'}")
+        print(f"Stage 6 review markdown written: {stage6_dir / 'review_markdown' / 'runbooks'}")
+        print(f"Stage 6 finalization report written: {stage6_dir / 'runbook_finalization_report.json'}")
+        print(f"Stage 6 finalized runbook count: {len(finalized)}")
+        print(f"Stage 6 failed candidates: {report.get('failed_candidate_count', 0)}")
+
+    if "6.5" in stages:
+        from optisweep_ingestion.stage6_5_runbook_pool import build_candidate_pool
+
+        candidates_path = _require_existing(
+            "Stage 6.5 requires Stage 5 runbook_candidates.json or finalized runbook inputs. Run stage 5 first.",
+            stage5_dir / "runbook_candidates.json",
+            args.output_dir / "runbook_candidates.json",
+        )
+        pool = build_candidate_pool(candidate_paths=[candidates_path], output_dir=stage6_5_dir)
+        print(f"Stage 6.5 runbook pool written: {stage6_5_dir / 'candidate_pool.json'}")
+        print(f"Stage 6.5 candidate clusters generated: {pool.candidate_cluster_count}")
 
 
 def _normalize_supported_stage(value: str) -> str:
     stage = normalize_stage(value)
-    if stage not in {"1", "2", "3", "4", "5", "6"}:
-        raise ValueError("Implemented operational extraction stages are 1,2,3,4,5,6.")
+    if stage not in {"1", "2", "3", "4", "5", "6", "6.5"}:
+        raise ValueError("Implemented operational extraction stages are 1,2,3,4,5,6,6.5.")
     return stage
 
 

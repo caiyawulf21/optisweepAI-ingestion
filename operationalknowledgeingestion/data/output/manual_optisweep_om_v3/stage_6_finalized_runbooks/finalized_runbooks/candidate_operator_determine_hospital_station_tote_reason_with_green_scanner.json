@@ -1,0 +1,425 @@
+{
+  "procedure_id": "proc_determine_why_a_tote_was_sent_to_the_hospital_station_using_the_green_scanner_v1",
+  "candidate_id": "candidate_operator_determine_hospital_station_tote_reason_with_green_scanner",
+  "title": "Determine Why A Tote Was Sent To The Hospital Station Using The Green Scanner",
+  "procedure_type": "diagnostic",
+  "summary": "Use the hospital station stacklight and green scanner to confirm tote presence and determine why a tote was brought to the hospital station.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when an operator needs to identify why a tote was brought to the hospital station and the source indicates the hospital station stacklight and green scanner are used for that purpose.",
+  "not_for": [
+    "Detailed tote handling, removal, or reinsertion procedures not explicitly provided in this source section",
+    "Any scanner workflow requiring exact scan target, button sequence, or field interpretation not specified in the source"
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "operator",
+      "responsibility": "Observe the hospital station stacklight, use the green scanner, and identify the reason the tote was brought to the station."
+    }
+  ],
+  "safety_notes": [
+    "Use only the source-supported diagnostic actions in this runbook.",
+    "Do not perform additional tote handling or system control actions unless directed by a separate source-supported procedure."
+  ],
+  "access_or_tools_needed": [
+    "Access to the hospital station",
+    "Green scanner",
+    "Ability to observe the hospital station stacklight"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the hospital station"
+    ],
+    "system_preconditions": [
+      "A tote is indicated as present at the hospital station"
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_manual_hospital_station_presence_and_scanner_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_3_6_stacklight",
+      "description": "Hospital station stacklight reference used to verify tote/AGV presence indication.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_4_30_hospital_hmi_operations_screen",
+      "description": "Hospital HMI Operations screen showing status information that may help interpret why the tote is at the station.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen",
+      "description": "Example hospital HMI screen for a bar code mismatch condition referenced by the candidate image note.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_33_hospital_hmi_no_read_bar_code_screen",
+      "description": "Example hospital HMI screen for a no-read bar code condition.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_4_35_hospital_hmi_tote_failed_to_empty_screen",
+      "description": "Example hospital HMI screen for a tote failed to empty condition.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen",
+      "description": "Example hospital HMI screen for a sent from bagging station condition.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_page_92_image_2",
+      "description": "Hospital station operation artifact showing green scanner use and status-field-driven task context.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+      "description": "Reference screen showing green scanner population of Tote ID and barcode fields.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Verify tote presence at the hospital station",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm that a tote is present before attempting to determine why it was brought to the hospital station.",
+      "instruction": "At the hospital station, observe the stacklight indication to verify that a tote is present.",
+      "expected_result": "The operator confirms from the stacklight that a tote is present at the hospital station.",
+      "healthy_condition": "The stacklight indication shows a tote/AGV present at the station as described by the source.",
+      "failure_condition": "The stacklight does not indicate tote presence, is indeterminate, or indicates a fault/error condition instead of normal presence.",
+      "actions": [
+        {
+          "action_type": "physical_inspection",
+          "label": "Observe stacklight",
+          "exact_action": "Check the stacklight indication to verify that a tote is present.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_3_6_stacklight",
+          "what_to_look_at": "Hospital station stacklight indication meanings, including flashing yellow for 15 seconds meaning an AGV is present at either position of the station."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The stacklight does not indicate a tote/AGV present at the station",
+        "The stacklight shows fault or RMS error indications",
+        "The indication is indeterminate and the operator cannot confirm tote presence"
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 28,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_3_hospital_station",
+          "quote_or_summary": "A stacklight indicates a tote is present. An operator uses a scanner (green scanner) to determine the reason the tote was brought to the station.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 29,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_3_1_hospital_station_stacklight",
+          "figure_id": "fig_3_6",
+          "figure_number": "Figure 3-6",
+          "quote_or_summary": "Flashing yellow for 15 seconds means an AGV is present at either position of the station; flashing red means fault; red yellow green means RMS error; solid green means no AGV present at the station.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Use the green scanner to determine the tote reason",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Use the source-identified scanner method to determine why the tote was brought to the hospital station.",
+      "instruction": "Use the green scanner at the hospital station on the tote or station process as documented by the source to determine the reason the tote was brought there.",
+      "expected_result": "The scanner-supported hospital station process provides the reason the tote was brought to the station.",
+      "healthy_condition": "The operator is able to use the green scanner and obtain a reason or status associated with the tote at the hospital station.",
+      "failure_condition": "The source-supported scanner interaction cannot be completed, or no reason is returned for the tote.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Scan with green scanner",
+          "exact_action": "Use the green scanner to determine the reason the tote was brought to the station.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Hospital station operation context showing the tote barcode is scanned using the green scanner and the Tote ID field auto-populates."
+        },
+        {
+          "artifact_id": "artifact_fig_4_30_hospital_hmi_operations_screen",
+          "what_to_look_at": "Status information fields that tell the station operator why the tote is there, what menu they need to use, and what action they need to perform."
+        },
+        {
+          "artifact_id": "artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen",
+          "what_to_look_at": "Example mismatch condition screen associated with a tote sent to the hospital station because the scanned bar code did not match the tote ID expected by the WCS."
+        },
+        {
+          "artifact_id": "artifact_fig_4_33_hospital_hmi_no_read_bar_code_screen",
+          "what_to_look_at": "Example no-read condition screen associated with a tote sent to the hospital station because the bar code could not be scanned."
+        },
+        {
+          "artifact_id": "artifact_fig_4_35_hospital_hmi_tote_failed_to_empty_screen",
+          "what_to_look_at": "Example failed-to-empty condition screen where the green scanner is used to scan the tote bar code."
+        },
+        {
+          "artifact_id": "artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen",
+          "what_to_look_at": "Example sent-from-bagging-station condition screen where the green scanner populates Tote ID and Bar Code fields."
+        },
+        {
+          "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+          "what_to_look_at": "Reference example showing green scanner use to populate Tote ID and Barcode fields."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The scanner does not provide a reason for the tote at the hospital station",
+        "The operator cannot determine the required scan target or scanner interaction from the source",
+        "The displayed reason or status cannot be interpreted from the available source material"
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 28,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_3_hospital_station",
+          "quote_or_summary": "An operator uses a scanner (green scanner) to determine the reason the tote was brought to the station.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 60,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_2_operations_menu",
+          "figure_id": "fig_4_30",
+          "figure_number": "Figure 4-30",
+          "quote_or_summary": "The status messages tell the station operator why the tote is there, what menu they need to use, and what action they need to perform.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 92,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation",
+          "quote_or_summary": "The operator scans the tote barcode using the green scanner, confirms the Tote ID field auto-populates, and performs the required task indicated by the status fields.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Read and record the returned reason",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Capture the reason identified by the scanner-supported hospital station process so the tote condition can be understood and acted on by the appropriate procedure.",
+      "instruction": "Read the reason returned by the scanner-supported hospital station process and record that reason for the tote.",
+      "expected_result": "The operator has identified and recorded the reason the tote was brought to the hospital station.",
+      "healthy_condition": "A clear tote reason or status is available and can be recorded.",
+      "failure_condition": "No clear reason is returned, or the reason cannot be read or recorded from the available source-supported interface or process.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Read returned reason or status",
+          "exact_action": "Read the reason returned by the scanner for the tote being brought to the hospital station.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_30_hospital_hmi_operations_screen",
+          "what_to_look_at": "Status fields that explain why the tote is there and what action is needed."
+        },
+        {
+          "artifact_id": "artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen",
+          "what_to_look_at": "Example of a specific reason category: bar code mismatch."
+        },
+        {
+          "artifact_id": "artifact_fig_4_33_hospital_hmi_no_read_bar_code_screen",
+          "what_to_look_at": "Example of a specific reason category: no read bar code."
+        },
+        {
+          "artifact_id": "artifact_fig_4_35_hospital_hmi_tote_failed_to_empty_screen",
+          "what_to_look_at": "Example of a specific reason category: tote failed to empty."
+        },
+        {
+          "artifact_id": "artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen",
+          "what_to_look_at": "Example of a specific reason category: sent from bagging station."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The scanner or associated station process does not provide a reason",
+        "The reason cannot be interpreted from the available status information",
+        "The source does not provide enough detail to continue to the next handling action"
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 28,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_3_hospital_station",
+          "quote_or_summary": "An operator uses a scanner (green scanner) to determine the reason the tote was brought to the station.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 60,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_2_operations_menu",
+          "figure_id": "fig_4_30",
+          "figure_number": "Figure 4-30",
+          "quote_or_summary": "Status messages tell the station operator why the tote is there, what menu they need to use, and what action they need to perform.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The operator confirms tote presence at the hospital station.",
+    "The green scanner-supported process yields the reason the tote was brought to the station.",
+    "The reason is read and recorded by the operator."
+  ],
+  "healthy_conditions": [
+    "The stacklight indicates tote/AGV presence at the hospital station.",
+    "The green scanner can be used at the hospital station.",
+    "A status or reason is available that explains why the tote is at the station."
+  ],
+  "failure_conditions": [
+    "The stacklight does not confirm tote presence.",
+    "The scanner does not provide a reason for the tote.",
+    "The source does not specify enough scanner interaction detail to complete a more detailed procedure.",
+    "The returned reason cannot be interpreted from the available source-supported information."
+  ],
+  "escalation_guidance": [
+    "Escalate if the scanner does not provide a reason for the tote at the hospital station.",
+    "Escalate for SME review because the source does not specify the scanner interaction details, scan target, or displayed fields.",
+    "Escalate if the stacklight indicates a fault or RMS error instead of normal presence."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_3_6_stacklight",
+      "what_to_look_at": "Hospital station stacklight indication meanings."
+    },
+    {
+      "artifact_id": "artifact_fig_4_30_hospital_hmi_operations_screen",
+      "what_to_look_at": "Status fields that tell the operator why the tote is there."
+    },
+    {
+      "artifact_id": "artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen",
+      "what_to_look_at": "Example hospital HMI screen for a bar code mismatch reason."
+    },
+    {
+      "artifact_id": "artifact_fig_4_33_hospital_hmi_no_read_bar_code_screen",
+      "what_to_look_at": "Example hospital HMI screen for a no-read bar code reason."
+    },
+    {
+      "artifact_id": "artifact_fig_4_35_hospital_hmi_tote_failed_to_empty_screen",
+      "what_to_look_at": "Example hospital HMI screen for a tote failed to empty reason."
+    },
+    {
+      "artifact_id": "artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen",
+      "what_to_look_at": "Example hospital HMI screen for a sent from bagging station reason."
+    },
+    {
+      "artifact_id": "artifact_page_92_image_2",
+      "what_to_look_at": "Hospital station operation context showing green scanner use."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 28,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_3_hospital_station",
+      "quote_or_summary": "A stacklight indicates a tote is present. An operator uses a scanner (green scanner) to determine the reason the tote was brought to the station.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 28,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_3_hospital_station",
+      "quote_or_summary": "A stacklight indicates a tote is present. An operator uses a scanner (green scanner) to determine the reason the tote was brought to the station.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_operator_determine_hospital_station_tote_reason_with_green_scanner"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source does not specify the exact scanner interaction details.",
+    "The source does not specify the exact scan target for determining the tote reason.",
+    "The source does not specify the exact displayed fields returned by the scanner interaction in the cited section.",
+    "The source does not define the exact recording method for the returned reason.",
+    "The source does not provide a time estimate for this procedure."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

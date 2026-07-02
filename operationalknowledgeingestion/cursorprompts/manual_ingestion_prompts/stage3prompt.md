@@ -186,7 +186,7 @@ Use this only for uncertainty, missing context, low-confidence visual matching, 
 Create or update:
 
 ```text
-src/optisweep_ingestion/tools/artifact_enricher.py
+src/optisweep_ingestion/stage3_artifact_enrichment.py
 scripts/stage3_enrich_source_artifacts.py
 tests/test_artifact_enricher.py
 ```

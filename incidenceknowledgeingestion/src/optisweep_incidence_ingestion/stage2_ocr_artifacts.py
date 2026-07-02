@@ -12,6 +12,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 import hashlib
+import json
+import os
 import re
 
 from optisweep_incidence_ingestion.ocr import (
@@ -32,12 +34,214 @@ class ImageHash:
     height: int
 
 
+@dataclass(frozen=True)
+class ArtifactGateDecision:
+    keep: bool
+    category: str
+    confidence: float | None
+    reason: str
+    raw_response: str | None = None
+
+
+class QwenArtifactGate:
+    """Optional local Qwen VLM gate for Stage 2 candidate artifact images."""
+
+    def __init__(
+        self,
+        model_name: str = "Qwen/Qwen2.5-VL-3B-Instruct",
+        device: str | None = None,
+        max_new_tokens: int = 180,
+        local_files_only: bool = False,
+    ) -> None:
+        self.model_name = model_name
+        self.device = device
+        self.max_new_tokens = max_new_tokens
+        self.local_files_only = local_files_only
+        self._model: Any | None = None
+        self._processor: Any | None = None
+
+    def decide(
+        self,
+        *,
+        image_path: Path,
+        candidate_kind: str,
+        page_number: int,
+        ocr: dict[str, Any],
+        parent_ocr: dict[str, Any] | None = None,
+    ) -> ArtifactGateDecision:
+        self._ensure_loaded()
+        assert self._model is not None
+        assert self._processor is not None
+        try:
+            from PIL import Image  # type: ignore
+        except ImportError as exc:
+            raise RuntimeError("Pillow is required for --stage2-artifact-gate qwen.") from exc
+
+        image = Image.open(image_path).convert("RGB")
+        prompt = _qwen_gate_prompt(candidate_kind=candidate_kind, page_number=page_number, ocr=ocr, parent_ocr=parent_ocr)
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "image", "image": image},
+                    {"type": "text", "text": prompt},
+                ],
+            }
+        ]
+        text = self._processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        inputs = self._processor(text=[text], images=[image], return_tensors="pt")
+        if self.device:
+            inputs = inputs.to(self.device)
+        generated = self._model.generate(**inputs, max_new_tokens=self.max_new_tokens)
+        generated_trimmed = generated[:, inputs.input_ids.shape[1] :]
+        response = self._processor.batch_decode(generated_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
+        return _parse_gate_response(response)
+
+    def _ensure_loaded(self) -> None:
+        if self._model is not None and self._processor is not None:
+            return
+        try:
+            from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration  # type: ignore
+            import torch  # type: ignore
+        except ImportError as exc:
+            raise RuntimeError(
+                "Qwen Stage 2 gate requires transformers, torch, and Pillow. "
+                "Install them and download the selected Qwen2.5-VL model before using --stage2-artifact-gate qwen."
+            ) from exc
+        dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+        previous_offline = os.environ.get("HF_HUB_OFFLINE")
+        if self.local_files_only:
+            os.environ["HF_HUB_OFFLINE"] = "1"
+        try:
+            self._processor = AutoProcessor.from_pretrained(self.model_name, local_files_only=self.local_files_only)
+            self._model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+                self.model_name,
+                torch_dtype=dtype,
+                device_map="auto" if self.device is None else None,
+                local_files_only=self.local_files_only,
+            )
+        except Exception as exc:
+            if self.local_files_only:
+                raise RuntimeError(
+                    f"Qwen model '{self.model_name}' is not available in the local Hugging Face cache. "
+                    "Download/cache it first or run without --stage2-qwen-local-files-only."
+                ) from exc
+            raise
+        finally:
+            if self.local_files_only:
+                if previous_offline is None:
+                    os.environ.pop("HF_HUB_OFFLINE", None)
+                else:
+                    os.environ["HF_HUB_OFFLINE"] = previous_offline
+        if self.device:
+            self._model.to(self.device)
+
+
 def prepare_generated_image_dir(path: Path) -> None:
     """Clear a Stage 2 managed image directory before regeneration."""
     path.mkdir(parents=True, exist_ok=True)
     for child in path.iterdir():
         if child.is_file():
             child.unlink()
+
+
+def _qwen_gate_prompt(
+    *,
+    candidate_kind: str,
+    page_number: int,
+    ocr: dict[str, Any],
+    parent_ocr: dict[str, Any] | None,
+) -> str:
+    candidate_text = normalize_whitespace(ocr.get("clean_text") or ocr.get("text") or "")[:900]
+    parent_text = normalize_whitespace((parent_ocr or {}).get("clean_text") or (parent_ocr or {}).get("text") or "")[:900]
+    return f"""You are filtering incident evidence image candidates for a reusable ingestion pipeline.
+
+Decide whether the shown image should become a source artifact.
+
+Keep only attached operational evidence images such as application screenshots, dashboards, forms, tables, logs, error panels, command windows, photos, or diagrams.
+Reject outer feed/wrapper UI, plain text updates, status/timeline entries, email/chat text, partial fragments, duplicate-looking crops, and crops that are only surrounding context.
+
+Judge primarily from the visible pixels, not from OCR quality. Keep the candidate if the image visibly contains an attached screenshot, table, application window, form, dashboard, or operational panel, even when it also includes a short caption, actor/timestamp text, or surrounding feed chrome. Reject only when the candidate is mainly text feed/status/comment UI with no substantive embedded visual evidence.
+The parent/wrapper OCR is context only; do not reject a visible attached screenshot just because the parent OCR is a case feed or chat feed.
+
+Return only compact JSON with:
+{{"keep": true|false, "category": "attached_evidence_image|outer_wrapper_text|plain_text_update|partial_or_duplicate_crop|not_evidence", "confidence": 0.0-1.0, "reason": "short reason"}}
+
+Candidate kind: {candidate_kind}
+Source page: {page_number}
+Candidate OCR: {candidate_text or "[none]"}
+Parent/wrapper OCR excerpt: {parent_text or "[none]"}
+"""
+
+
+def _parse_gate_response(response: str) -> ArtifactGateDecision:
+    match = re.search(r"\{.*\}", response, flags=re.DOTALL)
+    payload_text = match.group(0) if match else response
+    try:
+        payload = json.loads(payload_text)
+    except json.JSONDecodeError:
+        return ArtifactGateDecision(
+            keep=False,
+            category="unparseable_gate_response",
+            confidence=None,
+            reason="Qwen response was not valid JSON.",
+            raw_response=response,
+        )
+    return ArtifactGateDecision(
+        keep=bool(payload.get("keep")),
+        category=str(payload.get("category") or "unknown"),
+        confidence=float(payload["confidence"]) if isinstance(payload.get("confidence"), int | float) else None,
+        reason=str(payload.get("reason") or ""),
+        raw_response=response,
+    )
+
+
+def _apply_artifact_gate(
+    artifact_gate: Any | None,
+    *,
+    image_path: Path,
+    candidate_kind: str,
+    page_number: int,
+    ocr: dict[str, Any],
+    parent_ocr: dict[str, Any] | None = None,
+) -> ArtifactGateDecision | None:
+    if artifact_gate is None:
+        return None
+    return artifact_gate.decide(
+        image_path=image_path,
+        candidate_kind=candidate_kind,
+        page_number=page_number,
+        ocr=ocr,
+        parent_ocr=parent_ocr,
+    )
+
+
+def _gate_metadata(decision: ArtifactGateDecision | None) -> dict[str, Any]:
+    if decision is None:
+        return {"artifact_gate": "none"}
+    return {
+        "artifact_gate": "qwen",
+        "artifact_gate_decision": {
+            "keep": decision.keep,
+            "category": decision.category,
+            "confidence": decision.confidence,
+            "reason": decision.reason,
+            "raw_response": decision.raw_response,
+        },
+    }
+
+
+def _gate_should_suppress(decision: ArtifactGateDecision | None, *, visual_candidate: bool) -> bool:
+    if decision is None or decision.keep:
+        return False
+    confidence = decision.confidence if decision.confidence is not None else 0.0
+    category = decision.category
+    strong_reject_categories = {"plain_text_update", "partial_or_duplicate_crop", "not_evidence"}
+    if visual_candidate and category == "outer_wrapper_text":
+        return False
+    if category in strong_reject_categories and confidence >= 0.70:
+        return True
+    return not visual_candidate and confidence >= 0.70
 
 
 def extract_incident_ocr_artifacts(
@@ -49,6 +253,7 @@ def extract_incident_ocr_artifacts(
     render_zoom: float = 3.0,
     min_crop_area_ratio: float = 0.05,
     include_detected_crops: bool = False,
+    artifact_gate: Any | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     try:
         import cv2  # type: ignore
@@ -101,6 +306,7 @@ def extract_incident_ocr_artifacts(
                 embedded_dir=embedded_dir,
                 ocr_client=ocr_client,
                 image_hashes=image_hashes,
+                artifact_gate=artifact_gate,
             )
             artifacts.extend(embedded_artifacts)
             warnings.extend(embedded_warnings)
@@ -121,6 +327,7 @@ def extract_incident_ocr_artifacts(
                     ocr_client=ocr_client,
                     image_hashes=image_hashes,
                     min_crop_area_ratio=min_crop_area_ratio,
+                    artifact_gate=artifact_gate,
                 )
             artifacts.extend(crop_artifacts)
 
@@ -131,12 +338,17 @@ def extract_incident_ocr_artifacts(
                     "rendered_page_image": str(page_image_path),
                     "full_page_artifact_id": None,
                     "ocr_text": page_ocr["text"],
+                    "ocr_clean_text": page_ocr.get("clean_text") or "",
                     "ocr_confidence": page_ocr["confidence"],
                     "ocr_word_count": page_ocr["word_count"],
                     "ocr_text_hash": page_ocr["text_hash"],
+                    "ocr_quality": page_ocr.get("quality"),
+                    "ocr_lines": page_ocr.get("lines") or [],
+                    "ocr_attempts": page_ocr.get("attempts") or [],
                     "detected_page_type": page_type,
                     "embedded_artifact_ids": [artifact["artifact_id"] for artifact in embedded_artifacts],
                     "crop_artifact_ids": [artifact["artifact_id"] for artifact in crop_artifacts],
+                    "reviewable_text_artifact_ids": [],
                     "stage2_status": "ocr_complete",
                     "source_refs": source_refs,
                 }
@@ -170,7 +382,12 @@ def extract_incident_ocr_artifacts(
             {
                 "rendered_page_image_ref": inventory["rendered_page_image"],
                 "ocr_text": inventory["ocr_text"],
+                "ocr_clean_text": inventory.get("ocr_clean_text"),
                 "ocr_confidence": inventory["ocr_confidence"],
+                "ocr_word_count": inventory.get("ocr_word_count"),
+                "ocr_quality": inventory.get("ocr_quality"),
+                "ocr_lines": inventory.get("ocr_lines") or [],
+                "ocr_attempts": inventory.get("ocr_attempts") or [],
                 "stage2_status": inventory["stage2_status"],
                 "detected_page_type": inventory["detected_page_type"],
                 "artifact_ids": inventory["embedded_artifact_ids"] + inventory["crop_artifact_ids"],
@@ -206,6 +423,7 @@ def extract_embedded_image_artifacts(
     embedded_dir: Path,
     ocr_client: TesseractOCRClient | None,
     image_hashes: dict[str, ImageHash],
+    artifact_gate: Any | None = None,
 ) -> tuple[list[dict[str, Any]], list[str]]:
     artifacts: list[dict[str, Any]] = []
     warnings: list[str] = []
@@ -238,6 +456,7 @@ def extract_embedded_image_artifacts(
             warnings=warnings,
             parent_image_index=image_index,
             parent_ocr=ocr,
+            artifact_gate=artifact_gate,
         )
         if nested_artifacts:
             artifacts.extend(nested_artifacts)
@@ -246,6 +465,19 @@ def extract_embedded_image_artifacts(
         if is_wrapper:
             warnings.append(
                 f"Suppressed text wrapper image on page {page_number}; surrounding OCR remains in page_inventory."
+            )
+            file_path.unlink(missing_ok=True)
+            continue
+        gate_decision = _apply_artifact_gate(
+            artifact_gate,
+            image_path=file_path,
+            candidate_kind="embedded_pdf_image",
+            page_number=page_number,
+            ocr=ocr,
+        )
+        if _gate_should_suppress(gate_decision, visual_candidate=False):
+            warnings.append(
+                f"Qwen artifact gate suppressed embedded image on page {page_number}: {gate_decision.category} - {gate_decision.reason}"
             )
             file_path.unlink(missing_ok=True)
             continue
@@ -280,6 +512,7 @@ def extract_embedded_image_artifacts(
                     "height": height,
                     "file_size_bytes": len(data),
                     "promotion_reason": _promotion_reason(ocr["text"], image_type),
+                    **_gate_metadata(gate_decision),
                 },
             )
         )
@@ -297,6 +530,7 @@ def extract_nested_media_artifacts(
     warnings: list[str],
     parent_image_index: int,
     parent_ocr: dict[str, Any],
+    artifact_gate: Any | None = None,
 ) -> list[dict[str, Any]]:
     if not is_likely_evidence_wrapper(parent_ocr):
         return []
@@ -320,7 +554,7 @@ def extract_nested_media_artifacts(
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
         area_ratio = (w * h) / image_area
-        if area_ratio < 0.006 or area_ratio > 0.28:
+        if area_ratio < 0.006 or area_ratio > 0.68:
             continue
         if w < 140 or h < 90:
             continue
@@ -331,6 +565,7 @@ def extract_nested_media_artifacts(
         candidates.append((x, y, w, h, area_ratio))
 
     artifacts: list[dict[str, Any]] = []
+    accepted_boxes: list[tuple[int, int, int, int]] = []
     candidates = sorted(candidates, key=lambda item: item[4], reverse=True)[:10]
     for candidate in candidates:
         if len(artifacts) >= 6:
@@ -344,6 +579,8 @@ def extract_nested_media_artifacts(
             image_width=image_width,
             image_height=image_height,
         )
+        if _overlaps_existing_crop((left, top, right, bottom), accepted_boxes):
+            continue
         crop = image[top:bottom, left:right]
         artifact_id = make_artifact_id(
             package["source_case_id"],
@@ -390,7 +627,21 @@ def extract_nested_media_artifacts(
                     f"nested_image_{parent_image_index}_{len(artifacts) + 1}_tile",
                 )
                 tile_image_type = classify_incident_artifact(tile_ocr["text"])
-                if not is_promotable_text_strip_tile(tile_image_type, tile_ocr):
+                if is_likely_evidence_wrapper(tile_ocr) or not looks_like_nested_screenshot(tile, cv2):
+                    tile_output_path.unlink(missing_ok=True)
+                    continue
+                gate_decision = _apply_artifact_gate(
+                    artifact_gate,
+                    image_path=tile_output_path,
+                    candidate_kind="nested_tile_image",
+                    page_number=page_number,
+                    ocr=tile_ocr,
+                    parent_ocr=parent_ocr,
+                )
+                if _gate_should_suppress(gate_decision, visual_candidate=True):
+                    warnings.append(
+                        f"Qwen artifact gate suppressed nested tile on page {page_number}: {gate_decision.category} - {gate_decision.reason}"
+                    )
                     tile_output_path.unlink(missing_ok=True)
                     continue
                 image_hashes[tile_artifact_id] = hash_image(tile_output_path)
@@ -438,6 +689,7 @@ def extract_nested_media_artifacts(
                             },
                             "area_ratio": round(((abs_right - abs_left) * (abs_bottom - abs_top)) / image_area, 4),
                             "promotion_reason": "Promoted thumbnail image from Teams/chat text strip; surrounding chat OCR remains in page_inventory.",
+                            **_gate_metadata(gate_decision),
                         },
                     )
                 )
@@ -445,9 +697,25 @@ def extract_nested_media_artifacts(
         if crop_height / max(crop_width, 1) > 1.35 and int(ocr.get("word_count") or 0) >= 5:
             output_path.unlink(missing_ok=True)
             continue
-        if not is_meaningful_nested_media(image_type, ocr):
+        visual_screenshot = looks_like_nested_screenshot(crop, cv2)
+        if not visual_screenshot:
             output_path.unlink(missing_ok=True)
             continue
+        gate_decision = _apply_artifact_gate(
+            artifact_gate,
+            image_path=output_path,
+            candidate_kind="nested_candidate_image",
+            page_number=page_number,
+            ocr=ocr,
+            parent_ocr=parent_ocr,
+        )
+        if _gate_should_suppress(gate_decision, visual_candidate=True):
+            warnings.append(
+                f"Qwen artifact gate suppressed nested image on page {page_number}: {gate_decision.category} - {gate_decision.reason}"
+            )
+            output_path.unlink(missing_ok=True)
+            continue
+        accepted_boxes.append((left, top, right, bottom))
         image_hashes[artifact_id] = hash_image(output_path)
         source_refs = [
             build_incident_source_ref(
@@ -484,7 +752,12 @@ def extract_nested_media_artifacts(
                         "height": bottom - top,
                     },
                     "area_ratio": round(area_ratio, 4),
-                    "promotion_reason": "Promoted nested image from Teams/chat wrapper; wrapper image suppressed from source_artifacts.",
+                    "promotion_reason": (
+                        "Promoted screenshot-like nested image from Teams/chat wrapper; wrapper image suppressed from source_artifacts."
+                        if visual_screenshot
+                        else "Promoted nested image from Teams/chat wrapper; wrapper image suppressed from source_artifacts."
+                    ),
+                    **_gate_metadata(gate_decision),
                 },
             )
         )
@@ -500,6 +773,7 @@ def extract_crop_artifacts(
     ocr_client: TesseractOCRClient | None,
     image_hashes: dict[str, ImageHash],
     min_crop_area_ratio: float,
+    artifact_gate: Any | None = None,
 ) -> list[dict[str, Any]]:
     try:
         import cv2  # type: ignore
@@ -551,6 +825,19 @@ def extract_crop_artifacts(
         if ocr["word_count"] < 4 and area_ratio < 0.18 and image_type == "unknown_incident_evidence":
             file_path.unlink(missing_ok=True)
             continue
+        gate_decision = _apply_artifact_gate(
+            artifact_gate,
+            image_path=file_path,
+            candidate_kind="detected_region_crop",
+            page_number=page_number,
+            ocr=ocr,
+        )
+        if _gate_should_suppress(gate_decision, visual_candidate=False):
+            warnings.append(
+                f"Qwen artifact gate suppressed detected crop on page {page_number}: {gate_decision.category} - {gate_decision.reason}"
+            )
+            file_path.unlink(missing_ok=True)
+            continue
         image_hashes[artifact_id] = hash_image(file_path)
         source_refs = [
             build_incident_source_ref(
@@ -579,6 +866,7 @@ def extract_crop_artifacts(
                     "crop_box": {"left": left, "top": top, "right": right, "bottom": bottom, "width": right - left, "height": bottom - top},
                     "area_ratio": round(area_ratio, 4),
                     "promotion_reason": _promotion_reason(ocr["text"], image_type),
+                    **_gate_metadata(gate_decision),
                 },
             )
         )
@@ -627,7 +915,11 @@ def build_artifact_record(
         "file_name": storage_path.name,
         "file_format": storage_path.suffix.lstrip(".").lower(),
         "ocr_text": ocr_text,
+        "ocr_clean_text": ocr.get("clean_text") or "",
         "ocr_confidence": ocr["confidence"],
+        "ocr_quality": ocr.get("quality"),
+        "ocr_lines": ocr.get("lines") or [],
+        "ocr_attempts": ocr.get("attempts") or [],
         "ocr_provenance": ocr["provenance"],
         "ocr_text_hash": ocr["text_hash"],
         "ocr_word_count": ocr["word_count"],
@@ -660,6 +952,9 @@ def build_incident_source_bundle(
             "detected_page_type": page.get("detected_page_type"),
             "ocr_confidence": page.get("ocr_confidence"),
             "ocr_word_count": page.get("ocr_word_count"),
+            "ocr_quality": page.get("ocr_quality"),
+            "ocr_clean_text": page.get("ocr_clean_text") or "",
+            "line_count": len(page.get("ocr_lines") or []),
             "artifact_ids": (page.get("embedded_artifact_ids") or []) + (page.get("crop_artifact_ids") or []),
             "ocr_text": page.get("ocr_text") or "",
             "source_refs": page.get("source_refs") or [],
@@ -677,6 +972,7 @@ def build_incident_source_bundle(
             "storage_path": artifact["storage_path"],
             "ocr_confidence": artifact.get("ocr_confidence"),
             "ocr_word_count": artifact.get("ocr_word_count"),
+            "ocr_quality": artifact.get("ocr_quality"),
             "summary": artifact.get("summary"),
             "what_to_look_at": artifact.get("what_to_look_at") or [],
             "duplicate_group_id": artifact.get("duplicate_group_id"),
@@ -691,6 +987,8 @@ def build_incident_source_bundle(
             "page_ref": page["page_ref"],
             "detected_page_type": page.get("detected_page_type"),
             "ocr_word_count": page.get("ocr_word_count"),
+            "ocr_quality": page.get("ocr_quality"),
+            "ocr_clean_text": page.get("ocr_clean_text") or "",
             "ocr_text": page.get("ocr_text") or "",
             "artifact_ids": (page.get("embedded_artifact_ids") or []) + (page.get("crop_artifact_ids") or []),
         }
@@ -721,7 +1019,8 @@ def build_incident_source_bundle(
             "image_artifact_source": "source_bundle.artifact_manifest[].storage_path",
             "lineage_source": "source_bundle.*.source_refs",
             "detail_files": "source_bundle.file_refs",
-            "wrapper_policy": "Teams/Salesforce wrapper screenshots are not promoted as image artifacts when they mostly contain surrounding text; their OCR remains in text_context.",
+            "wrapper_policy": "Teams/Salesforce/RCA wrapper screenshots remain in text_context and are not promoted as source_artifacts; source_artifacts contains embedded images and explicitly requested/detected image crops only.",
+            "ocr_quality_policy": "Use ocr_quality, ocr_attempts, and missing_evidence_report before treating absence of text as absence of evidence.",
         },
         "text_context": {
             "page_count": len(page_inventory),
@@ -731,9 +1030,10 @@ def build_incident_source_bundle(
         },
         "artifact_manifest": artifact_manifest,
         "wrapper_text_context": {
-            "policy": "Retain OCR text from wrapper pages for canonical incident, timeline, and runbook extraction; pass only clean nested images/photos/screenshots to image enrichment.",
+            "policy": "Retain OCR text from wrapper pages for canonical incident, timeline, and runbook extraction; do not promote wrapper/text pages as source_artifacts.",
             "pages": wrapper_pages,
         },
+        "missing_evidence_report": report.get("missing_evidence_report") or {},
         "duplicate_groups": report.get("duplicate_groups") or [],
         "counts": {
             "page_inventory_count": len(page_inventory),
@@ -847,103 +1147,52 @@ def classify_incident_artifact(text: str) -> str:
 
 def is_likely_chat_wrapper(ocr: dict[str, Any]) -> bool:
     text = ocr.get("text") or ""
-    lowered = normalize_ocr_text(text)
     word_count = int(ocr.get("word_count") or 0)
-    timestamp_hits = len(re.findall(r"\b\d{1,2}\s*/\s*\d{1,2}\s+\d{1,2}\s*:?\d{2}\s*(?:am|pm)?\b", text, flags=re.IGNORECASE))
-    name_hits = sum(
-        1
-        for name in [
-            "zane bubb",
-            "christopher white",
-            "michael langley",
-            "jinhao liu",
-            "kevin buczek",
-            "mitchel flynn",
-            "darrell halterman",
-        ]
-        if name in lowered
-    )
-    chat_terms = ["reply", "called", "on the call", "meeting", "estop", "e stop", "rejoin", "troubleshooting"]
-    return word_count >= 45 and (timestamp_hits >= 2 or name_hits >= 2 or sum(term in lowered for term in chat_terms) >= 2)
+    timestamp_hits = _timestamp_like_count(text)
+    return word_count >= 45 and timestamp_hits >= 2
 
 
 def is_likely_evidence_wrapper(ocr: dict[str, Any]) -> bool:
     text = ocr.get("text") or ""
-    lowered = normalize_ocr_text(text)
     word_count = int(ocr.get("word_count") or 0)
     if is_likely_chat_wrapper(ocr):
         return True
-    wrapper_terms = [
-        "they can t",
-        "they cant",
-        "to all",
-        "comment",
-        "february",
-        "case updated",
-        "case created",
-        "verify the optisweep service",
-        "if no response is given",
-        "once restarted",
-        "restart ignition",
-        "first estop",
-        "trying to see if any service failed",
+    if word_count < 18:
+        return False
+    timestamp_hits = _timestamp_like_count(text)
+    line_count = len(ocr.get("lines") or [])
+    confidence = ocr.get("confidence")
+    low_or_mixed_quality = confidence is None or confidence < 70
+    return timestamp_hits >= 1 or line_count >= 8 or (word_count >= 30 and low_or_mixed_quality)
+
+
+def looks_like_nested_screenshot(crop: Any, cv2: Any) -> bool:
+    height, width = crop.shape[:2]
+    if width < 160 or height < 90:
+        return False
+    aspect_ratio = width / max(height, 1)
+    if aspect_ratio < 1.35 or aspect_ratio > 8:
+        return False
+    gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
+    non_white_ratio = float((gray < 245).sum()) / float(width * height)
+    if non_white_ratio < 0.18 or non_white_ratio > 0.75:
+        return False
+    edges = cv2.Canny(gray, 50, 150)
+    edge_ratio = float((edges > 0).sum()) / float(width * height)
+    if edge_ratio < 0.01:
+        return False
+    dark_ratio = float((gray < 80).sum()) / float(width * height)
+    blue_channel = crop[:, :, 0]
+    red_channel = crop[:, :, 2]
+    blue_ui_ratio = float(((blue_channel > red_channel + 15) & (blue_channel > 100)).sum()) / float(width * height)
+    return dark_ratio > 0.003 or blue_ui_ratio > 0.01
+
+def _timestamp_like_count(text: str) -> int:
+    patterns = [
+        r"\b\d{1,2}\s*/\s*\d{1,2}(?:\s*/\s*\d{2,4})?\s+\d{1,2}\s*:?\d{2}\s*(?:am|pm)?\b",
+        r"\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+\d{1,2}\s*,?\s+\d{4}\s+at\s+\d{1,2}(?::|\s)\d{2}\s*(?:am|pm)?\b",
     ]
-    screenshot_terms = [
-        "memory trend",
-        "gwcmd",
-        "get agv statuses",
-        "services local",
-        "event viewer",
-        "rms",
-        "ignition",
-        "optisweep",
-    ]
-    wrapper_score = sum(term in lowered for term in wrapper_terms)
-    screenshot_score = sum(term in lowered for term in screenshot_terms)
-    if word_count >= 55 and wrapper_score >= 1 and screenshot_score >= 1:
-        return True
-    return word_count >= 10 and ("to all" in lowered or "they can t" in lowered or "they cant" in lowered)
-
-
-def is_meaningful_nested_media(image_type: str, ocr: dict[str, Any]) -> bool:
-    if is_likely_evidence_wrapper(ocr):
-        return False
-    text = normalize_ocr_text(ocr.get("text") or "")
-    if any(term in text for term in ["verify the optisweep service", "if no response is given", "wait for ignition", "restart ignition running"]):
-        return False
-    if image_type in {"teams_chat_screenshot", "salesforce_case_screenshot"}:
-        return False
-    if image_type != "unknown_incident_evidence":
-        return True
-    media_terms = [
-        "memory trend",
-        "ignition",
-        "gateway",
-        "gwcmd",
-        "api",
-        "get agv",
-        "services",
-        "optisweep",
-        "rms",
-        "system errors",
-        "agv errors",
-        "14gb",
-        "9gb",
-        "5gb",
-        "omb",
-    ]
-    return any(term in text for term in media_terms)
-
-
-def is_promotable_text_strip_tile(image_type: str, ocr: dict[str, Any]) -> bool:
-    if is_likely_evidence_wrapper(ocr):
-        return False
-    text = normalize_ocr_text(ocr.get("text") or "")
-    if any(term in text for term in ["thinks there is", "removed agv", "which causing", "system stopped"]):
-        return False
-    if image_type in {"teams_chat_screenshot", "salesforce_case_screenshot"}:
-        return False
-    return True
+    return sum(len(re.findall(pattern, text, flags=re.IGNORECASE)) for pattern in patterns)
 
 
 def evidence_role(image_type: str, text: str) -> str:
@@ -1203,11 +1452,19 @@ def build_stage2_report(
     include_detected_crops: bool,
 ) -> dict[str, Any]:
     by_type = Counter(artifact["image_type"] for artifact in artifacts)
+    gate_modes = Counter((artifact.get("extraction_metadata") or {}).get("artifact_gate") or "none" for artifact in artifacts)
+    gate_categories = Counter(
+        ((artifact.get("extraction_metadata") or {}).get("artifact_gate_decision") or {}).get("category") or "none"
+        for artifact in artifacts
+    )
+    page_quality = Counter(page.get("ocr_quality") or "unknown" for page in page_inventory)
+    artifact_quality = Counter(artifact.get("ocr_quality") or "unknown" for artifact in artifacts)
     low_ocr = [
         artifact["artifact_id"]
         for artifact in artifacts
         if artifact.get("ocr_confidence") is not None and artifact["ocr_confidence"] < 55
     ]
+    missing_evidence_report = build_missing_evidence_report(page_inventory, artifacts)
     return {
         "source_package_id": package["source_package_id"],
         "source_id": package["source_id"],
@@ -1220,6 +1477,8 @@ def build_stage2_report(
         "page_inventory_count": len(page_inventory),
         "total_artifacts_created": len(artifacts),
         "artifacts_by_image_type": dict(sorted(by_type.items())),
+        "artifact_gate_modes": dict(sorted(gate_modes.items())),
+        "artifact_gate_kept_categories": dict(sorted(gate_categories.items())),
         "full_page_artifact_count": sum(1 for artifact in artifacts if artifact["artifact_type"] == "incident_full_page_evidence"),
         "embedded_pdf_image_artifact_count": sum(1 for artifact in artifacts if artifact["artifact_type"] == "incident_embedded_pdf_image"),
         "nested_message_image_artifact_count": sum(1 for artifact in artifacts if artifact["artifact_type"] == "incident_nested_message_image"),
@@ -1227,8 +1486,62 @@ def build_stage2_report(
         "duplicate_group_count": len(duplicate_groups),
         "duplicate_groups": duplicate_groups,
         "low_ocr_confidence_artifact_ids": low_ocr,
+        "page_ocr_quality_counts": dict(sorted(page_quality.items())),
+        "artifact_ocr_quality_counts": dict(sorted(artifact_quality.items())),
+        "missing_evidence_report": missing_evidence_report,
         "warnings": warnings + _quality_warnings(page_inventory, artifacts),
         "validation_errors": [],
+    }
+
+
+def build_missing_evidence_report(page_inventory: list[dict[str, Any]], artifacts: list[dict[str, Any]]) -> dict[str, Any]:
+    pages_with_no_ocr = [
+        {
+            "page_number": page.get("page_number"),
+            "page_ref": page.get("page_ref"),
+            "rendered_page_image": page.get("rendered_page_image"),
+            "detected_page_type": page.get("detected_page_type"),
+        }
+        for page in page_inventory
+        if (page.get("ocr_word_count") or 0) == 0
+    ]
+    low_quality_pages = [
+        {
+            "page_number": page.get("page_number"),
+            "page_ref": page.get("page_ref"),
+            "ocr_quality": page.get("ocr_quality"),
+            "ocr_confidence": page.get("ocr_confidence"),
+            "ocr_word_count": page.get("ocr_word_count"),
+            "rendered_page_image": page.get("rendered_page_image"),
+            "detected_page_type": page.get("detected_page_type"),
+        }
+        for page in page_inventory
+        if page.get("ocr_quality") in {"missing", "garbled", "low"}
+    ]
+    reviewable_text_pages = [
+        {
+            "page_number": page.get("page_number"),
+            "page_ref": page.get("page_ref"),
+            "artifact_ids": page.get("reviewable_text_artifact_ids") or [],
+            "detected_page_type": page.get("detected_page_type"),
+            "ocr_quality": page.get("ocr_quality"),
+        }
+        for page in page_inventory
+        if page.get("reviewable_text_artifact_ids")
+    ]
+    risks: list[str] = []
+    if pages_with_no_ocr:
+        risks.append("One or more pages produced no OCR words; downstream stages must not treat missing text as missing evidence.")
+    if low_quality_pages:
+        risks.append("One or more pages have low, garbled, or missing OCR; timeline and KPI extraction may require review evidence.")
+    if reviewable_text_pages:
+        risks.append("Wrapper/text pages should remain in page_inventory text context and should not be promoted as source_artifacts.")
+    return {
+        "pages_with_no_ocr": pages_with_no_ocr,
+        "low_quality_pages": low_quality_pages,
+        "reviewable_text_pages": reviewable_text_pages,
+        "artifact_count": len(artifacts),
+        "risk_notes": risks,
     }
 
 
@@ -1241,6 +1554,218 @@ def _build_ocr_client(ocr_backend: str, tesseract_command: str | None) -> Tesser
     raise ValueError("Unsupported OCR backend. Use 'none' or 'tesseract'.")
 
 
+def _ocr_preprocess_variants(image_path: Path) -> list[dict[str, Any]]:
+    variants: list[dict[str, Any]] = [{"name": "original", "path": image_path, "temporary": False}]
+    try:
+        import cv2  # type: ignore
+    except ImportError:
+        return variants
+
+    image = cv2.imread(str(image_path))
+    if image is None:
+        return variants
+
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    height, width = gray.shape[:2]
+    max_pixels = 24_000_000
+
+    def add_variant(name: str, data: Any) -> None:
+        if data is None:
+            return
+        if int(data.shape[0]) * int(data.shape[1]) > max_pixels:
+            return
+        output = image_path.with_name(f"{image_path.stem}.ocr_{name}.png")
+        if cv2.imwrite(str(output), data):
+            variants.append({"name": name, "path": output, "temporary": True})
+
+    if max(width, height) < 2600:
+        upscaled = cv2.resize(gray, None, fx=1.75, fy=1.75, interpolation=cv2.INTER_CUBIC)
+        add_variant("gray_upscaled", upscaled)
+    else:
+        add_variant("gray", gray)
+
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    enhanced = clahe.apply(gray)
+    add_variant("contrast", enhanced)
+
+    threshold = cv2.adaptiveThreshold(
+        enhanced,
+        255,
+        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY,
+        31,
+        9,
+    )
+    add_variant("threshold", threshold)
+    return variants
+
+
+def _ocr_attempt_score(attempt: dict[str, Any]) -> float:
+    word_count = int(attempt.get("word_count") or 0)
+    confidence = float(attempt.get("confidence") or 0)
+    return (word_count * 2.0) + confidence
+
+
+SUSPICIOUS_OCR_MARKERS = {
+    "bocevive",
+    "tewe",
+    "mewn",
+    "ceemenn",
+    "teiiiyadt",
+    "peamary",
+    "trrteriner",
+    "sehdboit",
+    "cara0es",
+    "ooboafe",
+    "praia",
+}
+
+
+def _ocr_noise_metrics(text: str) -> dict[str, Any]:
+    normalized = normalize_ocr_text(text)
+    marker_count = sum(1 for marker in SUSPICIOUS_OCR_MARKERS if marker in normalized)
+    total_chars = max(len(text), 1)
+    non_ascii_ratio = sum(1 for char in text if ord(char) > 127) / total_chars
+    allowed_symbols = set(".,:/\\_-@()[]'\"><=#&?%+|")
+    symbol_ratio = sum(
+        1
+        for char in text
+        if not char.isalnum() and not char.isspace() and char not in allowed_symbols
+    ) / total_chars
+    repeated_noise = bool(re.search(r"(.)\1{8,}", normalized))
+    return {
+        "marker_count": marker_count,
+        "non_ascii_ratio": non_ascii_ratio,
+        "symbol_ratio": symbol_ratio,
+        "repeated_noise": repeated_noise,
+    }
+
+
+def _classify_ocr_quality(text: str, confidence: float | None, word_count: int) -> str:
+    normalized = normalize_ocr_text(text)
+    if word_count == 0 or not normalized:
+        return "missing"
+    noise = _ocr_noise_metrics(text)
+    if word_count < 5:
+        return "garbled"
+    if confidence is not None and confidence < 45:
+        return "garbled"
+    if noise["marker_count"] >= 2 or noise["symbol_ratio"] > 0.22:
+        return "garbled"
+    if noise["repeated_noise"] and word_count > 30:
+        return "garbled"
+    if word_count < 16 or (confidence is not None and confidence < 60):
+        return "low"
+    if noise["marker_count"] >= 1 or noise["non_ascii_ratio"] > 0.03 or noise["symbol_ratio"] > 0.12:
+        return "low"
+    return "usable"
+
+
+def _clean_ocr_text(text: str) -> str:
+    safe_replacements = {
+        "\u00c2\u00a9": "",
+        "\u00c2\u00ae": "",
+        "\u00c3\u201a": "",
+        "\u00e2\u20ac\u201d": "-",
+        "\u00e2\u20ac\u201c": "-",
+        "\u00e2\u20ac\u0153": '"',
+        "\u00e2\u20ac\u009d": '"',
+        "\u00e2\u20ac\u02dc": "'",
+        "\u00e2\u20ac\u2122": "'",
+        "\u00e2\u20ac\u00a6": "...",
+        "\u00ef\u00ac\u0081": "fi",
+        "\u00ef\u00ac\u201a": "fl",
+    }
+    cleaned = text
+    for bad, good in safe_replacements.items():
+        cleaned = cleaned.replace(bad, good)
+    cleaned = "".join(char if ord(char) < 128 else " " for char in cleaned)
+    cleaned = re.sub(r"([=_~*#])\1{4,}", r"\1\1\1", cleaned)
+    cleaned = re.sub(r"\b(\d)\1{5,}\b", "", cleaned)
+    return normalize_whitespace(cleaned)
+
+    replacements = {
+        "Â©": "",
+        "Â®": "",
+        "â€”": "-",
+        "â€“": "-",
+        "â€œ": '"',
+        "â€": '"',
+        "â€˜": "'",
+        "â€™": "'",
+        "â€¦": "...",
+        "ï¬": "fi",
+        "ï¬‚": "fl",
+    }
+    cleaned = text
+    for bad, good in replacements.items():
+        cleaned = cleaned.replace(bad, good)
+    return normalize_whitespace(cleaned)
+
+
+def _run_ocr_attempt(
+    ocr_client: TesseractOCRClient,
+    image_path: Path,
+    *,
+    variant: str,
+    psm: int,
+) -> dict[str, Any]:
+    result = ocr_client.extract(image_path, psm=psm)
+    return {
+        "variant": variant,
+        "psm": psm,
+        "text": result.text,
+        "clean_text": _clean_ocr_text(result.text),
+        "confidence": result.confidence,
+        "word_count": result.word_count,
+        "text_hash": ocr_text_hash(result.text),
+        "lines": result.lines or [],
+        "provenance": result.provenance,
+    }
+
+
+def _compact_ocr_attempts(attempts: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            "variant": attempt.get("variant"),
+            "psm": attempt.get("psm"),
+            "confidence": attempt.get("confidence"),
+            "word_count": attempt.get("word_count"),
+            "text_hash": attempt.get("text_hash"),
+            "error": attempt.get("error"),
+        }
+        for attempt in attempts
+    ]
+
+
+def _finalize_ocr_result(best: dict[str, Any], attempts: list[dict[str, Any]], image_path: Path) -> dict[str, Any]:
+    compact_attempts = _compact_ocr_attempts(attempts)
+    quality = _classify_ocr_quality(best.get("text") or "", best.get("confidence"), int(best.get("word_count") or 0))
+    return {
+        "text": best.get("text") or "",
+        "clean_text": best.get("clean_text") or _clean_ocr_text(best.get("text") or ""),
+        "confidence": best.get("confidence"),
+        "provenance": {
+            "backend": "tesseract",
+            "source_image_path": str(image_path),
+            "attempt_count": len(attempts),
+            "best_attempt": {
+                "variant": best.get("variant"),
+                "psm": best.get("psm"),
+                "confidence": best.get("confidence"),
+                "word_count": best.get("word_count"),
+                "text_hash": best.get("text_hash"),
+            },
+            "attempts": compact_attempts,
+        },
+        "word_count": best.get("word_count") or 0,
+        "text_hash": best.get("text_hash") or ocr_text_hash(best.get("text") or ""),
+        "lines": best.get("lines") or [],
+        "quality": quality,
+        "attempts": compact_attempts,
+    }
+
+
 def _ocr_image(
     ocr_client: TesseractOCRClient | None,
     image_path: Path,
@@ -1249,19 +1774,87 @@ def _ocr_image(
     context: str,
 ) -> dict[str, Any]:
     if ocr_client is None:
-        return {"text": "", "confidence": None, "provenance": None, "word_count": 0, "text_hash": None}
+        return {
+            "text": "",
+            "clean_text": "",
+            "confidence": None,
+            "provenance": None,
+            "word_count": 0,
+            "text_hash": None,
+            "lines": [],
+            "quality": "missing",
+            "attempts": [],
+        }
+
+    attempts: list[dict[str, Any]] = []
     try:
-        result = ocr_client.extract(image_path)
+        first_attempt = _run_ocr_attempt(ocr_client, image_path, variant="original", psm=6)
+        attempts.append(first_attempt)
+        first_quality = _classify_ocr_quality(
+            first_attempt.get("text") or "",
+            first_attempt.get("confidence"),
+            int(first_attempt.get("word_count") or 0),
+        )
+        if first_quality == "usable" and int(first_attempt.get("word_count") or 0) >= 20:
+            return _finalize_ocr_result(first_attempt, attempts, image_path)
     except RuntimeError as exc:
-        warnings.append(f"OCR failed for page {page_number} {context}: {exc}")
-        return {"text": "", "confidence": None, "provenance": None, "word_count": 0, "text_hash": None}
-    return {
-        "text": result.text,
-        "confidence": result.confidence,
-        "provenance": result.provenance,
-        "word_count": result.word_count,
-        "text_hash": ocr_text_hash(result.text),
-    }
+        attempts.append(
+            {
+                "variant": "original",
+                "psm": 6,
+                "error": str(exc),
+                "word_count": 0,
+                "confidence": None,
+                "text_hash": None,
+            }
+        )
+
+    variants = _ocr_preprocess_variants(image_path)
+    psm_plan = [("original", image_path, 11), ("original", image_path, 4)]
+    for variant in variants:
+        if variant["name"] == "original":
+            continue
+        psm_plan.extend([(variant["name"], variant["path"], 6), (variant["name"], variant["path"], 11)])
+    for variant_name, variant_path, psm in psm_plan:
+            try:
+                attempts.append(_run_ocr_attempt(ocr_client, Path(variant_path), variant=variant_name, psm=psm))
+            except RuntimeError as exc:
+                attempts.append(
+                    {
+                        "variant": variant_name,
+                        "psm": psm,
+                        "error": str(exc),
+                        "word_count": 0,
+                        "confidence": None,
+                        "text_hash": None,
+                    }
+                )
+
+    for variant in variants:
+        if variant.get("temporary"):
+            try:
+                Path(variant["path"]).unlink(missing_ok=True)
+            except OSError:
+                pass
+
+    successful_attempts = [attempt for attempt in attempts if attempt.get("text") or attempt.get("word_count")]
+    if not successful_attempts:
+        warning = next((attempt.get("error") for attempt in attempts if attempt.get("error")), "No OCR words produced.")
+        warnings.append(f"OCR failed for page {page_number} {context}: {warning}")
+        return {
+            "text": "",
+            "clean_text": "",
+            "confidence": None,
+            "provenance": {"attempts": attempts, "best_attempt": None},
+            "word_count": 0,
+            "text_hash": None,
+            "lines": [],
+            "quality": "missing",
+            "attempts": _compact_ocr_attempts(attempts),
+        }
+
+    best = max(successful_attempts, key=_ocr_attempt_score)
+    return _finalize_ocr_result(best, attempts, image_path)
 
 
 def _source_summary_from_ocr(text: str, limit: int = 280) -> str | None:
@@ -1299,10 +1892,30 @@ def _near_duplicate_box(candidate: tuple[int, int, int, int], boxes: list[tuple[
     return False
 
 
+def _overlaps_existing_crop(candidate: tuple[int, int, int, int], boxes: list[tuple[int, int, int, int]]) -> bool:
+    left, top, right, bottom = candidate
+    area = max(0, right - left) * max(0, bottom - top)
+    if not area:
+        return True
+    for existing_left, existing_top, existing_right, existing_bottom in boxes:
+        inter_left = max(left, existing_left)
+        inter_top = max(top, existing_top)
+        inter_right = min(right, existing_right)
+        inter_bottom = min(bottom, existing_bottom)
+        inter_area = max(0, inter_right - inter_left) * max(0, inter_bottom - inter_top)
+        if inter_area / area > 0.65:
+            return True
+    return False
+
+
 def _quality_warnings(page_inventory: list[dict[str, Any]], artifacts: list[dict[str, Any]]) -> list[str]:
     warnings: list[str] = []
     if any((page.get("ocr_word_count") or 0) == 0 for page in page_inventory):
         warnings.append("One or more pages produced no OCR words; inspect rendered page images manually.")
+    if any(page.get("ocr_quality") in {"garbled", "low"} for page in page_inventory):
+        warnings.append("One or more pages produced low-quality OCR after retries; downstream extraction should preserve uncertainty.")
+    if any(page.get("reviewable_text_artifact_ids") for page in page_inventory):
+        warnings.append("Wrapper/text pages were unexpectedly promoted as reviewable artifacts.")
     page_text = normalize_ocr_text(" ".join(page.get("ocr_text") or "" for page in page_inventory))
     has_teams_context = "teams chat data" in page_text or "support chat" in page_text
     has_salesforce_context = "salesforce case data" in page_text or "case created" in page_text

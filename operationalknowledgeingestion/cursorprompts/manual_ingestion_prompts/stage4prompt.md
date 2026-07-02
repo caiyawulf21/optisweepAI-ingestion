@@ -356,7 +356,7 @@ Create or update:
 
 ```text
 src/optisweep_ingestion/schemas/operational_context.py
-src/optisweep_ingestion/tools/operational_context_extractor.py
+src/optisweep_ingestion/stage4_operational_context.py
 src/optisweep_ingestion/prompts/stage4_operational_context_extraction_prompt.md
 scripts/stage4_extract_operational_context.py
 tests/test_operational_context_extractor.py

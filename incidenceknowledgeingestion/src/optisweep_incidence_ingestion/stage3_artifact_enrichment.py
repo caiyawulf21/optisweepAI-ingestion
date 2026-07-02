@@ -23,6 +23,7 @@ import urllib.request
 from dotenv import load_dotenv
 
 from optisweep_incidence_ingestion.utils.json_utils import read_json, write_json
+from optisweep_incidence_ingestion.utils.markdown_review import write_stage3_review_markdown
 
 FOUNDRY_API_VERSION = "2025-04-01-preview"
 CLASSIC_AZURE_OPENAI_API_VERSION = "2024-10-21"
@@ -120,7 +121,7 @@ class AzureOpenAIIncidentArtifactClient:
                 method="POST",
             )
             try:
-                with urllib.request.urlopen(request, timeout=120) as response:
+                with _urlopen_no_proxy(request, timeout=120) as response:
                     payload = json.loads(response.read().decode("utf-8"))
                 return parse_llm_response(payload["choices"][0]["message"]["content"])
             except urllib.error.HTTPError as exc:
@@ -200,6 +201,7 @@ def enrich_incident_artifacts(
     output_path = Path(output_dir)
     write_json(output_path / "source_artifacts_enriched.json", enriched_artifacts)
     write_json(output_path / "artifact_enrichment_report.json", report)
+    write_stage3_review_markdown(output_path / "artifact_enrichment_review.md", enriched_artifacts, report)
     if source_package_path:
         package = read_json(source_package_path)
         write_json(output_path / "incident_source_package.json", _package_with_stage3_refs(package, output_path, report))
@@ -325,6 +327,7 @@ def _package_with_stage3_refs(package: dict[str, Any], output_path: Path, report
         {
             "source_artifacts_enriched": str(output_path / "source_artifacts_enriched.json"),
             "artifact_enrichment_report": str(output_path / "artifact_enrichment_report.json"),
+            "artifact_enrichment_review": str(output_path / "artifact_enrichment_review.md"),
         }
     )
     source_bundle["stage_status"] = stage_status
@@ -333,6 +336,7 @@ def _package_with_stage3_refs(package: dict[str, Any], output_path: Path, report
     enriched_package["stage3_output_refs"] = {
         "source_artifacts_enriched": str(output_path / "source_artifacts_enriched.json"),
         "artifact_enrichment_report": str(output_path / "artifact_enrichment_report.json"),
+        "artifact_enrichment_review": str(output_path / "artifact_enrichment_review.md"),
     }
     return enriched_package
 
@@ -428,3 +432,8 @@ def _clean_env_value(value: str | None) -> str:
     if cleaned in {"", "your-api-version", "your_api_version", "<api-version>"}:
         return ""
     return cleaned
+
+
+def _urlopen_no_proxy(request: urllib.request.Request, timeout: int) -> Any:
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    return opener.open(request, timeout=timeout)

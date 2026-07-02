@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Add AGV to zone when no empty AGV is available</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Add AGV to zone when no empty AGV is available</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_add_agv_to_zone_when_no_empty_agv_is_available_v1</td></tr>
+<tr><th>Title</th><td>Add AGV to zone when no empty AGV is available</td></tr>
+<tr><th>Procedure Type</th><td>recovery</td></tr>
+<tr><th>Primary Role</th><td>L1_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Restore operation by stopping RMS, moving an AGV into the zone under the tote rack, adding the AGV through RMS using Tote API Controls, verifying the AGV turns blue and shows status/state &quot;szonestaging&quot; on the HMI, then resuming RMS.</p>
+<h2>When To Use</h2>
+<p>Use this recovery procedure when an AGV must be added to a zone and no empty AGV is available, and the source directs recovery by placing an AGV into the zone under the tote rack and confirming the AGV reaches the expected state before restart.</p>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — E-stop RMS</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>E-stop RMS.</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS is stopped and the recovery can proceed.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_5_1_system_in_shut_down_mode.jpeg" alt="artifact_fig_5_1_system_in_shut_down_mode" /><figcaption>System shut-down mode context relevant to stopping the system before recovery.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>RMS does not enter the stopped/E-stopped condition.</li>
+</ul>
+<hr>
+<h3>Step 2 — Move an AGV into the zone under the tote rack</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Move an AGV into the zone under the tote rack.</p>
+<p><strong>Expected result:</strong></p>
+<p>An AGV is physically positioned in the zone under the tote rack.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen" /><figcaption>Screen/figure associated with the Add AGV to Zone with No Empty AGV context and the zone under the tote rack.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The AGV cannot be moved into the zone under the tote rack.</li>
+<li>The correct zone cannot be identified from available source material.</li>
+</ul>
+<hr>
+<h3>Step 3 — Add the AGV in RMS using Tote API Controls</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Add the AGV in RMS using Tote API Controls.</p>
+<p><strong>Expected result:</strong></p>
+<p>The AGV is added in RMS.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen" /><figcaption>Recovery screen context for adding an AGV when no empty AGV is available.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Tote API Controls are not accessible.</li>
+<li>The AGV add action fails or does not appear to take effect.</li>
+</ul>
+<hr>
+<h3>Step 4 — Wait for the AGV to turn blue</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Wait for the AGV to turn blue.</p>
+<p><strong>Expected result:</strong></p>
+<p>The AGV turns blue on the relevant display.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen" /><figcaption>AGV display state showing the AGV turning blue after add.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The AGV does not turn blue.</li>
+<li>The AGV instead appears to be routing to the Hospital.</li>
+</ul>
+<hr>
+<h3>Step 5 — Verify AGV status is szonestaging on the HMI</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Verify on the HMI that the AGV status/state is &quot;szonestaging&quot;.</p>
+<p><strong>Expected result:</strong></p>
+<p>The HMI shows the AGV status/state as &quot;szonestaging&quot;.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen" /><figcaption>Screen associated with the fault recovery procedure for adding an AGV to a zone when there is no empty AGV available.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The AGV status is not &quot;szonestaging&quot;.</li>
+<li>The HMI cannot be accessed to verify AGV state.</li>
+</ul>
+<hr>
+<h3>Step 6 — If AGV is moving to the Hospital, remove and add it again</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the AGV is moving to the Hospital, remove the AGV and add it again.</p>
+<p><strong>Expected result:</strong></p>
+<p>The AGV is removed and re-added so recovery can be retried.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen" /><figcaption>Recovery screen context noting the Hospital-routing retry condition.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The AGV continues moving to the Hospital after being removed and added again.</li>
+<li>The source provides no further escalation path beyond retry.</li>
+</ul>
+<hr>
+<h3>Step 7 — Press E-stop again</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Press E-stop again.</p>
+<p><strong>Expected result:</strong></p>
+<p>The documented E-stop action is completed as part of the recovery sequence.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The E-stop action cannot be performed as documented.</li>
+</ul>
+<hr>
+<h3>Step 8 — Resume RMS</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Resume RMS.</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS resumes operation.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The AGV has not been verified as &quot;szonestaging&quot; before restart/resume.</li>
+<li>RMS does not resume normally.</li>
+</ul>
+<hr>
+</body>
+</html>

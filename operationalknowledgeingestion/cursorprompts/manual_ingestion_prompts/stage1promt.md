@@ -33,7 +33,7 @@ python scripts/stage1_extract_source_bundle.py \
 ```text
 src/optisweep_ingestion/schemas/source_bundle.py
 src/optisweep_ingestion/tools/pdf_parser.py
-src/optisweep_ingestion/tools/source_bundle_builder.py
+src/optisweep_ingestion/stage1_source_bundle.py
 src/optisweep_ingestion/services/id_generator.py
 src/optisweep_ingestion/utils/json_utils.py
 scripts/stage1_extract_source_bundle.py
@@ -173,7 +173,7 @@ Keep this parser simple.
 Implement:
 
 ```text
-src/optisweep_ingestion/tools/source_bundle_builder.py
+src/optisweep_ingestion/stage1_source_bundle.py
 ```
 
 Responsibilities:
@@ -422,7 +422,7 @@ Improve section heading detection and page-to-section assignment so page 52 land
 Update Stage 1 only, mainly in:
 
 ```text
-src/optisweep_ingestion/tools/source_bundle_builder.py
+src/optisweep_ingestion/stage1_source_bundle.py
 tests/test_source_bundle_builder.py
 README.md
 ```

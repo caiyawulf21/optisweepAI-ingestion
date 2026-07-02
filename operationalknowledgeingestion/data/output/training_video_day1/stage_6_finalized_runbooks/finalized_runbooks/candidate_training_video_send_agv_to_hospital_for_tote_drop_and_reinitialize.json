@@ -1,0 +1,502 @@
+{
+  "procedure_id": "proc_send_an_agv_to_the_hospital_to_drop_the_tote_and_reinitialize_v1",
+  "candidate_id": "candidate_training_video_send_agv_to_hospital_for_tote_drop_and_reinitialize",
+  "title": "Send An AGV To The Hospital To Drop The Tote And Reinitialize",
+  "procedure_type": "recovery",
+  "summary": "Use the AGV Go-to function as a recovery method to send an AGV to the hospital so the tote can be removed there, allowing the AGV to drop, reinitialize, and return to picking up a new tote instead of being physically moved.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when an AGV recovery situation requires sending the AGV to the hospital so its tote can be removed and the AGV can reinitialize and receive a new task. The source specifically describes this as a quick recovery approach using Go-to instead of physically moving the AGV out, after the AGV has been removed and added back in the described recovery example.",
+  "not_for": [
+    "Do not use when the source conditions for Go-to are not met, such as when the AGV is still in a task.",
+    "Do not use as justification to invent additional recovery branches beyond the source-backed hospital drop-off and tote removal sequence.",
+    "Do not treat this source as approval for broad AGV removal actions on an active system beyond the specific recovery example described."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "operator",
+      "responsibility": "Select the AGV, use the Go-to function, confirm the hospital destination, and verify the AGV returns to normal operation as described by the source."
+    },
+    {
+      "role": "operator",
+      "responsibility": "Ensure the tote is removed at the hospital so WCS can reinitialize the AGV."
+    }
+  ],
+  "safety_notes": [
+    "The source presents this as a way to avoid physically moving or pushing the AGV out by using the Go-to function instead.",
+    "The source indicates WCS will not reinitialize the AGV until the tote is removed and added again if the AGV remains in an improper bound state.",
+    "A nearby source segment warns that removing an AGV on an active system is a high-risk action and may be restricted by credentials; this runbook does not expand AGV removal steps beyond the source example."
+  ],
+  "access_or_tools_needed": [
+    "Access to the AGV control interface with robot selection",
+    "Go to function",
+    "Map or destination selection including hospital",
+    "Physical access or process access to remove the tote at the hospital"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to robot or AGV selection in the control interface",
+      "Access to the Go-to function",
+      "Access to the hospital destination on the map or destination selector"
+    ],
+    "system_preconditions": [
+      "The AGV is not in a task, as described for use of the Go-to function.",
+      "The AGV has been removed and added back in the recovery example referenced by the source.",
+      "The tote can be removed at the hospital so reinitialization can occur."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_agv_go_to_function_v1",
+    "ctx_training_video_hospital_dropoff_recovery_context_v1",
+    "ctx_training_video_wcs_reinitialize_binding_context_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0035_it_d_be_a_question_mark_primary_01_25_36_500",
+      "description": "Training video frame showing the AGV Go-to function workflow and describing hospital recovery use.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Remove and add the AGV back as part of the recovery example",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Place the AGV into the recovery state described by the source before using Go-to for hospital drop-off.",
+      "instruction": "Perform the AGV remove-and-add action as referenced in the source recovery example before proceeding with the hospital Go-to workflow.",
+      "expected_result": "The AGV has been removed and added back as described in the source example and is ready for the next recovery action.",
+      "healthy_condition": "The AGV is available for the described Go-to recovery flow.",
+      "failure_condition": "The AGV remains in an improper bound or unrecovered state that prevents reinitialization progress.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Remove and add AGV back",
+          "exact_action": "Remove the AGV and add it back, as described in the source recovery example.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0035_it_d_be_a_question_mark_primary_01_25_36_500",
+          "what_to_look_at": "Recovery explanation tying remove-and-add of the AGV to later hospital drop-off and reinitialization."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop or escalate if the AGV remains in an improper bound state and does not proceed toward reinitialization.",
+        "Stop or escalate if local permissions or approved process do not allow the remove-and-add action."
+      ],
+      "source_evidence": [
+        {
+          "type": "source_ref",
+          "value": {
+            "source_id": "training_video_day1",
+            "source_type": "training_video",
+            "ingestion_batch_id": "batch_training_video_day1",
+            "timestamp_start": "01:24:15.000",
+            "timestamp_end": "01:26:58.000",
+            "start_time_seconds": 5055.0,
+            "end_time_seconds": 5218.0,
+            "segment_id": "segment_training_video_0035",
+            "source_document_id": "training_video_day1_video",
+            "section_id": "training_video_day1_segment_0035"
+          }
+        },
+        {
+          "type": "artifact_quote",
+          "value": "The transcript also highlights a recovery scenario where a tipper or tote-related issue leaves an AGV stuck; after removing and adding the AGV back, the operator can send it to the hospital to drop the tote so WCS can reinitialize the AGV and allow it to receive a new task."
+        },
+        {
+          "type": "context_quote",
+          "value": "WCS will not reinitialize the AGV until the tote is removed and added again because remove-and-add can leave it still considered bound, but not properly bound."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Use Go-to instead of physically moving the AGV",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Use the source-supported recovery method that avoids physically moving the AGV out.",
+      "instruction": "Use the Go-to function for this recovery instead of physically moving the AGV out.",
+      "expected_result": "The recovery proceeds through the AGV interface and map-based destination selection rather than manual physical movement.",
+      "healthy_condition": "The AGV can be controlled through the Go-to function for repositioning.",
+      "failure_condition": "The AGV cannot be sent through Go-to or the operator must resort to unsupported physical movement not described by the source.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Choose Go-to recovery method",
+          "exact_action": "Use the Go to function instead of physically moving the AGV out.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0035_it_d_be_a_question_mark_primary_01_25_36_500",
+          "what_to_look_at": "Go-to function description stating it saves the operator from pushing the AGV and supports recovery repositioning."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop or escalate if the AGV is still in a task and therefore does not meet the source condition for Go-to use.",
+        "Stop or escalate if the interface does not allow Go-to selection for the AGV."
+      ],
+      "source_evidence": [
+        {
+          "type": "context_quote",
+          "value": "The Go-to function is helpful because it saves the operator from pushing the AGV; an AGV not in a task can be sent to another square or map cell."
+        },
+        {
+          "type": "artifact_quote",
+          "value": "This source describes the AGV Go-to function used when an AGV is not in a task and needs to be sent to another square or map cell."
+        },
+        {
+          "type": "source_ref",
+          "value": {
+            "source_id": "training_video_day1",
+            "source_type": "training_video",
+            "ingestion_batch_id": "batch_training_video_day1",
+            "timestamp_start": "01:25:36.500",
+            "timestamp_end": "01:25:36.500",
+            "start_time_seconds": 5136.5,
+            "end_time_seconds": 5136.5,
+            "artifact_id": "artifact_training_video_training_video_day1_0035_it_d_be_a_question_mark_primary_01_25_36_500",
+            "segment_id": "segment_training_video_0035"
+          }
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Select the AGV and choose the hospital destination",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Direct the AGV to the hospital using the source-defined Go-to workflow.",
+      "instruction": "Select the AGV, select Go to, and choose the hospital destination on the map or destination selection used for recovery.",
+      "expected_result": "The hospital destination is selected for the AGV in the Go-to workflow.",
+      "healthy_condition": "The correct AGV is selected and the hospital destination is available for selection.",
+      "failure_condition": "The AGV cannot be selected, Go-to is unavailable, or the hospital destination cannot be selected.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Select AGV",
+          "exact_action": "Select an AGV.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "hmi_action",
+          "label": "Open Go-to",
+          "exact_action": "Select Go to.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "hmi_action",
+          "label": "Choose hospital destination",
+          "exact_action": "Select which square to send the AGV to, using the hospital destination for this recovery.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0035_it_d_be_a_question_mark_primary_01_25_36_500",
+          "what_to_look_at": "Robot Selection Go-to workflow and the recovery use of hospital as the destination."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop or escalate if the AGV is not idle or not eligible for Go-to.",
+        "Stop or escalate if the hospital destination cannot be identified in the available map or destination selector."
+      ],
+      "source_evidence": [
+        {
+          "type": "artifact_quote",
+          "value": "The slide OCR lists steps: select an AGV, select Go to, select which square to send the AGV to, and select Confirm."
+        },
+        {
+          "type": "context_quote",
+          "value": "Instead of physically moving the AGV out, it can be sent to the hospital using Go-to; once the tote is removed there, the AGV drops, reinitializes, and picks up a new tote."
+        },
+        {
+          "type": "source_ref",
+          "value": {
+            "source_id": "training_video_day1",
+            "source_type": "training_video",
+            "ingestion_batch_id": "batch_training_video_day1",
+            "timestamp_start": "01:25:36.500",
+            "timestamp_end": "01:25:36.500",
+            "start_time_seconds": 5136.5,
+            "end_time_seconds": 5136.5,
+            "artifact_id": "artifact_training_video_training_video_day1_0035_it_d_be_a_question_mark_primary_01_25_36_500",
+            "segment_id": "segment_training_video_0035"
+          }
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Confirm the hospital destination",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Commit the Go-to instruction so the AGV navigates to the hospital.",
+      "instruction": "Confirm the selected destination so the AGV navigates to the hospital.",
+      "expected_result": "The AGV is sent toward the hospital destination.",
+      "healthy_condition": "The Go-to request is accepted and the AGV begins navigating to the selected destination.",
+      "failure_condition": "The destination is not confirmed or the AGV does not begin moving toward the hospital.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Confirm destination",
+          "exact_action": "Select Confirm.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0035_it_d_be_a_question_mark_primary_01_25_36_500",
+          "what_to_look_at": "Final confirm step in the Go-to workflow."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop or escalate if the AGV does not accept the destination or does not navigate toward the hospital."
+      ],
+      "source_evidence": [
+        {
+          "type": "artifact_quote",
+          "value": "The slide OCR lists steps: select an AGV, select Go to, select which square to send the AGV to, and select Confirm."
+        },
+        {
+          "type": "source_ref",
+          "value": {
+            "source_id": "training_video_day1",
+            "source_type": "training_video",
+            "ingestion_batch_id": "batch_training_video_day1",
+            "timestamp_start": "01:25:36.500",
+            "timestamp_end": "01:25:36.500",
+            "start_time_seconds": 5136.5,
+            "end_time_seconds": 5136.5,
+            "artifact_id": "artifact_training_video_training_video_day1_0035_it_d_be_a_question_mark_primary_01_25_36_500",
+            "segment_id": "segment_training_video_0035"
+          }
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Remove the tote at the hospital",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Allow the AGV to drop and reinitialize by removing the tote at the hospital as described by the source.",
+      "instruction": "At the hospital, remove the tote from the AGV so the AGV can drop and reinitialize.",
+      "expected_result": "The tote is removed at the hospital and the AGV is able to drop and reinitialize.",
+      "healthy_condition": "The tote is no longer on the AGV and the AGV proceeds into the described reinitialization behavior.",
+      "failure_condition": "The tote remains on the AGV or WCS does not reinitialize the AGV because the tote remains improperly bound.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Remove tote at hospital",
+          "exact_action": "Remove the tote from the AGV at the hospital.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0020_we_ve_got_your_entrance_queue_primary_00_43_45_000",
+          "what_to_look_at": "Hospital area flow showing hospital entrance queue and drop-off context."
+        },
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0035_it_d_be_a_question_mark_primary_01_25_36_500",
+          "what_to_look_at": "Recovery explanation stating the tote is removed at the hospital so the AGV can reinitialize."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop or escalate if the tote cannot be removed at the hospital.",
+        "Stop or escalate if WCS does not reinitialize the AGV after tote removal because the tote remains improperly bound."
+      ],
+      "source_evidence": [
+        {
+          "type": "context_quote",
+          "value": "Instead of physically moving the AGV out, it can be sent to the hospital using Go-to; once the tote is removed there, the AGV drops, reinitializes, and picks up a new tote."
+        },
+        {
+          "type": "context_quote",
+          "value": "WCS will not reinitialize the AGV until the tote is removed and added again because remove-and-add can leave it still considered bound, but not properly bound."
+        },
+        {
+          "type": "artifact_quote",
+          "value": "The transcript also highlights a recovery scenario where a tipper or tote-related issue leaves an AGV stuck; after removing and adding the AGV back, the operator can send it to the hospital to drop the tote so WCS can reinitialize the AGV and allow it to receive a new task."
+        },
+        {
+          "type": "artifact_quote",
+          "value": "The hospital is used as a home base, for reject handling when an AGV cannot tip, for initializing new AGVs, and for shutdown-state behavior when AGVs are removed or added."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Verify the AGV reinitializes and picks up a new tote",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm the recovery succeeded and the AGV returned to normal task flow.",
+      "instruction": "Verify that the AGV comes back and picks up a new tote after the hospital tote removal and reinitialization sequence.",
+      "expected_result": "The AGV reinitializes and receives a new task or tote as described by the source.",
+      "healthy_condition": "The AGV comes back and picks up a new tote.",
+      "failure_condition": "The AGV does not reinitialize, does not receive a new task, or remains in an improper bound state.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Verify AGV recovery outcome",
+          "exact_action": "Verify that the AGV comes back and picks up a new tote.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0035_it_d_be_a_question_mark_primary_01_25_36_500",
+          "what_to_look_at": "Recovery outcome stating the AGV reinitializes and picks up a new tote."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop or escalate if the AGV does not pick up a new tote after hospital drop-off and tote removal.",
+        "Stop or escalate if WCS still does not reinitialize the AGV."
+      ],
+      "source_evidence": [
+        {
+          "type": "context_quote",
+          "value": "Instead of physically moving the AGV out, it can be sent to the hospital using Go-to; once the tote is removed there, the AGV drops, reinitializes, and picks up a new tote."
+        },
+        {
+          "type": "artifact_quote",
+          "value": "The transcript also highlights a recovery scenario where a tipper or tote-related issue leaves an AGV stuck; after removing and adding the AGV back, the operator can send it to the hospital to drop the tote so WCS can reinitialize the AGV and allow it to receive a new task."
+        },
+        {
+          "type": "source_ref",
+          "value": {
+            "source_id": "training_video_day1",
+            "source_type": "training_video",
+            "ingestion_batch_id": "batch_training_video_day1",
+            "timestamp_start": "01:24:15.000",
+            "timestamp_end": "01:26:58.000",
+            "start_time_seconds": 5055.0,
+            "end_time_seconds": 5218.0,
+            "segment_id": "segment_training_video_0035",
+            "source_document_id": "training_video_day1_video",
+            "section_id": "training_video_day1_segment_0035"
+          }
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The AGV is sent to the hospital using Go-to.",
+    "The tote is removed at the hospital.",
+    "The AGV drops and reinitializes.",
+    "The AGV comes back and picks up a new tote or receives a new task as described by the source."
+  ],
+  "healthy_conditions": [
+    "The AGV is not in a task and can be sent using Go-to.",
+    "The hospital destination can be selected and confirmed.",
+    "The tote is removed at the hospital.",
+    "WCS reinitializes the AGV after tote removal.",
+    "The AGV returns to normal flow and picks up a new tote."
+  ],
+  "failure_conditions": [
+    "The AGV is still in a task and cannot be sent using Go-to.",
+    "The AGV cannot be selected or the Go-to function is unavailable.",
+    "The hospital destination cannot be selected or confirmed.",
+    "The tote is not removed at the hospital.",
+    "WCS does not reinitialize the AGV because the tote remains improperly bound.",
+    "The AGV does not come back or does not pick up a new tote."
+  ],
+  "escalation_guidance": [
+    "Escalate if the AGV remains in an improper bound state after remove-and-add and hospital tote removal.",
+    "Escalate if the tote cannot be removed at the hospital.",
+    "Escalate if WCS does not reinitialize the AGV after the tote is removed.",
+    "Escalate if permissions or approved process do not allow the required AGV recovery actions."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0035_it_d_be_a_question_mark_primary_01_25_36_500",
+      "what_to_look_at": "Primary Go-to workflow and hospital recovery explanation."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0020_we_ve_got_your_entrance_queue_primary_00_43_45_000",
+      "what_to_look_at": "Hospital flow and drop-off context."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "timestamp_start": "01:24:15.000",
+      "timestamp_end": "01:26:58.000",
+      "start_time_seconds": 5055.0,
+      "end_time_seconds": 5218.0,
+      "segment_id": "segment_training_video_0035",
+      "source_document_id": "training_video_day1_video",
+      "section_id": "training_video_day1_segment_0035"
+    },
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "timestamp_start": "01:25:36.500",
+      "timestamp_end": "01:25:36.500",
+      "start_time_seconds": 5136.5,
+      "end_time_seconds": 5136.5,
+      "artifact_id": "artifact_training_video_training_video_day1_0035_it_d_be_a_question_mark_primary_01_25_36_500",
+      "segment_id": "segment_training_video_0035"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_training_video_send_agv_to_hospital_for_tote_drop_and_reinitialize"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide the exact remove-and-add AGV interface steps within this packet.",
+    "The source does not provide a precise hospital map coordinate, square code, or destination code.",
+    "The source does not provide detailed tote removal handling instructions beyond removing the tote at the hospital.",
+    "The source does not provide a time estimate for completing this recovery.",
+    "The source does not explicitly define escalation ownership beyond indicating when reinitialization does not occur."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual"
+  }
+}

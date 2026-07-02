@@ -1,0 +1,617 @@
+{
+  "procedure_id": "proc_handle_a_tote_at_the_hospital_station_and_return_an_empty_tote_to_the_agv_v1",
+  "candidate_id": "candidate_operator_handle_tote_at_hospital_station",
+  "title": "Handle A Tote At The Hospital Station And Return An Empty Tote To The AGV",
+  "procedure_type": "operation",
+  "summary": "Operator procedure for responding to a tote delivered to the hospital station, confirming tote presence, using the green scanner and hospital station information to determine why the tote was sent there, manually handling the tote at the station, and placing an empty tote on the AGV so it can return to the sorter area.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when a tote has been directed to the hospital station for manual handling. The source states this occurs in the event of a mis-sort, bad tip, or tote overload, and that the operator uses the hospital station indication and green scanner to determine why the tote was brought to the station.",
+  "not_for": [
+    "Do not use as a detailed corrective procedure for specific issue types such as mis-sort, bad tip, tote overload, no-read bar code, bar code mismatch, tote failed to empty, or sent from bagging station when source-specific handling details are required but not provided in this packet.",
+    "Do not use when the tote is not present at the hospital station or the AGV does not complete the documented right-side then left-side positioning sequence."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "operator",
+      "responsibility": "Go to the hospital station, verify tote presence, use the green scanner to determine why the tote was brought to the station, manually handle the tote, and place an empty tote on the AGV when it moves to the left side."
+    }
+  ],
+  "safety_notes": [
+    "Use only the documented operator interaction at the hospital station from this source packet.",
+    "The source does not provide detailed manual handling steps for each tote exception type; obtain SME guidance if the required task is not clear from the station status or scanner result.",
+    "Stop and escalate if the scanner does not provide the reason the tote was brought to the station or if the AGV does not complete the documented positioning sequence."
+  ],
+  "access_or_tools_needed": [
+    "Access to the hospital station",
+    "Green scanner",
+    "An empty tote",
+    "Ability to observe AGV position relative to the operator"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Operator access to the hospital station"
+    ],
+    "system_preconditions": [
+      "A tote has been directed to the hospital station for manual handling",
+      "The operator can observe the station stacklight and AGV position",
+      "An empty tote is available for placement on the AGV"
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_manual_hospital_station_overview_v1",
+    "ctx_manual_hospital_station_presence_and_scanner_v1",
+    "ctx_manual_hospital_station_agv_positioning_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_3_6_stacklight",
+      "description": "Hospital station stacklight reference for station and AGV status indication.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_30_hospital_hmi_operations_screen",
+      "description": "Hospital HMI Operations screen showing status information that tells the operator why the tote is there and what action is needed.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_92_image_2",
+      "description": "Hospital station operation artifact showing AGV tote delivery, scanner use, and tote placement context.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+      "description": "Hospital HMI Add Tote screen for sending a tote back into the system after proper positioning on the induct side.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_4_33_hospital_hmi_no_read_bar_code_screen",
+      "description": "Hospital HMI screen for no-read bar code exception handling at the hospital station.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen",
+      "description": "Hospital HMI screen for bar code mismatch exception handling at the hospital station.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_4_35_hospital_hmi_tote_failed_to_empty_screen",
+      "description": "Hospital HMI screen for tote failed to empty handling at the hospital station.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen",
+      "description": "Hospital HMI screen for sent from bagging station handling at the hospital station.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Go to the hospital station and verify tote presence",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm that a tote is present at the hospital station before beginning manual handling.",
+      "instruction": "Go to the hospital station and verify that a tote is present by checking the station indication for tote presence.",
+      "expected_result": "The operator confirms that a tote is present at the hospital station.",
+      "healthy_condition": "The station indicates tote presence and the operator can proceed with hospital station handling.",
+      "failure_condition": "No tote presence indication is available or the operator cannot confirm that a tote is present.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check hospital station tote presence indication",
+          "exact_action": "Verify that a tote is present by checking the station stacklight indication for tote presence.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_3_6_stacklight",
+          "what_to_look_at": "Hospital station stacklight indication used to identify station and AGV presence/status."
+        },
+        {
+          "artifact_id": "artifact_fig_4_33_hospital_hmi_no_read_bar_code_screen",
+          "what_to_look_at": "Hospital HMI example for a tote that must be handled manually at the hospital station when a tote bar code cannot be read at the Operator Station."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The operator cannot confirm tote presence at the hospital station.",
+        "The station indication does not support proceeding with manual handling."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 28,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_3_hospital_station",
+          "quote_or_summary": "A stacklight indicates a tote is present. An operator uses a scanner (green scanner) to determine the reason the tote was brought to the station.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 29,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_3_1_hospital_station_stacklight",
+          "figure_id": "fig_3_6",
+          "figure_number": "Figure 3-6",
+          "quote_or_summary": "Figure 3-6 appears on page 29 in section optisweep_operation_and_maintenance_manual_final_1_3_3_1_hospital_station_stacklight.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Use the green scanner to determine why the tote was sent to the station",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Identify the reason the tote was brought to the hospital station so the operator can perform the required manual handling.",
+      "instruction": "Use the green scanner and available hospital station status information to determine the reason the tote was brought to the hospital station.",
+      "expected_result": "The operator identifies why the tote was sent to the hospital station.",
+      "healthy_condition": "The scanner and station information provide the tote reason or status needed for the operator to continue.",
+      "failure_condition": "The scanner does not provide the reason, the status is unclear, or the operator cannot determine the required handling.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Review hospital station status information",
+          "exact_action": "Use the hospital station information to determine why the tote is there and what action is needed.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "hmi_action",
+          "label": "Scan tote with green scanner",
+          "exact_action": "Use the green scanner to determine the reason the tote was brought to the hospital station.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_30_hospital_hmi_operations_screen",
+          "what_to_look_at": "Status messages and WCS-provided information that tell the operator why the tote is there and what action to perform."
+        },
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Hospital station operation context showing scanner use and status-driven handling."
+        },
+        {
+          "artifact_id": "artifact_fig_4_33_hospital_hmi_no_read_bar_code_screen",
+          "what_to_look_at": "Example exception screen for a no-read bar code condition."
+        },
+        {
+          "artifact_id": "artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen",
+          "what_to_look_at": "Example exception screen for a bar code mismatch condition."
+        },
+        {
+          "artifact_id": "artifact_fig_4_35_hospital_hmi_tote_failed_to_empty_screen",
+          "what_to_look_at": "Example exception screen for a tote failed to empty condition."
+        },
+        {
+          "artifact_id": "artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen",
+          "what_to_look_at": "Example exception screen for a sent from bagging station condition."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The scanner does not provide the reason the tote was brought to the station.",
+        "The station status does not make the required operator action clear."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 28,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_3_hospital_station",
+          "quote_or_summary": "A stacklight indicates a tote is present. An operator uses a scanner (green scanner) to determine the reason the tote was brought to the station.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 60,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_2_operations_menu",
+          "figure_id": "fig_4_30",
+          "figure_number": "Figure 4-30",
+          "quote_or_summary": "The status messages tell the station operator why the tote is there, what menu they need to use, and what action they need to perform.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 92,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation",
+          "quote_or_summary": "Nearby source text states that the operator opens the corresponding HMI screen to extract the tote based on status fields, scans the tote barcode using the green scanner, confirms the Tote ID field auto-populates, and performs the required task indicated by the status fields.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Manually handle the tote at the hospital station",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Perform the manual handling task required for the tote after the reason for hospital station delivery is identified.",
+      "instruction": "Manually handle the tote at the hospital station according to the reason identified by the scanner and hospital station status information.",
+      "expected_result": "The tote is manually handled at the hospital station as required.",
+      "healthy_condition": "The required manual handling task is clear from the station information and is completed by the operator.",
+      "failure_condition": "The required manual handling task is not defined clearly enough in the source or cannot be completed based on the available information.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Perform required manual tote handling",
+          "exact_action": "Manually handle the tote at the hospital station as described by the station purpose in the source.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Hospital station operation context for extracting and handling the tote."
+        },
+        {
+          "artifact_id": "artifact_fig_4_33_hospital_hmi_no_read_bar_code_screen",
+          "what_to_look_at": "Example exception context where the operator must manually bag items and print the correct bag label."
+        },
+        {
+          "artifact_id": "artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen",
+          "what_to_look_at": "Example exception context where the operator must manually bag items and print the correct bag label."
+        },
+        {
+          "artifact_id": "artifact_fig_4_35_hospital_hmi_tote_failed_to_empty_screen",
+          "what_to_look_at": "Example exception context where the operator removes the tote from the system so the required task can be performed."
+        },
+        {
+          "artifact_id": "artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen",
+          "what_to_look_at": "Example exception context where the operator removes the tote from the system so the required task can be performed."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The source does not provide enough detail to perform the required manual handling safely or correctly.",
+        "The identified tote condition requires a more specific procedure than is available in this packet."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 28,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_3_hospital_station",
+          "quote_or_summary": "In the event of a mis-sort, bad tip, or tote overload, the AGV is directed by the WCS to take the tote to a hospital station to be manually handled by an operator.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 92,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation",
+          "quote_or_summary": "Nearby source text states that the operator opens the corresponding HMI screen to extract the tote based on status fields, scans the tote barcode using the green scanner, confirms the Tote ID field auto-populates, and performs the required task indicated by the status fields.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Observe AGV delivery on the right side of the hospital station",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm the documented AGV delivery position before the tote exchange sequence continues.",
+      "instruction": "Observe that the AGV brings the tote to the right side of the hospital station from the operator perspective.",
+      "expected_result": "The AGV is observed at the right side of the hospital station with the tote.",
+      "healthy_condition": "The AGV follows the documented right-side delivery position.",
+      "failure_condition": "The AGV does not arrive on the right side as documented or its position cannot be confirmed.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Observe AGV right-side position",
+          "exact_action": "Observe that the AGV brings the tote to the right side of the hospital station from the operator perspective.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Hospital station tote delivery layout and AGV position relative to the operator."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The AGV does not complete the documented right-side positioning sequence."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 28,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_3_hospital_station",
+          "quote_or_summary": "The AGV brings the tote to the right side (based on the perspective of the operator) of the hospital station, then moves to the left side where an operator places an empty tote on the AGV.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Place an empty tote on the AGV after it moves to the left side",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Complete the documented tote exchange so the AGV can depart with a tote.",
+      "instruction": "After the AGV moves to the left side of the hospital station, place an empty tote on the AGV.",
+      "expected_result": "An empty tote is placed on the AGV at the left side of the hospital station.",
+      "healthy_condition": "The AGV reaches the left side and the operator places the empty tote on it successfully.",
+      "failure_condition": "The AGV does not move to the left side or the empty tote is not placed on the AGV.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Place empty tote on AGV",
+          "exact_action": "After the AGV moves to the left side of the hospital station, place an empty tote on the AGV.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Hospital station induct-side tote placement context."
+        },
+        {
+          "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+          "what_to_look_at": "Add Tote screen used when sending a tote back into the system after proper positioning on the induct side."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The AGV does not complete the documented move to the left side.",
+        "The operator cannot place an empty tote on the AGV."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 28,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_3_hospital_station",
+          "quote_or_summary": "The AGV brings the tote to the right side (based on the perspective of the operator) of the hospital station, then moves to the left side where an operator places an empty tote on the AGV.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 62,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_2_2_1_1_add_tote",
+          "figure_id": "fig_4_31",
+          "figure_number": "Figure 4-31",
+          "quote_or_summary": "The operator uses the green scanner to scan the tote barcode, which populates the Tote ID and Barcode fields, then presses Confirm & Execute after the tote is positioned properly on the induct side.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 92,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation",
+          "quote_or_summary": "If the tote is going back into the system, place it on the induct side on the left with the tote flush against the end stops.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Verify the AGV has a tote to return with",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm the AGV can re-enter the sorter area after the hospital station exchange is complete.",
+      "instruction": "Verify that the AGV has a tote to return with so it can re-enter the sorter area.",
+      "expected_result": "The AGV has a tote to return with and is ready to re-enter the sorter area.",
+      "healthy_condition": "A tote is present on the AGV for return and the exchange sequence is complete.",
+      "failure_condition": "The AGV does not have a tote to return with or cannot re-enter the sorter area.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm return tote on AGV",
+          "exact_action": "Verify that the AGV has a tote to return with so it can re-enter the sorter area.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Hospital station tote return context after tote placement."
+        },
+        {
+          "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+          "what_to_look_at": "Add Tote workflow context for sending a tote back into the system."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The AGV does not have a tote to return with.",
+        "The AGV does not re-enter the sorter area after the tote exchange."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 28,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_3_hospital_station",
+          "quote_or_summary": "The AGV will re-enter the sorter area after it has a tote to return with.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The operator confirms tote presence at the hospital station.",
+    "The operator determines why the tote was brought to the hospital station using the green scanner and available station status information.",
+    "The tote is manually handled at the hospital station.",
+    "The AGV follows the documented right-side then left-side positioning sequence.",
+    "An empty tote is placed on the AGV.",
+    "The AGV has a tote to return with so it can re-enter the sorter area."
+  ],
+  "healthy_conditions": [
+    "A tote is present at the hospital station when the operator arrives.",
+    "The green scanner and station status information identify why the tote was sent to the station.",
+    "The AGV arrives on the operator's right side, then moves to the left side as documented.",
+    "The operator is able to place an empty tote on the AGV.",
+    "The AGV has a tote to return with after the exchange."
+  ],
+  "failure_conditions": [
+    "The operator cannot confirm tote presence at the hospital station.",
+    "The scanner does not provide the reason the tote was brought to the station.",
+    "The required manual handling task is not sufficiently defined by the source for the identified condition.",
+    "The AGV does not complete the documented right-side then left-side positioning sequence.",
+    "The AGV does not have a tote to return with after the exchange."
+  ],
+  "escalation_guidance": [
+    "Escalate for SME review if the scanner or station status does not clearly identify the reason the tote was brought to the hospital station.",
+    "Escalate if the required manual handling task for the identified tote condition is not described clearly enough in the source to execute.",
+    "Escalate if the AGV does not complete the documented right-side then left-side positioning sequence.",
+    "Escalate if the AGV does not have a tote to return with and cannot re-enter the sorter area."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_3_6_stacklight",
+      "what_to_look_at": "Hospital station stacklight indication."
+    },
+    {
+      "artifact_id": "artifact_fig_4_30_hospital_hmi_operations_screen",
+      "what_to_look_at": "Hospital HMI status messages and WCS-provided tote information."
+    },
+    {
+      "artifact_id": "artifact_page_92_image_2",
+      "what_to_look_at": "Hospital station operation flow including AGV delivery, scanner use, and tote placement."
+    },
+    {
+      "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+      "what_to_look_at": "Add Tote screen for returning a tote into the system."
+    },
+    {
+      "artifact_id": "artifact_fig_4_33_hospital_hmi_no_read_bar_code_screen",
+      "what_to_look_at": "No Read Bar Code exception screen."
+    },
+    {
+      "artifact_id": "artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen",
+      "what_to_look_at": "Bar Code Mismatch exception screen."
+    },
+    {
+      "artifact_id": "artifact_fig_4_35_hospital_hmi_tote_failed_to_empty_screen",
+      "what_to_look_at": "Tote Failed to Empty exception screen."
+    },
+    {
+      "artifact_id": "artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen",
+      "what_to_look_at": "Sent from Bagging Station exception screen."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 28,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_3_hospital_station",
+      "quote_or_summary": "In the event of a mis-sort, bad tip, or tote overload, the AGV is directed by the WCS to take the tote to a hospital station to be manually handled by an operator.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 28,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_3_hospital_station",
+      "quote_or_summary": "A stacklight indicates a tote is present. An operator uses a scanner (green scanner) to determine the reason the tote was brought to the station.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 28,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_3_hospital_station",
+      "quote_or_summary": "The AGV brings the tote to the right side (based on the perspective of the operator) of the hospital station, then moves to the left side where an operator places an empty tote on the AGV. The AGV will re-enter the sorter area after it has a tote to return with.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_operator_handle_tote_at_hospital_station"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide detailed manual handling steps for each tote issue type such as mis-sort, bad tip, or tote overload.",
+    "The source packet does not provide a complete page text extract for section 3.3 Hospital Station.",
+    "The source does not provide a supported time estimate for completing this procedure.",
+    "The source does not explicitly state whether production stop or LOTO is required.",
+    "The packet includes HMI artifacts that imply more detailed remove/add tote interactions, but the candidate and source packet do not provide enough direct procedural detail to fully specify those button-by-button actions for this runbook."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

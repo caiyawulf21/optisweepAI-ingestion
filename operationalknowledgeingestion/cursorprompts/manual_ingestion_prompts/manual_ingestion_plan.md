@@ -18,13 +18,15 @@ All source types should produce the same intermediate knowledge assets:
 1. source artifacts
 2. operational context records
 3. runbook candidates
+4. candidate packets (Stage 6)
 
-These intermediate assets remain source-specific.
+These intermediate assets remain source-specific through Stage 6.
 
-Canonical runbooks are not created during source extraction.
+Stage 5 drafts runbook candidates. Stage 6 finalizes complete source-specific
+runbooks with artifacts and context attached.
 
-Canonical runbooks are created later through cross-source normalization,
-candidate consolidation, evidence merging, and runbook drafting.
+Cross-source merging is selective at Shared Stage 7 (merge clusters only).
+Shared Stages 6.5–8 handle pooling, merging, and playbook linking.
 
 This architecture allows multiple knowledge sources to contribute to the
 same runbook without overwriting one another.
@@ -53,26 +55,44 @@ Operational Context
 
 Runbook Candidates
 
-        â†“
+        ↓
 
-Candidate Pool
+Stage 5 [LLM Assisted]
+Draft Runbook Candidates
 
-        â†“
+        ↓
 
-Canonical Runbooks
+Stage 6 [LLM Assisted]
+Finalized Source Runbooks
 
-        â†“
+        ↓
+
+Shared Stage 6.5 [Deterministic]
+Runbook Pool + Merge Clusters
+
+        ↓
+
+Shared Stage 7 [LLM Assisted, selective]
+Merge Clusters Only
+
+        ↓
+
+Shared Stage 8 [LLM Assisted]
+Playbook Linking + Finalization
+
+        ↓
 
 Relationship Linking
 
-        â†“
+        ↓
 
 Validation
 
-Source-specific assets are preserved.
+Source-specific assets are preserved through Stage 6.
 
-Canonical runbooks are created from candidate consolidation across all
-knowledge sources.
+Stage 6 produces finalized source runbooks. Shared Stage 6.5 pools them and
+identifies merge clusters. Shared Stage 7 merges only those clusters. Singleton
+runbooks pass through without a Stage 7 LLM call.
 
 No single source owns a runbook.
 
@@ -116,8 +136,10 @@ backend/app/tools/manual_ingestion/
   artifact_enrichment_tool.py
   operational_context_extractor.py
   runbook_candidate_extractor.py
-  runbook_merge_matcher.py
-  runbook_drafting_tool.py
+  runbook_finalization_tool.py
+  runbook_pool_builder.py
+  runbook_merge_tool.py
+  playbook_finalization_tool.py
   relationship_linker.py
   manual_knowledge_validator.py
   extraction_report_writer.py
@@ -127,8 +149,10 @@ backend/app/prompts/manual_ingestion/
   stage3_artifact_enrichment_prompt.md
   stage4_operational_context_extraction_prompt.md
   stage5_runbook_candidate_discovery_prompt.md
-  stage7_runbook_merge_decision_prompt.md
-  stage7_runbook_drafting_prompt.md
+  stage6_runbook_finalization_prompt.md
+  stage6_5_runbook_pool_merge_prep_prompt.md
+  stage7_runbook_merge_prompt.md
+  stage8_playbook_finalization_prompt.md
   stage8_relationship_linking_prompt.md
   stage9_validation_repair_prompt.md
 
@@ -140,7 +164,7 @@ backend/app/schemas/
   extraction_report_schema.py
 ```
 
-The agent must execute stages in this order:
+The agent must execute source-specific stages in this order:
 
 ```text
 1. Build source bundle
@@ -148,12 +172,24 @@ The agent must execute stages in this order:
 3. Enrich source artifacts
 4. Extract operational context
 5. Discover runbook candidates
-6. Match candidates to existing runbooks
-7. Draft or update runbooks
-8. Link artifacts â†” context â†” runbooks
-9. Validate and repair
-10. Write final outputs
+6. Finalize source runbooks
 ```
+
+Shared finalization runs after every source completes Stage 6:
+
+```text
+6.5. Build shared runbook pool and merge clusters [Deterministic]
+7. Merge cross-source runbook clusters only [LLM Assisted, selective]
+8. Link runbooks to playbooks and finalize playbooks [LLM Assisted]
+9. Link artifacts ↔ context ↔ runbooks
+10. Validate and repair
+11. Write final outputs
+```
+
+Stages 1–6 are source-specific. Stages 6.5–8 are shared.
+
+Stage 7 must not run on every runbook. Stage 5 drafts candidates; Stage 6
+finalizes them. Stage 7 merges only when Stage 6.5 identifies a merge cluster.
 
 ## Important design rules:
 
@@ -474,21 +510,34 @@ troubleshooting_reference
 maintenance_reference
 ```
 
-## Stage 5: Discover Runbook Candidates
+## Stage 5: Discover Runbook Candidates [LLM Assisted]
 
 Tool: runbook_candidate_extractor.py
 
 Prompt: stage5_runbook_candidate_discovery_prompt.md
+
+Purpose:
+
+Discover and draft reusable runbook candidates from a single source.
 
 Responsibilities:
 
 * Identify reusable runbook/procedure candidates from the manual.
 * Include operation, diagnostic, recovery, and reference procedures.
 * Include metric-check procedures like heartbeat stats, operator stats, process status, IO diagnostics, alarms, AGV status, tote task, hospital status fields, etc.
-* Output lightweight candidates only.
-* Do not draft full runbooks yet.
+* Draft candidate content: title, goal, rough steps, procedure type, role, source refs.
+* Preserve source lineage.
+* Do not merge or normalize candidates.
+* Do not attach full artifact payloads yet (Stage 6 does that).
+* Do not finalize full runbooks yet (Stage 6 does that).
 * Do not create workflow logic.
 * Do not create trigger conditions.
+
+Output:
+
+```text
+runbook_candidates.json
+```
 
 Candidate output should include:
 
@@ -516,100 +565,168 @@ Candidate output should include:
 }
 ```
 
-## Stage 6: Build Candidate Pool
+## Stage 6: Source Runbook Finalization [LLM Assisted]
 
 Tool:
-candidate_pool_builder.py
+runbook_finalization_tool.py
+
+Prompt:
+stage6_runbook_finalization_prompt.md
+
+This stage runs independently inside each source ingestion pipeline.
+
+Purpose:
+
+Turn each Stage 5 candidate draft into a finalized source-specific runbook with
+all supporting evidence attached.
 
 Responsibilities:
 
-Load candidate outputs from all supported source pipelines.
+* Expand Stage 5 drafts into full runbook structure per Runbook Example.md.
+* Attach relevant source artifacts and image refs.
+* Attach operational context records.
+* Attach relevant source sections and OCR text.
+* Attach nearby figures/tables.
+* Attach source lineage and metadata.
+* Generate Markdown + JSON review outputs per candidate.
 
-Examples:
+Do NOT:
 
-- manual candidates
-- training slide candidates
-- training transcript candidates
-- incident candidates
-- SME-authored candidates
-
-Preserve source lineage.
-
-Do not draft runbooks.
-
-Do not merge runbooks.
-
-Do not create relationships.
-
-Prepare consolidated candidate packets for canonical runbook creation.
+* Search other sources.
+* Merge candidates across sources.
+* Make cross-source merge decisions.
 
 Output:
 
-candidate_pool.json
+```text
+finalized_runbooks/*.json
+review_markdown/runbooks/*.md
+runbook_finalization_report.json
+```
 
-## Stage 7: Canonical Runbook Drafting and Merging
+## Shared Stage 6.5: Runbook Pool & Merge Preparation [Deterministic]
 
 Tool:
-runbook_drafting_tool.py
+runbook_pool_builder.py
 
 Prompt:
-stage7_runbook_drafting_prompt.md
+stage6_5_runbook_pool_merge_prep_prompt.md
+
+Inputs:
+
+* Finalized runbooks from every source-specific Stage 6 output.
+
+Purpose:
+
+Index all finalized runbooks, compute cross-source similarity, identify merge
+clusters, and mark singleton runbooks for pass-through without Stage 7 LLM cost.
 
 Responsibilities:
 
-Create canonical runbooks from candidate pool entries.
+* Build the shared runbook pool.
+* Create retrieval cards for every finalized runbook.
+* Generate normalized searchable metadata and embedding hooks.
+* Build a runbook retrieval index.
+* Compute cross-source similarity scores.
+* Generate merge clusters for Shared Stage 7.
+* Generate pass-through list for singletons (no Stage 7 LLM).
 
-Multiple candidates may represent the same procedure.
+Important:
 
-Candidates may originate from different source types.
+Stage 6.5 does NOT merge runbooks.
 
-Examples:
+Outputs:
 
-Manual:
-Start Operator Station
+```text
+runbook_pool.json
+retrieval_cards.json
+runbook_similarity.json
+runbook_retrieval_index.json
+merge_clusters.json
+pass_through_runbooks.json
+```
 
-Training Slide:
-Operator Startup
+## Shared Stage 7: Cross-Source Runbook Merge [LLM Assisted, Selective]
 
-Incident:
-Restart Operator Station
+Tool:
+runbook_merge_tool.py
 
-These may become:
+Prompt:
+stage7_runbook_merge_prompt.md
 
-proc_start_operator_station
+Purpose:
 
-The agent should:
+Merge finalized runbooks from different sources when they represent the same
+reusable procedure.
 
-- normalize titles
-- merge duplicate procedures
-- merge evidence
-- merge screenshots
-- merge source references
-- attach operational context
-- attach supporting artifacts
+Cost rule:
 
-A runbook should represent the best available version of a reusable procedure.
+Stage 7 must NOT run on every runbook. Run only on merge clusters from Stage 6.5.
+Singleton finalized runbooks pass through without a Stage 7 LLM call.
 
-Source lineage must be preserved.
+Input (per merge cluster only):
 
-Canonical runbooks are not owned by any single source.
+* Finalized runbooks in the cluster.
+* Similarity evidence and merge hints from Stage 6.5.
+* Existing canonical runbook (if applicable).
 
-Runbooks should contain evidence from all supporting sources.
+Responsibilities:
 
-If uncertainty exists:
+* Confirm cluster members represent the same reusable procedure.
+* Merge cross-source evidence when appropriate.
+* Produce one merged canonical runbook (Markdown + JSON).
+* Preserve source lineage from every contributing source.
+* Record merge history, conflicts, and gaps.
 
-- create a new runbook
-- record the conflict in extraction_report.json
+Important:
 
-Do not create workflow logic.
+* Stage 7 owns cross-source merge decisions only.
+* Stage 7 does not re-draft runbooks Stage 6 already finalized unless merging.
+* Stage 6 and Stage 6.5 must never merge runbook content.
 
-Do not create routing logic.
+Outputs:
 
-Do not create trigger conditions.
+```text
+canonical_runbooks.json
+review_markdown/runbooks/*.md
+runbook_merge_report.json
+candidate_to_procedure_mapping.json
+```
 
-Do not create ML labels.
+## Shared Stage 8: Playbook Finalization & Runbook Linking [LLM Assisted]
 
-## Stage 8: Link Relationships
+Tool:
+playbook_finalization_tool.py
+
+Prompt:
+stage8_playbook_finalization_prompt.md
+
+Purpose:
+
+Link finalized/canonical runbooks to playbooks and finalize playbooks.
+
+Inputs:
+
+* Pass-through finalized runbooks from Stage 6.5.
+* Merged canonical runbooks from Stage 7.
+* Playbook candidates from incident Stage 5.
+
+Responsibilities:
+
+* Resolve playbook runbook_placeholder nodes to runbook IDs.
+* Finalize playbook structure for review.
+* Preserve symptom-driven entry logic and source lineage.
+
+Outputs:
+
+```text
+canonical_playbooks.json
+review_markdown/playbooks/*.md
+playbook_runbook_links.json
+playbook_finalization_report.json
+```
+
+## Stage 9: Link Relationships
 
 Tool: relationship_linker.py
 
@@ -635,7 +752,7 @@ artifact_manual_fig_4_22_heartbeat_stats
     proc_check_operator_station_heartbeat_stats_v1
 ```
 
-## Stage 9: Validate and Repair
+## Stage 10: Validate and Repair
 
 Tool: manual_knowledge_validator.py
 
@@ -656,7 +773,7 @@ Responsibilities:
 * Send failed records to LLM repair only for formatting or wording issues.
 * Do not let repair invent missing facts.
 
-## Stage 10: Write Outputs
+## Stage 11: Write Outputs
 
 Tool: extraction_report_writer.py
 
@@ -679,12 +796,16 @@ Create these prompt files:
 2. stage3_artifact_enrichment_prompt.md
 3. stage4_operational_context_extraction_prompt.md
 4. stage5_runbook_candidate_discovery_prompt.md
-5. stage7_runbook_merge_decision_prompt.md
-6. stage7_runbook_drafting_prompt.md
-7. stage8_relationship_linking_prompt.md
-8. stage9_validation_repair_prompt.md
+5. stage6_runbook_finalization_prompt.md
+6. stage6_5_runbook_pool_merge_prep_prompt.md
+7. stage7_runbook_merge_prompt.md
+8. stage8_playbook_finalization_prompt.md
+9. stage9_relationship_linking_prompt.md
+10. stage10_validation_repair_prompt.md
 
-The master prompt should tell the agent to run stages in order and never skip directly to runbook drafting.
+The master prompt should tell the agent to run source-specific stages 1–6 in
+order, then invoke shared stages 6.5–8. Stage 7 runs only on merge clusters.
+Never skip directly to cross-source merging before Stage 6 finalizes runbooks.
 
 ## Master prompt content:
 
@@ -693,26 +814,26 @@ You are the OptiSweep Manual Knowledge Extraction Agent.
 
 Your job is to orchestrate a repeatable ingestion pipeline for OptiSweep source manuals.
 
-You produce three knowledge outputs:
+You produce source-specific knowledge outputs through Stage 6:
 1. source artifacts / images / manual references
 2. operational context records
-3. reusable runbooks / procedures
+3. draft runbook candidates (Stage 5)
+4. finalized source runbooks (Stage 6)
 
-You must run the pipeline in this order:
-1. Build source bundle
-2. Extract source artifacts / images / tables
-3. Enrich source artifacts
-4. Extract operational context
-5. Discover runbook candidates
-6. Match candidates to existing runbooks
-7. Draft or update runbooks
-8. Link artifacts, context, and runbooks
-9. Validate and repair
-10. Write outputs
+Shared finalization then runs:
+6.5. Build shared runbook pool and merge clusters
+7. Merge cross-source runbook clusters only (not every runbook)
+8. Link runbooks to playbooks and finalize playbooks
+9. Link artifacts, context, and runbooks
+10. Validate and repair
+11. Write outputs
 
 Do not skip stages.
 
-Do not draft runbooks before source artifacts and operational context are available.
+Stage 5 drafts candidates. Stage 6 finalizes source runbooks with artifacts attached.
+Stage 7 merges only when Stage 6.5 identifies a merge cluster.
+
+Do not run Stage 7 LLM on singleton runbooks.
 
 Do not populate linked_context_ids or linked_runbook_ids until the relationship linking stage.
 
@@ -820,4 +941,30 @@ Implement tests or smoke checks for:
 Do not write to Cosmos or PostgreSQL vector tables yet.
 This stage only creates local reviewed extraction outputs.
 
+## Future LangGraph Orchestration
+
+Future LangGraph orchestration should mirror the source-specific versus shared
+boundary:
+
+```text
+Source-specific subgraph (per manual, video, incident, SOP, SME doc)
+  Stage 1  [Deterministic]
+  Stage 2  [Deterministic]
+  Stage 3  [LLM Assisted]
+  Stage 4  [LLM Assisted]
+  Stage 5  [LLM Assisted]
+  Stage 6  [LLM Assisted]
+
+Shared finalization subgraph
+  Stage 6.5  [Deterministic]  pool + merge clusters + pass-through
+  Stage 7    [LLM Assisted]    merge clusters only
+  Stage 8    [LLM Assisted]    playbook linking + finalization
+  Stage 9+   [mixed]            links, validation, publish
+```
+
+- Stages 1–6 are source-specific nodes.
+- Stages 6.5–8 are shared nodes.
+- Stage 7 must not run on every finalized runbook.
+
+Canonical runbook JSON/Markdown structure: `incidenceknowledgeingestion/datastructureprompts/Runbook Example.md`
 

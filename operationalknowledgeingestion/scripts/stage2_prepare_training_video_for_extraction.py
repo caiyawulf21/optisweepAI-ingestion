@@ -12,7 +12,7 @@ if str(SRC) not in sys.path:
 
 import typer
 
-from optisweep_ingestion.tools.training_video_preparer import prepare_training_video_for_extraction
+from optisweep_ingestion.stage2_training_video_preparer import prepare_training_video_for_extraction
 from optisweep_ingestion.stage_paths import stage_dir
 
 app = typer.Typer(add_completion=False)

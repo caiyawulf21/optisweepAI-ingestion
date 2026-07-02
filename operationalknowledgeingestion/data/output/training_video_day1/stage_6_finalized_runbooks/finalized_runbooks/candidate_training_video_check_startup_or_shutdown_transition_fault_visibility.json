@@ -1,0 +1,406 @@
+{
+  "procedure_id": "proc_check_visible_fault_indicators_during_startup_or_shutdown_state_transitions_v1",
+  "candidate_id": "candidate_training_video_check_startup_or_shutdown_transition_fault_visibility",
+  "title": "Check Visible Fault Indicators During Startup Or Shutdown State Transitions",
+  "procedure_type": "diagnostic",
+  "summary": "Use the training source's examples to inspect whether a startup or shutdown transition is delayed or incomplete because of a visible system fault or a visible AGV waiting condition.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when the system appears to be in startup or shutdown and the transition seems delayed, incomplete, or not progressing as expected, and you need to determine whether the source-described visible fault or waiting examples are present.",
+  "not_for": [
+    "Do not use as a recovery procedure to clear faults or force completion of startup or shutdown.",
+    "Do not use when corrective action requires steps not described in this source.",
+    "Do not use as a complete troubleshooting workflow beyond observing visible faults or waiting conditions during startup or shutdown."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L1_support",
+      "responsibility": "Observe startup or shutdown behavior, check for visible system fault indications, compare observed conditions to the source-described examples, and document what is visible."
+    }
+  ],
+  "safety_notes": [
+    "This source provides diagnostic observation guidance only and does not provide recovery actions.",
+    "Do not invent corrective actions, commands, or control changes not described in the source."
+  ],
+  "access_or_tools_needed": [
+    "Access to observe system startup or shutdown behavior",
+    "Access to system fault indication if available"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to observe the system during startup or shutdown",
+      "Access to view system fault indication if available"
+    ],
+    "system_preconditions": [
+      "The system is currently in startup or shutdown, or appears stuck during one of those transitions."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_state_transition_fault_visibility_v1",
+    "ctx_training_video_agv_startup_and_shutdown_states_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500",
+      "description": "Lifecycle slide showing AGV progression through startup, sorting, bag-out, and shutdown, useful for recognizing startup and shutdown state context.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000",
+      "description": "Overall System RMS page reference showing where system faults and active AGV faults would appear.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Confirm the system is in startup or shutdown and assess whether the transition is delayed",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Establish that the issue being observed matches the source context of startup or shutdown transition visibility.",
+      "instruction": "Observe the system and determine whether it is currently in startup or shutdown. Check whether the transition appears delayed, incomplete, or not progressing as expected.",
+      "expected_result": "The current transition state is identified as startup or shutdown, and the observer has confirmed that the transition appears delayed or incomplete.",
+      "healthy_condition": "The system is clearly progressing through the expected startup or shutdown state behavior.",
+      "failure_condition": "The system appears stuck, delayed, or incomplete during startup or shutdown.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Identify transition state",
+          "exact_action": "Observe whether the system is in startup or shutdown and whether the transition appears delayed or incomplete.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500",
+          "what_to_look_at": "Look at the lifecycle/state progression showing AGVs starting in shutdown, moving through startup, and returning to shutdown."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The transition remains incomplete and the current state cannot be confidently identified from visible information."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "timestamp_start": "00:13:48.000",
+          "timestamp_end": "00:16:31.000",
+          "start_time_seconds": 828.0,
+          "end_time_seconds": 991.0,
+          "segment_id": "segment_training_video_0010",
+          "source_document_id": "training_video_day1_video",
+          "section_id": "training_video_day1_segment_0010"
+        },
+        {
+          "context_id": "ctx_training_video_agv_startup_and_shutdown_states_v1",
+          "quote_or_summary": "AGVs start up in a shutdown state at specific charging locations; startup takes them from power cycling to staged for sort; shutdown cycles them back to the charger."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Check for a visible system fault indication",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Use the source-stated guidance that the system will indicate transition issues with system faults.",
+      "instruction": "Check whether the system is showing a system fault indication associated with the delayed startup or shutdown transition.",
+      "expected_result": "A visible system fault is either identified or ruled out based on what is available to observe.",
+      "healthy_condition": "No visible system fault is present, or the visible state is consistent with normal transition behavior.",
+      "failure_condition": "A visible system fault is present during the delayed or incomplete transition.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Inspect fault indication",
+          "exact_action": "Check for a system fault indication because the source states that the system will tell you with system faults when transition issues occur.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000",
+          "what_to_look_at": "Look for where system faults appear on the left and active AGV faults appear on the right of the Overall System RMS page."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "A visible fault is present but the source does not provide corrective action.",
+        "Fault visibility is expected but the required screen or access is unavailable."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 10,
+          "section_id": "training_video_day1_segment_0010",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "The system will tell you with system faults; examples include an AGV waiting to do an exchange during shutdown or startup delay while waiting for an AGV on the charger."
+        },
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000",
+          "quote_or_summary": "Overall System RMS page shows system faults on the left and active AGV faults on the right."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "During shutdown, look for an AGV waiting to do an exchange",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Check the specific shutdown example given by the source for a visible waiting condition.",
+      "instruction": "If the system is in shutdown, look for the example condition described in the source: an AGV waiting to do an exchange.",
+      "expected_result": "The observer determines whether the shutdown delay matches the source example of an AGV waiting to do an exchange.",
+      "healthy_condition": "No AGV waiting-to-exchange condition is visible, or shutdown continues normally.",
+      "failure_condition": "An AGV waiting to do an exchange is visible during shutdown and appears to be associated with the delay.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect shutdown waiting condition",
+          "exact_action": "During shutdown, look for the example condition described in the source: an AGV waiting to do an exchange.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500",
+          "what_to_look_at": "Use the lifecycle context for shutdown behavior while checking for the visible AGV waiting condition mentioned in the training segment."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Shutdown remains incomplete and the visible condition cannot be matched to the source example.",
+        "A waiting-to-exchange condition is observed but the source provides no recovery action."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 10,
+          "section_id": "training_video_day1_segment_0010",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "The system will tell you with system faults; examples include an AGV waiting to do an exchange during shutdown or startup delay while waiting for an AGV on the charger."
+        },
+        {
+          "context_id": "ctx_training_video_state_transition_fault_visibility_v1",
+          "quote_or_summary": "Shutdown may show an AGV waiting to do an exchange."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "During startup, look for delay while waiting for an AGV on the charger",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Check the specific startup example given by the source for a visible waiting condition.",
+      "instruction": "If the system is in startup, look for the example condition described in the source: a delay while waiting for an AGV on the charger.",
+      "expected_result": "The observer determines whether the startup delay matches the source example of waiting for an AGV on the charger.",
+      "healthy_condition": "No charger-related AGV waiting condition is visible, or startup continues normally.",
+      "failure_condition": "Startup appears delayed while waiting for an AGV on the charger.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect startup waiting condition",
+          "exact_action": "During startup, look for the example condition described in the source: a delay while waiting for an AGV on the charger.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500",
+          "what_to_look_at": "Use the startup/shutdown lifecycle context while checking for a startup delay associated with an AGV on the charger."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Startup remains incomplete and the visible condition cannot be matched to the source example.",
+        "A charger-related waiting condition is observed but the source provides no recovery action."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 10,
+          "section_id": "training_video_day1_segment_0010",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "The system will tell you with system faults; examples include an AGV waiting to do an exchange during shutdown or startup delay while waiting for an AGV on the charger."
+        },
+        {
+          "context_id": "ctx_training_video_state_transition_fault_visibility_v1",
+          "quote_or_summary": "Startup may be delayed while waiting for an AGV on the charger."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Record the observed fault or waiting condition",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Capture the visible condition exactly as observed so it can be compared to the source examples and escalated if needed.",
+      "instruction": "Record the visible waiting condition or fault indication exactly as observed and compare it to the source-described examples.",
+      "expected_result": "A clear observation record exists describing whether a visible system fault, shutdown exchange wait, or startup charger wait was observed.",
+      "healthy_condition": "The observed condition is documented clearly enough to support follow-up diagnosis.",
+      "failure_condition": "The transition remains incomplete and no source-recognizable fault or waiting condition can be identified.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Document observation",
+          "exact_action": "Record the visible waiting condition or fault indication exactly as observed and compare it to the source-described examples.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The transition remains incomplete and no source-recognizable fault or waiting condition can be identified.",
+        "The observed fault requires corrective action not described in this source."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "timestamp_start": "00:13:48.000",
+          "timestamp_end": "00:16:31.000",
+          "start_time_seconds": 828.0,
+          "end_time_seconds": 991.0,
+          "segment_id": "segment_training_video_0010",
+          "source_document_id": "training_video_day1_video",
+          "section_id": "training_video_day1_segment_0010"
+        },
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 10,
+          "section_id": "training_video_day1_segment_0010",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "The system will tell you with system faults; examples include an AGV waiting to do an exchange during shutdown or startup delay while waiting for an AGV on the charger."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The observer identifies whether the delayed or incomplete startup or shutdown transition has a visible system fault indication.",
+    "The observer identifies whether the visible condition matches one of the source-described examples: AGV waiting to do an exchange during shutdown or waiting for an AGV on the charger during startup.",
+    "The observation is documented for follow-up or escalation."
+  ],
+  "healthy_conditions": [
+    "Startup or shutdown progresses normally.",
+    "No visible system fault is present during the transition.",
+    "No visible AGV waiting condition matching the source examples is present."
+  ],
+  "failure_conditions": [
+    "Startup or shutdown remains delayed or incomplete.",
+    "A visible system fault is present during the transition.",
+    "During shutdown, an AGV is visibly waiting to do an exchange.",
+    "During startup, the system appears to be waiting for an AGV on the charger.",
+    "No source-recognizable fault or waiting condition can be identified even though the transition remains incomplete."
+  ],
+  "escalation_guidance": [
+    "Escalate if the transition remains incomplete and no source-recognizable fault or waiting condition can be identified.",
+    "Escalate if the observed fault requires corrective action not described in this source.",
+    "Escalate because this source does not provide recovery steps for clearing the fault."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500",
+      "what_to_look_at": "Lifecycle and AGV state progression through startup and shutdown."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000",
+      "what_to_look_at": "Overall System RMS fault areas showing system faults on the left and active AGV faults on the right."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "timestamp_start": "00:13:48.000",
+      "timestamp_end": "00:16:31.000",
+      "start_time_seconds": 828.0,
+      "end_time_seconds": 991.0,
+      "segment_id": "segment_training_video_0010",
+      "source_document_id": "training_video_day1_video",
+      "section_id": "training_video_day1_segment_0010"
+    },
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1",
+      "source_document_id": "training_video_day1_video",
+      "page": 10,
+      "section_id": "training_video_day1_segment_0010",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "The system will tell you with system faults; examples include an AGV waiting to do an exchange during shutdown or startup delay while waiting for an AGV on the charger."
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_training_video_check_startup_or_shutdown_transition_fault_visibility"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide recovery or fault-clearing steps.",
+    "The source does not define exact screens, navigation steps, or operator inputs for checking the fault indication within this segment.",
+    "The source does not provide timing thresholds for when a startup or shutdown delay should be considered abnormal.",
+    "The source does not specify escalation destination or ownership beyond indicating escalation is needed when no recognizable condition is found or corrective action is not described."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual"
+  }
+}

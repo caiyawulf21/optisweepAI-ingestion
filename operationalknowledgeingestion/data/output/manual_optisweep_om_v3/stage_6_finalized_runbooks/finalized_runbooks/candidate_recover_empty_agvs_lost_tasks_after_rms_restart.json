@@ -1,0 +1,441 @@
+{
+  "procedure_id": "proc_recover_empty_agvs_that_lost_tasks_after_rms_restart_v1",
+  "candidate_id": "candidate_recover_empty_agvs_lost_tasks_after_rms_restart",
+  "title": "Recover Empty AGVs That Lost Tasks After an RMS Restart",
+  "procedure_type": "recovery",
+  "summary": "Restore empty AGVs to a recoverable state after their tasks were lost following an RMS restart by E-stopping RMS, removing and re-adding AGVs without totes twice using Tote API Controls, verifying AGV state as \"szonestaging\" on the HMI if a restart is needed, then resuming RMS.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when empty AGVs have lost their tasks because the RMS was restarted.",
+  "not_for": [
+    "Do not use for AGVs with totes.",
+    "Do not use for recovery scenarios that require actions beyond the documented remove and re-add steps.",
+    "Do not proceed with restart-related recovery if AGV state cannot be verified as \"szonestaging\" on the HMI."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L1_support",
+      "responsibilities": [
+        "Perform RMS E-stop and resume actions referenced by the procedure.",
+        "Use Tote API Controls in RMS to remove and re-add AGVs without totes twice.",
+        "Verify AGV state on the HMI as \"szonestaging\" if the system needs to be restarted.",
+        "Stop and escalate if the required AGV state cannot be verified."
+      ]
+    }
+  ],
+  "safety_notes": [
+    "The source notes that best practice is to shut down and restart to ensure everything is in sync.",
+    "Do not invent additional recovery actions beyond the documented remove and re-add steps.",
+    "If the system needs to be restarted, make sure the AGVs are in the \"szonestaging\" state."
+  ],
+  "access_or_tools_needed": [
+    "Access to RMS",
+    "Access to Tote API Controls in RMS",
+    "Access to the HMI to view AGV state",
+    "Ability to use RMS E-stop and resume controls"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "RMS access",
+      "Tote API Controls access in RMS",
+      "HMI access for AGV state verification"
+    ],
+    "system_preconditions": [
+      "The affected AGVs are empty AGVs.",
+      "The recovery condition is that AGVs lost their tasks because the RMS was restarted."
+    ],
+    "external_references": [
+      "Tote API Controls on page 26",
+      "Starting the System on page 65"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_agv_szonestaging_status_v1",
+    "ctx_manual_tote_api_controls_agv_membership_v1",
+    "ctx_manual_rms_estop_resume_reference_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "description": "AGV API Controls screen showing remove and recover/add controls relevant to Tote API Controls usage.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "description": "Nearby page 90 AGV recovery screen used as contextual visual support for add/remove controls and AGV state verification.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "description": "System shut-down mode screen referenced as contextual support for restart and resume flow.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "E-stop RMS",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Place RMS into a stopped state before performing AGV recovery actions.",
+      "instruction": "E-stop RMS.",
+      "expected_result": "RMS is E-stopped and ready for AGV recovery actions.",
+      "healthy_condition": "RMS is in the E-stopped state before AGV remove and re-add actions begin.",
+      "failure_condition": "RMS is not E-stopped or recovery actions are attempted without first stopping RMS.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "E-stop RMS",
+          "exact_action": "E-stop RMS.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+          "what_to_look_at": "System state context associated with shut-down mode before restart or resume-related actions."
+        },
+        {
+          "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+          "what_to_look_at": "Nearby fault recovery screen context on page 90 associated with E-stop and AGV recovery flow."
+        }
+      ],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 90,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_3_agvs_lost_tasks",
+          "quote_or_summary": "If empty AGVs have lost their tasks because the RMS was restarted: 1. E-stop RMS.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Remove and re-add empty AGVs twice using Tote API Controls",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Restore AGV membership and task handling for empty AGVs that lost tasks after the RMS restart.",
+      "instruction": "Using Tote API Controls in RMS, remove and re-add AGVs without totes twice.",
+      "expected_result": "The affected empty AGVs have been removed and re-added twice in RMS using Tote API Controls.",
+      "healthy_condition": "Each affected AGV without a tote has completed the documented remove and re-add cycle twice.",
+      "failure_condition": "The AGVs are not removed and re-added twice, the AGVs have totes, or the operator cannot complete the documented Tote API Controls actions.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Open Tote API Controls",
+          "exact_action": "Using Tote API Controls in RMS",
+          "role_required": "L1_support"
+        },
+        {
+          "action_type": "hmi_action",
+          "label": "Remove AGVs without totes",
+          "exact_action": "remove ... AGVs without totes",
+          "role_required": "L1_support"
+        },
+        {
+          "action_type": "hmi_action",
+          "label": "Re-add AGVs without totes",
+          "exact_action": "re-add AGVs without totes twice",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_12_agv_api_controls",
+          "what_to_look_at": "AGV API Controls showing Remove AGV and Recover AGV controls relevant to the remove and re-add actions."
+        },
+        {
+          "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+          "what_to_look_at": "Nearby page 90 recovery screen used as contextual support for AGV add/remove actions in RMS."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The affected AGV is not empty and instead has a tote.",
+        "The documented remove and re-add actions cannot be completed in Tote API Controls.",
+        "Additional recovery actions seem necessary beyond the documented remove and re-add steps."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 90,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_3_agvs_lost_tasks",
+          "quote_or_summary": "2. Remove and re-add AGVs without totes twice. (See \"Tote API Controls\" on page 26.)",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 40,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_2_agv_api_controls",
+          "figure_id": "fig_4_12",
+          "figure_number": "Figure 4-12",
+          "quote_or_summary": "AGV API Controls ... documents controls for Remove AGV ... Recover AGV ...",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Verify AGVs are in \"szonestaging\" if restart is needed",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Confirm the AGVs are in the required state before any restart-related continuation of recovery.",
+      "instruction": "If the system needs to be restarted, verify on the HMI that the AGVs are in the \"szonestaging\" state.",
+      "expected_result": "When a restart is needed, the AGV state is verified on the HMI as \"szonestaging\".",
+      "healthy_condition": "The HMI shows the AGVs in the \"szonestaging\" state.",
+      "failure_condition": "The AGV state cannot be verified on the HMI or the AGVs are not in the \"szonestaging\" state when restart is needed.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check AGV state on HMI",
+          "exact_action": "Reference AGV state on the HMI.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+          "what_to_look_at": "AGV status context on the nearby recovery screen and any indication of the \"szonestaging\" state."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The system needs to be restarted and the AGVs cannot be verified as \"szonestaging\" on the HMI.",
+        "The HMI does not show the AGVs in the \"szonestaging\" state."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 90,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_3_agvs_lost_tasks",
+          "quote_or_summary": "3. If the system needs to be restarted, make sure the AGVs are in the \"szonestaging\" state. (Reference AGV state on the HMI.)",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Press the E-stop again when ready to resume",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Perform the documented control action immediately before resuming RMS.",
+      "instruction": "Press the E-stop again when ready to resume.",
+      "expected_result": "The documented pre-resume E-stop action has been completed.",
+      "healthy_condition": "The procedure has reached the ready-to-resume point and the E-stop has been pressed again as documented.",
+      "failure_condition": "The operator is not ready to resume, or the documented pre-resume E-stop action is skipped.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Press E-stop again",
+          "exact_action": "Press the E-stop again when ready to resume.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+          "what_to_look_at": "System state context associated with transitioning from stopped to resumed operation."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "You are not ready to resume RMS.",
+        "Required prior recovery actions have not been completed."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 90,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_3_agvs_lost_tasks",
+          "quote_or_summary": "4. Press the E-stop again when ready to resume.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Resume RMS",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Return RMS to operation after the documented AGV recovery actions are complete.",
+      "instruction": "Resume RMS. See \"Starting the System\" on page 65.",
+      "expected_result": "RMS is resumed after the AGV recovery sequence.",
+      "healthy_condition": "RMS resumes after the documented recovery steps are completed.",
+      "failure_condition": "RMS does not resume or resume is attempted before the documented recovery sequence is complete.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Resume RMS",
+          "exact_action": "Resume RMS.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+          "what_to_look_at": "System state context relevant to resuming from shut-down or stopped mode."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "RMS cannot be resumed after completing the documented recovery steps."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 90,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_3_agvs_lost_tasks",
+          "quote_or_summary": "5. Resume RMS. (See \"Starting the System\" on page 65.)",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "RMS was E-stopped before recovery actions.",
+    "Affected empty AGVs were removed and re-added twice using Tote API Controls.",
+    "If a restart was needed, AGVs were verified on the HMI as being in the \"szonestaging\" state.",
+    "The E-stop was pressed again when ready to resume.",
+    "RMS was resumed."
+  ],
+  "healthy_conditions": [
+    "The affected AGVs are empty AGVs.",
+    "The remove and re-add cycle is completed twice for the affected AGVs.",
+    "The HMI shows AGVs in the \"szonestaging\" state when restart is needed.",
+    "RMS resumes after the documented recovery sequence."
+  ],
+  "failure_conditions": [
+    "The affected AGV has a tote and does not match this procedure scope.",
+    "The AGVs cannot be removed and re-added twice using Tote API Controls.",
+    "The AGV state cannot be verified as \"szonestaging\" on the HMI when restart is needed.",
+    "RMS cannot be resumed after the documented steps."
+  ],
+  "escalation_guidance": [
+    "Stop and escalate if AGV state cannot be verified as \"szonestaging\" on the HMI when a restart is needed.",
+    "Stop and escalate if recovery appears to require actions beyond the documented remove and re-add steps.",
+    "Use the source note that best practice is to shut down and restart to ensure everything is in sync as guidance for SME review or operational decision-making."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "what_to_look_at": "Remove AGV and Recover AGV controls relevant to the Tote API Controls reference."
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "what_to_look_at": "Nearby page 90 recovery screen for AGV add/remove and AGV state context including \"szonestaging\" support."
+    },
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "what_to_look_at": "System state context for stopped and resumed operation."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 90,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_3_agvs_lost_tasks",
+      "quote_or_summary": "If empty AGVs have lost their tasks because the RMS was restarted: 1. E-stop RMS. 2. Remove and re-add AGVs without totes twice. (See \"Tote API Controls\" on page 26.) 3. If the system needs to be restarted, make sure the AGVs are in the \"szonestaging\" state. (Reference AGV state on the HMI.) 4. Press the E-stop again when ready to resume. 5. Resume RMS. (See \"Starting the System\" on page 65.)",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 90,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_3_agvs_lost_tasks",
+      "quote_or_summary": "NOTE: The best practice is to shut down and restart to ensure everything is in sync.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 90,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_3_agvs_lost_tasks",
+      "figure_id": "fig_5_3",
+      "figure_number": "Figure 5-3",
+      "quote_or_summary": "Figure 5-3, titled \"Add AGV to Zone with No Empty AGV Screen,\" is the nearby visual support referenced for RMS add/remove controls, AGV color/state checks, and HMI status context.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_recover_empty_agvs_lost_tasks_after_rms_restart"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide exact button names or field-level navigation for the RMS E-stop and resume controls.",
+    "The source does not identify specific AGV IDs, counts, or selection criteria for which empty AGVs to remove and re-add.",
+    "The source does not provide a dedicated HMI screenshot explicitly showing the \"szonestaging\" value for this exact procedure; nearby visual support is context-linked and should be SME-reviewed for exact applicability.",
+    "The source does not provide estimated completion time.",
+    "The source does not explicitly state whether production stop or LOTO is required."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

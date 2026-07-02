@@ -1,0 +1,430 @@
+{
+  "procedure_id": "proc_gather_required_fault_information_before_entering_the_grid_for_agv_recovery_v1",
+  "candidate_id": "candidate_l2_prepare_fault_recovery_information_before_entering_grid",
+  "title": "Gather Required Fault Information Before Entering the Grid for AGV Recovery",
+  "procedure_type": "diagnostic",
+  "summary": "Collect the source-required AGV and RMS details before going inside the grid (Dance Floor) to perform fault recovery.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "support_safe": false,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use before going inside the grid (also called the Dance Floor) for AGV fault recovery, to ensure the required Robot ID, RMS fault description, bin/tote status, tote ID when applicable, and under-rack empty-AGV zone status have been gathered.",
+  "not_for": [
+    "Do not use this runbook as the physical AGV recovery procedure inside the grid.",
+    "Do not proceed into the grid without the documented information."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Gather and confirm the required AGV and RMS fault information before entering the grid for recovery work."
+    }
+  ],
+  "safety_notes": [
+    "Entering the grid (Dance Floor) implies elevated operational risk per the candidate context.",
+    "Before going inside the grid, make sure to have the required Robot ID, fault description from RMS, bin/tote status, tote ID when applicable, and under-rack empty-AGV zone status.",
+    "Do not proceed into the grid without the documented information."
+  ],
+  "access_or_tools_needed": [
+    "Access to RMS",
+    "Ability to identify the faulted AGV and Robot ID",
+    "Access to zone and AGV status information"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to RMS",
+      "Access to zone and AGV status information"
+    ],
+    "system_preconditions": [
+      "A faulted AGV has been identified for recovery preparation before entering the grid."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_manual_fault_recovery_prereq_info_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+      "description": "AGV fault screen on page 89 associated with fault recovery and useful for locating Robot ID, RMS fault description, tote ID, and under-rack AGV status context.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "description": "AGV API Controls screen reference that may help identify AGV details and status context during recovery preparation.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "description": "Fault recovery screen related to no-empty-AGV zone conditions, relevant to checking whether an under-rack AGV is the empty AGV for that zone.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Identify the Robot ID for the faulted AGV",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure the specific faulted AGV is correctly identified before any grid entry or recovery activity.",
+      "instruction": "Identify and record the Robot ID for the faulted AGV before going inside the grid.",
+      "expected_result": "The Robot ID for the faulted AGV is known and recorded.",
+      "healthy_condition": "A single faulted AGV is clearly identified and its Robot ID is available for recovery preparation.",
+      "failure_condition": "The faulted AGV cannot be confidently matched to a Robot ID.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Identify faulted AGV Robot ID",
+          "exact_action": "Identify the Robot ID for the faulted AGV.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+          "what_to_look_at": "Look for the AGV fault interface context associated with Robot ID and fault recovery information."
+        },
+        {
+          "artifact_id": "artifact_fig_4_12_agv_api_controls",
+          "what_to_look_at": "Look for AGV details/status context that may support identifying the affected AGV."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the Robot ID for the faulted AGV cannot be confirmed.",
+        "Do not proceed into the grid without the documented information."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_fault_recovery",
+          "quote_or_summary": "Before going inside the grid (a.k.a. the Dance Floor), make sure to have Robot ID, fault description from RMS, whether RMS thinks the faulted AGV is holding a bin and tote ID, and whether a faulted AGV under a rack is the empty AGV for that zone.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Obtain the fault description from RMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Capture the system-reported fault information needed to prepare for recovery.",
+      "instruction": "Access RMS and obtain the fault description for the faulted AGV.",
+      "expected_result": "The RMS fault description for the faulted AGV is available and recorded.",
+      "healthy_condition": "The RMS fault description is visible and clearly associated with the identified faulted AGV.",
+      "failure_condition": "The RMS fault description is unavailable, unclear, or cannot be matched to the faulted AGV.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Review RMS fault description",
+          "exact_action": "Obtain the fault description from RMS.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+          "what_to_look_at": "Look for the AGV fault screen context referenced for RMS fault description during fault recovery."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the RMS fault description cannot be confirmed.",
+        "Do not proceed into the grid without the documented information."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_fault_recovery",
+          "quote_or_summary": "Before going inside the grid (a.k.a. the Dance Floor), make sure to have Robot ID, fault description from RMS, whether RMS thinks the faulted AGV is holding a bin and tote ID, and whether a faulted AGV under a rack is the empty AGV for that zone.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Check whether RMS indicates the AGV is holding a bin",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine whether tote/bin handling information must also be captured before recovery.",
+      "instruction": "Check in RMS whether the faulted AGV is indicated as holding a bin.",
+      "expected_result": "The bin/tote holding status of the faulted AGV is known.",
+      "healthy_condition": "RMS clearly indicates whether the faulted AGV is or is not holding a bin.",
+      "failure_condition": "The bin/tote holding status cannot be determined from RMS.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check AGV bin status in RMS",
+          "exact_action": "Check whether RMS indicates that the faulted AGV is holding a bin.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+          "what_to_look_at": "Look for fault recovery screen context related to RMS fault and tote/bin status."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if RMS does not clearly indicate whether the AGV is holding a bin.",
+        "Do not proceed into the grid without the documented information."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_fault_recovery",
+          "quote_or_summary": "Before going inside the grid (a.k.a. the Dance Floor), make sure to have Robot ID, fault description from RMS, whether RMS thinks the faulted AGV is holding a bin and tote ID, and whether a faulted AGV under a rack is the empty AGV for that zone.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Record the tote ID if the AGV is holding a bin",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Capture the tote identifier required when the faulted AGV is carrying a bin/tote.",
+      "instruction": "If RMS indicates the faulted AGV is holding a bin, record the tote ID.",
+      "expected_result": "The tote ID is recorded when the faulted AGV is holding a bin.",
+      "healthy_condition": "A tote ID is documented for a faulted AGV that RMS shows as holding a bin, or the step is not applicable because no bin is held.",
+      "failure_condition": "RMS indicates the AGV is holding a bin, but the tote ID cannot be determined.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Record tote ID",
+          "exact_action": "If RMS indicates the AGV is holding a bin, record the tote ID.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+          "what_to_look_at": "Look for screen context related to tote ID during AGV fault recovery."
+        },
+        {
+          "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+          "what_to_look_at": "Look for a faulted AGV with tote context that may help interpret tote-related recovery information."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the AGV is shown as holding a bin but the tote ID cannot be confirmed.",
+        "Do not proceed into the grid without the documented information."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_fault_recovery",
+          "quote_or_summary": "Before going inside the grid (a.k.a. the Dance Floor), make sure to have Robot ID, fault description from RMS, whether RMS thinks the faulted AGV is holding a bin and tote ID, and whether a faulted AGV under a rack is the empty AGV for that zone.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Verify under-rack empty-AGV zone status when applicable",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine whether a faulted AGV under a rack is the empty AGV for that zone, as required before grid entry.",
+      "instruction": "If the faulted AGV is under a rack, verify whether that AGV is the empty AGV for that zone.",
+      "expected_result": "The under-rack empty-AGV zone status is confirmed when applicable.",
+      "healthy_condition": "For an AGV under a rack, it is known whether that AGV is the empty AGV for the zone; otherwise the step is not applicable.",
+      "failure_condition": "The empty-AGV status for the zone cannot be confirmed for a faulted AGV under a rack.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Verify empty AGV for zone",
+          "exact_action": "If the faulted AGV is under a rack, verify whether that AGV is the empty AGV for that zone.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+          "what_to_look_at": "Look for no-empty-AGV zone context relevant to determining whether the under-rack AGV is the empty AGV for that zone."
+        },
+        {
+          "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+          "what_to_look_at": "Look for AGV positioning and zone context that may help interpret under-rack AGV status."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the faulted AGV is under a rack and its empty-AGV zone status cannot be confirmed.",
+        "Do not proceed into the grid without the documented information."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_fault_recovery",
+          "quote_or_summary": "Before going inside the grid (a.k.a. the Dance Floor), make sure to have Robot ID, fault description from RMS, whether RMS thinks the faulted AGV is holding a bin and tote ID, and whether a faulted AGV under a rack is the empty AGV for that zone.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Confirm all required information before entering the grid",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Perform a final completeness check so grid entry does not begin without the required recovery information.",
+      "instruction": "Confirm that you have the Robot ID, RMS fault description, bin/tote status, tote ID when applicable, and under-rack empty-AGV zone status when applicable before going inside the grid.",
+      "expected_result": "All source-required pre-entry information has been collected and confirmed.",
+      "healthy_condition": "The required information set is complete and ready for use during AGV recovery.",
+      "failure_condition": "Any required information is missing, unverified, or inconsistent.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm pre-entry information set",
+          "exact_action": "Confirm the collected information before going inside the grid (the Dance Floor).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+          "what_to_look_at": "Use as a reference for AGV fault recovery context while confirming the collected information."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if any required information is missing or cannot be confirmed.",
+        "Do not proceed into the grid without the documented information.",
+        "The source does not provide further action if any required information cannot be confirmed."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_fault_recovery",
+          "quote_or_summary": "Before going inside the grid (a.k.a. the Dance Floor), make sure to have Robot ID, fault description from RMS, whether RMS thinks the faulted AGV is holding a bin and tote ID, and whether a faulted AGV under a rack is the empty AGV for that zone.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The Robot ID for the faulted AGV is documented.",
+    "The RMS fault description is documented.",
+    "The AGV bin/tote holding status is documented.",
+    "The tote ID is documented when RMS indicates the AGV is holding a bin.",
+    "The under-rack empty-AGV zone status is documented when applicable.",
+    "The information is confirmed before entering the grid."
+  ],
+  "healthy_conditions": [
+    "Required pre-entry fault recovery information is complete before going inside the grid.",
+    "The identified AGV, RMS fault description, tote/bin status, and zone status are consistent and usable for recovery preparation."
+  ],
+  "failure_conditions": [
+    "Robot ID cannot be confirmed.",
+    "RMS fault description cannot be obtained.",
+    "Bin/tote holding status cannot be determined.",
+    "Tote ID cannot be confirmed when the AGV is holding a bin.",
+    "Under-rack empty-AGV zone status cannot be confirmed when applicable.",
+    "Any required information is missing before grid entry."
+  ],
+  "escalation_guidance": [
+    "Do not proceed into the grid without the documented information.",
+    "If any required information cannot be confirmed, stop and seek SME review because the source does not provide further action."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+      "what_to_look_at": "AGV fault recovery screen context on the same page as the fault recovery guidance."
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "what_to_look_at": "AGV API Controls reference for AGV details and status context."
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "what_to_look_at": "No-empty-AGV zone screen context relevant to under-rack zone status checks."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 89,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_fault_recovery",
+      "quote_or_summary": "Before going inside the grid (a.k.a. the Dance Floor), make sure to have Robot ID, fault description from RMS, whether RMS thinks the faulted AGV is holding a bin and tote ID, and whether a faulted AGV under a rack is the empty AGV for that zone.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_l2_prepare_fault_recovery_information_before_entering_grid"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source packet does not provide the exact RMS navigation path or screen sequence for locating the Robot ID and fault description.",
+    "The source packet does not specify how to determine under-rack empty-AGV zone status beyond requiring that it be known before entry.",
+    "The source packet does not provide further action if any required information cannot be confirmed.",
+    "The source packet does not provide an estimated completion time.",
+    "The source packet does not state whether production stop or LOTO is required for this information-gathering procedure."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

@@ -70,7 +70,7 @@ Those links are populated later.
 
 ```text
 src/optisweep_ingestion/schemas/source_artifact.py
-src/optisweep_ingestion/tools/artifact_extractor.py
+src/optisweep_ingestion/stage2_source_artifacts.py
 src/optisweep_ingestion/tools/source_bundle_loader.py
 src/optisweep_ingestion/services/id_generator.py
 src/optisweep_ingestion/utils/json_utils.py

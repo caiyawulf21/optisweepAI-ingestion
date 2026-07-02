@@ -142,18 +142,22 @@ Rules:
 19. Preserve figure, page, caption, and table details in source_refs when available.
 20. If a visual artifact is referenced by source_refs, it should also appear in related_artifact_ids when an artifact ID is available.
 21. Include related artifact IDs when screenshots, photos, figures, diagrams, tables, or page images support the candidate.
-22. Include related context IDs when operational context supports the candidate.
+22. Include related context IDs when operational context supports the candidate. Use only context_id values present in related_operational_context for the current packet.
 23. Include source refs for every candidate.
 24. If the source is unclear, either mark confidence low or skip the candidate.
-25. Do not use generic steps such as "review the documented information." Convert source-backed information into concrete procedural steps such as observe, identify, compare, verify, press, scan, enter, select, confirm, inspect, remove, reset, or record.
-26. Candidate IDs should reflect the actual procedure, not just the source section title.
-27. Mark candidate_status as "needs_review" for every discovered candidate.
-28. Do not aggressively merge candidates within this source. Only collapse exact duplicate candidate_id values caused by extraction errors.
-29. Similar candidates from different sources may exist later; keep distinct candidates when procedure goal, section, role, or evidence differ.
-30. Preserve source lineage in source_refs and evidence_source_refs.
-31. candidate_id format: candidate_<source_type>_<short_slug>
-32. Examples in this prompt are formatting and reasoning examples only. They are not required outputs and must not be used as a checklist.
-33. A priority-sounding candidate is valid only when the current packet contains source evidence for it.
+25. When a step references something the user must see, locate, compare against, or interact with visually, add an inline image note to that step unless the packet supplies no usable visual support at all. The examples below are not exhaustive; apply the same rule to any comparable visual reference category, including HMI screens, quoted screen names, figures, photos, diagrams, schematics, tables, status or alarm indicators, stacklights, control panels, push-buttons, switches, LEDs, labels, physical component locations, inspection targets, and equipment orientation/position cues.
+26. When related_artifacts in the packet include a figure or screen that matches the step, put that artifact ID in related_artifact_ids and describe what to look at in the inline image note.
+27. Do not leave screen-navigation or screen-inspection steps without an inline image note when the packet includes a matching figure, screenshot, or photo artifact.
+28. Cross-section screen references are valid: if the packet mentions a screen name such as Visu_Dual_MCP, Visu_Data, or a hospital HMI menu, link the matching artifact ID from related_artifacts even when the artifact comes from a different section than the step text.
+29. Do not use generic steps such as "review the documented information." Convert source-backed information into concrete procedural steps such as observe, identify, compare, verify, press, scan, enter, select, confirm, inspect, remove, reset, or record.
+30. Candidate IDs should reflect the actual procedure, not just the source section title.
+31. Mark candidate_status as "needs_review" for every discovered candidate.
+32. Do not aggressively merge candidates within this source. Only collapse exact duplicate candidate_id values caused by extraction errors.
+33. Similar candidates from different sources may exist later; keep distinct candidates when procedure goal, section, role, or evidence differ.
+34. Preserve source lineage in source_refs and evidence_source_refs.
+35. candidate_id format: candidate_<source_type>_<short_slug>
+36. Examples in this prompt are formatting and reasoning examples only. They are not required outputs and must not be used as a checklist.
+37. A priority-sounding candidate is valid only when the current packet contains source evidence for it.
 
 Example reference procedure:
 

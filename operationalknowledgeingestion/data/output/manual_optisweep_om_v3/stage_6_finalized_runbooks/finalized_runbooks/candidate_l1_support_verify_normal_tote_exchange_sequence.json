@@ -1,0 +1,405 @@
+{
+  "procedure_id": "proc_verify_the_normal_tote_exchange_sequence_coordinated_by_wcs_v1",
+  "candidate_id": "candidate_l1_support_verify_normal_tote_exchange_sequence",
+  "title": "Verify The Normal Tote Exchange Sequence Coordinated By WCS",
+  "procedure_type": "diagnostic",
+  "summary": "Use this source-backed diagnostic procedure to verify that the documented normal tote exchange sequence occurs during operation: parcels are directed into a tote, the tote reaches a configured limit, the WCS signals the sorter PLC to stop diverting packages, an AGV retrieves the full tote, another AGV places an empty tote, and the WCS signals the sorter PLC to resume sortation.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when verifying whether normal WCS-coordinated tote exchange behavior matches the sequence described in the source during sorter operation.",
+  "not_for": [
+    "Not for performing tote exchange configuration changes.",
+    "Not for AGV fault recovery or lost-task recovery procedures.",
+    "Not for manual tote add/remove or hospital station handling procedures.",
+    "Not for confirming specific screen names, message text, or status fields not provided by the source."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L1_support",
+      "responsibility": "Observe system behavior and verify whether the tote exchange sequence matches the documented order."
+    }
+  ],
+  "safety_notes": [
+    "This candidate is marked support-safe in the source packet.",
+    "The source does not provide additional safety controls, lockout/tagout requirements, or production stop requirements for this verification activity."
+  ],
+  "access_or_tools_needed": [
+    "Ability to observe sorter and tote exchange activity",
+    "Access to WCS or sorter status indications if available at the site"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to observe sorter operation",
+      "Access to available WCS or sorter status indications at the site"
+    ],
+    "system_preconditions": [
+      "Sorter operation is active and parcels are being directed into totes",
+      "A tote exchange opportunity can be observed or inferred from available site indicators"
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_4_16_exchange_settings_pop_up_screen",
+      "description": "Reference screen showing tote exchange threshold settings such as count, cube, and weight thresholds.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "description": "Reference AGV-related system screen that may help identify AGV activity or status if used at the site.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Observe parcels entering a tote during sorter operation",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Establish that normal sorter operation and tote filling are in progress before verifying the exchange sequence.",
+      "instruction": "Observe sorter operation and confirm that parcels are being directed into a tote.",
+      "expected_result": "Parcels are actively being directed into a tote during normal sorter operation.",
+      "healthy_condition": "Sorter operation is active and tote filling can be observed.",
+      "failure_condition": "No parcel flow into a tote is observable, so the normal exchange sequence cannot be verified from this procedure.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Observe sorter tote filling",
+          "exact_action": "Observe that parcels are being directed into a tote during sorter operation.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "No active tote filling can be observed",
+        "System is not in normal operation, preventing sequence verification"
+      ],
+      "source_evidence": [
+        {
+          "type": "candidate_rough_step",
+          "text": "Observe that parcels are being directed into a tote during sorter operation."
+        },
+        {
+          "type": "source_ref",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 23,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_chapter_3_system_overview",
+          "quote_or_summary": "When the tote reaches the customer-specified weight, number of parcels, or volume, the WCS sends a message to the sorter PLC to stop diverting packages. An AGV is triggered via the WCS controller to retrieve the tote. Another AGV places an empty tote where the full tote was removed. The WCS then sends a message to the sorter PLC to resume sortation."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Check whether the tote has reached its configured exchange limit",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the tote has reached the condition that should trigger the documented exchange sequence.",
+      "instruction": "Check whether the tote has reached the customer-specified weight, number of parcels, or volume threshold, if that state is available from site indicators or operations context.",
+      "expected_result": "A tote limit condition is observable or inferable from available site indicators or context.",
+      "healthy_condition": "The tote appears to have reached, or is confirmed to have reached, the configured exchange threshold.",
+      "failure_condition": "The tote threshold state is not available or cannot be confirmed from the source-supported indicators at the site.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check tote threshold state",
+          "exact_action": "Check whether the tote has reached the customer-specified weight, number of parcels, or volume threshold, if that state is available from site indicators or operations context.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_16_exchange_settings_pop_up_screen",
+          "what_to_look_at": "Exchange threshold settings related to count, cube, and weight that define when tote exchange conditions may occur."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Threshold state cannot be determined from available site indicators",
+        "Observed exchange behavior occurs without a clear threshold condition and site-specific tooling is required to confirm"
+      ],
+      "source_evidence": [
+        {
+          "type": "candidate_rough_step",
+          "text": "Check whether the tote has reached the customer-specified weight, number of parcels, or volume threshold, if that state is available from site indicators or operations context."
+        },
+        {
+          "type": "source_ref",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 23,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_chapter_3_system_overview",
+          "quote_or_summary": "When the tote reaches the customer-specified weight, number of parcels, or volume, the WCS sends a message to the sorter PLC to stop diverting packages."
+        },
+        {
+          "type": "artifact_ref",
+          "artifact_id": "artifact_fig_4_16_exchange_settings_pop_up_screen",
+          "page": 44,
+          "quote_or_summary": "This system screen is associated with exchange configuration for totes and includes settings such as Cube Threshold Pickup, Count Threshold Pickup, Maximum Weight, and Weight Threshold."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Verify stop-diverting command from WCS to sorter PLC",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Confirm the first documented control action in the tote exchange sequence.",
+      "instruction": "Verify that the WCS sends a message to the sorter PLC to stop diverting packages when the tote limit is reached.",
+      "expected_result": "Package diverting stops when the tote reaches the configured limit.",
+      "healthy_condition": "Observed behavior matches the documented sequence in which diverting stops at the tote limit.",
+      "failure_condition": "Diverting does not stop when the tote limit is reached, or the sequence appears to proceed out of order.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify stop diverting behavior",
+          "exact_action": "Verify that the WCS sends a message to the sorter PLC to stop diverting packages when the tote limit is reached.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Diverting continues after the tote limit is reached",
+        "The observed sequence does not match the documented order"
+      ],
+      "source_evidence": [
+        {
+          "type": "candidate_rough_step",
+          "text": "Verify that the WCS sends a message to the sorter PLC to stop diverting packages when the tote limit is reached."
+        },
+        {
+          "type": "source_ref",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 23,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_chapter_3_system_overview",
+          "quote_or_summary": "When the tote reaches the customer-specified weight, number of parcels, or volume, the WCS sends a message to the sorter PLC to stop diverting packages."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify AGV retrieval of the full tote",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Confirm that the full tote is retrieved by AGV as the next documented step in the sequence.",
+      "instruction": "Verify that an AGV is triggered via the WCS controller to retrieve the full tote.",
+      "expected_result": "An AGV retrieves the full tote after diverting stops.",
+      "healthy_condition": "A full tote retrieval occurs in sequence after the stop-diverting action.",
+      "failure_condition": "The full tote is not retrieved, or retrieval does not occur in the documented order.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify AGV full tote retrieval",
+          "exact_action": "Verify that an AGV is triggered via the WCS controller to retrieve the full tote.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_12_agv_api_controls",
+          "what_to_look_at": "AGV-related controls or status context that may help identify AGV activity if such site tooling is used for observation."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The tote is not retrieved as described",
+        "AGV retrieval does not occur after diverting stops",
+        "The observed sequence does not match the documented order"
+      ],
+      "source_evidence": [
+        {
+          "type": "candidate_rough_step",
+          "text": "Verify that an AGV is triggered via the WCS controller to retrieve the full tote."
+        },
+        {
+          "type": "source_ref",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 23,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_chapter_3_system_overview",
+          "quote_or_summary": "An AGV is triggered via the WCS controller to retrieve the tote."
+        },
+        {
+          "type": "artifact_ref",
+          "artifact_id": "artifact_fig_4_12_agv_api_controls",
+          "page": 40,
+          "quote_or_summary": "The figure documents AGV-related controls and AGV status access, including GET AGV STATUS."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Verify placement of an empty tote by another AGV",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Confirm that the empty replacement tote is placed after the full tote is removed.",
+      "instruction": "Verify that another AGV places an empty tote where the full tote was removed.",
+      "expected_result": "An empty tote is placed in the vacated position after the full tote is removed.",
+      "healthy_condition": "The empty tote replacement occurs in the documented sequence after full tote retrieval.",
+      "failure_condition": "No empty tote is placed, or placement occurs out of order.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify empty tote placement",
+          "exact_action": "Verify that another AGV places an empty tote where the full tote was removed.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The tote is not replaced as described",
+        "No empty tote is placed after full tote removal",
+        "The observed sequence does not match the documented order"
+      ],
+      "source_evidence": [
+        {
+          "type": "candidate_rough_step",
+          "text": "Verify that another AGV places an empty tote where the full tote was removed."
+        },
+        {
+          "type": "source_ref",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 23,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_chapter_3_system_overview",
+          "quote_or_summary": "Another AGV places an empty tote where the full tote was removed."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Verify sortation resumes after empty tote placement",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Confirm the final documented control action that returns the system to normal sortation.",
+      "instruction": "Verify that the WCS sends a message to the sorter PLC to resume sortation after the empty tote is in place.",
+      "expected_result": "Sortation resumes after the empty tote is placed.",
+      "healthy_condition": "The system resumes sortation only after the empty tote is in place, matching the documented sequence.",
+      "failure_condition": "Sortation does not resume, or resumes before the empty tote is in place.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify resume sortation behavior",
+          "exact_action": "Verify that the WCS sends a message to the sorter PLC to resume sortation after the empty tote is in place.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Sortation does not resume after empty tote placement",
+        "Sortation resumes before the empty tote is in place",
+        "The observed sequence does not match the documented order"
+      ],
+      "source_evidence": [
+        {
+          "type": "candidate_rough_step",
+          "text": "Verify that the WCS sends a message to the sorter PLC to resume sortation after the empty tote is in place."
+        },
+        {
+          "type": "source_ref",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 23,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_chapter_3_system_overview",
+          "quote_or_summary": "The WCS then sends a message to the sorter PLC to resume sortation."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The observed tote exchange follows the documented sequence of stop diverting, retrieve the full tote, replace it with an empty tote, and resume sortation.",
+    "The sequence occurs in the documented order after the tote reaches the configured weight, parcel-count, or volume limit."
+  ],
+  "healthy_conditions": [
+    "Parcels are directed into a tote during normal sorter operation.",
+    "A tote reaches a configured exchange threshold.",
+    "The WCS-directed sequence proceeds in order: stop diverting, retrieve full tote, place empty tote, resume sortation."
+  ],
+  "failure_conditions": [
+    "The observed sequence does not match the documented order.",
+    "The tote is not retrieved or replaced as described.",
+    "The source does not provide screen names, message text, or status fields, so verification may require site-specific tooling not defined here."
+  ],
+  "escalation_guidance": [
+    "Escalate if the observed sequence does not match the documented order.",
+    "Escalate if the tote is not retrieved or replaced as described.",
+    "Escalate if verification depends on site-specific screens, message text, or status fields not defined in this source."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_4_16_exchange_settings_pop_up_screen",
+      "what_to_look_at": "Threshold-related exchange settings for tote count, cube, and weight."
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "what_to_look_at": "AGV-related controls or status context that may support observation of AGV retrieval activity."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 23,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_chapter_3_system_overview",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "When the tote reaches the customer-specified weight, number of parcels, or volume, the WCS sends a message to the sorter PLC to stop diverting packages. An AGV is triggered via the WCS controller to retrieve the tote. Another AGV places an empty tote where the full tote was removed. The WCS then sends a message to the sorter PLC to resume sortation.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_l1_support_verify_normal_tote_exchange_sequence"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide specific screen names, message text, or status fields for verifying WCS-to-sorter PLC messaging.",
+    "The source does not define exact operator observations or indicators that confirm threshold attainment at runtime.",
+    "The source does not provide explicit escalation contacts or routing.",
+    "The source does not provide a time estimate for completing this verification.",
+    "The source does not specify whether production stop or LOTO is required for this verification."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

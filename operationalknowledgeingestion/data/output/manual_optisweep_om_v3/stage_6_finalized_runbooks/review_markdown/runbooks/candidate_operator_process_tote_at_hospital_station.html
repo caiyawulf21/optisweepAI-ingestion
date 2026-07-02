@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Process a Tote at the Hospital Station</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Process a Tote at the Hospital Station</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_process_a_tote_at_the_hospital_station_v1</td></tr>
+<tr><th>Title</th><td>Process a Tote at the Hospital Station</td></tr>
+<tr><th>Procedure Type</th><td>operation</td></tr>
+<tr><th>Primary Role</th><td>operator</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Extract an arriving tote from the system at the hospital station, identify it by barcode scan, perform the task indicated by the HMI status fields, and return the tote to the system on the induct side when needed.</p>
+<h2>When To Use</h2>
+<p>Use when a tote arrives at the hospital station and must be extracted, identified, manually handled according to the HMI status fields, and possibly returned to the system.</p>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Confirm tote arrival on the right side of the hospital station</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Confirm that the AGV has brought the tote to the right side of the hospital station.</p>
+<p><strong>Expected result:</strong></p>
+<p>The tote is present on the right side of the hospital station.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_page_92_image_2.png" alt="artifact_page_92_image_2" /><figcaption>Hospital station view associated with tote arrival and handling; use it to orient to the station sides and tote-handling area.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The tote is not on the right side of the hospital station.</li>
+<li>The operator cannot confirm the tote arrival location from the station view.</li>
+</ul>
+<hr>
+<h3>Step 2 — Open the corresponding HMI screen</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Use the information shown in the status fields to determine and open the corresponding HMI screen for extracting the tote from the system.</p>
+<p><strong>Expected result:</strong></p>
+<p>The correct HMI screen for the tote is open.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_4_30_hospital_hmi_operations_screen.png" alt="artifact_fig_4_30_hospital_hmi_operations_screen" /><figcaption>Status-related fields such as AGV#, Tote ID, Bar Code, and Status that help determine the correct hospital station screen.</figcaption></figure>
+<figure><img src="assets/artifact_fig_4_32_hospital_hmi_remove_tote_screen.png" alt="artifact_fig_4_32_hospital_hmi_remove_tote_screen" /><figcaption>Example remove-tote screen used when extracting a tote from the system.</figcaption></figure>
+<figure><img src="assets/artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen.png" alt="artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen" /><figcaption>Example status-driven hospital station screen showing extract position information and tote handling context.</figcaption></figure>
+<figure><img src="assets/artifact_fig_4_35_hospital_hmi_tote_failed_to_empty_screen.png" alt="artifact_fig_4_35_hospital_hmi_tote_failed_to_empty_screen" /><figcaption>Example status-driven hospital station screen for a tote requiring manual handling.</figcaption></figure>
+<figure><img src="assets/artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen.png" alt="artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen" /><figcaption>Example status-driven hospital station screen showing tote identification and mismatch context.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The correct HMI screen cannot be determined from the status fields.</li>
+</ul>
+<hr>
+<h3>Step 3 — Scan the tote barcode with the green scanner</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Scan the tote barcode using the green scanner.</p>
+<p><strong>Expected result:</strong></p>
+<p>The tote barcode is read by the scanner.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_page_92_image_2.png" alt="artifact_page_92_image_2" /><figcaption>Hospital station procedure image associated with barcode scanning at the station.</figcaption></figure>
+<figure><img src="assets/artifact_fig_4_32_hospital_hmi_remove_tote_screen.png" alt="artifact_fig_4_32_hospital_hmi_remove_tote_screen" /><figcaption>Remove Tote screen context showing barcode scan use with the green scanner.</figcaption></figure>
+<figure><img src="assets/artifact_fig_4_31_hospital_hmi_add_tote_screen.png" alt="artifact_fig_4_31_hospital_hmi_add_tote_screen" /><figcaption>Add Tote screen context showing barcode scan use with the green scanner.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The barcode scan does not lead to Tote ID population on the HMI.</li>
+</ul>
+<hr>
+<h3>Step 4 — Verify Tote ID field population</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Verify that the Tote ID automatically populates the Tote ID field after scanning.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Tote ID field is populated automatically after the barcode scan.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_4_32_hospital_hmi_remove_tote_screen.png" alt="artifact_fig_4_32_hospital_hmi_remove_tote_screen" /><figcaption>Tote ID and Barcode fields populated after scanning on the Remove Tote screen.</figcaption></figure>
+<figure><img src="assets/artifact_fig_4_31_hospital_hmi_add_tote_screen.png" alt="artifact_fig_4_31_hospital_hmi_add_tote_screen" /><figcaption>Tote ID and Barcode fields populated after scanning on the Add Tote screen.</figcaption></figure>
+<figure><img src="assets/artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen.png" alt="artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen" /><figcaption>Tote ID-related fields for comparison when barcode-related issues are present.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The Tote ID field does not automatically populate after scanning.</li>
+</ul>
+<hr>
+<h3>Step 5 — Perform the task indicated by the status fields</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Perform the required task for the tote as determined by the information in the status fields.</p>
+<p><strong>Expected result:</strong></p>
+<p>The tote-specific task indicated by the HMI status fields is completed.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_4_30_hospital_hmi_operations_screen.png" alt="artifact_fig_4_30_hospital_hmi_operations_screen" /><figcaption>Status field content that tells the operator why the tote is there, what menu to use, and what action to perform.</figcaption></figure>
+<figure><img src="assets/artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen.png" alt="artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen" /><figcaption>Example task-specific hospital station screen for barcode mismatch handling.</figcaption></figure>
+<figure><img src="assets/artifact_fig_4_35_hospital_hmi_tote_failed_to_empty_screen.png" alt="artifact_fig_4_35_hospital_hmi_tote_failed_to_empty_screen" /><figcaption>Example task-specific hospital station screen for failed-to-empty handling.</figcaption></figure>
+<figure><img src="assets/artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen.png" alt="artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen" /><figcaption>Example task-specific hospital station screen for sent-from-bagging-station handling.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The required task cannot be determined from the status fields.</li>
+<li>The source does not provide enough detail to complete the indicated task.</li>
+</ul>
+<hr>
+<h3>Step 6 — Place returning tote on the left-side induct area</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>If the tote is going back into the system, place it on the induct side on the left side of the station.</p>
+<p><strong>Expected result:</strong></p>
+<p>A tote that must re-enter the system is placed on the left-side induct area.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_page_92_image_2.png" alt="artifact_page_92_image_2" /><figcaption>Hospital station induct-side placement area on the left side of the station.</figcaption></figure>
+<figure><img src="assets/artifact_fig_4_31_hospital_hmi_add_tote_screen.png" alt="artifact_fig_4_31_hospital_hmi_add_tote_screen" /><figcaption>Add Tote screen context for sending a tote back into the system from the induct side.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The tote needs to go back into the system but cannot be placed on the left-side induct area.</li>
+</ul>
+<hr>
+<h3>Step 7 — Align the tote flush against the end stops</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Ensure the tote is flush against the end stops.</p>
+<p><strong>Expected result:</strong></p>
+<p>The tote is aligned against the end stops.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_page_92_image_2.png" alt="artifact_page_92_image_2" /><figcaption>Induct-side tote placement and end-stop alignment area associated with the hospital station procedure.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The tote cannot be positioned flush against the end stops.</li>
+</ul>
+<hr>
+</body>
+</html>

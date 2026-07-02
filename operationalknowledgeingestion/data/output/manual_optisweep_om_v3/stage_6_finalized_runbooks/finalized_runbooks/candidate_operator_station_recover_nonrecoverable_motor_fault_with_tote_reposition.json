@@ -1,0 +1,775 @@
+{
+  "procedure_id": "proc_recover_nonrecoverable_operator_station_motor_fault_with_tote_reposition_v1",
+  "candidate_id": "candidate_operator_station_recover_nonrecoverable_motor_fault_with_tote_reposition",
+  "title": "Recover a Non-Recoverable Operator Station Motor Fault by Manually Resetting and Repositioning the Tote",
+  "procedure_type": "recovery",
+  "summary": "Manual recovery procedure for an operator station motor fault that cannot be recovered in software, such as a motor overload fault. The operator uses the MCP_Dual screen to stop the tipping cycle, enter jog mode, clear any axis fault, reposition the tote if it is lifted off the robot, return the station to automatic mode, start the cycle so the grippers release and the robot goes to the hospital station, and then reset after the robot leaves the tipper.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when an operator station motor fault is not able to be recovered via software and the station needs to be manually reset, including cases such as a motor overload fault and cases where a tote is clamped by the gripper and may be lifted off the robot.",
+  "not_for": [
+    "Do not use for recovery actions beyond the documented sequence.",
+    "Do not use when further recovery steps are required after the documented sequence fails, because the source does not provide additional actions if the fault does not clear, the tote cannot be positioned on or nearly on the robot, or the robot does not leave the tipper."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "operator",
+      "responsibility": "Perform the HMI navigation, stop the tipping cycle, enter jog mode, inspect axis fault indications, clear faults with RESET, reposition the tote if needed, return the station to AUTO, start the cycle, observe robot departure, and press RESET after the robot leaves the tipper."
+    }
+  ],
+  "safety_notes": [
+    "This procedure is for faults that are not recoverable via software and require manual station reset.",
+    "If the tote is lifted off the robot, use the documented jog controls to position the tote on or nearly on the robot before returning to automatic operation.",
+    "Do not invent additional recovery actions beyond the documented sequence."
+  ],
+  "access_or_tools_needed": [
+    "Access to the operator station HMI",
+    "MCP_Dual screen (F3)",
+    "CYCLE STOP control",
+    "JOG control",
+    "RESET control",
+    "AUTO control",
+    "CYCLE START control",
+    "Visibility of Z1 Axis, Z2 Axis, A1 Axis, and A2 Axis indicators",
+    "Plus and minus jog controls"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the operator station HMI"
+    ],
+    "system_preconditions": [
+      "An operator station motor fault is present that is not able to be recovered via software.",
+      "The station is in the documented non-recoverable fault condition requiring manual reset."
+    ],
+    "external_references": [
+      {
+        "context_id": "ctx_manual_nonrecoverable_fault_operator_station_motors_v1",
+        "title": "Non-recoverable operator station motor faults require manual station reset"
+      },
+      {
+        "context_id": "ctx_manual_operator_station_hmi_reference_v1",
+        "title": "Operator Station HMI Presence"
+      },
+      {
+        "context_id": "ctx_manual_estop_reset_reference_v1",
+        "title": "Flashing ESTOP condition is associated with reset to clear faults"
+      },
+      {
+        "context_id": "ctx_manual_inbound_hospital_station_qr_reference_v1",
+        "title": "Inbound Hospital Station QR code positioning reference"
+      }
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_nonrecoverable_fault_operator_station_motors_v1",
+    "ctx_manual_operator_station_hmi_reference_v1",
+    "ctx_manual_estop_reset_reference_v1",
+    "ctx_manual_inbound_hospital_station_qr_reference_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_page_84_image_13",
+      "description": "Operator station HMI screen snippet showing axis controls, Manual Mode, Fault indication, plus/minus controls, and RESET instruction in the non-recoverable fault recovery context.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_page_84_image_10",
+      "description": "Operator station HMI view showing manual mode axis controls and RESET control in the non-recoverable fault recovery context.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_page_85_image_10",
+      "description": "Manual jog mode interface example used when clearing operator station motor faults and repositioning a tote.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_85_image_21",
+      "description": "Manual jog mode interface reference used during recovery from a non-recoverable fault on operator station motors.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_86_image_10",
+      "description": "Operator station context around switching to AUTO, starting the cycle, and resetting after robot movement.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_86_image_13",
+      "description": "Operator station interface or controls used to return the robot to automatic operation.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_page_86_image_15",
+      "description": "Operator station controls used to return the robot to automatic operation.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the MCP_Dual screen",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Access the operator station screen used for the documented manual recovery actions.",
+      "instruction": "On the operator station HMI, navigate to the \"MCP_Dual\" screen using F3.",
+      "expected_result": "The MCP_Dual screen is displayed on the operator station HMI.",
+      "healthy_condition": "The operator can view the MCP_Dual screen and its axis and control area.",
+      "failure_condition": "The MCP_Dual screen cannot be accessed or the operator cannot view the required controls.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Navigate to MCP_Dual",
+          "exact_action": "Navigate to the \"MCP_Dual\" screen (F3).",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_84_image_13",
+          "what_to_look_at": "MCP_Dual-related operator station screen area with axis labels, Manual Mode/Fault context, plus/minus controls, and RESET instruction."
+        },
+        {
+          "artifact_id": "artifact_fig_4_18_operator_station_display_controls",
+          "what_to_look_at": "F3 mapping to the operator station main control panel screen reference used for screen navigation."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The operator station HMI is not accessible.",
+        "The MCP_Dual screen cannot be reached using F3."
+      ],
+      "source_evidence": [
+        {
+          "type": "source_ref",
+          "page": 84,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_1_non_recoverable_fault_operator_station_motors",
+          "quote_or_summary": "On the operator station HMI, navigate to the \"MCP_Dual\" screen (F3)."
+        },
+        {
+          "type": "artifact_ref",
+          "artifact_id": "artifact_page_84_image_13",
+          "quote_or_summary": "Operator station screen artifact associated with navigation to the MCP_Dual screen (F3)."
+        },
+        {
+          "type": "artifact_ref",
+          "artifact_id": "artifact_fig_4_18_operator_station_display_controls",
+          "quote_or_summary": "Figure 4-18 identifies F3 to \"Visu_MCP_Dual\" as the primary screen operators need to use."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Stop the tipping cycle",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Stop automatic tipping activity before entering manual recovery actions.",
+      "instruction": "Press CYCLE STOP to stop the tipping cycle.",
+      "expected_result": "The tipping cycle stops.",
+      "healthy_condition": "The tipping cycle is stopped and the station is ready for manual recovery actions.",
+      "failure_condition": "The tipping cycle does not stop after CYCLE STOP is pressed.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Press CYCLE STOP",
+          "exact_action": "Press CYCLE STOP to stop the tipping cycle.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_84_image_10",
+          "what_to_look_at": "Operator station HMI control area associated with manual recovery and stop/reset controls."
+        },
+        {
+          "artifact_id": "artifact_page_84_image_13",
+          "what_to_look_at": "Operator station screen context for the non-recoverable fault recovery sequence."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The tipping cycle does not stop."
+      ],
+      "source_evidence": [
+        {
+          "type": "source_ref",
+          "page": 84,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_1_non_recoverable_fault_operator_station_motors",
+          "quote_or_summary": "Press CYCLE STOP to stop the tipping cycle."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Enter manual jog mode",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Place the station in manual jog mode so the operator can inspect and move the axes as needed.",
+      "instruction": "Press JOG to enter manual jog mode, and verify the screen shows Manual Mode.",
+      "expected_result": "The station enters manual jog mode and the screen indicates Manual Mode.",
+      "healthy_condition": "Manual Mode is shown and jog controls are available.",
+      "failure_condition": "Manual Mode is not shown or jog controls are not available.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Enter JOG mode",
+          "exact_action": "Press JOG to enter manual jog mode.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "hmi_inspection",
+          "label": "Verify Manual Mode",
+          "exact_action": "Verify the screen shows Manual Mode.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_85_image_10",
+          "what_to_look_at": "Manual jog mode interface and Manual Mode context."
+        },
+        {
+          "artifact_id": "artifact_page_85_image_21",
+          "what_to_look_at": "JOG/manual mode reference used during non-recoverable fault recovery."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "JOG mode cannot be entered.",
+        "Manual Mode is not indicated after pressing JOG."
+      ],
+      "source_evidence": [
+        {
+          "type": "source_ref",
+          "page": 85,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_1_non_recoverable_fault_operator_station_motors",
+          "quote_or_summary": "Press JOG to enter manual jog mode."
+        },
+        {
+          "type": "artifact_ref",
+          "artifact_id": "artifact_page_85_image_10",
+          "quote_or_summary": "Artifact shows manual jog mode interface example used during recovery."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Inspect axis fault indications",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Determine whether any axis currently shows a fault that must be cleared before repositioning or returning to automatic mode.",
+      "instruction": "Check whether any of the displayed axes show a fault, using the Z1 Axis, Z2 Axis, A1 Axis, and A2 Axis indicators.",
+      "expected_result": "The operator identifies whether any of the displayed axes show a fault.",
+      "healthy_condition": "No axis fault is shown, or any faulted axis is clearly identified for reset.",
+      "failure_condition": "Axis status cannot be determined from the display.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check axis fault status",
+          "exact_action": "Check whether any of the displayed axes show a fault, using the Z1 Axis, Z2 Axis, A1 Axis, and A2 Axis indicators.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_84_image_13",
+          "what_to_look_at": "Z1 Axis, Z2 Axis, A1 Axis, A2 Axis, and Fault indication areas."
+        },
+        {
+          "artifact_id": "artifact_page_85_image_10",
+          "what_to_look_at": "Axis indicators and fault status in manual jog mode."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The axis indicators are not visible or their status cannot be determined."
+      ],
+      "source_evidence": [
+        {
+          "type": "source_ref",
+          "page": 85,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_1_non_recoverable_fault_operator_station_motors",
+          "quote_or_summary": "If any of the axes show a fault, press RESET to clear the fault."
+        },
+        {
+          "type": "artifact_ref",
+          "artifact_id": "artifact_page_84_image_13",
+          "quote_or_summary": "Visible screen terms include Z1 Axis, Z2 Axis, A1 Axis, A2 Axis, Manual Mode, and Fault."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Clear any displayed axis fault",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Reset any axis fault shown on the HMI before continuing the recovery sequence.",
+      "instruction": "If any axis shows a fault, press RESET to clear the fault.",
+      "expected_result": "The displayed axis fault is cleared.",
+      "healthy_condition": "The fault indication clears after RESET is pressed.",
+      "failure_condition": "The fault indication remains after RESET is pressed.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Press RESET",
+          "exact_action": "If any of the axes show a fault, press RESET to clear the fault.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_84_image_10",
+          "what_to_look_at": "RESET control in the operator station HMI recovery context."
+        },
+        {
+          "artifact_id": "artifact_page_84_image_13",
+          "what_to_look_at": "Fault indication and RESET instruction associated with axis controls."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The fault does not clear after pressing RESET."
+      ],
+      "source_evidence": [
+        {
+          "type": "source_ref",
+          "page": 85,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_1_non_recoverable_fault_operator_station_motors",
+          "quote_or_summary": "If any of the axes show a fault, press RESET to clear the fault."
+        },
+        {
+          "type": "context_ref",
+          "context_id": "ctx_manual_estop_reset_reference_v1",
+          "quote_or_summary": "RESET on the HMI screen is used to clear faults after the ESTOP is pulled out."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Reposition the tote if it is lifted off the robot",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Place the tote on or nearly on the robot so the recovery can continue safely through automatic release and robot departure.",
+      "instruction": "If the tote is lifted off the robot, jog the Z-axis or A-axis, or both, to position the tote on or nearly on the robot using the plus and minus jog controls.",
+      "expected_result": "The tote is positioned on or nearly on the robot.",
+      "healthy_condition": "The tote is on or nearly on the robot after jogging.",
+      "failure_condition": "The tote cannot be positioned on or nearly on the robot.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Jog axis to reposition tote",
+          "exact_action": "Jog either the Z-axis or A-axis, or both, to position the tote on or nearly on the robot.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_85_image_10",
+          "what_to_look_at": "Plus and minus jog controls and axis selection used to reposition the tote."
+        },
+        {
+          "artifact_id": "artifact_page_85_image_21",
+          "what_to_look_at": "Manual jog mode reference for tote positioning during recovery."
+        },
+        {
+          "artifact_id": "artifact_page_83_image_10",
+          "what_to_look_at": "Example of Z and A axis plus/minus jog controls for manual tipper movement."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The tote cannot be positioned on or nearly on the robot."
+      ],
+      "source_evidence": [
+        {
+          "type": "source_ref",
+          "page": 85,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_1_non_recoverable_fault_operator_station_motors",
+          "quote_or_summary": "If the tote is lifted off the robot, jog either the Z-axis or A-axis, or both, to position the tote on or nearly on the robot."
+        },
+        {
+          "type": "artifact_ref",
+          "artifact_id": "artifact_page_85_image_10",
+          "quote_or_summary": "Artifact describes jogging the Z-axis or A-axis to position the tote on or nearly on the robot."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Use the correct axis pair for the side being recovered",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Ensure the operator uses the correct axis controls for the left or right side during tote repositioning.",
+      "instruction": "Use A1 and Z1 for the left axis, and use A2 and Z2 for the right tipper.",
+      "expected_result": "The correct axis pair is used for the side being recovered.",
+      "healthy_condition": "The operator uses A1/Z1 for the left side or A2/Z2 for the right tipper as documented.",
+      "failure_condition": "The wrong axis pair is used for the side being recovered.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Identify correct axis pair",
+          "exact_action": "Use A1 and Z1 for the left axis, and use A2 and Z2 for the right tipper.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_85_image_10",
+          "what_to_look_at": "A1, Z1, A2, and Z2 labels used to select the correct side."
+        },
+        {
+          "artifact_id": "artifact_page_84_image_13",
+          "what_to_look_at": "Axis labels for left and right side selection."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The correct side or axis pair cannot be identified from the HMI."
+      ],
+      "source_evidence": [
+        {
+          "type": "source_ref",
+          "page": 85,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_1_non_recoverable_fault_operator_station_motors",
+          "quote_or_summary": "NOTE: Use A1 and Z1 for the left axis; use A2 and Z2 for the right tipper."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 8,
+      "title": "Return the station to automatic mode",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Place the station back into automatic mode so the release and robot movement sequence can proceed.",
+      "instruction": "Press AUTO to enter automatic mode.",
+      "expected_result": "The station enters automatic mode.",
+      "healthy_condition": "Automatic mode is active.",
+      "failure_condition": "The station does not enter automatic mode.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Press AUTO",
+          "exact_action": "Press AUTO to enter automatic mode.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_86_image_10",
+          "what_to_look_at": "AUTO control or automatic mode area used to return the station to automatic operation."
+        },
+        {
+          "artifact_id": "artifact_page_86_image_13",
+          "what_to_look_at": "Operator station interface context for AUTO and cycle restart."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The station does not enter automatic mode."
+      ],
+      "source_evidence": [
+        {
+          "type": "source_ref",
+          "page": 86,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_1_non_recoverable_fault_operator_station_motors",
+          "quote_or_summary": "Press AUTO to enter automatic mode."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 9,
+      "title": "Start the cycle",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Resume the sequence that releases the grippers and commands the robot to leave the tipper.",
+      "instruction": "Press CYCLE START.",
+      "expected_result": "The cycle starts.",
+      "healthy_condition": "The cycle starts and the station proceeds into the documented release sequence.",
+      "failure_condition": "The cycle does not start.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Press CYCLE START",
+          "exact_action": "Press CYCLE START.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_86_image_10",
+          "what_to_look_at": "CYCLE START area used after AUTO is selected."
+        },
+        {
+          "artifact_id": "artifact_page_86_image_15",
+          "what_to_look_at": "Operator station controls used to return the robot to automatic operation."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The cycle does not start."
+      ],
+      "source_evidence": [
+        {
+          "type": "source_ref",
+          "page": 86,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_1_non_recoverable_fault_operator_station_motors",
+          "quote_or_summary": "Press CYCLE START."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 10,
+      "title": "Observe gripper release and robot departure",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm that the recovery sequence proceeds as documented after cycle start.",
+      "instruction": "Observe that the grippers release and the robot is commanded to go to the hospital station.",
+      "expected_result": "The grippers release and the robot is commanded to go to the hospital station.",
+      "healthy_condition": "The grippers release and the robot leaves the tipper toward the hospital station.",
+      "failure_condition": "The grippers do not release or the robot is not commanded to go to the hospital station.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Observe release and robot command",
+          "exact_action": "Observe that the grippers release and the robot is commanded to go to the hospital station.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_86_image_10",
+          "what_to_look_at": "Operator station context for the release and robot departure sequence."
+        },
+        {
+          "artifact_id": "artifact_page_86_image_13",
+          "what_to_look_at": "Controls and interface associated with the robot being returned to automatic operation."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The grippers do not release.",
+        "The robot does not go to the hospital station."
+      ],
+      "source_evidence": [
+        {
+          "type": "source_ref",
+          "page": 86,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_1_non_recoverable_fault_operator_station_motors",
+          "quote_or_summary": "The grippers will release and the robot will be commanded to go to the hospital station."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 11,
+      "title": "Reset after the robot leaves the tipper",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Complete the documented recovery sequence after the robot has departed the tipper.",
+      "instruction": "After the robot has left the tipper, press RESET.",
+      "expected_result": "RESET is pressed after robot departure, completing the documented sequence.",
+      "healthy_condition": "The robot has left the tipper and RESET is performed at the documented point in the sequence.",
+      "failure_condition": "The robot does not leave the tipper, or RESET cannot be completed after departure.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Press RESET after departure",
+          "exact_action": "After the robot has left the tipper, press RESET.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_86_image_10",
+          "what_to_look_at": "RESET context after the robot has left the tipper."
+        },
+        {
+          "artifact_id": "artifact_page_86_image_15",
+          "what_to_look_at": "Operator station controls used at the end of the automatic recovery sequence."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The robot does not leave the tipper.",
+        "RESET cannot be completed after the robot leaves the tipper."
+      ],
+      "source_evidence": [
+        {
+          "type": "source_ref",
+          "page": 86,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_1_non_recoverable_fault_operator_station_motors",
+          "quote_or_summary": "After the robot has left the tipper, press RESET."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The fault is manually reset.",
+    "Any displayed axis fault is cleared.",
+    "If needed, the tote is positioned on or nearly on the robot.",
+    "The station returns to automatic mode.",
+    "The grippers release.",
+    "The robot is commanded to go to the hospital station and leaves the tipper.",
+    "RESET is pressed after the robot has left the tipper."
+  ],
+  "healthy_conditions": [
+    "The MCP_Dual screen is accessible from the operator station HMI.",
+    "The tipping cycle stops when CYCLE STOP is pressed.",
+    "Manual Mode is available after pressing JOG.",
+    "Axis status can be viewed for Z1, Z2, A1, and A2.",
+    "Any displayed fault clears with RESET.",
+    "If the tote is lifted off the robot, it can be positioned on or nearly on the robot using the documented jog controls.",
+    "AUTO mode can be entered.",
+    "CYCLE START initiates the documented release sequence.",
+    "The grippers release and the robot leaves the tipper for the hospital station."
+  ],
+  "failure_conditions": [
+    "The MCP_Dual screen cannot be accessed.",
+    "The tipping cycle does not stop.",
+    "Manual Mode cannot be entered.",
+    "Axis fault status cannot be determined.",
+    "A displayed fault does not clear with RESET.",
+    "The tote cannot be positioned on or nearly on the robot.",
+    "The station does not enter automatic mode.",
+    "The cycle does not start.",
+    "The grippers do not release.",
+    "The robot does not leave the tipper or is not commanded to go to the hospital station."
+  ],
+  "escalation_guidance": [
+    "Stop if the documented HMI screen or controls are not accessible.",
+    "Stop if the fault does not clear after RESET.",
+    "Stop if the tote cannot be positioned on or nearly on the robot.",
+    "Stop if the robot does not leave the tipper for the hospital station.",
+    "The source does not provide further recovery steps beyond this sequence; escalate for SME review or site-specific support if the documented sequence does not restore operation."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_page_84_image_13",
+      "what_to_look_at": "Operator station HMI recovery screen with axis labels, fault context, and RESET-related controls."
+    },
+    {
+      "artifact_id": "artifact_page_85_image_10",
+      "what_to_look_at": "Manual jog mode interface for axis fault inspection and tote repositioning."
+    },
+    {
+      "artifact_id": "artifact_page_86_image_10",
+      "what_to_look_at": "AUTO, CYCLE START, and RESET sequence context after returning to automatic mode."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page_start": 84,
+      "page_end": 86,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_1_non_recoverable_fault_operator_station_motors",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 84,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_1_non_recoverable_fault_operator_station_motors",
+      "quote_or_summary": "If a fault occurs that is not able to be recovered via software, such as a motor overload fault, the station needs to be manually reset.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 84,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_1_non_recoverable_fault_operator_station_motors",
+      "quote_or_summary": "On the operator station HMI, navigate to the \"MCP_Dual\" screen (F3). Press CYCLE STOP to stop the tipping cycle.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 85,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_1_non_recoverable_fault_operator_station_motors",
+      "quote_or_summary": "Press JOG to enter manual jog mode. If any of the axes show a fault, press RESET to clear the fault.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 85,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_1_non_recoverable_fault_operator_station_motors",
+      "quote_or_summary": "If the tote is lifted off the robot, jog either the Z-axis or A-axis, or both, to position the tote on or nearly on the robot. NOTE: Use A1 and Z1 for the left axis; use A2 and Z2 for the right tipper.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 86,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_1_non_recoverable_fault_operator_station_motors",
+      "quote_or_summary": "Press AUTO to enter automatic mode. Press CYCLE START. The grippers will release and the robot will be commanded to go to the hospital station. After the robot has left the tipper, press RESET.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_operator_station_recover_nonrecoverable_motor_fault_with_tote_reposition"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide an estimated completion time.",
+    "The source does not state whether production stop is required beyond pressing CYCLE STOP for the local tipping cycle.",
+    "The source does not specify LOTO requirements.",
+    "The source does not provide additional troubleshooting or escalation steps if RESET does not clear the fault, the tote cannot be repositioned, or the robot does not leave the tipper.",
+    "The source does not define explicit acceptance indicators on the HMI beyond the described outcomes."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

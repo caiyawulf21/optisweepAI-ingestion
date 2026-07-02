@@ -1,0 +1,749 @@
+{
+  "procedure_id": "proc_recover_an_agv_that_lost_a_tote_without_an_agv_fault_v1",
+  "candidate_id": "candidate_l2_recover_agv_lost_tote_no_fault_via_hospital_and_tote_reentry",
+  "title": "Recover an AGV That Lost a Tote Without an AGV Fault",
+  "procedure_type": "recovery",
+  "summary": "Restore the AGV and the missing tote to the system after an AGV loses a tote without the AGV itself faulting. The source sequence stops RMS, manually releases and moves the AGV to the Hospital, removes and re-adds the AGV at the Hospital station PC, power-cycles the AGV, repositions it at the Inbound Hospital Station QR code after its lights turn green, then removes and re-adds the missing tote.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "support_safe": false,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when the AGV LOST TOTE NO FAULT recovery scenario applies and the AGV has lost a tote without the AGV itself faulting, using the recovery sequence documented in section 5.8.2.6.",
+  "not_for": [
+    "Do not use for AGV fault scenarios not identified as \"AGV LOST TOTE NO FAULT\".",
+    "Do not use if the referenced Add/Remove AGV, Remove Tote, or Add Tote procedures cannot be completed."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibilities": [
+        "E-stop RMS.",
+        "Release the AGV brake and manually move the AGV to the Hospital.",
+        "Use the Hospital station PC to remove and re-add the AGV.",
+        "Power-cycle the AGV and reposition it at the Inbound Hospital Station QR code after green lights are observed.",
+        "Locate the missing tote, bring it to the Hospital, remove it from the system, and add it back into the system using the referenced procedures."
+      ]
+    }
+  ],
+  "safety_notes": [
+    "This procedure is not marked support-safe in the candidate.",
+    "The recovery includes E-stop use, brake release, manual AGV movement, and AGV/tote removal and re-addition actions.",
+    "Only maintenance or a supervisor should remove an AGV from the system, per the Add/Remove AGV screen reference."
+  ],
+  "access_or_tools_needed": [
+    "Access to the RMS E-stop",
+    "Physical access to the AGV that lost the tote",
+    "Access to the AGV brake release",
+    "Access to the Hospital area",
+    "Hospital station PC",
+    "Documented Add/Remove AGV procedure on page 52",
+    "Documented Remove Tote procedure on page 47",
+    "Documented Add Tote procedure on page 46",
+    "Access to the Inbound Hospital Station QR code"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the RMS E-stop",
+      "Physical access to the AGV that lost the tote",
+      "Access to the AGV brake release",
+      "Access to the Hospital area",
+      "Hospital station PC",
+      "Access to the Inbound Hospital Station QR code"
+    ],
+    "system_preconditions": [
+      "The AGV LOST TOTE NO FAULT recovery scenario has been identified.",
+      "The missing tote can be located and brought to the Hospital."
+    ],
+    "external_references": [
+      "1.7 Add/Remove AGV on page 52",
+      "1.2 Remove Tote on page 47",
+      "1.1 Add Tote on page 46"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_acb_api_screen_reference_v1",
+    "ctx_manual_agv_green_lights_status_v1",
+    "ctx_manual_agv_lost_tote_no_fault_recovery_v1",
+    "ctx_manual_hospital_station_pc_agv_management_v1",
+    "ctx_manual_inbound_hospital_station_qr_reference_v1",
+    "ctx_manual_tote_api_controls_overview_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_4_37_hospital_hmi_add_remove_agv_screen",
+      "description": "Hospital HMI Add/Remove AGV screen referenced for removing and re-adding the AGV at the Hospital station PC.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_4_32_hospital_hmi_remove_tote_screen",
+      "description": "Hospital HMI Remove Tote screen referenced for removing the missing tote from the system.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+      "description": "Hospital HMI Add Tote screen referenced for adding the tote back into the system.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_page_92_image_2",
+      "description": "Hospital station operation artifact that may help identify the Hospital area and tote handling location.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_93_image_2",
+      "description": "Artifact related to Add Tote confirmation and tote return to the system.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "description": "AGV API Controls reference showing AGV remove/recover controls in the system context.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "E-stop the RMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Place the system into the stopped state required by the documented recovery sequence.",
+      "instruction": "E-stop the RMS.",
+      "expected_result": "RMS is E-stopped for recovery.",
+      "healthy_condition": "RMS is in the E-stopped state and the recovery can proceed.",
+      "failure_condition": "RMS cannot be E-stopped or its stopped state cannot be established.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "E-stop RMS",
+          "exact_action": "E-stop the RMS.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "RMS cannot be E-stopped.",
+        "The system state does not allow the documented recovery to proceed after E-stop."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_6_agv_lost_tote_no_fault",
+          "quote_or_summary": "5.8.2.6: AGV LOST TOTE NO FAULT provides steps to E-stop RMS, release the AGV brake, move the AGV to the Hospital, remove and re-add the AGV at the Hospital station PC, power-cycle the AGV, wait for green lights, roll it over the QR code in front of the Inbound Hospital Station, then remove and re-add the missing tote.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Release the AGV brake",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Allow the AGV to be moved manually to the Hospital.",
+      "instruction": "Press the brake release on the AGV that lost a tote.",
+      "expected_result": "The AGV brake is released so the AGV can be rolled manually.",
+      "healthy_condition": "The AGV can be moved after the brake release is pressed.",
+      "failure_condition": "The brake release does not allow the AGV to be moved.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Press brake release",
+          "exact_action": "Press the brake release on the AGV that lost a tote.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The AGV cannot be moved with the brake release."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_6_agv_lost_tote_no_fault",
+          "quote_or_summary": "5.8.2.6: AGV LOST TOTE NO FAULT provides steps to E-stop RMS, release the AGV brake, move the AGV to the Hospital, remove and re-add the AGV at the Hospital station PC, power-cycle the AGV, wait for green lights, roll it over the QR code in front of the Inbound Hospital Station, then remove and re-add the missing tote.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Move the AGV to the Hospital",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Reposition the AGV to the Hospital so it can be removed and re-added through the Hospital station PC.",
+      "instruction": "Push the AGV over to the Hospital.",
+      "expected_result": "The AGV is physically moved to the Hospital area.",
+      "healthy_condition": "The AGV is at the Hospital and ready for Hospital station PC actions.",
+      "failure_condition": "The AGV cannot be moved to the Hospital.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Move AGV to Hospital",
+          "exact_action": "Push the AGV over to the Hospital.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Hospital station area and tote handling location that may help identify the Hospital destination for the moved AGV."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The AGV cannot be physically moved to the Hospital."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_6_agv_lost_tote_no_fault",
+          "quote_or_summary": "5.8.2.6: AGV LOST TOTE NO FAULT provides steps to E-stop RMS, release the AGV brake, move the AGV to the Hospital, remove and re-add the AGV at the Hospital station PC, power-cycle the AGV, wait for green lights, roll it over the QR code in front of the Inbound Hospital Station, then remove and re-add the missing tote.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "quote_or_summary": "Page 92 of the OptiSweep Operation and Maintenance Manual, section 5.9 Hospital Station Operation, contains an artifact related to hospital station tote handling."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Remove and re-add the AGV at the Hospital station PC",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Restore the AGV's system presence using the documented Hospital station PC workflow.",
+      "instruction": "At the Hospital station PC, remove the AGV, then add the AGV back into the system. Use the documented Add/Remove AGV procedure reference on page 52.",
+      "expected_result": "The AGV is removed and then added back into the system at the Hospital station PC.",
+      "healthy_condition": "The AGV has been successfully removed and re-added using the documented Add/Remove AGV procedure.",
+      "failure_condition": "The AGV cannot be removed or cannot be added back into the system at the Hospital station PC.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Remove AGV at Hospital station PC",
+          "exact_action": "At the Hospital station PC, remove the AGV.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "hmi_action",
+          "label": "Add AGV back into system",
+          "exact_action": "Then, add the AGV back into the system.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_37_hospital_hmi_add_remove_agv_screen",
+          "what_to_look_at": "Hospital HMI Add/Remove AGV screen used to remove an AGV from the system and insert it back into the system."
+        },
+        {
+          "artifact_id": "artifact_fig_4_12_agv_api_controls",
+          "what_to_look_at": "AGV API controls reference showing Remove AGV and Recover AGV controls in the system context."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The AGV cannot be removed at the Hospital station PC.",
+        "The AGV cannot be added back into the system.",
+        "The documented Add/Remove AGV procedure cannot be completed."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_6_agv_lost_tote_no_fault",
+          "quote_or_summary": "At the Hospital station PC, remove the AGV. Then, add the AGV back into the system. (See \"1.7 Add/Remove AGV\" on page 52.)",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 68,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_2_7_1_6_sent_from_bagging_station",
+          "figure_id": "fig_4_37",
+          "figure_number": "Figure 4-37",
+          "quote_or_summary": "Figure 4-37 appears on page 68 in section optisweep_operation_and_maintenance_manual_final_1_4_1_3_2_7_1_6_sent_from_bagging_station.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "artifact_id": "artifact_fig_4_37_hospital_hmi_add_remove_agv_screen",
+          "quote_or_summary": "This screen is used to add a removed AGV back into the system or remove an AGV from the system for maintenance or when it is not needed for the sortation shift. Nearby text states that only maintenance or a supervisor should remove an AGV from the system."
+        },
+        {
+          "artifact_id": "artifact_fig_4_12_agv_api_controls",
+          "quote_or_summary": "The figure is associated with the AGVs section of the API screen and documents controls for Remove AGV, Recover AGV, Pause All AGVs, Resume All AGVs, Execute AGV Command, and Resend Geek Command."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Power-cycle the AGV",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Restart the AGV before checking for the green-light status used in the recovery sequence.",
+      "instruction": "Turn the AGV off, then turn it on again.",
+      "expected_result": "The AGV has been power-cycled.",
+      "healthy_condition": "The AGV restarts and proceeds toward the documented green-light status.",
+      "failure_condition": "The AGV does not restart or does not proceed to the expected status indication.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Turn AGV off",
+          "exact_action": "Turn the AGV off.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "physical_action",
+          "label": "Turn AGV on",
+          "exact_action": "Then turn it on again.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The AGV does not power back on.",
+        "The AGV does not proceed toward the documented green-light status."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_6_agv_lost_tote_no_fault",
+          "quote_or_summary": "Turn the AGV off, then turn it on again. When the AGV lights turn green, roll it over the QR code in front of the Inbound Hospital Station.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Wait for green lights and position the AGV at the Inbound Hospital Station QR code",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the AGV reaches the documented ready indication and place it at the required positioning point.",
+      "instruction": "Wait until the AGV lights turn green, then roll the AGV over the QR code in front of the Inbound Hospital Station.",
+      "expected_result": "The AGV lights turn green and the AGV is rolled over the QR code in front of the Inbound Hospital Station.",
+      "healthy_condition": "Green AGV lights are observed and the AGV is positioned over the referenced QR code.",
+      "failure_condition": "The AGV lights do not turn green or the AGV cannot be positioned over the QR code.",
+      "actions": [
+        {
+          "action_type": "physical_inspection",
+          "label": "Observe AGV lights",
+          "exact_action": "Wait until the AGV lights turn green.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "physical_action",
+          "label": "Position AGV over QR code",
+          "exact_action": "Roll the AGV over the QR code in front of the Inbound Hospital Station.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Hospital station area that may help orient the Inbound Hospital Station location."
+        },
+        {
+          "artifact_id": "artifact_page_93_image_2",
+          "what_to_look_at": "Related hospital/add-tote context artifact that may help identify the station area used after AGV repositioning."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The AGV lights do not turn green.",
+        "The AGV cannot be rolled over the QR code in front of the Inbound Hospital Station."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_6_agv_lost_tote_no_fault",
+          "quote_or_summary": "When the AGV lights turn green, roll it over the QR code in front of the Inbound Hospital Station.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "context_id": "ctx_manual_agv_green_lights_status_v1",
+          "quote_or_summary": "Green AGV lights are referenced in the manual as an observable AGV status after power cycling during AGV lost tote no fault recovery."
+        },
+        {
+          "context_id": "ctx_manual_inbound_hospital_station_qr_reference_v1",
+          "quote_or_summary": "The Inbound Hospital Station has a QR code in front of it that is referenced as a positioning point for an AGV after the AGV lights turn green in the AGV lost tote no fault recovery section."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Remove the missing tote from the system at the Hospital",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Clear the missing tote from the system before re-adding it.",
+      "instruction": "Locate the missing tote and bring it to the Hospital to remove it from the system using the documented Remove Tote procedure reference on page 47.",
+      "expected_result": "The missing tote is located, brought to the Hospital, and removed from the system.",
+      "healthy_condition": "The tote has been removed from the system using the documented Remove Tote procedure.",
+      "failure_condition": "The missing tote cannot be located, cannot be brought to the Hospital, or cannot be removed from the system.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Bring missing tote to Hospital",
+          "exact_action": "Locate the missing tote and bring it to the Hospital.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "hmi_action",
+          "label": "Remove tote from system",
+          "exact_action": "Remove it from the system. (See \"1.2 Remove Tote\" on page 47.)",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_32_hospital_hmi_remove_tote_screen",
+          "what_to_look_at": "Hospital HMI Remove Tote screen used to scan the tote barcode and confirm removal from the system."
+        },
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Hospital station tote handling area where the tote is brought for removal."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The missing tote cannot be located.",
+        "The tote cannot be brought to the Hospital.",
+        "The documented Remove Tote procedure cannot be completed."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_6_agv_lost_tote_no_fault",
+          "quote_or_summary": "Locate the missing tote and bring it to the Hospital to remove it from the system. (See \"1.2 Remove Tote\" on page 47.) Add the tote back into the system. (See \"1.1 Add Tote\" on page 46.) The AGV should then take the tote back to the sorter.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 63,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_2_3_1_2_remove_tote",
+          "figure_id": "fig_4_32",
+          "figure_number": "Figure 4-32",
+          "quote_or_summary": "Figure 4-32 appears on page 63 in section optisweep_operation_and_maintenance_manual_final_1_4_1_3_2_3_1_2_remove_tote.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "artifact_id": "artifact_fig_4_32_hospital_hmi_remove_tote_screen",
+          "quote_or_summary": "The operator uses the green scanner to scan the tote bar code to populate the Tote ID and Barcode information, then presses CONFIRM & EXECUTE after the tote is properly positioned on the extract side."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 8,
+      "title": "Add the tote back into the system",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Return the tote to the system so the AGV can take it back to the sorter.",
+      "instruction": "Add the tote back into the system using the documented Add Tote procedure reference on page 46.",
+      "expected_result": "The tote is added back into the system.",
+      "healthy_condition": "The tote is successfully added back into the system and the AGV should then take the tote back to the sorter.",
+      "failure_condition": "The tote cannot be added back into the system.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Add tote back into system",
+          "exact_action": "Add the tote back into the system. (See \"1.1 Add Tote\" on page 46.)",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+          "what_to_look_at": "Hospital HMI Add Tote screen used to scan the tote barcode and confirm execution."
+        },
+        {
+          "artifact_id": "artifact_page_93_image_2",
+          "what_to_look_at": "Add Tote flow showing tote barcode scan, tote ID verification, and Confirm & Execute."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The documented Add Tote procedure cannot be completed.",
+        "The tote cannot be added back into the system."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_6_agv_lost_tote_no_fault",
+          "quote_or_summary": "Locate the missing tote and bring it to the Hospital to remove it from the system. (See \"1.2 Remove Tote\" on page 47.) Add the tote back into the system. (See \"1.1 Add Tote\" on page 46.) The AGV should then take the tote back to the sorter.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 62,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_2_2_1_1_add_tote",
+          "figure_id": "fig_4_31",
+          "figure_number": "Figure 4-31",
+          "quote_or_summary": "Figure 4-31 appears on page 62 in section optisweep_operation_and_maintenance_manual_final_1_4_1_3_2_2_1_1_add_tote.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 93,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_10_sorter_scanner_operation",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "Navigate to the \"Add Tote\" screen. Scan the tote barcode and verify the tote ID is displayed correctly. Press Confirm & Execute. The AGV will take the tote back into the system.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+          "quote_or_summary": "This hospital station screen is used to send a tote back into the system. The nearby text explains that the operator uses the green scanner to scan the tote barcode, which populates the Tote ID and Barcode fields, then presses Confirm & Execute after the tote is positioned properly on the induct side."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The AGV is restored to the system.",
+    "The missing tote is removed and re-added in the system.",
+    "The AGV should then take the tote back to the sorter."
+  ],
+  "healthy_conditions": [
+    "RMS can be E-stopped for the recovery.",
+    "The AGV can be manually moved to the Hospital after brake release.",
+    "The AGV can be removed and re-added at the Hospital station PC.",
+    "The AGV lights turn green after power cycling.",
+    "The AGV can be rolled over the QR code in front of the Inbound Hospital Station.",
+    "The missing tote can be removed and re-added in the system."
+  ],
+  "failure_conditions": [
+    "The AGV lights do not turn green after power cycling.",
+    "The AGV cannot be moved with the brake release.",
+    "The AGV cannot be re-added at the Hospital station PC.",
+    "The documented Add/Remove AGV procedure cannot be completed.",
+    "The documented Remove Tote procedure cannot be completed.",
+    "The documented Add Tote procedure cannot be completed."
+  ],
+  "escalation_guidance": [
+    "Stop and escalate if the AGV lights do not turn green; the source does not provide further escalation steps for this condition.",
+    "Stop and escalate if the AGV cannot be moved with the brake release or cannot be re-added at the Hospital station PC; the source does not provide further escalation steps for these conditions.",
+    "Stop and escalate if the documented Add/Remove AGV, Remove Tote, or Add Tote referenced procedures cannot be completed."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_4_37_hospital_hmi_add_remove_agv_screen",
+      "what_to_look_at": "Hospital HMI Add/Remove AGV screen for AGV removal and reinsertion."
+    },
+    {
+      "artifact_id": "artifact_fig_4_32_hospital_hmi_remove_tote_screen",
+      "what_to_look_at": "Hospital HMI Remove Tote screen for removing the missing tote from the system."
+    },
+    {
+      "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+      "what_to_look_at": "Hospital HMI Add Tote screen for adding the tote back into the system."
+    },
+    {
+      "artifact_id": "artifact_page_92_image_2",
+      "what_to_look_at": "Hospital station area reference."
+    },
+    {
+      "artifact_id": "artifact_page_93_image_2",
+      "what_to_look_at": "Add Tote confirmation flow and tote return reference."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 91,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_6_agv_lost_tote_no_fault",
+      "quote_or_summary": "5.8.2.6: AGV LOST TOTE NO FAULT provides steps to E-stop RMS, release the AGV brake, move the AGV to the Hospital, remove and re-add the AGV at the Hospital station PC, power-cycle the AGV, wait for green lights, roll it over the QR code in front of the Inbound Hospital Station, then remove and re-add the missing tote.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 91,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_6_agv_lost_tote_no_fault",
+      "quote_or_summary": "At the Hospital station PC, remove the AGV. Then, add the AGV back into the system. (See \"1.7 Add/Remove AGV\" on page 52.)",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 91,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_6_agv_lost_tote_no_fault",
+      "quote_or_summary": "When the AGV lights turn green, roll it over the QR code in front of the Inbound Hospital Station.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 91,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_6_agv_lost_tote_no_fault",
+      "quote_or_summary": "Locate the missing tote and bring it to the Hospital to remove it from the system. (See \"1.2 Remove Tote\" on page 47.) Add the tote back into the system. (See \"1.1 Add Tote\" on page 46.) The AGV should then take the tote back to the sorter.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 62,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_2_2_1_1_add_tote",
+      "figure_id": "fig_4_31",
+      "figure_number": "Figure 4-31",
+      "quote_or_summary": "Figure 4-31 appears on page 62 in section optisweep_operation_and_maintenance_manual_final_1_4_1_3_2_2_1_1_add_tote.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 93,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_10_sorter_scanner_operation",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "Navigate to the \"Add Tote\" screen. Scan the tote barcode and verify the tote ID is displayed correctly. Press Confirm & Execute. The AGV will take the tote back into the system.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 63,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_2_3_1_2_remove_tote",
+      "figure_id": "fig_4_32",
+      "figure_number": "Figure 4-32",
+      "quote_or_summary": "Figure 4-32 appears on page 63 in section optisweep_operation_and_maintenance_manual_final_1_4_1_3_2_3_1_2_remove_tote.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 42,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_3_tote_api_controls",
+      "figure_id": "fig_4_14",
+      "figure_number": "Figure 4-14",
+      "quote_or_summary": "Tote movement is controlled in this section of the System API. Controls include Initialize Tote, Remove Tote, Get Tote Task, Resend Tote Task, Exchange Tote, Exchange Lane, and Get Exchange Settings.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_l2_recover_agv_lost_tote_no_fault_via_hospital_and_tote_reentry"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide estimated completion time.",
+    "The source does not state whether production stop is required beyond the instruction to E-stop RMS.",
+    "The source does not state whether LOTO is required.",
+    "The source does not provide detailed escalation steps if the AGV lights do not turn green.",
+    "The source does not provide detailed escalation steps if the AGV cannot be moved with the brake release.",
+    "The source does not provide detailed escalation steps if the AGV cannot be re-added at the Hospital station PC.",
+    "The source does not provide a direct image explicitly identifying the QR code location in front of the Inbound Hospital Station.",
+    "The source does not provide a direct image explicitly showing the AGV being moved to the Hospital for this exact recovery sequence."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

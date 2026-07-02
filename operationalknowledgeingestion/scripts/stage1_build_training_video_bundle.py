@@ -12,7 +12,7 @@ if str(SRC) not in sys.path:
 
 import typer
 
-from optisweep_ingestion.tools.training_video_builder import (
+from optisweep_ingestion.stage1_training_video_builder import (
     build_training_video_bundle,
     parse_crop_box,
 )

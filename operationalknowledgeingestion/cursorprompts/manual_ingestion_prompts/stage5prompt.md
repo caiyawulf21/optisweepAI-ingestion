@@ -459,7 +459,7 @@ Create or update:
 
 ```text
 src/optisweep_ingestion/schemas/runbook_candidate.py
-src/optisweep_ingestion/tools/runbook_candidate_extractor.py
+src/optisweep_ingestion/stage5_runbook_candidates.py
 src/optisweep_ingestion/prompts/stage5_runbook_candidate_discovery_prompt.md
 scripts/stage5_extract_runbook_candidates.py
 tests/test_runbook_candidate_extractor.py

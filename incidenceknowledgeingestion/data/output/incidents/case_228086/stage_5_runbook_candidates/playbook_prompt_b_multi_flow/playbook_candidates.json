@@ -1,0 +1,1283 @@
+[
+  {
+    "playbook_candidate_id": "playbook_candidate_incident_228086_site_motion_stoppage_optisweep_recovery",
+    "title": "Site-wide robotic movement stopped with AGVs out of sync after control-service disruption",
+    "user_facing_summary": "Use this candidate when the site reports that nothing is moving, the robotic system is not responding, or RMS/HMI shows an abnormal blank state. The troubleshooting shape in this incident was to confirm abnormal service and UI state, recover the OptiSweep service if authorized, inspect RMS for out-of-sync AGVs, correct affected AGVs, and validate recovery through service state, API response, and resumed site operation.",
+    "playbook_goal": "Restore robotic/AGV operation after a site-wide stoppage associated with abnormal OptiSweep service state and post-recovery AGV desynchronization.",
+    "observed_entry_symptoms": [
+      "Site reports that nothing is moving.",
+      "Robotic system is reported as not responding.",
+      "Small sort is not running.",
+      "Multiple bots or AGVs are not moving in various areas.",
+      "RMS/HMI shows an abnormal blank state with '.NET Control not created.'",
+      "Question marks are visible on the HMI.",
+      "Totes cannot be removed from hospital."
+    ],
+    "negative_or_absent_signals": [
+      "Site reported no obvious fault or failed AGV visible at initial report.",
+      "Memory review later did not indicate that memory caused an Ignition crash."
+    ],
+    "support_user_language_examples": [
+      "UPS Haslet nothing is moving",
+      "robotic system not responding",
+      "small sort not running",
+      "4-6 bots currently not moving in various areas",
+      "AGVs out of sync",
+      "question marks on HMI",
+      ".NET Control not created"
+    ],
+    "tentative_internal_patterns": [
+      "OptiSweep service termination around 06:36 correlated with site-wide stoppage and AGV desynchronization.",
+      "Post-service-recovery work in RMS was needed to locate and fix out-of-sync AGVs one by one.",
+      "Ignition gateway restart and API status checks were used as supporting recovery/validation evidence in the incident."
+    ],
+    "internal_pattern_notes": "These are source-supported technical interpretations from the incident and should not be treated as confirmed root cause or required user-facing entry criteria.",
+    "affected_systems_or_components": [
+      "OptiSweep service",
+      "AGV/robotic system",
+      "RMS / Geek+ RMS",
+      "HMI",
+      "Windows Event Viewer",
+      "Windows Services",
+      "Ignition gateway",
+      "GetAgvStatuses API endpoint"
+    ],
+    "separability_reason": "This candidate covers the dominant operational recovery flow entered from observable site stoppage and abnormal RMS/HMI behavior. It is separable from the lower-confidence application/log-investigation flow because this one has a distinct goal: restore AGV movement and site operation.",
+    "confidence": "high",
+    "confidence_reason": "The incident contains a clear troubleshooting sequence with observable entry symptoms, named tools, a supported recovery direction, and explicit validation evidence: Event Viewer and service-state checks, OptiSweep reset, RMS correction of out-of-sync AGVs, Windows Services running state, API 200/NORMAL responses, and site resumption of auto bag out.",
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm site-wide robotic stoppage and abnormal RMS/HMI presentation",
+        "intent": "Determine whether the incident matches the observable symptom pattern of site-wide motion stoppage with abnormal RMS/HMI behavior rather than a single isolated AGV issue.",
+        "goal": "Determine whether the incident matches the observable symptom pattern of site-wide motion stoppage with abnormal RMS/HMI behavior rather than a single isolated AGV issue.",
+        "runbook_placeholder": "Procedure needed to confirm with the site whether nothing is moving, whether the small sort is not running, whether bots are stopped in multiple areas, whether totes cannot be removed from hospital, and whether question marks are visible on the HMI. In RMS / ACB System 1 - RMS, inspect for abnormal blank-state behavior and messages such as '.NET Control not created.' and review visible system or AGV error areas if present.",
+        "allowed_roles": [
+          "operator",
+          "L1_support",
+          "L2_support"
+        ],
+        "source_supported_description": "Initial reports described nothing moving, robotic system not responding, small sort not running, bots not moving in various areas, question marks on HMI, and RMS/HMI blank state with '.NET Control not created.'",
+        "needed_runbook_capability": "Procedure needed to confirm with the site whether nothing is moving, whether the small sort is not running, whether bots are stopped in multiple areas, whether totes cannot be removed from hospital, and whether question marks are visible on the HMI. In RMS / ACB System 1 - RMS, inspect for abnormal blank-state behavior and messages such as '.NET Control not created.' and review visible system or AGV error areas if present.",
+        "expected_or_observed_result": "Site reports nothing moving or robotic system not responding, and RMS/HMI may show a blank or abnormal page such as '.NET Control not created.' or question marks on HMI.",
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_228086_page_005_embedded_image_01",
+          "artifact_incident_228086_page_025_embedded_image_01"
+        ],
+        "related_event_ids": [
+          "incident_228086_event_001",
+          "incident_228086_event_002",
+          "incident_228086_event_003",
+          "incident_228086_event_005",
+          "incident_228086_event_023",
+          "incident_228086_event_028"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_2",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "page_ocr",
+            "quote_or_summary": "4-6 bots currently not moving in various areas after heartbeat issue; they can't remove totes from hospital either and question marks on hmi; issue is that nothing was moving."
+          },
+          {
+            "page_ref": "case_228086:page_5",
+            "artifact_id": "artifact_incident_228086_page_005_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "RMS screenshot shows abnormal UI state with '.NET Control not created.'"
+          },
+          {
+            "page_ref": "case_228086:page_25",
+            "artifact_id": "artifact_incident_228086_page_025_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_003",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "CBRE work order says robotic system not responding and small sort not running."
+          }
+        ]
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "diagnostic_decision",
+        "title": "Check whether OptiSweep service failure evidence is present",
+        "intent": "Determine whether the stoppage correlates with abnormal OptiSweep service state using named Windows service and log sources.",
+        "goal": "Determine whether the stoppage correlates with abnormal OptiSweep service state using named Windows service and log sources.",
+        "runbook_placeholder": "Procedure needed to inspect Windows Event Viewer System log for Service Control Manager events affecting the OptiSweep service, especially unexpected termination events such as Event 7031, and to inspect Windows Services for the current OptiSweep service state, startup type, and whether the service is running or requires supported recovery.",
+        "allowed_roles": [
+          "L1_support",
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "The incident explicitly checked Event Viewer for service failures and captured Event 7031 showing OptiSweep terminated unexpectedly at 06:36:02; later Windows Services showed OptiSweep running.",
+        "needed_runbook_capability": "Procedure needed to inspect Windows Event Viewer System log for Service Control Manager events affecting the OptiSweep service, especially unexpected termination events such as Event 7031, and to inspect Windows Services for the current OptiSweep service state, startup type, and whether the service is running or requires supported recovery.",
+        "expected_or_observed_result": "Event Viewer System log may show Service Control Manager Event 7031 for OptiSweep termination, and Windows Services may show the current OptiSweep state.",
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_228086_page_029_embedded_image_01",
+          "artifact_incident_228086_page_019_embedded_image_01",
+          "artifact_incident_228086_page_026_full_page_01"
+        ],
+        "related_event_ids": [
+          "incident_228086_event_029",
+          "incident_228086_event_030",
+          "incident_228086_event_037",
+          "incident_228086_event_022"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "trying to see if any service failed, or error happened in the event viewer"
+          },
+          {
+            "page_ref": "case_228086:page_29",
+            "artifact_id": "artifact_incident_228086_page_029_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_003",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Event 7031 Service Control Manager: OptiSweep service terminated unexpectedly; restart action in 60000 milliseconds."
+          },
+          {
+            "page_ref": "case_228086:page_19",
+            "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Windows Services shows OptiSweep selected and running."
+          }
+        ]
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "procedure_reference",
+        "title": "Perform approved OptiSweep service recovery if abnormal and authorized",
+        "intent": "Use the approved recovery procedure for the OptiSweep service when service failure evidence is present and the responder is authorized to act.",
+        "goal": "Use the approved recovery procedure for the OptiSweep service when service failure evidence is present and the responder is authorized to act.",
+        "runbook_placeholder": "Procedure needed for authorized recovery of the OptiSweep service, including required safety preconditions, role limits, and any dependency checks before and after service reset or restart.",
+        "allowed_roles": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "Case comments state that after resetting the OptiSweep service, the team used RMS to locate out-of-sync AGVs and fix them.",
+        "needed_runbook_capability": "Procedure needed for authorized recovery of the OptiSweep service, including required safety preconditions, role limits, and any dependency checks before and after service reset or restart.",
+        "expected_or_observed_result": "OptiSweep service is reset or restarted through approved means and becomes responsive enough to continue downstream AGV state checks.",
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_228086_page_026_full_page_01"
+        ],
+        "related_event_ids": [
+          "incident_228086_event_031"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "after reset optisweep service, we look into the RMS to locate the AGVs that are out of sync and fix them one by one"
+          }
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "diagnostic_decision",
+        "title": "Determine whether AGVs remain out of sync after service recovery",
+        "intent": "Check whether service recovery alone restored fleet consistency or whether specific AGVs still require correction in RMS.",
+        "goal": "Check whether service recovery alone restored fleet consistency or whether specific AGVs still require correction in RMS.",
+        "runbook_placeholder": "Procedure needed to inspect the AGV fleet, roster, map, system errors, and AGV error views in RMS / Geek+ RMS after OptiSweep recovery, identify which AGV IDs are out of sync or missing from expected state, and determine whether targeted AGV correction is required.",
+        "allowed_roles": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "The incident states that after OptiSweep reset, RMS was used to locate AGVs that were out of sync and fix them one by one; another note mentioned a possibly removed or missing AGV.",
+        "needed_runbook_capability": "Procedure needed to inspect the AGV fleet, roster, map, system errors, and AGV error views in RMS / Geek+ RMS after OptiSweep recovery, identify which AGV IDs are out of sync or missing from expected state, and determine whether targeted AGV correction is required.",
+        "expected_or_observed_result": "RMS shows one or more AGVs still out of sync, missing, unmapped, or otherwise abnormal, requiring targeted correction before normal operation resumes.",
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_228086_page_014_embedded_image_01",
+          "artifact_incident_228086_page_026_full_page_01",
+          "artifact_incident_228086_page_021_full_page_01"
+        ],
+        "related_event_ids": [
+          "incident_228086_event_025",
+          "incident_228086_event_031",
+          "incident_228086_event_016"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "used RMS to locate the AGVs that are out of sync and fix them one by one"
+          },
+          {
+            "page_ref": "case_228086:page_21",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "there is a removed agv that we dont know it's removed. we are trying to find that now"
+          },
+          {
+            "page_ref": "case_228086:page_11",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "teams_message",
+            "quote_or_summary": "system errors a zone is missing an agv"
+          }
+        ]
+      },
+      {
+        "node_id": "node_5",
+        "node_order": 5,
+        "node_type": "procedure_reference",
+        "title": "Apply approved RMS correction for affected out-of-sync AGVs",
+        "intent": "Carry out the supported AGV correction workflow in RMS for the specific assets identified as out of sync.",
+        "goal": "Carry out the supported AGV correction workflow in RMS for the specific assets identified as out of sync.",
+        "runbook_placeholder": "Procedure needed for authorized correction of out-of-sync or missing AGV state in RMS / Geek+ RMS, including how to apply the approved asset-state correction for identified AGV IDs and any safety or operational preconditions before returning the fleet to service.",
+        "allowed_roles": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "The incident explicitly says out-of-sync AGVs were fixed one by one in RMS after the OptiSweep service reset.",
+        "needed_runbook_capability": "Procedure needed for authorized correction of out-of-sync or missing AGV state in RMS / Geek+ RMS, including how to apply the approved asset-state correction for identified AGV IDs and any safety or operational preconditions before returning the fleet to service.",
+        "expected_or_observed_result": "Affected AGVs are corrected in RMS and fleet state is suitable for the site to resume automated operation.",
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_228086_page_026_full_page_01"
+        ],
+        "related_event_ids": [
+          "incident_228086_event_031",
+          "incident_228086_event_032"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "locate the AGVs that are out of sync and fix them one by one; after that site resume the auto bag out procedure"
+          }
+        ]
+      },
+      {
+        "node_id": "node_6",
+        "node_order": 6,
+        "node_type": "validation_gate",
+        "title": "Validate service responsiveness and fleet recovery",
+        "intent": "Confirm that the service is running, AGV status responses are healthy enough to proceed, and the site has resumed operation.",
+        "goal": "Confirm that the service is running, AGV status responses are healthy enough to proceed, and the site has resumed operation.",
+        "runbook_placeholder": "Procedure needed to validate recovery by checking OptiSweep in Windows Services, sending the GetAgvStatuses request to the incident-evidenced API endpoint and reviewing HTTP status plus returned AGV status values, and confirming in RMS and with the site that automated movement or auto bag out has resumed.",
+        "allowed_roles": [
+          "L1_support",
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "Validation evidence included Windows Services showing OptiSweep running, API GetAgvStatuses returning HTTP 200 with NORMAL statuses, and case comments saying the site resumed auto bag out and later was running.",
+        "needed_runbook_capability": "Procedure needed to validate recovery by checking OptiSweep in Windows Services, sending the GetAgvStatuses request to the incident-evidenced API endpoint and reviewing HTTP status plus returned AGV status values, and confirming in RMS and with the site that automated movement or auto bag out has resumed.",
+        "expected_or_observed_result": "Windows Services shows OptiSweep running, GetAgvStatuses returns HTTP 200 with visible NORMAL statuses, and the site resumes auto bag out or normal movement.",
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_228086_page_019_embedded_image_01",
+          "artifact_incident_228086_page_017_embedded_image_01"
+        ],
+        "related_event_ids": [
+          "incident_228086_event_021",
+          "incident_228086_event_022",
+          "incident_228086_event_032"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_19",
+            "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "OptiSweep service shown running in Windows Services."
+          },
+          {
+            "page_ref": "case_228086:page_17",
+            "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "GetAgvStatuses returned Success 200 with visible NORMAL statuses."
+          },
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "site resume the auto bag out procedure to finish the work"
+          }
+        ]
+      },
+      {
+        "node_id": "node_7",
+        "node_order": 7,
+        "node_type": "escalation_gate",
+        "title": "Escalate if supported recovery does not restore stable fleet operation",
+        "intent": "Stop and escalate when service recovery and RMS correction do not produce a stable, validated recovery path.",
+        "goal": "Stop and escalate when service recovery and RMS correction do not produce a stable, validated recovery path.",
+        "runbook_placeholder": "Procedure needed to prepare escalation evidence including Windows Event Viewer System and Application log captures, Windows Services state for OptiSweep, RMS fleet or error views showing remaining abnormal AGVs, GetAgvStatuses API response evidence, and a summary of all recovery actions and validation outcomes attempted.",
+        "allowed_roles": [
+          "L1_support",
+          "L2_support"
+        ],
+        "source_supported_description": "The incident provides evidence sources that would be needed for escalation if recovery had failed, including Event Viewer, Windows Services, RMS, and API validation artifacts.",
+        "needed_runbook_capability": "Procedure needed to prepare escalation evidence including Windows Event Viewer System and Application log captures, Windows Services state for OptiSweep, RMS fleet or error views showing remaining abnormal AGVs, GetAgvStatuses API response evidence, and a summary of all recovery actions and validation outcomes attempted.",
+        "expected_or_observed_result": "Escalation is triggered if OptiSweep cannot be restored, AGVs remain out of sync after supported correction, or validation checks fail.",
+        "stop_or_escalation_note": "Use when the supported path cannot safely continue or recovery remains incomplete after authorized actions.",
+        "related_artifact_ids": [
+          "artifact_incident_228086_page_029_embedded_image_01",
+          "artifact_incident_228086_page_027_embedded_image_01",
+          "artifact_incident_228086_page_019_embedded_image_01",
+          "artifact_incident_228086_page_017_embedded_image_01",
+          "artifact_incident_228086_page_005_embedded_image_01"
+        ],
+        "related_event_ids": [
+          "incident_228086_event_021",
+          "incident_228086_event_022",
+          "incident_228086_event_037"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_29",
+            "artifact_id": "artifact_incident_228086_page_029_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_003",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Event 7031 for OptiSweep termination."
+          },
+          {
+            "page_ref": "case_228086:page_19",
+            "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Windows Services state for OptiSweep."
+          },
+          {
+            "page_ref": "case_228086:page_17",
+            "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "API validation evidence for GetAgvStatuses."
+          }
+        ]
+      }
+    ],
+    "branch_hints": [
+      {
+        "from_node_id": "node_1",
+        "condition_or_signal": "Observable site-wide stoppage and abnormal RMS/HMI state are confirmed",
+        "suggested_next_node_id": "node_2",
+        "reason": "The incident next checked Event Viewer and service state to determine whether a service failure correlated with the stoppage.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "trying to see if any service failed, or error happened in the event viewer"
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_2",
+        "condition_or_signal": "OptiSweep failure evidence is present and responder is authorized for recovery",
+        "suggested_next_node_id": "node_3",
+        "reason": "The incident recovery path reset the OptiSweep service before addressing AGV desynchronization.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "after reset optisweep service..."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_3",
+        "condition_or_signal": "Service recovery completed or service appears running",
+        "suggested_next_node_id": "node_4",
+        "reason": "The incident then used RMS to find AGVs that remained out of sync.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "look into the RMS to locate the AGVs that are out of sync"
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_4",
+        "condition_or_signal": "Specific AGVs remain out of sync or missing in RMS",
+        "suggested_next_node_id": "node_5",
+        "reason": "The incident corrected affected AGVs one by one in RMS.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "fix them one by one"
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_5",
+        "condition_or_signal": "AGV corrections completed",
+        "suggested_next_node_id": "node_6",
+        "reason": "Recovery was validated through service state, API response, and resumed site operation.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_17",
+            "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "GetAgvStatuses returned 200 with NORMAL statuses."
+          },
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "site resume the auto bag out procedure"
+          }
+        ]
+      }
+    ],
+    "escalation_gates": [
+      {
+        "condition_or_signal": "OptiSweep service cannot be restored through the approved path, RMS still shows unresolved out-of-sync AGVs, or validation checks do not show stable recovery",
+        "required_role": "L2_support",
+        "reason": "The incident supports evidence collection from Event Viewer, Windows Services, RMS, and API checks, but not an extended unsupported recovery path beyond those actions.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_29",
+            "artifact_id": "artifact_incident_228086_page_029_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_003",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "OptiSweep termination evidence in Event Viewer."
+          },
+          {
+            "page_ref": "case_228086:page_17",
+            "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "API validation evidence available."
+          }
+        ]
+      }
+    ],
+    "validation_gates": [
+      {
+        "validation_goal": "Confirm OptiSweep service and AGV fleet are operational again",
+        "expected_recovery_signal": "Windows Services shows OptiSweep running; GetAgvStatuses returns HTTP 200 with visible NORMAL statuses; site resumes auto bag out or movement",
+        "failure_outcome": "Do not declare recovery; continue supported diagnosis or escalate with evidence package",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_19",
+            "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "OptiSweep running in Windows Services."
+          },
+          {
+            "page_ref": "case_228086:page_17",
+            "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "GetAgvStatuses success 200 with NORMAL statuses."
+          },
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "site resumed auto bag out procedure"
+          }
+        ]
+      }
+    ],
+    "runbook_placeholders": [
+      {
+        "needed_procedure": "Confirm site-wide stoppage symptoms and abnormal RMS/HMI state in ACB System 1 - RMS",
+        "why_needed": "Support needs a consistent way to distinguish site-wide stoppage from isolated AGV issues and to interpret the abnormal RMS/HMI presentation.",
+        "suggested_role": "L1_support",
+        "risk_note": "Misreading the entry pattern could send responders into the wrong troubleshooting path.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_2",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "page_ocr",
+            "quote_or_summary": "Nothing moving, bots not moving, question marks on HMI."
+          },
+          {
+            "page_ref": "case_228086:page_5",
+            "artifact_id": "artifact_incident_228086_page_005_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "'.NET Control not created.' on RMS."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Check OptiSweep service state in Windows Event Viewer System log and Windows Services",
+        "why_needed": "The incident relied on these named tools to correlate the stoppage with service failure and later confirm running state.",
+        "suggested_role": "L2_support",
+        "risk_note": "Without a defined check, responders may miss the service-failure correlation or misinterpret current state.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_29",
+            "artifact_id": "artifact_incident_228086_page_029_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_003",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Event 7031 for OptiSweep termination."
+          },
+          {
+            "page_ref": "case_228086:page_19",
+            "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "OptiSweep running in Services."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Authorized OptiSweep service recovery",
+        "why_needed": "The incident indicates service reset was a key recovery action before fleet correction.",
+        "suggested_role": "L2_support",
+        "risk_note": "Service recovery may have safety and authorization constraints and should not be improvised.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "after reset optisweep service..."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Inspect and correct out-of-sync AGVs in RMS / Geek+ RMS",
+        "why_needed": "The incident required post-service fleet correction in RMS before the site could resume operation.",
+        "suggested_role": "L2_support",
+        "risk_note": "Incorrect AGV correction could leave the fleet inconsistent or unsafe.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "locate AGVs out of sync and fix them one by one"
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Validate recovery using Windows Services, GetAgvStatuses API, RMS, and site confirmation",
+        "why_needed": "The incident used multiple validation signals rather than a single check.",
+        "suggested_role": "L2_support",
+        "risk_note": "Declaring recovery too early could miss partial restoration or lingering AGV desynchronization.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_17",
+            "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "GetAgvStatuses success 200 with NORMAL statuses."
+          },
+          {
+            "page_ref": "case_228086:page_19",
+            "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "OptiSweep running."
+          }
+        ]
+      }
+    ],
+    "ignored_non_playbook_content": [
+      {
+        "content_type": "communication",
+        "example_from_incident": "Requests to add people to the call, hotline updates, and bridge-call discussion",
+        "reason_ignored": "These are support-coordination details, not reusable troubleshooting orchestration nodes."
+      },
+      {
+        "content_type": "exact_procedure",
+        "example_from_incident": "Specific command-line restart command for Ignition gateway",
+        "reason_ignored": "Exact how-to steps belong in runbooks or procedures, not playbook nodes."
+      },
+      {
+        "content_type": "intake",
+        "example_from_incident": "Salesforce case creation and CBRE work-order dispatch details",
+        "reason_ignored": "Case-management and dispatch records are not troubleshooting nodes."
+      }
+    ],
+    "source_refs": [
+      {
+        "page_ref": "case_228086:page_26",
+        "artifact_id": "artifact_incident_228086_page_026_full_page_01",
+        "chunk_id": "stage4_artifact_chunk_003",
+        "support_type": "artifact_ocr",
+        "quote_or_summary": "OptiSweep crashed at 6:36 AM; AGVs out of sync; reset service; use RMS to fix AGVs; site resumed auto bag out."
+      }
+    ],
+    "evidence_source_refs": [
+      {
+        "page_ref": "case_228086:page_2",
+        "artifact_id": null,
+        "chunk_id": "stage4_page_chunk_001",
+        "support_type": "page_ocr",
+        "quote_or_summary": "Nothing moving; bots not moving; question marks on HMI."
+      },
+      {
+        "page_ref": "case_228086:page_5",
+        "artifact_id": "artifact_incident_228086_page_005_embedded_image_01",
+        "chunk_id": "stage4_artifact_chunk_001",
+        "support_type": "artifact_visual",
+        "quote_or_summary": "RMS abnormal blank state with '.NET Control not created.'"
+      },
+      {
+        "page_ref": "case_228086:page_29",
+        "artifact_id": "artifact_incident_228086_page_029_embedded_image_01",
+        "chunk_id": "stage4_artifact_chunk_003",
+        "support_type": "artifact_visual",
+        "quote_or_summary": "Event 7031 OptiSweep terminated unexpectedly."
+      },
+      {
+        "page_ref": "case_228086:page_17",
+        "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+        "chunk_id": "stage4_artifact_chunk_002",
+        "support_type": "artifact_visual",
+        "quote_or_summary": "GetAgvStatuses returned 200 with NORMAL statuses."
+      }
+    ],
+    "extraction_notes": [
+      "The incident supports one dominant recovery flow with a post-recovery RMS correction phase; this was kept as one candidate rather than split because AGV correction occurs after service recovery and is part of the same operational goal.",
+      "Ignition restart evidence was treated as a branchable supporting recovery capability rather than a separate main candidate for this operational stoppage flow."
+    ],
+    "summary": "Use this candidate when the site reports that nothing is moving, the robotic system is not responding, or RMS/HMI shows an abnormal blank state. The troubleshooting shape in this incident was to confirm abnormal service and UI state, recover the OptiSweep service if authorized, inspect RMS for out-of-sync AGVs, correct affected AGVs, and validate recovery through service state, API response, and resumed site operation.",
+    "likely_roles": [
+      "L1_support",
+      "L2_support",
+      "L3_support",
+      "operator"
+    ],
+    "related_artifact_ids": [],
+    "related_event_ids": [],
+    "source_id": "source_case_228086",
+    "source_type": "incident_case",
+    "source_title": "Case 228086 Data",
+    "source_version": "0.1",
+    "ingestion_batch_id": "batch_20260629T175753Z",
+    "extraction_mode": "one_or_more_playbook_candidates_when_separable",
+    "incident_context": {
+      "case_id": "228086",
+      "site": "UPS Fort Worth, TX (Haslet)",
+      "incident_start_time": "2026-02-20T07:19:00",
+      "incident_resolved_time": "2026-02-20T14:58:00",
+      "time_to_resolve": "7h 39m",
+      "resolution_confirmed": true
+    }
+  },
+  {
+    "playbook_candidate_id": "playbook_candidate_incident_228086_wcswebapp_ignition_error_investigation",
+    "title": "Application-log and gateway-health investigation during robotic system outage",
+    "user_facing_summary": "Use this lower-confidence candidate when responders enter from observable log or monitoring evidence rather than from the site's motion-stoppage report—for example, clustered WCSWebApplication errors in Event Viewer, questions about whether Ignition crashed, or a need to assess gateway health after a suspected application fault. The incident supports a lightweight investigation path, but not a complete standalone recovery workflow.",
+    "playbook_goal": "Assess whether application-log errors or gateway-health signals indicate a separate platform issue that needs supported recovery or escalation during a robotic-system outage.",
+    "observed_entry_symptoms": [
+      "Responders see clustered WCSWebApplication errors in Windows Event Viewer Application log.",
+      "Responders are asked whether Ignition crashed.",
+      "Ignition memory trend is reviewed because a crash is suspected.",
+      "Ignition status page or uptime/response indicators are checked after suspected instability.",
+      "A web application or webservice is described as faulted in incident notes."
+    ],
+    "negative_or_absent_signals": [
+      "Memory review did not indicate that memory caused a crash.",
+      "The incident does not show a confirmed standalone recovery for WCSWebApplication.",
+      "The incident does not prove that the webservice memory/log issue was the root cause of the site stoppage."
+    ],
+    "support_user_language_examples": [
+      "Anyone able to quickly determine if Ignition crashed or not?",
+      "take a 24-hr snapshot of Ignition Server memory usage to see if it crashed",
+      "WCSWebApplication errors",
+      "web application is faulted",
+      "memory trend is looking better"
+    ],
+    "tentative_internal_patterns": [
+      "WCSWebApplication database-command errors clustered around 06:35:24 and additional application errors around 06:36:02.",
+      "Source comments tentatively associated a faulted webservice/web application with memory usage and log-size concerns.",
+      "Ignition gateway restart and status-page checks were used as part of investigation and possible recovery support."
+    ],
+    "internal_pattern_notes": "These patterns are tentative and source-attributed. They should not be treated as confirmed diagnosis or user-facing entry criteria.",
+    "affected_systems_or_components": [
+      "WCSWebApplication",
+      "Windows Event Viewer Application log",
+      "Windows Error Reporting",
+      "Ignition gateway",
+      "Ignition Systems Overview page",
+      "Ignition memory trend",
+      "database-related application layer"
+    ],
+    "separability_reason": "This flow is separable because a future responder could enter it from a different symptom pattern: visible application-log errors or suspected Ignition crash, even before or apart from direct site reports of AGV stoppage. Its troubleshooting goal is platform assessment and escalation readiness, not direct fleet resynchronization.",
+    "confidence": "low",
+    "confidence_reason": "The incident strongly supports diagnostic checks and evidence collection for this flow, but it does not provide a complete, clearly authorized, reusable recovery path for WCSWebApplication or the attributed memory/log issue. It is still useful as a low-confidence candidate because the investigation shape is source-supported and distinct.",
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm whether the entry pattern is application-log or gateway-health instability",
+        "intent": "Determine whether responders are entering from clustered application errors, suspected Ignition crash, or gateway-health concerns rather than from direct fleet-state symptoms.",
+        "goal": "Determine whether responders are entering from clustered application errors, suspected Ignition crash, or gateway-health concerns rather than from direct fleet-state symptoms.",
+        "runbook_placeholder": "Procedure needed to confirm whether the current entry pattern is driven by Windows Event Viewer Application log errors for WCSWebApplication or Application Error, by a site/support question about whether Ignition crashed, or by abnormal Ignition monitoring evidence such as memory trend changes or gateway status concerns. The procedure should specify which Event Viewer log to inspect and which Ignition monitoring views to review first.",
+        "allowed_roles": [
+          "L1_support",
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "The incident included direct questions about whether Ignition crashed, requests for memory snapshots, and Event Viewer evidence of clustered WCSWebApplication and Application Error entries.",
+        "needed_runbook_capability": "Procedure needed to confirm whether the current entry pattern is driven by Windows Event Viewer Application log errors for WCSWebApplication or Application Error, by a site/support question about whether Ignition crashed, or by abnormal Ignition monitoring evidence such as memory trend changes or gateway status concerns. The procedure should specify which Event Viewer log to inspect and which Ignition monitoring views to review first.",
+        "expected_or_observed_result": "Event Viewer shows clustered WCSWebApplication or Application Error entries, or support is specifically investigating whether Ignition crashed using memory trend or status-page evidence.",
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_228086_page_006_full_page_01",
+          "artifact_incident_228086_page_008_embedded_image_01",
+          "artifact_incident_228086_page_027_embedded_image_01",
+          "artifact_incident_228086_page_028_embedded_image_01"
+        ],
+        "related_event_ids": [
+          "incident_228086_event_007",
+          "incident_228086_event_009",
+          "incident_228086_event_035",
+          "incident_228086_event_036"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_6",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Anyone able to quickly determine if ignition crashed or not? take a 24-hr snapshot of Ignition Server memory usage to see if it crashed."
+          },
+          {
+            "page_ref": "case_228086:page_27",
+            "artifact_id": "artifact_incident_228086_page_027_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_003",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Application log shows repeated WCSWebApplication errors and Application Error entries around 6:36:02 AM."
+          }
+        ]
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "diagnostic_decision",
+        "title": "Inspect Windows Event Viewer for clustered application faults",
+        "intent": "Determine whether the application layer shows a concentrated error pattern that should influence recovery or escalation.",
+        "goal": "Determine whether the application layer shows a concentrated error pattern that should influence recovery or escalation.",
+        "runbook_placeholder": "Procedure needed to inspect Windows Event Viewer Application log on the affected host for WCSWebApplication errors, Application Error events, and Windows Error Reporting entries around the incident time; capture event IDs, timestamps, and whether the visible pattern includes failed database-command execution or clustered repeated errors.",
+        "allowed_roles": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "The incident captured WCSWebApplication Event ID 20102 with failed DbCommand execution at 06:35:24, repeated WCSWebApplication errors and Application Error entries at 06:36:02, and Windows Error Reporting 1001 at 06:36:07.",
+        "needed_runbook_capability": "Procedure needed to inspect Windows Event Viewer Application log on the affected host for WCSWebApplication errors, Application Error events, and Windows Error Reporting entries around the incident time; capture event IDs, timestamps, and whether the visible pattern includes failed database-command execution or clustered repeated errors.",
+        "expected_or_observed_result": "Application log may show WCSWebApplication Event ID 20102 failed DbCommand errors, repeated WCSWebApplication errors, Application Error 1000, and Windows Error Reporting 1001 near the incident time.",
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_228086_page_028_embedded_image_01",
+          "artifact_incident_228086_page_027_embedded_image_01"
+        ],
+        "related_event_ids": [
+          "incident_228086_event_035",
+          "incident_228086_event_036",
+          "incident_228086_event_038"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_28",
+            "artifact_id": "artifact_incident_228086_page_028_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_003",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "WCSWebApplication Event ID 20102 shows Microsoft.EntityFrameworkCore.Database.Command and failed DbCommand execution."
+          },
+          {
+            "page_ref": "case_228086:page_27",
+            "artifact_id": "artifact_incident_228086_page_027_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_003",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Repeated WCSWebApplication errors and Application Error entries around 6:36:02 AM."
+          }
+        ]
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "diagnostic_decision",
+        "title": "Assess Ignition gateway health using memory trend and status page",
+        "intent": "Determine whether available Ignition monitoring evidence supports a current gateway-health problem or weakens the crash hypothesis.",
+        "goal": "Determine whether available Ignition monitoring evidence supports a current gateway-health problem or weakens the crash hypothesis.",
+        "runbook_placeholder": "Procedure needed to review the Ignition Server memory trend over the recent incident window, inspect the Ignition Systems Overview page for uptime or current response indicators, and note whether the gateway is reachable, responsive, and showing recent slow-response or other abnormal indicators.",
+        "allowed_roles": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "The incident requested a 24-hour memory snapshot, shared memory trend evidence, noted that memory did not indicate a crash, and captured the Ignition Systems Overview page showing response time and no recent slow response events.",
+        "needed_runbook_capability": "Procedure needed to review the Ignition Server memory trend over the recent incident window, inspect the Ignition Systems Overview page for uptime or current response indicators, and note whether the gateway is reachable, responsive, and showing recent slow-response or other abnormal indicators.",
+        "expected_or_observed_result": "Memory trend may not support a crash hypothesis, and the Ignition Systems Overview page may show the gateway responding with current response time and no recent slow response events.",
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_228086_page_008_embedded_image_01",
+          "artifact_incident_228086_page_013_embedded_image_01",
+          "artifact_incident_228086_page_016_embedded_image_01"
+        ],
+        "related_event_ids": [
+          "incident_228086_event_007",
+          "incident_228086_event_009",
+          "incident_228086_event_011",
+          "incident_228086_event_020"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_6",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "take a 24-hr snapshot of Ignition Server memory usage to see if it crashed"
+          },
+          {
+            "page_ref": "case_228086:page_7",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "No indication here that memory caused a crash. You can also check the CPU trend."
+          },
+          {
+            "page_ref": "case_228086:page_16",
+            "artifact_id": "artifact_incident_228086_page_016_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Ignition Systems Overview shows current response time and no recent slow response events."
+          }
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "branching_condition",
+        "title": "Choose supported next step based on gateway responsiveness and service dependency checks",
+        "intent": "Decide whether the path should continue with supported gateway/service recovery checks or move to escalation because the evidence does not support a safe local continuation.",
+        "goal": "Decide whether the path should continue with supported gateway/service recovery checks or move to escalation because the evidence does not support a safe local continuation.",
+        "runbook_placeholder": "Procedure needed to apply the decision rubric for whether to continue with approved Ignition gateway recovery and dependent-service verification, including checking whether the gateway is reachable, whether it has returned to a usable login or status state, and whether the OptiSweep service still responds after any gateway recovery action.",
+        "allowed_roles": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "Incident guidance said that if Ignition needed restart, responders should wait for it to come back up and then verify OptiSweep still responded to GetAgvStatuses; if no response, OptiSweep restart would be needed.",
+        "needed_runbook_capability": "Procedure needed to apply the decision rubric for whether to continue with approved Ignition gateway recovery and dependent-service verification, including checking whether the gateway is reachable, whether it has returned to a usable login or status state, and whether the OptiSweep service still responds after any gateway recovery action.",
+        "expected_or_observed_result": "If Ignition is not responsive or dependent service checks fail, use approved recovery procedures if authorized; otherwise prepare escalation with evidence.",
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_228086_page_012_nested_image_02",
+          "artifact_incident_228086_page_015_embedded_image_01",
+          "artifact_incident_228086_page_017_embedded_image_01"
+        ],
+        "related_event_ids": [
+          "incident_228086_event_018",
+          "incident_228086_event_019",
+          "incident_228086_event_021"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_12",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "page_ocr",
+            "quote_or_summary": "restart ignition ... wait for ignition to come back up ... verify the OptiSweep service is still responding to request after Ignition is restarted"
+          },
+          {
+            "page_ref": "case_228086:page_18",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "page_ocr",
+            "quote_or_summary": "If no response is given you will need to restart Optisweep; once restarted, confirm by sending it another request."
+          }
+        ]
+      },
+      {
+        "node_id": "node_5",
+        "node_order": 5,
+        "node_type": "validation_gate",
+        "title": "Validate gateway and dependent service responsiveness after supported recovery",
+        "intent": "Confirm that the gateway is back up and that dependent service/API checks are responsive enough to hand control back to the main operational recovery flow.",
+        "goal": "Confirm that the gateway is back up and that dependent service/API checks are responsive enough to hand control back to the main operational recovery flow.",
+        "runbook_placeholder": "Procedure needed to validate Ignition gateway recovery by checking the Ignition Systems Overview or equivalent gateway status page for responsiveness, then validating dependent OptiSweep responsiveness through the GetAgvStatuses API endpoint used in this incident and recording whether a response is returned.",
+        "allowed_roles": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "The incident showed an Ignition status page capture and API validation through GetAgvStatuses after restart-related activity.",
+        "needed_runbook_capability": "Procedure needed to validate Ignition gateway recovery by checking the Ignition Systems Overview or equivalent gateway status page for responsiveness, then validating dependent OptiSweep responsiveness through the GetAgvStatuses API endpoint used in this incident and recording whether a response is returned.",
+        "expected_or_observed_result": "Ignition status page is reachable or login-capable, and GetAgvStatuses returns a response after gateway recovery.",
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_228086_page_016_embedded_image_01",
+          "artifact_incident_228086_page_017_embedded_image_01"
+        ],
+        "related_event_ids": [
+          "incident_228086_event_020",
+          "incident_228086_event_021"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_16",
+            "artifact_id": "artifact_incident_228086_page_016_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Ignition Systems Overview page captured showing response indicators."
+          },
+          {
+            "page_ref": "case_228086:page_17",
+            "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "GetAgvStatuses returned Success 200."
+          }
+        ]
+      },
+      {
+        "node_id": "node_6",
+        "node_order": 6,
+        "node_type": "escalation_gate",
+        "title": "Escalate unresolved application-layer or memory/log-growth concerns",
+        "intent": "Stop and escalate when application faults remain unexplained or when the incident evidence only supports specialist investigation rather than further supported frontline action.",
+        "goal": "Stop and escalate when application faults remain unexplained or when the incident evidence only supports specialist investigation rather than further supported frontline action.",
+        "runbook_placeholder": "Procedure needed to prepare escalation handoff evidence for application-layer or infrastructure review, including Windows Event Viewer Application log screenshots for WCSWebApplication and Application Error events, Ignition memory trend and Systems Overview captures, any gateway restart evidence, API response evidence, and the incident notes describing the faulted web application or webservice and associated memory or log-size concern.",
+        "allowed_roles": [
+          "L1_support",
+          "L2_support"
+        ],
+        "source_supported_description": "The incident explicitly involved inviting database-team help for a faulted web application and included only tentative source-attributed statements about memory usage and log-size tracking.",
+        "needed_runbook_capability": "Procedure needed to prepare escalation handoff evidence for application-layer or infrastructure review, including Windows Event Viewer Application log screenshots for WCSWebApplication and Application Error events, Ignition memory trend and Systems Overview captures, any gateway restart evidence, API response evidence, and the incident notes describing the faulted web application or webservice and associated memory or log-size concern.",
+        "expected_or_observed_result": "Escalation package includes Event Viewer evidence, Ignition monitoring evidence, and notes about the source-attributed webservice memory/log-size concern.",
+        "stop_or_escalation_note": "Use when the evidence suggests a platform issue but the incident does not provide a supported local recovery path beyond the available checks.",
+        "related_artifact_ids": [
+          "artifact_incident_228086_page_028_embedded_image_01",
+          "artifact_incident_228086_page_027_embedded_image_01",
+          "artifact_incident_228086_page_008_embedded_image_01",
+          "artifact_incident_228086_page_016_embedded_image_01",
+          "artifact_incident_228086_page_026_full_page_01"
+        ],
+        "related_event_ids": [
+          "incident_228086_event_033",
+          "incident_228086_event_034"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "inviting Andrew Koltyakov from database team to take a look at it"
+          },
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "webservice application is faulted because of memory usuage ... downsize the log ... infrastructure team keep tracking of log size"
+          }
+        ]
+      }
+    ],
+    "branch_hints": [
+      {
+        "from_node_id": "node_1",
+        "condition_or_signal": "Clustered application-log errors are visible in Event Viewer",
+        "suggested_next_node_id": "node_2",
+        "reason": "The incident captured a concentrated WCSWebApplication/Application Error pattern in the Application log.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_27",
+            "artifact_id": "artifact_incident_228086_page_027_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_003",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Repeated WCSWebApplication and Application Error entries around 6:36:02 AM."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_1",
+        "condition_or_signal": "Primary concern is whether Ignition crashed or is unhealthy",
+        "suggested_next_node_id": "node_3",
+        "reason": "The incident used memory trend and status-page review to assess the crash hypothesis.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_6",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "take a 24-hr snapshot of Ignition Server memory usage to see if it crashed"
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_3",
+        "condition_or_signal": "Gateway recovery is needed and authorized",
+        "suggested_next_node_id": "node_4",
+        "reason": "The incident included a supported sequence of restart, wait for gateway return, then verify OptiSweep responsiveness.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_12",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "page_ocr",
+            "quote_or_summary": "restart ignition ... wait for ignition to come back up ... verify OptiSweep service is still responding"
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_4",
+        "condition_or_signal": "Gateway is responsive and dependent service/API checks can be performed",
+        "suggested_next_node_id": "node_5",
+        "reason": "The incident validated recovery using Ignition status evidence and GetAgvStatuses response.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_16",
+            "artifact_id": "artifact_incident_228086_page_016_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Ignition status page reachable."
+          },
+          {
+            "page_ref": "case_228086:page_17",
+            "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "GetAgvStatuses success 200."
+          }
+        ]
+      }
+    ],
+    "escalation_gates": [
+      {
+        "condition_or_signal": "Application-layer faults remain unexplained, gateway checks are inconclusive, or only tentative memory/log-growth theories are available",
+        "required_role": "L2_support",
+        "reason": "The incident evidence supports specialist review and evidence handoff, but not a complete frontline recovery path for the WCSWebApplication or attributed webservice issue.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "inviting database team to take a look"
+          },
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "faulted because of memory usage ... downsize the log ... keep tracking log size"
+          }
+        ]
+      }
+    ],
+    "validation_gates": [
+      {
+        "validation_goal": "Confirm gateway and dependent service responsiveness after supported recovery action",
+        "expected_recovery_signal": "Ignition status page is reachable and GetAgvStatuses returns a response",
+        "failure_outcome": "Escalate with application-log, gateway-health, and API evidence",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_16",
+            "artifact_id": "artifact_incident_228086_page_016_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Ignition Systems Overview page shows response indicators."
+          },
+          {
+            "page_ref": "case_228086:page_17",
+            "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "GetAgvStatuses returned 200."
+          }
+        ]
+      }
+    ],
+    "runbook_placeholders": [
+      {
+        "needed_procedure": "Inspect Windows Event Viewer Application log for WCSWebApplication, Application Error, and Windows Error Reporting patterns",
+        "why_needed": "This is the main evidence source for the application-fault entry pattern in the incident.",
+        "suggested_role": "L2_support",
+        "risk_note": "Without a defined evidence-collection method, responders may miss the clustered timing pattern or capture incomplete escalation evidence.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_27",
+            "artifact_id": "artifact_incident_228086_page_027_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_003",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Repeated WCSWebApplication and Application Error entries."
+          },
+          {
+            "page_ref": "case_228086:page_28",
+            "artifact_id": "artifact_incident_228086_page_028_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_003",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Event ID 20102 failed DbCommand execution."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Review Ignition memory trend and Systems Overview health indicators",
+        "why_needed": "The incident used these checks to assess whether Ignition had crashed and whether the gateway was currently responsive.",
+        "suggested_role": "L2_support",
+        "risk_note": "Trend interpretation can be misleading without a standard rubric for what constitutes crash evidence versus normal post-restart behavior.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_8",
+            "artifact_id": "artifact_incident_228086_page_008_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Memory trend chart shared."
+          },
+          {
+            "page_ref": "case_228086:page_16",
+            "artifact_id": "artifact_incident_228086_page_016_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Ignition Systems Overview page."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Authorized Ignition gateway recovery with dependent OptiSweep verification",
+        "why_needed": "The incident included a conditional recovery sequence linking gateway restart to downstream OptiSweep/API validation.",
+        "suggested_role": "L3_support",
+        "risk_note": "Gateway recovery may affect live operations and should only be performed under approved safety and authorization controls.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_12",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "page_ocr",
+            "quote_or_summary": "restart ignition ... verify OptiSweep service is still responding"
+          },
+          {
+            "page_ref": "case_228086:page_15",
+            "artifact_id": "artifact_incident_228086_page_015_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Gateway restart initiated."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Escalation handoff for unresolved WCSWebApplication or webservice memory/log-size concerns",
+        "why_needed": "The incident evidence points to specialist involvement rather than a complete frontline fix.",
+        "suggested_role": "L2_support",
+        "risk_note": "Tentative memory/log theories should be clearly labeled as unconfirmed to avoid premature root-cause claims.",
+        "source_refs": [
+          {
+            "page_ref": "case_228086:page_26",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_002",
+            "support_type": "case_comment",
+            "quote_or_summary": "database team invited; webservice fault attributed to memory usage and log size in source comments"
+          }
+        ]
+      }
+    ],
+    "ignored_non_playbook_content": [
+      {
+        "content_type": "communication",
+        "example_from_incident": "Requests to add people to calls and discussions about transparency with UPS",
+        "reason_ignored": "These are coordination details, not troubleshooting orchestration."
+      },
+      {
+        "content_type": "exact_procedure",
+        "example_from_incident": "Literal command-line syntax shown in the Ignition restart screenshot",
+        "reason_ignored": "Exact commands belong in runbooks, not playbook nodes."
+      },
+      {
+        "content_type": "support_coordination",
+        "example_from_incident": "Inviting Andrew Koltyakov from the database team",
+        "reason_ignored": "Historical collaboration is not itself a reusable node; only the escalation condition is reusable."
+      }
+    ],
+    "source_refs": [
+      {
+        "page_ref": "case_228086:page_27",
+        "artifact_id": "artifact_incident_228086_page_027_embedded_image_01",
+        "chunk_id": "stage4_artifact_chunk_003",
+        "support_type": "artifact_visual",
+        "quote_or_summary": "Clustered WCSWebApplication and Application Error entries."
+      },
+      {
+        "page_ref": "case_228086:page_26",
+        "artifact_id": "artifact_incident_228086_page_026_full_page_01",
+        "chunk_id": "stage4_artifact_chunk_003",
+        "support_type": "artifact_ocr",
+        "quote_or_summary": "Faulted web application/webservice investigation with tentative memory/log-size concern."
+      }
+    ],
+    "evidence_source_refs": [
+      {
+        "page_ref": "case_228086:page_28",
+        "artifact_id": "artifact_incident_228086_page_028_embedded_image_01",
+        "chunk_id": "stage4_artifact_chunk_003",
+        "support_type": "artifact_visual",
+        "quote_or_summary": "WCSWebApplication Event ID 20102 failed DbCommand execution."
+      },
+      {
+        "page_ref": "case_228086:page_8",
+        "artifact_id": "artifact_incident_228086_page_008_embedded_image_01",
+        "chunk_id": "stage4_artifact_chunk_001",
+        "support_type": "artifact_visual",
+        "quote_or_summary": "Memory trend chart."
+      },
+      {
+        "page_ref": "case_228086:page_16",
+        "artifact_id": "artifact_incident_228086_page_016_embedded_image_01",
+        "chunk_id": "stage4_artifact_chunk_002",
+        "support_type": "artifact_visual",
+        "quote_or_summary": "Ignition Systems Overview page."
+      }
+    ],
+    "extraction_notes": [
+      "This candidate is intentionally low confidence because the incident supports investigation and escalation shape more strongly than a complete standalone recovery path.",
+      "The source-attributed memory/log-size explanation was preserved only as tentative internal pattern context and not used as a confirmed diagnosis."
+    ],
+    "summary": "Use this lower-confidence candidate when responders enter from observable log or monitoring evidence rather than from the site's motion-stoppage report—for example, clustered WCSWebApplication errors in Event Viewer, questions about whether Ignition crashed, or a need to assess gateway health after a suspected application fault. The incident supports a lightweight investigation path, but not a complete standalone recovery workflow.",
+    "likely_roles": [
+      "L1_support",
+      "L2_support",
+      "L3_support"
+    ],
+    "related_artifact_ids": [],
+    "related_event_ids": [],
+    "source_id": "source_case_228086",
+    "source_type": "incident_case",
+    "source_title": "Case 228086 Data",
+    "source_version": "0.1",
+    "ingestion_batch_id": "batch_20260629T175753Z",
+    "extraction_mode": "one_or_more_playbook_candidates_when_separable",
+    "incident_context": {
+      "case_id": "228086",
+      "site": "UPS Fort Worth, TX (Haslet)",
+      "incident_start_time": "2026-02-20T07:19:00",
+      "incident_resolved_time": "2026-02-20T14:58:00",
+      "time_to_resolve": "7h 39m",
+      "resolution_confirmed": true
+    }
+  }
+]

@@ -1,0 +1,438 @@
+{
+  "procedure_id": "proc_verify_that_a_tipper_alarm_results_in_a_hospital_request_to_wcs_v1",
+  "candidate_id": "candidate_verify_hospital_request_alarm_conditions_for_tipper",
+  "title": "Verify That a Tipper Alarm Results in a Hospital Request to WCS",
+  "procedure_type": "reference",
+  "summary": "Use the Hospital HMI alarm text and the documented alarm table entries to determine whether a current tipper alarm is explicitly identified as causing a Hospital request to the WCS or as causing the WCS to send the AGV/tote to the hospital for diagnosis.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when a tipper alarm is displayed and you need to verify from the source manual whether that alarm is one of the documented conditions that results in a Hospital request to the WCS.",
+  "not_for": [
+    "Do not use to infer hospital-request behavior when the table does not explicitly state that a Hospital request is sent to the WCS or that WCS will send the AGV/tote to the hospital for diagnosis.",
+    "Do not use as a downstream recovery or routing procedure; the source only supports identification of documented hospital-request alarm conditions."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L1_support",
+      "responsibility": "Read the displayed alarm text, compare it to the documented alarm entries, confirm the documented controller response, and record whether the alarm is a documented hospital-request condition."
+    }
+  ],
+  "safety_notes": [
+    "This is a reference/verification procedure only.",
+    "Do not infer that an alarm sends a Hospital request unless the table explicitly states it."
+  ],
+  "access_or_tools_needed": [
+    "Access to the Hospital HMI alarm text",
+    "Table 4-23 Alarms and Corrective Actions"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the Hospital HMI alarms screen or displayed Hospital HMI alarm text",
+      "Access to Table 4-23 Alarms and Corrective Actions in the source manual"
+    ],
+    "system_preconditions": [
+      "A tipper alarm is currently displayed or available for review in the Hospital HMI alarm list."
+    ],
+    "external_references": [
+      "Table 4-23 Alarms and Corrective Actions"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_hospital_hmi_alarms_screen_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_4_42_hospital_hmi_alarms_screen",
+      "description": "Hospital HMI Alarms screen showing the alarms list with associated time stamps.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_4_29_hospital_hmi_main_menu",
+      "description": "Hospital HMI Main Menu showing access to the Alarms screen.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Read the displayed tipper alarm text",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Identify the exact alarm text to compare against the documented alarm entries.",
+      "instruction": "Open or view the Hospital HMI alarm list and read the displayed tipper alarm text exactly as shown, including the associated time-stamped entry if needed for identification.",
+      "expected_result": "The current alarm text is identified from the Hospital HMI alarm list.",
+      "healthy_condition": "The Hospital HMI Alarms screen shows a list of alarms with time stamps, and the relevant tipper alarm text can be read clearly.",
+      "failure_condition": "The alarm text cannot be located, read clearly, or distinguished from other alarm entries.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "View Hospital HMI alarm list",
+          "exact_action": "Read the displayed tipper alarm text from the Hospital HMI alarm list.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_42_hospital_hmi_alarms_screen",
+          "what_to_look_at": "The Hospital HMI alarms list and associated time stamps to identify the exact displayed tipper alarm text."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The alarm text is missing or unreadable on the HMI.",
+        "The displayed alarm cannot be confidently identified from the alarm list."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 72,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_4_alarms_screen",
+          "figure_id": "fig_4_42",
+          "figure_number": "Figure 4-42",
+          "quote_or_summary": "The Alarms screen provides a list of all alarms along with a time stamp.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Match the alarm text to documented hospital-request entries",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the displayed alarm matches one of the documented alarm conditions that explicitly trigger hospital routing behavior.",
+      "instruction": "Compare the displayed alarm text to the documented Left Tipper alarm entries in Table 4-23. Look specifically for entries whose documentation states that a Hospital request is sent to the WCS or that WCS will send the AGV/tote to the hospital for diagnosis.",
+      "expected_result": "A documented match is found, or it is determined that no explicit hospital-request statement is present for the displayed alarm.",
+      "healthy_condition": "The alarm text matches a documented entry that explicitly states hospital-request behavior.",
+      "failure_condition": "No matching documented entry is found, or the entry does not explicitly state hospital-request behavior.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Compare alarm text to table entries",
+          "exact_action": "Match the alarm text to the documented entries that state 'Hospital request is sent to the WCS' or that WCS will send the AGV/tote to the hospital for diagnosis.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_42_hospital_hmi_alarms_screen",
+          "what_to_look_at": "The exact alarm text in the Hospital HMI alarm list for comparison to the documented table entries."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The alarm appears related to hospital routing but no matching table entry can be found.",
+        "The table entry is incomplete or unclear about whether hospital-request behavior occurs.",
+        "The alarm text does not exactly align with a documented entry and would require inference."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 57,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_4_alarms_screen",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "Left Tipper alarms 11 and 12 state that failed RFID read and RFID tag mismatch send a Hospital request to the WCS.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 57,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_4_alarms_screen",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "Left Tipper alarm 18 states that a manual or automatic request to send the tote to the hospital was made and WCS will send the AGV/tote to the hospital for diagnosis.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 57,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_4_alarms_screen",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "Additional Left Tipper alarms including tote input lost, gripper faults, motion faults, operator pause request, and manual disable active indicate that a Hospital request is sent to the WCS.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Confirm the documented cause and controller response",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Verify that the matched row explicitly documents hospital-request behavior in the source table rather than relying on alarm name alone.",
+      "instruction": "For the matched alarm row in Table 4-23, review the Cause and Controller Response fields and confirm that the documented response explicitly states that a Hospital request is sent to the WCS or that WCS will send the AGV/tote to the hospital for diagnosis.",
+      "expected_result": "The matched row's documented Cause and Controller Response confirm whether hospital-request behavior is explicitly supported by the source.",
+      "healthy_condition": "The table row explicitly documents the hospital-request behavior in the Controller Response or equivalent row content.",
+      "failure_condition": "The row does not explicitly document hospital-request behavior, or the cause/response information is missing or ambiguous.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review cause and controller response",
+          "exact_action": "Check the corresponding row's Cause and Controller Response to confirm the documented hospital-request behavior.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The Cause or Controller Response fields are missing, incomplete, or unclear.",
+        "The alarm seems related but the documented response does not explicitly state hospital-request behavior."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 57,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_4_alarms_screen",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "Left Tipper alarms 11 and 12 state that failed RFID read and RFID tag mismatch send a Hospital request to the WCS.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 57,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_4_alarms_screen",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "Left Tipper alarm 18 states that a manual or automatic request to send the tote to the hospital was made and WCS will send the AGV/tote to the hospital for diagnosis.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 57,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_4_alarms_screen",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "Additional Left Tipper alarms including tote input lost, gripper faults, motion faults, operator pause request, and manual disable active indicate that a Hospital request is sent to the WCS.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Record whether the alarm is a documented hospital-request condition",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Capture the verification outcome based only on explicit source documentation.",
+      "instruction": "Record that the alarm is a documented hospital-request condition only when the matched table entry explicitly states that response. If the source does not explicitly state it, record that the condition is not confirmed by this reference and escalate if clarification is needed.",
+      "expected_result": "The verification result is documented as confirmed, not confirmed, or requiring escalation based on the source wording.",
+      "healthy_condition": "The outcome is recorded without inference and aligns with the explicit table wording.",
+      "failure_condition": "The result would require assumption, or the documentation is too incomplete or unclear to support a determination.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Document verification result",
+          "exact_action": "Record that the alarm is a documented hospital-request condition when the table explicitly states that response.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_42_hospital_hmi_alarms_screen",
+          "what_to_look_at": "The displayed alarm entry being verified before recording the result."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The table entry is missing, incomplete, or unclear.",
+        "The alarm appears related to hospital routing but the source does not explicitly confirm it.",
+        "A determination would require inference beyond the documented wording."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 57,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_4_alarms_screen",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "Left Tipper alarms 11 and 12 state that failed RFID read and RFID tag mismatch send a Hospital request to the WCS.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 57,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_4_alarms_screen",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "Left Tipper alarm 18 states that a manual or automatic request to send the tote to the hospital was made and WCS will send the AGV/tote to the hospital for diagnosis.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 57,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_4_alarms_screen",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "Additional Left Tipper alarms including tote input lost, gripper faults, motion faults, operator pause request, and manual disable active indicate that a Hospital request is sent to the WCS.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The displayed tipper alarm is compared against the documented entries in Table 4-23.",
+    "A determination is made only when the source explicitly states that a Hospital request is sent to the WCS or that WCS will send the AGV/tote to the hospital for diagnosis.",
+    "The verification result is recorded without inference."
+  ],
+  "healthy_conditions": [
+    "The Hospital HMI alarm text is readable and identifiable.",
+    "A matching documented alarm entry is found in Table 4-23.",
+    "The matched entry explicitly documents hospital-request behavior."
+  ],
+  "failure_conditions": [
+    "The alarm text cannot be clearly identified from the HMI.",
+    "No matching documented entry is found.",
+    "The table entry is missing, incomplete, or unclear.",
+    "The source does not explicitly state hospital-request behavior for the alarm under review."
+  ],
+  "escalation_guidance": [
+    "Escalate if the alarm appears related to hospital routing but the table entry is missing, incomplete, or unclear.",
+    "Escalate if a determination would require inference rather than explicit source wording."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_4_42_hospital_hmi_alarms_screen",
+      "what_to_look_at": "Hospital HMI alarms list with time-stamped entries used to identify the current alarm."
+    },
+    {
+      "artifact_id": "artifact_fig_4_29_hospital_hmi_main_menu",
+      "what_to_look_at": "Hospital HMI main menu access point for the Alarms screen."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 57,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_4_alarms_screen",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "Left Tipper alarms 11 and 12 state that failed RFID read and RFID tag mismatch send a Hospital request to the WCS.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 57,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_4_alarms_screen",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "Left Tipper alarm 18 states that a manual or automatic request to send the tote to the hospital was made and WCS will send the AGV/tote to the hospital for diagnosis.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 57,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_4_alarms_screen",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "Additional Left Tipper alarms including tote input lost, gripper faults, motion faults, operator pause request, and manual disable active indicate that a Hospital request is sent to the WCS.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 72,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_4_alarms_screen",
+      "figure_id": "fig_4_42",
+      "figure_number": "Figure 4-42",
+      "quote_or_summary": "The Alarms screen provides a list of all alarms along with a time stamp.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_verify_hospital_request_alarm_conditions_for_tipper"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide the full text of Table 4-23 alarm rows, including exact alarm names, causes, and controller responses for every hospital-request condition.",
+    "The source packet does not provide a documented recording location or system of record for saving the verification result.",
+    "The packet does not provide explicit Hospital HMI navigation steps to open the Alarms screen beyond related artifact context."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

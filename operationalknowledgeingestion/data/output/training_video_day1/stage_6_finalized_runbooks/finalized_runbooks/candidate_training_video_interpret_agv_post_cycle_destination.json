@@ -1,0 +1,422 @@
+{
+  "procedure_id": "proc_interpret_agv_post_cycle_destination_v1",
+  "candidate_id": "candidate_training_video_interpret_agv_post_cycle_destination",
+  "title": "Interpret AGV Destination After A Completed Cycle",
+  "procedure_type": "reference",
+  "summary": "Use the training-video destination mapping to interpret where an AGV should go after a completed tipper cycle. After the tipper indicates the AGV is clear to move out, the documented outcomes are: failed tip or clamp issue leads to hospital, low battery leads to charger, and otherwise the AGV returns to the sorter entrance queue with an empty tote for the next exchange.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this reference when a full tipper cycle has completed and you need to interpret the documented AGV destination based on the source-described post-cycle conditions.",
+  "not_for": [
+    "Do not use this runbook to manually reroute an AGV.",
+    "Do not use this runbook to diagnose root cause beyond the source-described conditions.",
+    "Do not use this runbook to apply additional routing rules not stated in the source.",
+    "Do not use this runbook as a corrective-action procedure for tipper, clamp, hospital, or charger recovery."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "operator",
+      "responsibility": "Observe the completed-cycle condition and interpret the AGV destination using the documented mapping from the training source."
+    }
+  ],
+  "safety_notes": [
+    "This source is a training/reference aid and does not provide physical intervention steps.",
+    "Do not invent additional routing logic beyond the documented outcomes in the source."
+  ],
+  "access_or_tools_needed": [
+    "Access to the training material or documented AGV destination mapping",
+    "Ability to observe or confirm AGV condition after a completed cycle",
+    "Ability to identify whether a failed tip, clamp issue, or low battery condition is present"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the training material or documented AGV destination mapping"
+    ],
+    "system_preconditions": [
+      "The full cycle is complete",
+      "The tipper has informed the software that the AGV is clear to move out"
+    ],
+    "external_references": [
+      "UPSFORTNA OptiSweep Training Day 1"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_training_video_agv_post_cycle_destinations_v1",
+    "ctx_training_video_tipper_clear_to_move_signal_v1",
+    "ctx_training_video_failed_tip_hospital_routing_v1",
+    "ctx_training_video_low_battery_charge_destination_v1",
+    "ctx_training_video_sorter_entrance_queue_empty_tote_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+      "description": "Training slide describing AGV return logic after the full cycle is complete, including hospital, charger, and sorter return outcomes.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Confirm completed cycle and clear-to-move status",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Establish that the source-described destination mapping applies.",
+      "instruction": "Confirm that the full cycle is complete and identify that the tipper has informed the software that the AGV is clear to move out.",
+      "expected_result": "You have confirmed the AGV is at the post-cycle decision point described by the training source.",
+      "healthy_condition": "The full cycle is complete and the tipper indicates the AGV is clear to move out.",
+      "failure_condition": "The cycle is not complete or clear-to-move status cannot be confirmed from the observed condition or source context.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm cycle completion",
+          "exact_action": "Confirm that the full cycle is complete.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Identify clear-to-move indication",
+          "exact_action": "Identify that the tipper has informed the software that the AGV is clear to move out.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+          "what_to_look_at": "The training slide statement that when the full cycle is complete, the tipper informs the software that the AGV is clear to move and destination outcomes are then evaluated."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the AGV is not at the completed-cycle clear-to-move condition described in the source."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 17,
+          "section_id": "training_video_day1_segment_0017",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "When the full cycle is complete, the tipper informs the software that the AGV is clear to move; the AGV can return to the sorter, go to the hospital, or go to charge."
+        },
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 17,
+          "section_id": "training_video_day1_segment_0017",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "The tipper informs the software that the AGV is clear to move out when the full cycle is complete."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Check for failed tip or clamp issue",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Determine whether the source maps the AGV to the hospital destination.",
+      "instruction": "Check whether the AGV had a failed tip or a clamp-related issue. Compare that condition to the documented outcome that a failed tip leads to the hospital.",
+      "expected_result": "If a failed tip or clamp issue is present, the documented destination is hospital.",
+      "healthy_condition": "The observed condition can be matched to the source-described failed tip or clamp issue category.",
+      "failure_condition": "The AGV condition suggests a failed tip or clamp issue but the observed destination does not align with the documented hospital outcome, or the condition cannot be confidently matched.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check failed tip condition",
+          "exact_action": "Check whether the AGV had a failed tip.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Check clamp-related issue",
+          "exact_action": "Check whether the AGV had a clamp-related issue or did not clamp correctly.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Map to hospital outcome",
+          "exact_action": "Compare that condition to the documented outcome that failed tip leads to the hospital.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+          "what_to_look_at": "The slide content and narration showing that failed tip leads to hospital and that clamp issues are associated with hospital routing."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if a failed tip or clamp-related issue is present but the observed AGV destination does not match the documented hospital outcome.",
+        "Escalate if the condition cannot be interpreted using the source-described categories."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 17,
+          "section_id": "training_video_day1_segment_0017",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "If there's an issue or it didn't clamp correctly, it goes to the hospital; slide text states 'Failed tip leads to Hospital.'"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Check for low battery condition",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Determine whether the source maps the AGV to the charger destination.",
+      "instruction": "Check whether the AGV has a low battery level. Compare that condition to the documented outcome that low battery leads to the charger.",
+      "expected_result": "If low battery is present, the documented destination is charger.",
+      "healthy_condition": "The observed condition can be matched to the source-described low battery category.",
+      "failure_condition": "A low battery condition is present but the observed destination does not align with the documented charger outcome, or battery condition cannot be confirmed.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check battery condition",
+          "exact_action": "Check whether the AGV has a low battery level.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Map to charger outcome",
+          "exact_action": "Compare that condition to the documented outcome that low battery leads to the charger.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+          "what_to_look_at": "The slide content and narration stating that low battery level leads to charger."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if low battery is present but the observed AGV destination does not match the documented charger outcome.",
+        "Escalate if battery condition cannot be interpreted from the available observation."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 17,
+          "section_id": "training_video_day1_segment_0017",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "Low battery level leads to charger; the least charged AGVs are charged continuously to keep the system going through peak."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Apply normal return outcome when no exception applies",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Determine the documented normal destination when neither hospital nor charger conditions apply.",
+      "instruction": "If neither failed tip nor low battery applies, compare the AGV state to the documented normal outcome that it returns to the sorter entrance queue with an empty tote for the next exchange.",
+      "expected_result": "If all is good and no exception applies, the documented destination is the sorter entrance queue with an empty tote.",
+      "healthy_condition": "No failed tip, clamp issue, or low battery condition applies, and the AGV matches the normal return path described in the source.",
+      "failure_condition": "No exception condition is identified, but the observed destination does not align with the documented return to the sorter entrance queue with an empty tote.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm no exception applies",
+          "exact_action": "If neither failed tip nor low battery applies, compare the AGV state to the documented normal outcome.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Map to sorter entrance queue",
+          "exact_action": "Interpret the documented normal outcome as return to the sorter entrance queue with an empty tote for the next exchange.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+          "what_to_look_at": "The slide content and narration showing the normal outcome: return to the sorter entrance queue with an empty tote for the next exchange."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if neither failed tip nor low battery applies but the observed AGV destination does not match the documented normal return outcome."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 17,
+          "section_id": "training_video_day1_segment_0017",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "If all is good, the AGV returns to the sorter entrance queue with an empty tote that will be used for its next exchange."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Record the documented destination",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Capture the interpretation result using the source-defined destination mapping.",
+      "instruction": "Record the destination indicated by the documented mapping: sorter entrance queue, hospital, or charge.",
+      "expected_result": "A single documented destination outcome is identified and recorded from the source mapping.",
+      "healthy_condition": "The destination is recorded as one of the three source-supported outcomes.",
+      "failure_condition": "The destination cannot be determined from the source-supported mapping or appears to require an unsupported rule.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Record mapped destination",
+          "exact_action": "Record the destination indicated by the documented mapping: sorter entrance queue, hospital, or charge.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+          "what_to_look_at": "The destination options on the training slide: return to sorter, hospital, or charge."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the observed AGV destination or condition does not match the documented outcomes in the source.",
+        "Stop and escalate if determining the destination would require inventing additional routing rules."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 17,
+          "section_id": "training_video_day1_segment_0017",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "When the full cycle is complete, the tipper informs the software that the AGV is clear to move; the AGV can return to the sorter, go to the hospital, or go to charge."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The AGV destination is interpreted using only the source-provided mapping.",
+    "The recorded destination is one of the documented outcomes: sorter entrance queue, hospital, or charge.",
+    "The interpretation is based on completed-cycle clear-to-move status and the source-described condition categories."
+  ],
+  "healthy_conditions": [
+    "The full cycle is complete and the tipper indicates the AGV is clear to move out.",
+    "A failed tip or clamp issue maps to hospital.",
+    "A low battery condition maps to charger.",
+    "If all is good and no exception applies, the AGV returns to the sorter entrance queue with an empty tote for the next exchange."
+  ],
+  "failure_conditions": [
+    "The observed AGV destination does not match the documented outcomes in the source.",
+    "The condition cannot be matched to failed tip/clamp issue, low battery, or normal return.",
+    "Additional routing logic would be required beyond what the source provides."
+  ],
+  "escalation_guidance": [
+    "Escalate if the observed AGV destination or condition does not match the documented outcomes in the source.",
+    "Escalate if the AGV appears to require a routing rule not described by the source.",
+    "Do not invent additional routing rules beyond failed tip to hospital, low battery to charger, and otherwise return to the sorter entrance queue."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+      "what_to_look_at": "Training slide describing AGV post-cycle destination mapping after the tipper indicates the AGV is clear to move."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "timestamp_start": "00:32:10.000",
+      "timestamp_end": "00:33:45.000",
+      "start_time_seconds": 1930.0,
+      "end_time_seconds": 2025.0,
+      "segment_id": "segment_training_video_0017",
+      "source_document_id": "training_video_day1_video",
+      "section_id": "training_video_day1_segment_0017"
+    },
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "timestamp_start": "00:32:57.500",
+      "timestamp_end": "00:32:57.500",
+      "start_time_seconds": 1977.5,
+      "end_time_seconds": 1977.5,
+      "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+      "segment_id": "segment_training_video_0017"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_training_video_interpret_agv_post_cycle_destination"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide system navigation steps, controls, or UI fields for checking these conditions.",
+    "The source does not define how to formally record the interpreted destination.",
+    "The source does not provide corrective actions if the observed destination does not match the documented mapping.",
+    "The source does not provide thresholds or exact indicators for low battery.",
+    "The source does not define detailed criteria for distinguishing all possible failure modes beyond failed tip or clamp-related issue."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual"
+  }
+}

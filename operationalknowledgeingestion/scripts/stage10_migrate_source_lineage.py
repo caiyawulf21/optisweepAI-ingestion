@@ -16,7 +16,7 @@ if str(SRC) not in sys.path:
 import typer
 
 from operationalknowledgeingestion.src.optisweep_ingestion.stage_paths import stage_dir
-from operationalknowledgeingestion.src.optisweep_ingestion.tools.report_writer import write_source_extraction_report
+from optisweep_ingestion.stage10_report_writer import write_source_extraction_report
 from operationalknowledgeingestion.src.optisweep_ingestion.utils.json_utils import read_json, write_json
 
 app = typer.Typer(add_completion=False)

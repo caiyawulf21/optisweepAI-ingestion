@@ -1,0 +1,573 @@
+{
+  "procedure_id": "proc_start_up_the_agv_system_v1",
+  "candidate_id": "candidate_agv_system_start_up_sequence",
+  "title": "Start Up the AGV System",
+  "procedure_type": "operation",
+  "summary": "Bring the AGV system from shut-down mode into operation by verifying AGV readiness, confirming shut-down mode, starting the system at the documented time, resetting metrics, starting the system, completing close out (Bag Out), and confirming the system returns to Running.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this procedure when the AGV system is in shut-down mode and needs to be brought into operation before a sort. The source notes the system should be started 15 minutes before the sort starts.",
+  "not_for": [
+    "Do not use this runbook as a detailed AGV redistribution or RMS add-back procedure; the source notes the AGV readiness condition but does not provide the corrective substeps here.",
+    "Do not use this runbook for system shut down; shutdown appears as a separate operation in the source material.",
+    "Do not use this runbook when detailed HMI button names, screen paths, or close out substeps are required, because those details are not provided in this source section."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "operator",
+      "responsibilities": [
+        "Verify the required AGV count and location before startup.",
+        "Use the documented system screen context to confirm the system is in shut-down mode.",
+        "Perform the startup sequence described by the source: reset metrics, start the system, and complete close out (Bag Out).",
+        "Verify the system returns to Running after close out."
+      ]
+    }
+  ],
+  "safety_notes": [
+    "Use only the documented startup sequence from this source.",
+    "Do not assume startup is complete if the required AGV readiness condition is not met.",
+    "The source does not provide detailed corrective actions for missing AGV readiness, detailed HMI navigation, or close out substeps; escalate if those details are needed."
+  ],
+  "access_or_tools_needed": [
+    "Access to the AGV system controls",
+    "Ability to verify AGV count and location under the north rack and south rack",
+    "System screen reference for \"System in Shut-down Mode\"",
+    "Access to metrics reset and system start functions"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the AGV system controls",
+      "Access to the system screen used for startup status confirmation",
+      "Access to metrics reset and system start functions"
+    ],
+    "system_preconditions": [
+      "The system is in shut-down mode.",
+      "There are nine AGVs without totes in the system.",
+      "Five AGVs without totes are under the north rack.",
+      "Four AGVs without totes are under the south rack.",
+      "Startup is performed 15 minutes before the sort starts."
+    ],
+    "external_references": [
+      "Figure 5-1: System in Shut-down Mode",
+      "Figure 4-9: System API Controls",
+      "AGV Status screen reference"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_agv_status_screen_v1",
+    "ctx_manual_agv_startup_timing_note_v1",
+    "ctx_manual_hmi_system_shutdown_mode_screen_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "description": "System screen figure showing the AGV system in shut-down mode during the AGV system start-up procedure.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_4_9_system_api_controls",
+      "description": "System HMI/API screen showing controls for system startup, close out, and reset metrics.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Verify AGV readiness count and location",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm the documented AGV readiness condition is met before startup.",
+      "instruction": "Before starting the system, verify there are nine AGVs without totes in the system: five under the north rack and four under the south rack.",
+      "expected_result": "The required number of tote-free AGVs is confirmed in the documented rack distribution.",
+      "healthy_condition": "Nine AGVs without totes are present, with five under the north rack and four under the south rack.",
+      "failure_condition": "Fewer than nine AGVs without totes are available, or the AGVs are not distributed as five under the north rack and four under the south rack.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check AGV count and rack distribution",
+          "exact_action": "Make sure there are enough AGVs without totes in the system. There should be nine (9) AGVs without totes in the system: five (5) under the north rack and four (4) under the south rack.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+          "what_to_look_at": "Use the startup section screen reference associated with AGV startup to orient to the documented system state before startup."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the system does not have nine AGVs without totes.",
+        "Stop if the AGV distribution is not five under the north rack and four under the south rack.",
+        "Escalate if corrective actions are needed to restore the required AGV readiness condition because this source section does not provide the full corrective substeps."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "quote_or_summary": "Before starting the system, make sure there are enough AGVs without totes in the system. There should be nine (9) AGVs without totes in the system: five (5) under the north rack and four (4) under the south rack.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Confirm the system is in shut-down mode",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Verify the startup begins from the documented system state.",
+      "instruction": "Use the documented system screen reference titled \"System in Shut-down Mode\" to confirm the system is in shut-down mode before startup.",
+      "expected_result": "The operator confirms the system is in the documented shut-down mode state.",
+      "healthy_condition": "The system matches the shut-down mode screen context provided by the source.",
+      "failure_condition": "The system is not in shut-down mode, or the operator cannot confirm the state from the available screen context.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Confirm shut-down mode on system screen",
+          "exact_action": "Use the system screen titled \"System in Shut-down Mode\" to confirm the system is in shut-down mode before startup.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+          "what_to_look_at": "The screen titled \"System in Shut-down Mode\" and any visible status or start-related indicators shown in the source artifact."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the system cannot be confirmed to be in shut-down mode.",
+        "Escalate if the displayed system state does not match the documented shut-down mode reference."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "figure_id": "fig_5_1",
+          "figure_number": "Figure 5-1",
+          "quote_or_summary": "Figure 5-1: System in Shut-down Mode.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Start the system 15 minutes before sort",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Meet the documented startup timing requirement.",
+      "instruction": "Start the system 15 minutes before the sort starts.",
+      "expected_result": "Startup is initiated at the documented time relative to the sort start.",
+      "healthy_condition": "The startup is performed 15 minutes before the sort starts.",
+      "failure_condition": "The startup is delayed or not aligned with the documented 15-minute timing note.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm startup timing",
+          "exact_action": "Make sure to start the system 15 minutes before the sort starts.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the system cannot be started within the documented startup timing window."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "quote_or_summary": "NOTE: Make sure to start the system 15 minutes before the sort starts.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Reset the metrics",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Perform the first documented startup action and support easier report pulling.",
+      "instruction": "Reset the metrics before starting the system.",
+      "expected_result": "Metrics are reset as part of the startup sequence.",
+      "healthy_condition": "The metrics reset action is completed before system startup.",
+      "failure_condition": "Metrics are not reset, or the operator cannot access the reset function.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Reset metrics",
+          "exact_action": "Reset the metrics.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_9_system_api_controls",
+          "what_to_look_at": "The System API Controls screen showing the Reset Metrics control."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the metrics reset function is unavailable.",
+        "Escalate if the operator cannot confirm the metrics reset action on the available system controls."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "quote_or_summary": "To start the system: 1. Reset the metrics. This makes pulling reports easier.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 38,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_1_system_api_controls",
+          "figure_id": "fig_4_9",
+          "figure_number": "Figure 4-9",
+          "quote_or_summary": "Listed controls include Get System State, System Startup, System Shutdown, System Close Out, System Purge, and Reset Metrics.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Start the system",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Perform the documented system startup action.",
+      "instruction": "Start the system.",
+      "expected_result": "The system startup action is initiated from the system controls.",
+      "healthy_condition": "The system accepts the startup action and proceeds through the startup sequence.",
+      "failure_condition": "The system does not start, or the startup action is unavailable.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Start system",
+          "exact_action": "Start the system.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_9_system_api_controls",
+          "what_to_look_at": "The System API Controls screen showing the System Startup control."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the system startup control is unavailable.",
+        "Escalate if the system does not respond to the startup action."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "quote_or_summary": "To start the system: 2. Start the system.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 38,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_1_system_api_controls",
+          "figure_id": "fig_4_9",
+          "figure_number": "Figure 4-9",
+          "quote_or_summary": "The system can be started, shut down, and purged from this screen. Listed controls include ... System Startup ...",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Complete close out (Bag Out)",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Perform the final documented startup sequence action before returning to Running.",
+      "instruction": "Complete close out (Bag Out).",
+      "expected_result": "Close out (Bag Out) is completed as part of the startup sequence.",
+      "healthy_condition": "The close out action completes successfully.",
+      "failure_condition": "Close out (Bag Out) cannot be completed or does not complete successfully.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Complete close out",
+          "exact_action": "Close out.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_9_system_api_controls",
+          "what_to_look_at": "The System API Controls screen showing the System Close Out control."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if close out (Bag Out) cannot be completed.",
+        "Escalate if the operator needs detailed close out substeps not provided in this source."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "quote_or_summary": "To start the system: 3. Close out. After close out (Bag Out) is completed, the system goes back to \"Running\".",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 38,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_1_system_api_controls",
+          "figure_id": "fig_4_9",
+          "figure_number": "Figure 4-9",
+          "quote_or_summary": "Listed controls include Get System State, System Startup, System Shutdown, System Close Out, System Purge, and Reset Metrics.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Verify the system returns to Running",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm the startup sequence completed successfully.",
+      "instruction": "After close out (Bag Out) is completed, verify the system goes back to \"Running\".",
+      "expected_result": "The system state returns to Running.",
+      "healthy_condition": "The system state is shown as \"Running\" after close out (Bag Out).",
+      "failure_condition": "The system does not go back to \"Running\" after close out (Bag Out).",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Verify running state",
+          "exact_action": "After close out (Bag Out) is completed, verify the system goes back to \"Running\".",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_9_system_api_controls",
+          "what_to_look_at": "The System section or state display used to confirm the system is back to Running."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the system does not go back to \"Running\" after close out (Bag Out)."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "quote_or_summary": "After close out (Bag Out) is completed, the system goes back to \"Running\".",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 38,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_1_system_api_controls",
+          "figure_id": "fig_4_9",
+          "figure_number": "Figure 4-9",
+          "quote_or_summary": "The state of the system can be found in the System section of the API screen.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The AGV readiness condition is verified before startup.",
+    "The system is confirmed to be in shut-down mode before startup.",
+    "The startup is performed 15 minutes before the sort starts.",
+    "Metrics are reset.",
+    "The system is started.",
+    "Close out (Bag Out) is completed.",
+    "The system returns to \"Running\" after close out (Bag Out)."
+  ],
+  "healthy_conditions": [
+    "Nine AGVs without totes are present in the system.",
+    "Five tote-free AGVs are under the north rack.",
+    "Four tote-free AGVs are under the south rack.",
+    "The system is in shut-down mode before startup.",
+    "The system returns to \"Running\" after close out (Bag Out)."
+  ],
+  "failure_conditions": [
+    "The required AGV readiness condition is not met.",
+    "The system cannot be confirmed to be in shut-down mode before startup.",
+    "The startup timing note cannot be met.",
+    "Metrics cannot be reset.",
+    "The system does not start.",
+    "Close out (Bag Out) cannot be completed.",
+    "The system does not go back to \"Running\" after close out (Bag Out)."
+  ],
+  "escalation_guidance": [
+    "Escalate if the required AGV readiness condition is not met and corrective actions are needed.",
+    "Escalate if the system state does not match the documented shut-down mode reference.",
+    "Escalate if metrics reset, system startup, or close out controls are unavailable.",
+    "Escalate if the system does not return to \"Running\" after close out (Bag Out).",
+    "Escalate when detailed HMI button names, screen paths, or close out substeps are required, because this source does not provide them."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "what_to_look_at": "Reference screen titled \"System in Shut-down Mode\" used to confirm the pre-start system state."
+    },
+    {
+      "artifact_id": "artifact_fig_4_9_system_api_controls",
+      "what_to_look_at": "System API controls for Reset Metrics, System Startup, System Close Out, and system state display."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 88,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+      "quote_or_summary": "Before starting the system, make sure there are enough AGVs without totes in the system. There should be nine (9) AGVs without totes in the system: five (5) under the north rack and four (4) under the south rack.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 88,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+      "quote_or_summary": "NOTE: Make sure to start the system 15 minutes before the sort starts.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 88,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+      "quote_or_summary": "To start the system: 1. Reset the metrics. This makes pulling reports easier. 2. Start the system. 3. Close out. After close out (Bag Out) is completed, the system goes back to \"Running\".",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 88,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+      "figure_id": "fig_5_1",
+      "figure_number": "Figure 5-1",
+      "quote_or_summary": "Figure 5-1: System in Shut-down Mode.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 38,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_1_system_api_controls",
+      "figure_id": "fig_4_9",
+      "figure_number": "Figure 4-9",
+      "quote_or_summary": "The state of the system can be found in the System section of the API screen and the system can be started, shut down, and purged from this screen. Listed controls include Get System State, System Startup, System Shutdown, System Close Out, System Purge, and Reset Metrics.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_agv_system_start_up_sequence"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide detailed HMI button names or navigation steps for reset metrics, system startup, or close out.",
+    "The source does not provide detailed close out (Bag Out) substeps.",
+    "The source does not provide a detailed corrective procedure in this section for restoring the required AGV readiness condition if the count or distribution is wrong.",
+    "The source does not provide an estimated completion time for the procedure."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

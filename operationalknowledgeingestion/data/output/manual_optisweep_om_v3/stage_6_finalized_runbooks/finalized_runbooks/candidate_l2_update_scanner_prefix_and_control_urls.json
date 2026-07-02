@@ -1,0 +1,491 @@
+{
+  "procedure_id": "proc_verify_scanner_prefixes_and_update_http_and_opc_url_settings_v1",
+  "candidate_id": "candidate_l2_update_scanner_prefix_and_control_urls",
+  "title": "Verify Scanner Prefixes and Update HTTP and OPC URL Settings",
+  "procedure_type": "operation",
+  "summary": "Access scanner settings in the Barcode Interface application, enter the documented default settings password, verify configured prefixes against tote and location labels, update the HTTP and OPC URL fields with the documented control IP addresses, and save the settings.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "support_safe": false,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this procedure during scanner setup or scanner replacement configuration when scanner settings must be checked, prefixes must be verified against tote and location labels, or the HTTP and OPC URL settings must be updated to the AGV control and Hospital control IP addresses.",
+  "not_for": [
+    "Do not use this runbook to determine the actual prefix values; the source only instructs verification against tote and location labels.",
+    "Do not use this runbook to determine the actual AGV control or Hospital control IP addresses; the source states they must be entered but does not provide the values.",
+    "Do not use this runbook for scanner connectivity calibration or dock setup; those activities are referenced elsewhere in the scanner setup section but are not part of this candidate."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Access scanner settings, verify prefixes, update HTTP and OPC URL fields, and save the configuration."
+    }
+  ],
+  "safety_notes": [
+    "This procedure changes scanner communication-related configuration values.",
+    "Stop and escalate if the correct AGV control or Hospital control IP addresses are not available.",
+    "Stop and escalate if the settings cannot be saved."
+  ],
+  "access_or_tools_needed": [
+    "Barcode Interface application",
+    "Settings access password",
+    "Tote labels for prefix comparison",
+    "Location labels for prefix comparison",
+    "AGV control IP address",
+    "Hospital control IP address"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the Barcode Interface application",
+      "Settings password for scanner settings access",
+      "FORTNA account login on the laptop"
+    ],
+    "system_preconditions": [
+      "Scanner setup screen is available in Barcode Interface",
+      "AGV control IP address is available",
+      "Hospital control IP address is available",
+      "Tote and location labels are available for prefix comparison"
+    ],
+    "external_references": [
+      "ctx_manual_scanner_settings_access_v1",
+      "ctx_manual_scanner_prefix_and_url_configuration_v1"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_scanner_settings_access_v1",
+    "ctx_manual_scanner_prefix_and_url_configuration_v1",
+    "ctx_manual_estop_reset_reference_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_page_211_image_2",
+      "description": "Scanner setup screen on page 211 associated with settings access, prefix verification, HTTP/OPC URL fields, and Save Settings.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_page_211_image_3",
+      "description": "Scanner configuration settings screen related to settings access and URL/prefix configuration.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_211_image_4",
+      "description": "Scanner setup screen showing settings, prefixes, and network URL configuration during scanner setup.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_page_210_image_4",
+      "description": "Scanner setup section artifact associated with replacement scanner configuration context.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open scanner settings",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Access the scanner configuration settings screen in Barcode Interface.",
+      "instruction": "In the Barcode Interface application, click the settings button to open scanner settings.",
+      "expected_result": "The scanner settings access prompt or settings screen opens.",
+      "healthy_condition": "The settings button opens the scanner settings access flow.",
+      "failure_condition": "The settings button is unavailable or does not open scanner settings.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Open settings",
+          "exact_action": "Click the settings button in Barcode Interface.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_211_image_2",
+          "what_to_look_at": "Settings button on the scanner setup screen."
+        },
+        {
+          "artifact_id": "artifact_page_211_image_4",
+          "what_to_look_at": "Scanner setup screen associated with settings access."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the settings screen cannot be opened."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 211,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_24_scanner_setup",
+          "quote_or_summary": "Check the settings by clicking the settings button, supply the password. By default, the password is \"Opti\".",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Enter the settings password",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Authenticate into the scanner settings screen.",
+      "instruction": "When prompted, enter the settings password. By default, the password is \"Opti.\"",
+      "expected_result": "Settings access is granted and the scanner settings screen is displayed.",
+      "healthy_condition": "The password is accepted and the settings screen becomes available.",
+      "failure_condition": "The password is rejected or settings access is denied.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Enter password",
+          "exact_action": "Supply the password. By default, the password is \"Opti\".",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_211_image_2",
+          "what_to_look_at": "Password entry associated with scanner settings access."
+        },
+        {
+          "artifact_id": "artifact_page_211_image_3",
+          "what_to_look_at": "Scanner settings access screen related to password entry."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the settings password is not accepted."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 211,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_24_scanner_setup",
+          "quote_or_summary": "Check the settings by clicking the settings button, supply the password. By default, the password is \"Opti\".",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "page": 211,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_24_scanner_setup",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "Check the settings by clicking the settings button, supply the password. By default, the password is “Opti”."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Verify configured prefixes",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm scanner prefix configuration matches the physical tote and location labeling used by the system.",
+      "instruction": "Review the configured prefix values in scanner settings and verify they match the labels on the totes and locations.",
+      "expected_result": "Configured prefixes match the tote and location labels.",
+      "healthy_condition": "Prefix values shown in settings match the corresponding tote and location labels.",
+      "failure_condition": "Any configured prefix does not match the tote or location labels.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Inspect prefix values",
+          "exact_action": "Verify that the configured prefixes match the labels on the totes and locations.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_211_image_4",
+          "what_to_look_at": "Settings screen showing prefix values and the fields used for comparison."
+        },
+        {
+          "artifact_id": "artifact_page_211_image_2",
+          "what_to_look_at": "Scanner setup screen associated with prefix verification."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop and escalate if configured prefixes do not match tote or location labels.",
+        "Stop and escalate if the correct expected prefix values cannot be determined from the available labels."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 211,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_24_scanner_setup",
+          "quote_or_summary": "Verify prefixes match the labels on the totes and locations.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Update the HTTP URL setting",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Set the HTTP URL field to the documented AGV control IP address.",
+      "instruction": "Change the HTTP URL setting so it contains the AGV control IP address.",
+      "expected_result": "The HTTP URL field contains the AGV control IP address.",
+      "healthy_condition": "The HTTP URL field is populated with the correct AGV control IP address.",
+      "failure_condition": "The AGV control IP address is unavailable, unknown, or cannot be entered into the HTTP URL field.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Edit HTTP URL",
+          "exact_action": "Change the URL for the HTTP setting to contain the AGV control IP address.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_211_image_4",
+          "what_to_look_at": "Settings screen showing the HTTP URL field."
+        },
+        {
+          "artifact_id": "artifact_page_211_image_3",
+          "what_to_look_at": "Scanner configuration screen related to HTTP URL entry."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the correct AGV control IP address is not available."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 211,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_24_scanner_setup",
+          "quote_or_summary": "Change the URL for both the HTTP and OPC setting to contain the AGV control and Hospital control IP addresses respectively. Save the settings with the \"Save Settings\" button.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Update the OPC URL setting",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Set the OPC URL field to the documented Hospital control IP address.",
+      "instruction": "Change the OPC URL setting so it contains the Hospital control IP address.",
+      "expected_result": "The OPC URL field contains the Hospital control IP address.",
+      "healthy_condition": "The OPC URL field is populated with the correct Hospital control IP address.",
+      "failure_condition": "The Hospital control IP address is unavailable, unknown, or cannot be entered into the OPC URL field.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Edit OPC URL",
+          "exact_action": "Change the URL for the OPC setting to contain the Hospital control IP address.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_211_image_4",
+          "what_to_look_at": "Settings screen showing the OPC URL field."
+        },
+        {
+          "artifact_id": "artifact_page_211_image_2",
+          "what_to_look_at": "Scanner setup screen associated with OPC URL configuration."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the correct Hospital control IP address is not available."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 211,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_24_scanner_setup",
+          "quote_or_summary": "Change the URL for both the HTTP and OPC setting to contain the AGV control and Hospital control IP addresses respectively. Save the settings with the \"Save Settings\" button.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Save scanner settings",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Commit the verified and updated scanner configuration values.",
+      "instruction": "Click the \"Save Settings\" button to save the configuration.",
+      "expected_result": "The updated scanner settings are saved.",
+      "healthy_condition": "Settings save successfully after prefix verification and URL updates.",
+      "failure_condition": "The settings do not save or the save action fails.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Save settings",
+          "exact_action": "Save the settings with the \"Save Settings\" button.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_211_image_4",
+          "what_to_look_at": "Settings screen showing the \"Save Settings\" button."
+        },
+        {
+          "artifact_id": "artifact_page_211_image_3",
+          "what_to_look_at": "Scanner configuration screen associated with saving settings."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the settings cannot be saved."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 211,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_24_scanner_setup",
+          "quote_or_summary": "Change the URL for both the HTTP and OPC setting to contain the AGV control and Hospital control IP addresses respectively. Save the settings with the \"Save Settings\" button.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Scanner settings are accessible.",
+    "Configured prefixes match the labels on the totes and locations.",
+    "The HTTP URL field contains the documented AGV control IP address.",
+    "The OPC URL field contains the documented Hospital control IP address.",
+    "The updated settings are saved."
+  ],
+  "healthy_conditions": [
+    "Settings access is granted after entering the password.",
+    "Prefix values match tote and location labels.",
+    "HTTP and OPC URL fields contain the intended control IP addresses.",
+    "Save Settings completes successfully."
+  ],
+  "failure_conditions": [
+    "The settings password is not accepted.",
+    "Configured prefixes do not match tote or location labels.",
+    "The correct AGV control IP address is not available.",
+    "The correct Hospital control IP address is not available.",
+    "The settings cannot be saved."
+  ],
+  "escalation_guidance": [
+    "Escalate if the settings password is not accepted.",
+    "Escalate if the correct AGV control or Hospital control IP addresses are not available.",
+    "Stop and escalate if the settings cannot be saved."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_page_211_image_2",
+      "what_to_look_at": "Scanner setup screen associated with settings access, password entry, and URL/prefix configuration."
+    },
+    {
+      "artifact_id": "artifact_page_211_image_3",
+      "what_to_look_at": "Scanner configuration settings screen related to password entry, URL fields, and saving settings."
+    },
+    {
+      "artifact_id": "artifact_page_211_image_4",
+      "what_to_look_at": "Primary scanner settings screen showing prefixes, HTTP URL, OPC URL, and Save Settings."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 211,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_24_scanner_setup",
+      "quote_or_summary": "Check the settings by clicking the settings button, supply the password. By default, the password is \"Opti\".",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 211,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_24_scanner_setup",
+      "quote_or_summary": "Verify prefixes match the labels on the totes and locations.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 211,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_24_scanner_setup",
+      "quote_or_summary": "Change the URL for both the HTTP and OPC setting to contain the AGV control and Hospital control IP addresses respectively. Save the settings with the \"Save Settings\" button.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_l2_update_scanner_prefix_and_control_urls"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide the actual settings screen field values for the prefixes.",
+    "The source does not provide the actual AGV control IP address.",
+    "The source does not provide the actual Hospital control IP address.",
+    "The source does not state whether production must be stopped before changing these settings.",
+    "The source does not provide a time estimate for completing this procedure.",
+    "The source does not describe the exact confirmation message or visual indication after saving settings."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

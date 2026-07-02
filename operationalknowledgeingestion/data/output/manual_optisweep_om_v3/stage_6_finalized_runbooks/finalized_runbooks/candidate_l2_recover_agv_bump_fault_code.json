@@ -1,0 +1,541 @@
+{
+  "procedure_id": "proc_recover_an_agv_from_a_bump_fault_code_v1",
+  "candidate_id": "candidate_l2_recover_agv_bump_fault_code",
+  "title": "Recover An AGV From A BUMP Fault Code",
+  "procedure_type": "recovery",
+  "summary": "Recover a documented AGV BUMP fault when Geek+ cannot recover the AGV by gathering required fault details, confirming the BUMP fault information on the AGV Bump Fault Screen, stopping RMS, removing the obstruction, resetting the AGV, and resuming RMS.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "support_safe": false,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this procedure for the documented AGV BUMP fault recovery case in the OptiSweep manual when Geek+ cannot recover the AGV.",
+  "not_for": [
+    "Do not use for AGV faults other than the documented BUMP fault case supported by this source.",
+    "Do not use when the source-required BUMP fault information cannot be confirmed from RMS or the AGV Bump Fault Screen."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibilities": [
+        "Gather required AGV and RMS fault information before going inside the grid.",
+        "Confirm the documented BUMP fault context and exception information if displayed.",
+        "E-stop RMS, remove the obstruction, reset the AGV, and resume RMS per the manual."
+      ]
+    }
+  ],
+  "safety_notes": [
+    "The source states to gather information before going inside the grid (the Dance Floor).",
+    "This procedure includes going inside the grid and physically removing an obstruction.",
+    "Safety controls beyond the documented E-stop actions are not specified in the supplied source excerpt."
+  ],
+  "access_or_tools_needed": [
+    "Access to RMS",
+    "Access to the AGV Bump Fault Screen",
+    "Ability to use the E-stop",
+    "Physical access to remove the obstruction",
+    "Robot ID and RMS fault information"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to RMS",
+      "Access to the AGV Bump Fault Screen",
+      "Ability to use the E-stop",
+      "Physical access to the grid area to remove the obstruction"
+    ],
+    "system_preconditions": [
+      "Geek+ cannot recover the AGV.",
+      "The AGV is in the documented BUMP fault recovery case."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_manual_fault_recovery_prereq_info_v1",
+    "ctx_manual_bump_fault_overview_v1",
+    "ctx_manual_bump_exception_codes_v1",
+    "ctx_manual_agv_bump_fault_screen_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+      "description": "AGV Bump Fault Screen used to identify the BUMP fault, review exception information, and locate the AGV RESET button.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "description": "Related system screen artifact referenced in packet; may provide surrounding RMS state context only.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "description": "Related AGV controls artifact included in packet; not directly used by the documented BUMP recovery steps.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+      "description": "Related fault recovery artifact included in packet for nearby AGV fault context.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "description": "Related fault recovery artifact included in packet for nearby AGV recovery context.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Gather required fault information before entering the grid",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure the responder has the information the manual requires before going inside the grid for AGV fault recovery.",
+      "instruction": "Before going inside the grid (the Dance Floor), gather the Robot ID, the fault description from RMS, whether RMS indicates the faulted AGV is holding a bin and the tote ID if present, and if the faulted AGV is under a rack, determine whether that AGV is the empty AGV for that zone.",
+      "expected_result": "The responder has the AGV identity and required RMS fault context needed for the recovery.",
+      "healthy_condition": "Robot ID, RMS fault description, tote/bin status, tote ID if present, and under-rack empty-AGV status are known before entering the grid.",
+      "failure_condition": "Required AGV or RMS fault information is missing or cannot be confirmed before entering the grid.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Collect RMS fault details",
+          "exact_action": "Gather the Robot ID, fault description from RMS, whether RMS thinks the faulted AGV is holding a bin and the tote ID if present, and whether a faulted AGV under a rack is the empty AGV for that zone before going inside the grid.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+          "what_to_look_at": "AGV identification and fault information relevant to the faulted robot."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Robot ID cannot be determined.",
+        "RMS fault description cannot be obtained.",
+        "It cannot be determined whether the AGV is holding a bin or tote ID.",
+        "It cannot be determined whether an under-rack AGV is the empty AGV for that zone."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+          "quote_or_summary": "Before going inside the grid (a.k.a. the Dance Floor), make sure to have the following information: Robot ID; Fault description from RMS; Does RMS think the faulted AGV is holding a bin? If so, what tote ID?; If faulted AGV is under a rack, is that AGV the empty AGV for that zone?",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Confirm the documented BUMP fault case",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Verify that the AGV fault matches the documented BUMP recovery case and review the exception information shown by the source.",
+      "instruction": "Identify that the AGV is in the documented BUMP fault case and check the exception information shown for code 21057 or 21060 if displayed on the AGV Bump Fault Screen.",
+      "expected_result": "The responder confirms the AGV fault matches the documented BUMP fault context and reviews the displayed exception information.",
+      "healthy_condition": "The AGV Bump Fault Screen shows the documented BUMP fault context, with exception information matching code 21057 or 21060 when displayed.",
+      "failure_condition": "The fault does not match the documented BUMP fault case, or the displayed exception information does not align with the documented BUMP exceptions.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Review BUMP fault screen",
+          "exact_action": "Check the AGV Bump Fault Screen and review exception information for code 21057 or 21060 if displayed.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+          "what_to_look_at": "Fault or exception display area, exception code area, and AGV identification on the AGV Bump Fault Screen."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The AGV is not in the documented BUMP fault case.",
+        "The exception information shown does not match the documented BUMP exceptions.",
+        "The AGV Bump Fault Screen cannot be accessed or interpreted."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+          "figure_id": "fig_5_2",
+          "figure_number": "Figure 5-2",
+          "quote_or_summary": "Figure 5-2: AGV \"Bump\" Fault Screen.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+          "quote_or_summary": "Exception Code 21057 — Robot front collision bar triggers.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+          "quote_or_summary": "Exception Code 21060 — The robot triggers the obstacle avoidance.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "E-stop the RMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Place the system in the stopped state required by the documented recovery sequence before removing the obstruction.",
+      "instruction": "E-stop the RMS.",
+      "expected_result": "RMS is E-stopped.",
+      "healthy_condition": "RMS is in the stopped state required for the recovery sequence.",
+      "failure_condition": "RMS does not enter the stopped state when E-stop is pressed.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "E-stop RMS",
+          "exact_action": "E-stop the RMS.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "RMS does not stop after E-stop is pressed."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+          "quote_or_summary": "1. E-stop the RMS. 2. Remove the obstruction. 3. Click the AGV RESET button for two (2) seconds to clear the fault. 4. Press E-stop again. 5. Resume RMS.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Remove the obstruction",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Clear the physical condition causing the documented BUMP fault.",
+      "instruction": "Remove the obstruction.",
+      "expected_result": "The obstruction is removed from the AGV path or contact point.",
+      "healthy_condition": "The obstruction is no longer present and the AGV is clear of the bump condition.",
+      "failure_condition": "The obstruction cannot be removed or the AGV remains obstructed.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Remove obstruction",
+          "exact_action": "Remove the obstruction.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The obstruction cannot be safely removed.",
+        "The obstruction is removed but the AGV remains in the faulted condition."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+          "quote_or_summary": "1. E-stop the RMS. 2. Remove the obstruction. 3. Click the AGV RESET button for two (2) seconds to clear the fault. 4. Press E-stop again. 5. Resume RMS.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Reset the AGV to clear the fault",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Clear the documented BUMP fault using the AGV reset control specified by the manual.",
+      "instruction": "Click the AGV RESET button for two seconds to clear the fault.",
+      "expected_result": "The AGV fault is cleared.",
+      "healthy_condition": "The BUMP fault clears after the AGV RESET button is held for two seconds.",
+      "failure_condition": "The fault does not clear after the documented AGV RESET action.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Use AGV RESET",
+          "exact_action": "Click the AGV RESET button for two (2) seconds to clear the fault.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+          "what_to_look_at": "AGV RESET button location on the AGV Bump Fault Screen."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The AGV RESET button cannot be located on the AGV Bump Fault Screen.",
+        "The fault does not clear after the documented two-second reset action."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+          "figure_id": "fig_5_2",
+          "figure_number": "Figure 5-2",
+          "quote_or_summary": "Figure 5-2: AGV \"Bump\" Fault Screen.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+          "quote_or_summary": "1. E-stop the RMS. 2. Remove the obstruction. 3. Click the AGV RESET button for two (2) seconds to clear the fault. 4. Press E-stop again. 5. Resume RMS.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Press E-stop again",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Perform the next documented control action in the manual's recovery sequence after clearing the fault.",
+      "instruction": "Press E-stop again.",
+      "expected_result": "The documented second E-stop action is completed.",
+      "healthy_condition": "The second E-stop action is completed as specified by the manual.",
+      "failure_condition": "The second E-stop action cannot be completed as documented.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Press E-stop again",
+          "exact_action": "Press E-stop again.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The second E-stop action cannot be completed.",
+        "System state does not allow continuation to resume RMS."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+          "quote_or_summary": "1. E-stop the RMS. 2. Remove the obstruction. 3. Click the AGV RESET button for two (2) seconds to clear the fault. 4. Press E-stop again. 5. Resume RMS.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Resume RMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Return the system to operation after the obstruction is removed and the AGV fault is cleared.",
+      "instruction": "Resume RMS.",
+      "expected_result": "RMS is resumed and the documented recovery sequence is complete.",
+      "healthy_condition": "RMS resumes and the AGV BUMP fault remains cleared.",
+      "failure_condition": "RMS does not resume or the AGV fault remains present after resume.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Resume RMS",
+          "exact_action": "Resume RMS.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "RMS does not resume.",
+        "The AGV fault is still present after resume.",
+        "The AGV cannot be recovered by the documented sequence."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+          "quote_or_summary": "1. E-stop the RMS. 2. Remove the obstruction. 3. Click the AGV RESET button for two (2) seconds to clear the fault. 4. Press E-stop again. 5. Resume RMS.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The obstruction is removed.",
+    "The AGV fault is cleared using the AGV RESET button.",
+    "RMS is resumed.",
+    "The documented BUMP recovery sequence completes without the fault persisting."
+  ],
+  "healthy_conditions": [
+    "Required AGV and RMS fault information is gathered before entering the grid.",
+    "The AGV Bump Fault Screen matches the documented BUMP fault context.",
+    "The obstruction is removed.",
+    "The AGV RESET action clears the fault.",
+    "RMS resumes after the reset sequence."
+  ],
+  "failure_conditions": [
+    "Required pre-entry fault information cannot be gathered.",
+    "The fault does not match the documented BUMP fault case.",
+    "RMS cannot be E-stopped or resumed as documented.",
+    "The obstruction cannot be removed.",
+    "The AGV fault does not clear after the documented reset sequence."
+  ],
+  "escalation_guidance": [
+    "Escalate if the fault does not clear after the documented reset sequence.",
+    "Escalate if the AGV cannot be recovered by this documented BUMP fault procedure.",
+    "Escalate if required fault identification information cannot be confirmed before entering the grid."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+      "what_to_look_at": "Use for BUMP fault identification, exception information review, and AGV RESET button location."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 89,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+      "figure_id": "fig_5_2",
+      "figure_number": "Figure 5-2",
+      "quote_or_summary": "Figure 5-2: AGV \"Bump\" Fault Screen.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 89,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+      "quote_or_summary": "Before going inside the grid (a.k.a. the Dance Floor), make sure to have the following information: Robot ID; Fault description from RMS; Does RMS think the faulted AGV is holding a bin? If so, what tote ID?; If faulted AGV is under a rack, is that AGV the empty AGV for that zone?",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 89,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+      "quote_or_summary": "Exception Code 21057 — Robot front collision bar triggers.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 89,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+      "quote_or_summary": "Exception Code 21060 — The robot triggers the obstacle avoidance.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 89,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+      "quote_or_summary": "1. E-stop the RMS. 2. Remove the obstruction. 3. Click the AGV RESET button for two (2) seconds to clear the fault. 4. Press E-stop again. 5. Resume RMS.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_l2_recover_agv_bump_fault_code"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The supplied source excerpt does not specify detailed safety controls for entering the grid beyond the documented E-stop actions and pre-entry information gathering.",
+    "The supplied source excerpt does not define exact resume-RMS substeps; it only states to resume RMS.",
+    "The supplied source excerpt does not provide an estimated completion time.",
+    "The supplied source excerpt does not specify whether production stop or LOTO is required."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

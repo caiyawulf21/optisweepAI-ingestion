@@ -1,0 +1,424 @@
+{
+  "procedure_id": "proc_clear_an_agv_bump_fault_when_geek_cannot_recover_the_agv_v1",
+  "candidate_id": "candidate_l2_recover_agv_bump_fault",
+  "title": "Clear an AGV Bump Fault When Geek+ Cannot Recover the AGV",
+  "procedure_type": "recovery",
+  "summary": "Manual recovery sequence for an AGV Bump fault when Geek+ cannot recover the AGV. The documented process is to E-stop the RMS, remove the obstruction, press and hold the AGV RESET button for two seconds to clear the fault, press E-stop again, and resume RMS.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "support_safe": false,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this procedure for a documented AGV Bump fault recovery when Geek+ cannot recover the AGV.",
+  "not_for": [
+    "Do not use for AGV faults other than the documented Bump fault unless the source explicitly directs this same recovery.",
+    "Do not use when Geek+ can recover the AGV automatically."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Perform the documented manual AGV bump fault recovery, including stopping RMS, removing the obstruction, resetting the AGV fault, and resuming RMS."
+    }
+  ],
+  "safety_notes": [
+    "This procedure is not marked support-safe in the candidate.",
+    "The source context states fault recovery may involve going inside the grid (the Dance Floor). Before going inside the grid, make sure to have Robot ID, fault description from RMS, bin/tote status, and whether an AGV under a rack is the empty AGV for that zone.",
+    "The source instructs the operator to remove the obstruction before resetting the AGV fault."
+  ],
+  "access_or_tools_needed": [
+    "Access to RMS E-stop control",
+    "Access to the obstruction area",
+    "Access to the AGV RESET button",
+    "Access to resume RMS"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to RMS E-stop control",
+      "Access to the obstruction area",
+      "Access to the AGV RESET button",
+      "Access to resume RMS"
+    ],
+    "system_preconditions": [
+      "Geek+ cannot recover the AGV.",
+      "Identify the AGV Bump fault context before performing recovery.",
+      "Before going inside the grid, have Robot ID, RMS fault description, bin/tote status, and whether an AGV under a rack is the empty AGV for that zone."
+    ],
+    "external_references": [
+      "Starting the System on page 65"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_agv_bump_fault_screen_v1",
+    "ctx_manual_bump_exception_codes_v1",
+    "ctx_manual_fault_recovery_prereq_info_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+      "description": "Figure 5-2 AGV Bump Fault Screen used during bump fault recovery.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "description": "System in shut-down mode screen referenced by related bump fault screen context.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "description": "Nearby fault recovery screen included in related context bundle.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+      "description": "Nearby fault recovery screen included in related context bundle.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "E-stop the RMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Place the system into a stopped state before manual obstruction removal and AGV fault reset.",
+      "instruction": "E-stop the RMS.",
+      "expected_result": "RMS is stopped and the system is in a state that allows the documented manual recovery sequence to continue.",
+      "healthy_condition": "RMS has been E-stopped as directed by the recovery procedure.",
+      "failure_condition": "RMS is not E-stopped or cannot be placed into the required stopped state.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Stop RMS",
+          "exact_action": "E-stop the RMS.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+          "what_to_look_at": "Use the AGV Bump Fault Screen context to confirm the recovery is being performed for the documented bump fault."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The RMS cannot be E-stopped.",
+        "The fault condition does not match the documented AGV Bump fault recovery context."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_fault_recovery",
+          "figure_number": "Figure 5-2",
+          "quote_or_summary": "The following sections provide instructions for the recovery process when Geek+ cannot recover the AGV. 1. E-stop the RMS. 2. Remove the obstruction. 3. Click the AGV RESET button for two (2) seconds to clear the fault. 4. Press E-stop again. 5. Resume RMS.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Remove the obstruction",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Clear the physical condition that triggered the bump fault before attempting the AGV reset.",
+      "instruction": "Remove the obstruction.",
+      "expected_result": "The obstruction causing the bump or obstacle-triggered AGV exception is removed.",
+      "healthy_condition": "The obstruction is no longer present in the AGV path or collision area.",
+      "failure_condition": "The obstruction cannot be safely removed or the obstruction remains present.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Clear obstruction",
+          "exact_action": "Remove the obstruction.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+          "what_to_look_at": "Review the AGV Bump Fault Screen associated with collision bar trigger or obstacle avoidance trigger conditions."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The obstruction cannot be removed.",
+        "The area cannot be safely accessed.",
+        "The observed condition does not align with the documented bump fault context."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_fault_recovery",
+          "figure_number": "Figure 5-2",
+          "quote_or_summary": "The following sections provide instructions for the recovery process when Geek+ cannot recover the AGV. 1. E-stop the RMS. 2. Remove the obstruction. 3. Click the AGV RESET button for two (2) seconds to clear the fault. 4. Press E-stop again. 5. Resume RMS.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "Exception Code 21057: Robot front collision bar triggers. Exception Code 21060: The robot triggers the obstacle avoidance. Table 5-1: AGV Exception Codes."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Reset the AGV bump fault",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Clear the AGV fault after the obstruction has been removed.",
+      "instruction": "Click the AGV RESET button for two (2) seconds to clear the fault.",
+      "expected_result": "The AGV bump fault is cleared.",
+      "healthy_condition": "The AGV fault clears after the AGV RESET button is held for two seconds.",
+      "failure_condition": "The AGV fault does not clear after the documented reset action.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Press AGV RESET",
+          "exact_action": "Click the AGV RESET button for two (2) seconds to clear the fault.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+          "what_to_look_at": "AGV 'Bump' Fault Screen and the AGV RESET button used to clear the fault."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The AGV RESET button is not available on the documented screen.",
+        "The fault does not clear after the documented two-second reset action."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_fault_recovery",
+          "figure_number": "Figure 5-2",
+          "quote_or_summary": "The following sections provide instructions for the recovery process when Geek+ cannot recover the AGV. 1. E-stop the RMS. 2. Remove the obstruction. 3. Click the AGV RESET button for two (2) seconds to clear the fault. 4. Press E-stop again. 5. Resume RMS.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+          "figure_id": "fig_5_2",
+          "figure_number": "Figure 5-2",
+          "quote_or_summary": "Figure 5-2 appears on page 89 in section optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Press E-stop again",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Perform the next documented control action in the manual recovery sequence after clearing the fault.",
+      "instruction": "Press E-stop again.",
+      "expected_result": "The documented second E-stop action is completed.",
+      "healthy_condition": "The second E-stop action has been performed as written in the source procedure.",
+      "failure_condition": "The second E-stop action cannot be completed.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Press E-stop again",
+          "exact_action": "Press E-stop again.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The E-stop control cannot be actuated as required."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_fault_recovery",
+          "figure_number": "Figure 5-2",
+          "quote_or_summary": "The following sections provide instructions for the recovery process when Geek+ cannot recover the AGV. 1. E-stop the RMS. 2. Remove the obstruction. 3. Click the AGV RESET button for two (2) seconds to clear the fault. 4. Press E-stop again. 5. Resume RMS.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Resume RMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Return the system to operation after the obstruction is removed and the AGV fault is cleared.",
+      "instruction": "Resume RMS. See \"Starting the System\" on page 65.",
+      "expected_result": "RMS is resumed and AGV operation is restored.",
+      "healthy_condition": "RMS resumes successfully after the documented recovery sequence.",
+      "failure_condition": "RMS does not resume or AGV operation is not restored.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Resume RMS",
+          "exact_action": "Resume RMS.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "RMS cannot be resumed.",
+        "AGV operation is not restored after resuming RMS."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 89,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_fault_recovery",
+          "figure_number": "Figure 5-2",
+          "quote_or_summary": "The following sections provide instructions for the recovery process when Geek+ cannot recover the AGV. 1. E-stop the RMS. 2. Remove the obstruction. 3. Click the AGV RESET button for two (2) seconds to clear the fault. 4. Press E-stop again. 5. Resume RMS.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The obstruction is removed.",
+    "The AGV fault is cleared using the AGV RESET button.",
+    "RMS is resumed.",
+    "AGV operation is restored."
+  ],
+  "healthy_conditions": [
+    "The documented bump fault condition is identified.",
+    "The obstruction is removed successfully.",
+    "The AGV RESET action clears the fault.",
+    "RMS resumes successfully after the recovery sequence."
+  ],
+  "failure_conditions": [
+    "Geek+ cannot recover the AGV and the documented manual sequence does not clear the fault.",
+    "The obstruction cannot be removed.",
+    "The AGV fault does not clear after pressing the AGV RESET button for two seconds.",
+    "RMS cannot be resumed."
+  ],
+  "escalation_guidance": [
+    "Use this procedure when Geek+ cannot recover the AGV.",
+    "If the fault does not clear after the documented reset sequence, the source does not provide additional escalation steps."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+      "what_to_look_at": "AGV 'Bump' Fault Screen used for the documented recovery and AGV RESET action."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 89,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_fault_recovery",
+      "figure_number": "Figure 5-2",
+      "quote_or_summary": "The following sections provide instructions for the recovery process when Geek+ cannot recover the AGV. 1. E-stop the RMS. 2. Remove the obstruction. 3. Click the AGV RESET button for two (2) seconds to clear the fault. 4. Press E-stop again. 5. Resume RMS.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 89,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code",
+      "figure_id": "fig_5_2",
+      "figure_number": "Figure 5-2",
+      "quote_or_summary": "Figure 5-2 appears on page 89 in section optisweep_operation_and_maintenance_manual_final_1_5_8_2_1_bump_fault_code.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 89,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_fault_recovery",
+      "figure_id": null,
+      "figure_number": "Figure 5-2",
+      "quote_or_summary": "Figure 5-2: AGV 'Bump' Fault Screen. Table 5-1 lists exception code 21057 'Robot front collision bar triggers' and 21060 'The robot triggers the obstacle avoidance.'",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_l2_recover_agv_bump_fault"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source does not specify the exact location of the AGV RESET button.",
+    "The source does not provide additional escalation steps if the fault does not clear after the documented reset sequence.",
+    "The source does not provide an estimated completion time.",
+    "The source does not explicitly state whether production stop or LOTO is required."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

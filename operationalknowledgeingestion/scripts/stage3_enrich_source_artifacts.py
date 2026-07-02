@@ -16,7 +16,7 @@ if str(SRC) not in sys.path:
 import typer
 
 from optisweep_ingestion.stage_paths import stage_dir
-from optisweep_ingestion.tools.artifact_enricher import AzureOpenAIArtifactClient, enrich_source_artifacts
+from optisweep_ingestion.stage3_artifact_enrichment import AzureOpenAIArtifactClient, enrich_source_artifacts
 
 app = typer.Typer(add_completion=False)
 

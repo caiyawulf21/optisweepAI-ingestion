@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Restart Ignition and verify OptiSweep service response with GetAgvStatuses</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Restart Ignition and verify OptiSweep service response with GetAgvStatuses</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_restart_ignition_and_verify_optisweep_service_response_with_getagvstatuses_v1</td></tr>
+<tr><th>Title</th><td>Restart Ignition and verify OptiSweep service response with GetAgvStatuses</td></tr>
+<tr><th>Procedure Type</th><td>recovery</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Conditional incident-derived recovery guidance for restarting Ignition and confirming OptiSweep service responsiveness before releasing the E-stop. The source instructs the operator to first E-stop the system, restart Ignition with `gwcmd -r`, wait until the gateway is back up and login is possible, then verify OptiSweep by sending a GetAgvStatuses request. If no response is returned, restart OptiSweep, send the request again, and only then release the E-stop.</p>
+<h2>When To Use</h2>
+<p>Use when the incident-specific guidance indicates Ignition may need to be restarted and you need to confirm the OptiSweep service is responding again before releasing the E-stop.</p>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — E-stop the system before restart</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>First E-stop the system before attempting the restart.</p>
+<p><strong>Expected result:</strong></p>
+<p>The system is placed in E-stop before any Ignition restart action is taken.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_incident_228086_page_014_embedded_image_01.png" alt="artifact_incident_228086_page_014_embedded_image_01" /><figcaption>Emergency stop control area highlighted in the RMS/system control context.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The system cannot be safely placed in E-stop.</li>
+<li>The E-stop state cannot be confirmed before proceeding.</li>
+</ul>
+<hr>
+<h3>Step 2 — Restart Ignition from the Ignition directory</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open a Windows command prompt on the Ignition host, navigate to the Ignition installation directory, and run `gwcmd -r` from `C:\Program Files\Inductive Automation\Ignition&gt;`. Observe the console message `Waiting for Gateway restart...`.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Ignition gateway restart command is accepted and the console shows `Waiting for Gateway restart...`.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_incident_228086_page_015_embedded_image_01.png" alt="artifact_incident_228086_page_015_embedded_image_01" /><figcaption>Command prompt in `C:\Program Files\Inductive Automation\Ignition&gt;` showing `gwcmd -r` and `Waiting for Gateway restart...`.</figcaption></figure>
+<figure><img src="assets/artifact_incident_228086_page_012_nested_image_02.png" alt="artifact_incident_228086_page_012_nested_image_02" /><figcaption>Restart-instruction screenshot context showing the Ignition restart command sequence.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The documented restart command cannot be executed.</li>
+<li>The expected `Waiting for Gateway restart...` message does not appear.</li>
+<li>Ignition restart requires undocumented commands or changes not present in the source.</li>
+</ul>
+<hr>
+<h3>Step 3 — Wait for Ignition to come back up</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Wait for Ignition to come back up, meaning it lets you log in and does not show the gateway starting up. Use the Ignition status/login page to confirm the gateway is reachable.</p>
+<p><strong>Expected result:</strong></p>
+<p>Ignition is reachable again and presents a login-capable or status page rather than a startup screen.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_incident_228086_page_016_embedded_image_01.png" alt="artifact_incident_228086_page_016_embedded_image_01" /><figcaption>Ignition Status &gt; Systems &gt; Overview page reachable in the browser, with Current Response Time and no startup screen.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Ignition does not come back up to a login-capable state.</li>
+<li>The gateway remains on a startup screen or is unreachable.</li>
+<li>Additional undocumented recovery actions would be required.</li>
+</ul>
+<hr>
+<h3>Step 4 — Send GetAgvStatuses request after Ignition restart</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the API client identified in the source as api dog and send a GetAgvStatuses request to `http://10.27.80.165:5000/GetAgvStatuses`.</p>
+<p><strong>Expected result:</strong></p>
+<p>The request executes against the shown endpoint and returns a response from the OptiSweep service.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_incident_228086_page_017_embedded_image_01.png" alt="artifact_incident_228086_page_017_embedded_image_01" /><figcaption>API client showing GET request to `http://10.27.80.165:5000/GetAgvStatuses`.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The endpoint is unreachable or returns no response.</li>
+<li>The request cannot be executed with the documented API client and endpoint.</li>
+<li>Undocumented troubleshooting would be required beyond the source-supported sequence.</li>
+</ul>
+<hr>
+<h3>Step 5 — Confirm HTTP 200 and returned AGV records</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Check that the GetAgvStatuses request returns HTTP 200 and returned AGV records. Visible records in the source include status values such as `NORMAL`. Do not treat the visible schema validation warning alone as a service outage if the request still returns HTTP 200 with data.</p>
+<p><strong>Expected result:</strong></p>
+<p>The API response shows Success/Status 200 and returned AGV records, including visible status values such as `NORMAL`.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_incident_228086_page_017_embedded_image_01.png" alt="artifact_incident_228086_page_017_embedded_image_01" /><figcaption>Response panel showing Success/Status 200 and returned records with visible `NORMAL` values; note the validation warning but do not treat it alone as outage proof.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The request does not return a response.</li>
+<li>The endpoint returns no data.</li>
+<li>Response still cannot be confirmed after the documented retry path.</li>
+</ul>
+<hr>
+<h3>Step 6 — If no response, restart OptiSweep and retry GetAgvStatuses</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If no response is given, restart OptiSweep, then send another GetAgvStatuses request to confirm response. The source supports this at a high level only; use the Windows Services console context shown for OptiSweep and do not invent additional click-by-click steps not present in the source.</p>
+<p><strong>Expected result:</strong></p>
+<p>OptiSweep is restarted and a follow-up GetAgvStatuses request is sent to confirm response.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_incident_228086_page_019_embedded_image_01.png" alt="artifact_incident_228086_page_019_embedded_image_01" /><figcaption>Windows Services console with OptiSweep selected, showing Running state and restart control visible.</figcaption></figure>
+<figure><img src="assets/artifact_incident_228086_page_017_embedded_image_01.png" alt="artifact_incident_228086_page_017_embedded_image_01" /><figcaption>Use the same GetAgvStatuses request view to retry and confirm response.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Response still cannot be confirmed after the documented OptiSweep restart and retry.</li>
+<li>The endpoint remains unreachable or returns no data after the documented steps.</li>
+<li>Additional recovery would require undocumented actions.</li>
+</ul>
+<hr>
+<h3>Step 7 — Release the E-stop after response is confirmed</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Once the response is confirmed, release the E-stop.</p>
+<p><strong>Expected result:</strong></p>
+<p>The E-stop is released only after OptiSweep response has been confirmed.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_incident_228086_page_014_embedded_image_01.png" alt="artifact_incident_228086_page_014_embedded_image_01" /><figcaption>System control context with emergency stop control area relevant to release after confirmation.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Response has not been confirmed.</li>
+<li>Ignition or OptiSweep health remains unconfirmed.</li>
+<li>Releasing the E-stop would occur without completing the documented validation sequence.</li>
+</ul>
+<hr>
+</body>
+</html>

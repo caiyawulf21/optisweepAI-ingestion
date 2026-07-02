@@ -1,0 +1,690 @@
+{
+  "procedure_id": "proc_restart_ignition_and_verify_optisweep_service_response_with_getagvstatuses_v1",
+  "candidate_id": "candidate_incident_228086_restart_ignition_and_verify_optisweep_response",
+  "title": "Restart Ignition and verify OptiSweep service response with GetAgvStatuses",
+  "procedure_type": "recovery",
+  "summary": "Conditional incident-derived recovery guidance for restarting Ignition and confirming OptiSweep service responsiveness before releasing the E-stop. The source instructs the operator to first E-stop the system, restart Ignition with `gwcmd -r`, wait until the gateway is back up and login is possible, then verify OptiSweep by sending a GetAgvStatuses request. If no response is returned, restart OptiSweep, send the request again, and only then release the E-stop.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "operator"
+  ],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when the incident-specific guidance indicates Ignition may need to be restarted and you need to confirm the OptiSweep service is responding again before releasing the E-stop.",
+  "not_for": [
+    "Do not use for undocumented recovery actions beyond the source-shared restart sequence.",
+    "Do not treat the schema validation warning alone as a service outage when the request still returns HTTP 200 with data.",
+    "Do not use this runbook as a click-by-click OptiSweep Windows Services restart procedure; the source only supports a high-level restart instruction.",
+    "Do not release the E-stop before response is confirmed from GetAgvStatuses."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibilities": [
+        "Perform the documented Ignition restart sequence.",
+        "Verify Ignition returns to a login-capable state.",
+        "Run the GetAgvStatuses validation check.",
+        "Decide whether to use the documented OptiSweep restart contingency if no response is returned.",
+        "Stop and escalate if the documented sequence does not restore response."
+      ]
+    },
+    {
+      "role": "operator",
+      "responsibilities": [
+        "Support system E-stop and release actions where site operation requires operator involvement.",
+        "Assist with observing system state during restart and validation."
+      ]
+    }
+  ],
+  "safety_notes": [
+    "First E-stop the system before attempting the restart.",
+    "Do not release the E-stop until OptiSweep response is confirmed.",
+    "If Ignition does not come back up to a login-capable state, stop and do not perform undocumented changes beyond the source-shared restart sequence.",
+    "If response still cannot be confirmed after the documented restart steps, stop and escalate rather than inventing additional recovery actions."
+  ],
+  "access_or_tools_needed": [
+    "Access to the system E-stop control",
+    "Windows command prompt on the Ignition host",
+    "Ignition installation directory access",
+    "Ignition web status/login page access",
+    "API client identified in the source as api dog",
+    "Access to the GetAgvStatuses endpoint",
+    "Windows Services access for OptiSweep restart if needed",
+    "Network access to `http://10.27.80.165:5000/GetAgvStatuses`",
+    "Permission to query the OptiSweep API"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the system E-stop control",
+      "Windows command prompt on the Ignition host",
+      "Ignition installation directory access",
+      "Ignition web status/login page access",
+      "API client identified in the source as api dog",
+      "Windows Services access for OptiSweep restart if needed",
+      "Permission to query the OptiSweep API"
+    ],
+    "system_preconditions": [
+      "Ignition restart is needed per the incident guidance.",
+      "Network access is available to `http://10.27.80.165:5000/GetAgvStatuses`.",
+      "The system can be placed in E-stop before restart activity begins."
+    ],
+    "external_references": [
+      "Ignition gateway status/login page at localhost:8088 as shown in the source",
+      "GetAgvStatuses endpoint `http://10.27.80.165:5000/GetAgvStatuses`"
+    ]
+  },
+  "related_context_ids": [],
+  "related_event_ids": [
+    "incident_228086_event_018",
+    "incident_228086_event_019",
+    "incident_228086_event_020",
+    "incident_228086_event_021",
+    "incident_228086_event_022"
+  ],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_incident_228086_page_014_embedded_image_01",
+      "description": "RMS map monitor screenshot with emergency stop control area highlighted for E-stop context.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_015_embedded_image_01",
+      "description": "Windows command prompt showing `gwcmd -r` and `Waiting for Gateway restart...`.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_016_embedded_image_01",
+      "description": "Ignition Status > Systems > Overview page showing the gateway is reachable.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+      "description": "API client showing GetAgvStatuses request, HTTP 200 response, and returned AGV records.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+      "description": "Windows Services console showing OptiSweep selected with restart control visible.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_012_nested_image_02",
+      "description": "Page 12 restart-instructions screenshot context for the Ignition restart guidance.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "E-stop the system before restart",
+      "responsible_role": "L2_support",
+      "supporting_role": "operator",
+      "purpose": "Place the system in a safe stopped state before attempting the documented Ignition restart.",
+      "instruction": "First E-stop the system before attempting the restart.",
+      "expected_result": "The system is placed in E-stop before any Ignition restart action is taken.",
+      "healthy_condition": "The system is in E-stop and restart activity has not yet begun.",
+      "failure_condition": "The system cannot be confirmed in E-stop before restart activity, or restart is attempted without first E-stopping the system.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "E-stop system",
+          "exact_action": "First E-stop the system.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_incident_228086_page_014_embedded_image_01",
+          "what_to_look_at": "Emergency stop control area highlighted in the RMS/system control context."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The system cannot be safely placed in E-stop.",
+        "The E-stop state cannot be confirmed before proceeding."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_12",
+          "artifact_id": null,
+          "event_id": "incident_228086_event_018",
+          "chunk_id": "stage4_page_chunk_002",
+          "support_type": "page_ocr",
+          "quote_or_summary": "In the event that you do need to restart it here are the steps... First Estop the system..."
+        },
+        {
+          "page_ref": "case_228086:page_14",
+          "artifact_id": "artifact_incident_228086_page_014_embedded_image_01",
+          "event_id": null,
+          "chunk_id": "stage4_artifact_chunk_002",
+          "support_type": "artifact_visual",
+          "quote_or_summary": "The screenshot includes an emergency stop control area in the lower-left corner with a blue arrow pointing toward it."
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_018"
+      ]
+    },
+    {
+      "step_number": 2,
+      "title": "Restart Ignition from the Ignition directory",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Initiate the documented Ignition gateway restart using the exact command shown in the incident evidence.",
+      "instruction": "Open a Windows command prompt on the Ignition host, navigate to the Ignition installation directory, and run `gwcmd -r` from `C:\\Program Files\\Inductive Automation\\Ignition>`. Observe the console message `Waiting for Gateway restart...`.",
+      "expected_result": "The Ignition gateway restart command is accepted and the console shows `Waiting for Gateway restart...`.",
+      "healthy_condition": "The command prompt shows `gwcmd -r` executed from the Ignition directory and displays `Waiting for Gateway restart...`.",
+      "failure_condition": "The restart command cannot be run from the documented directory, or the expected restart-in-progress message is not observed.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Run Ignition restart command",
+          "exact_action": "From `C:\\Program Files\\Inductive Automation\\Ignition>`, run `gwcmd -r`.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_incident_228086_page_015_embedded_image_01",
+          "what_to_look_at": "Command prompt in `C:\\Program Files\\Inductive Automation\\Ignition>` showing `gwcmd -r` and `Waiting for Gateway restart...`."
+        },
+        {
+          "artifact_id": "artifact_incident_228086_page_012_nested_image_02",
+          "what_to_look_at": "Restart-instruction screenshot context showing the Ignition restart command sequence."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The documented restart command cannot be executed.",
+        "The expected `Waiting for Gateway restart...` message does not appear.",
+        "Ignition restart requires undocumented commands or changes not present in the source."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_15",
+          "artifact_id": "artifact_incident_228086_page_015_embedded_image_01",
+          "event_id": "incident_228086_event_019",
+          "chunk_id": "stage4_page_chunk_002",
+          "support_type": "page_ocr",
+          "quote_or_summary": "C:\\Program Files\\Inductive Automation\\Ignition>gwcmd -r ... Waiting for Gateway restart..."
+        },
+        {
+          "page_ref": "case_228086:page_15",
+          "artifact_id": "artifact_incident_228086_page_015_embedded_image_01",
+          "event_id": "incident_228086_event_019",
+          "chunk_id": "stage4_artifact_chunk_002",
+          "support_type": "artifact_visual",
+          "quote_or_summary": "The operator then moved to `C:\\Program Files\\Inductive Automation\\Ignition>` and ran `gwcmd -r`. The final visible console output says `Waiting for Gateway restart...`."
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_019"
+      ]
+    },
+    {
+      "step_number": 3,
+      "title": "Wait for Ignition to come back up",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the gateway is reachable again before validating OptiSweep service response.",
+      "instruction": "Wait for Ignition to come back up, meaning it lets you log in and does not show the gateway starting up. Use the Ignition status/login page to confirm the gateway is reachable.",
+      "expected_result": "Ignition is reachable again and presents a login-capable or status page rather than a startup screen.",
+      "healthy_condition": "The Ignition Status > Systems > Overview page is reachable, with visible system widgets and no gateway-starting-up screen.",
+      "failure_condition": "Ignition does not return to a login-capable state or remains unavailable/startup-only.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check Ignition status page",
+          "exact_action": "Wait for Ignition to come back up, meaning it lets you log in and does not show gateway starting up.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_incident_228086_page_016_embedded_image_01",
+          "what_to_look_at": "Ignition Status > Systems > Overview page reachable in the browser, with Current Response Time and no startup screen."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Ignition does not come back up to a login-capable state.",
+        "The gateway remains on a startup screen or is unreachable.",
+        "Additional undocumented recovery actions would be required."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_12",
+          "artifact_id": null,
+          "event_id": "incident_228086_event_018",
+          "chunk_id": "stage4_page_chunk_002",
+          "support_type": "page_ocr",
+          "quote_or_summary": "Wait for igniton to come back up (meaning it lets you log in and dosn't show gateway starting up)"
+        },
+        {
+          "page_ref": "case_228086:page_16",
+          "artifact_id": "artifact_incident_228086_page_016_embedded_image_01",
+          "event_id": "incident_228086_event_020",
+          "chunk_id": "stage4_page_chunk_002",
+          "support_type": "page_ocr",
+          "quote_or_summary": "Status > Systems > Overview ... Current Response Time ... No events to display"
+        },
+        {
+          "page_ref": "case_228086:page_16",
+          "artifact_id": "artifact_incident_228086_page_016_embedded_image_01",
+          "event_id": "incident_228086_event_020",
+          "chunk_id": "stage4_artifact_chunk_002",
+          "support_type": "artifact_visual",
+          "quote_or_summary": "The diagnostics area shows Current Response Time of 11 ms. The Recent Slow Response Events section shows No events to display."
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_018",
+        "incident_228086_event_020"
+      ]
+    },
+    {
+      "step_number": 4,
+      "title": "Send GetAgvStatuses request after Ignition restart",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Verify that the OptiSweep service is still responding after Ignition has restarted.",
+      "instruction": "Open the API client identified in the source as api dog and send a GetAgvStatuses request to `http://10.27.80.165:5000/GetAgvStatuses`.",
+      "expected_result": "The request executes against the shown endpoint and returns a response from the OptiSweep service.",
+      "healthy_condition": "The API client shows the GetAgvStatuses request executed successfully against the documented endpoint.",
+      "failure_condition": "No response is returned, the endpoint is unreachable, or no data is returned.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Run GetAgvStatuses request",
+          "exact_action": "Go into api dog and send a Get Agv Statuses request to `http://10.27.80.165:5000/GetAgvStatuses`.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+          "what_to_look_at": "API client showing GET request to `http://10.27.80.165:5000/GetAgvStatuses`."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The endpoint is unreachable or returns no response.",
+        "The request cannot be executed with the documented API client and endpoint.",
+        "Undocumented troubleshooting would be required beyond the source-supported sequence."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_12",
+          "artifact_id": null,
+          "event_id": "incident_228086_event_018",
+          "chunk_id": "stage4_page_chunk_002",
+          "support_type": "page_ocr",
+          "quote_or_summary": "verify the OptiSweep service is still responding to request after Ignition is restarted (I go into api dog and send a Get Agv Statuses request)"
+        },
+        {
+          "page_ref": "case_228086:page_17",
+          "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+          "event_id": "incident_228086_event_021",
+          "chunk_id": "stage4_page_chunk_002",
+          "support_type": "page_ocr",
+          "quote_or_summary": "Get Agv Statuses ... http://10.27.80.165:5000/GetAgvStatuses ... NORMAL"
+        },
+        {
+          "page_ref": "case_228086:page_17",
+          "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+          "event_id": "incident_228086_event_021",
+          "chunk_id": "stage4_artifact_chunk_002",
+          "support_type": "artifact_visual",
+          "quote_or_summary": "The screenshot shows a GET request for 'Get Agv Statuses'. The visible endpoint ends with '/GetAgvStatuses'."
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_018",
+        "incident_228086_event_021"
+      ]
+    },
+    {
+      "step_number": 5,
+      "title": "Confirm HTTP 200 and returned AGV records",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Validate that OptiSweep is responding with usable AGV status data before proceeding.",
+      "instruction": "Check that the GetAgvStatuses request returns HTTP 200 and returned AGV records. Visible records in the source include status values such as `NORMAL`. Do not treat the visible schema validation warning alone as a service outage if the request still returns HTTP 200 with data.",
+      "expected_result": "The API response shows Success/Status 200 and returned AGV records, including visible status values such as `NORMAL`.",
+      "healthy_condition": "The response panel shows Success (200) / Status: 200 and returned JSON records with visible AGV status values such as `NORMAL`.",
+      "failure_condition": "The request returns no response, no data, or cannot be confirmed as a successful response.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Inspect API response",
+          "exact_action": "Check that the API request returns HTTP 200 and returned AGV records, with visible statuses such as `NORMAL`.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+          "what_to_look_at": "Response panel showing Success/Status 200 and returned records with visible `NORMAL` values; note the validation warning but do not treat it alone as outage proof."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The request does not return a response.",
+        "The endpoint returns no data.",
+        "Response still cannot be confirmed after the documented retry path."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_17",
+          "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+          "event_id": "incident_228086_event_021",
+          "chunk_id": "stage4_artifact_chunk_002",
+          "support_type": "artifact_visual",
+          "quote_or_summary": "API response is shown as Success (200) / Status: 200; several visible response records show status values of NORMAL."
+        },
+        {
+          "page_ref": "case_228086:page_17",
+          "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+          "event_id": "incident_228086_event_021",
+          "chunk_id": "stage4_artifact_chunk_002",
+          "support_type": "artifact_visual",
+          "quote_or_summary": "Validation panel states that the response data differs from the endpoint specification and '$ should be object'."
+        },
+        {
+          "page_ref": "case_228086:page_17",
+          "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+          "event_id": "incident_228086_event_021",
+          "chunk_id": "stage4_page_chunk_002",
+          "support_type": "page_ocr",
+          "quote_or_summary": "Get Agv Statuses ... http://10.27.80.165:5000/GetAgvStatuses ... NORMAL"
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_021"
+      ]
+    },
+    {
+      "step_number": 6,
+      "title": "If no response, restart OptiSweep and retry GetAgvStatuses",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Use the documented contingency when the post-Ignition API check does not return a response.",
+      "instruction": "If no response is given, restart OptiSweep, then send another GetAgvStatuses request to confirm response. The source supports this at a high level only; use the Windows Services console context shown for OptiSweep and do not invent additional click-by-click steps not present in the source.",
+      "expected_result": "OptiSweep is restarted and a follow-up GetAgvStatuses request is sent to confirm response.",
+      "healthy_condition": "The follow-up request returns a confirmed response after the OptiSweep restart.",
+      "failure_condition": "Response still cannot be confirmed after restarting OptiSweep and retrying the request.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Restart OptiSweep service",
+          "exact_action": "If no response is given you will need to restart Optisweep.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "hmi_action",
+          "label": "Retry GetAgvStatuses request",
+          "exact_action": "Once restarted, confirm by sending it another request.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+          "what_to_look_at": "Windows Services console with OptiSweep selected, showing Running state and restart control visible."
+        },
+        {
+          "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+          "what_to_look_at": "Use the same GetAgvStatuses request view to retry and confirm response."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Response still cannot be confirmed after the documented OptiSweep restart and retry.",
+        "The endpoint remains unreachable or returns no data after the documented steps.",
+        "Additional recovery would require undocumented actions."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_18",
+          "artifact_id": null,
+          "event_id": null,
+          "chunk_id": "stage4_page_chunk_002",
+          "support_type": "page_ocr",
+          "quote_or_summary": "If no response is given you will need to restart Optisweep: Once restarted, confirm by sending it another request."
+        },
+        {
+          "page_ref": "case_228086:page_19",
+          "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+          "event_id": "incident_228086_event_022",
+          "chunk_id": "stage4_page_chunk_002",
+          "support_type": "page_ocr",
+          "quote_or_summary": "Services (Local) ... OptiSweep ... Running"
+        },
+        {
+          "page_ref": "case_228086:page_19",
+          "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+          "event_id": "incident_228086_event_022",
+          "chunk_id": "stage4_artifact_chunk_002",
+          "support_type": "artifact_visual",
+          "quote_or_summary": "Left pane shows Stop the service and Restart the service links."
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_022"
+      ]
+    },
+    {
+      "step_number": 7,
+      "title": "Release the E-stop after response is confirmed",
+      "responsible_role": "L2_support",
+      "supporting_role": "operator",
+      "purpose": "Return the system from E-stop only after the documented service-response confirmation is complete.",
+      "instruction": "Once the response is confirmed, release the E-stop.",
+      "expected_result": "The E-stop is released only after OptiSweep response has been confirmed.",
+      "healthy_condition": "A confirmed GetAgvStatuses response exists before the E-stop is released.",
+      "failure_condition": "The E-stop would need to be released without confirmed response, or response cannot be confirmed.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Release E-stop",
+          "exact_action": "Once confirmed release the estop.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_incident_228086_page_014_embedded_image_01",
+          "what_to_look_at": "System control context with emergency stop control area relevant to release after confirmation."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Response has not been confirmed.",
+        "Ignition or OptiSweep health remains unconfirmed.",
+        "Releasing the E-stop would occur without completing the documented validation sequence."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_18",
+          "artifact_id": null,
+          "event_id": null,
+          "chunk_id": "stage4_page_chunk_002",
+          "support_type": "page_ocr",
+          "quote_or_summary": "Once confirmed release the estop"
+        },
+        {
+          "page_ref": "case_228086:page_12",
+          "artifact_id": null,
+          "event_id": "incident_228086_event_018",
+          "chunk_id": "stage4_page_chunk_002",
+          "support_type": "page_ocr",
+          "quote_or_summary": "First Estop the system ... restart ignition ... verify the OptiSweep service is still responding to request after Ignition is restarted"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Ignition is reachable again and allows login or status-page access rather than showing gateway startup.",
+    "The GetAgvStatuses request to `http://10.27.80.165:5000/GetAgvStatuses` returns HTTP 200.",
+    "Returned AGV records are visible in the response, including status values such as `NORMAL`.",
+    "If OptiSweep had to be restarted, a follow-up GetAgvStatuses request confirms response.",
+    "The E-stop is released only after response confirmation."
+  ],
+  "healthy_conditions": [
+    "Ignition Status > Systems > Overview is reachable.",
+    "Ignition shows current response information and does not show a startup-only state.",
+    "GetAgvStatuses returns Success (200) / Status: 200.",
+    "Returned JSON records are visible and include AGV status values such as `NORMAL`.",
+    "OptiSweep is shown in Windows Services context as Running when viewed."
+  ],
+  "failure_conditions": [
+    "Ignition does not come back up to a login-capable state.",
+    "The GetAgvStatuses endpoint is unreachable or returns no response.",
+    "The request returns no data.",
+    "Response still cannot be confirmed after the documented OptiSweep restart and retry.",
+    "Recovery would require undocumented actions beyond the source-shared sequence."
+  ],
+  "escalation_guidance": [
+    "If Ignition does not come back up to a login-capable state, stop and do not perform undocumented changes beyond the source-shared restart sequence.",
+    "If GetAgvStatuses gives no response after the Ignition restart, restart OptiSweep and repeat the request.",
+    "If response still cannot be confirmed after the documented restart steps, stop and escalate rather than inventing additional recovery actions.",
+    "If the endpoint is unreachable or returns no data, stop and use only source-supported recovery actions."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_incident_228086_page_014_embedded_image_01",
+      "what_to_look_at": "Emergency stop control area in RMS/system control context."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_015_embedded_image_01",
+      "what_to_look_at": "Ignition restart command prompt showing `gwcmd -r` and `Waiting for Gateway restart...`."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_016_embedded_image_01",
+      "what_to_look_at": "Ignition Systems Overview page showing the gateway is reachable."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+      "what_to_look_at": "GetAgvStatuses request, HTTP 200 response, returned records, and visible `NORMAL` values."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+      "what_to_look_at": "Windows Services console with OptiSweep selected and restart control visible."
+    }
+  ],
+  "source_refs": [
+    {
+      "page_ref": "case_228086:page_12",
+      "artifact_id": null,
+      "event_id": "incident_228086_event_018",
+      "chunk_id": "stage4_page_chunk_002",
+      "support_type": "page_ocr",
+      "quote_or_summary": "In the event that you do need to restart it here are the steps... First Estop the system... restart ignition... verify the OptiSweep service is still responding to request after Ignition is restarted"
+    },
+    {
+      "page_ref": "case_228086:page_15",
+      "artifact_id": "artifact_incident_228086_page_015_embedded_image_01",
+      "event_id": "incident_228086_event_019",
+      "chunk_id": "stage4_page_chunk_002",
+      "support_type": "page_ocr",
+      "quote_or_summary": "C:\\Program Files\\Inductive Automation\\Ignition>gwcmd -r ... Waiting for Gateway restart..."
+    },
+    {
+      "page_ref": "case_228086:page_16",
+      "artifact_id": "artifact_incident_228086_page_016_embedded_image_01",
+      "event_id": "incident_228086_event_020",
+      "chunk_id": "stage4_page_chunk_002",
+      "support_type": "page_ocr",
+      "quote_or_summary": "Status > Systems > Overview ... Current Response Time ... No events to display"
+    },
+    {
+      "page_ref": "case_228086:page_17",
+      "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+      "event_id": "incident_228086_event_021",
+      "chunk_id": "stage4_page_chunk_002",
+      "support_type": "page_ocr",
+      "quote_or_summary": "Get Agv Statuses ... http://10.27.80.165:5000/GetAgvStatuses ... NORMAL"
+    },
+    {
+      "page_ref": "case_228086:page_18",
+      "artifact_id": null,
+      "event_id": null,
+      "chunk_id": "stage4_page_chunk_002",
+      "support_type": "page_ocr",
+      "quote_or_summary": "If no response is given you will need to restart Optisweep: Once restarted, confirm by sending it another request. Once confirmed release the estop"
+    },
+    {
+      "page_ref": "case_228086:page_19",
+      "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+      "event_id": "incident_228086_event_022",
+      "chunk_id": "stage4_page_chunk_002",
+      "support_type": "page_ocr",
+      "quote_or_summary": "Services (Local) ... OptiSweep ... Running"
+    },
+    {
+      "page_ref": "case_228086:page_17",
+      "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+      "event_id": "incident_228086_event_021",
+      "chunk_id": "stage4_artifact_chunk_002",
+      "support_type": "artifact_visual",
+      "quote_or_summary": "API response is shown as Success (200) / Status: 200; several visible response records show status values of NORMAL."
+    },
+    {
+      "page_ref": "case_228086:page_17",
+      "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+      "event_id": "incident_228086_event_021",
+      "chunk_id": "stage4_artifact_chunk_002",
+      "support_type": "artifact_visual",
+      "quote_or_summary": "Validation panel states that the response data differs from the endpoint specification and '$ should be object'."
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_incident_228086_restart_ignition_and_verify_optisweep_response"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "source_case_228086",
+      "source_type": "incident_case",
+      "source_title": "Case 228086 Data",
+      "source_version": "0.1",
+      "ingestion_batch_id": "batch_20260629T175753Z",
+      "candidate_id": "candidate_incident_228086_restart_ignition_and_verify_optisweep_response",
+      "incident_id": "incident_228086",
+      "source_case_id": "228086"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide a documented click-by-click procedure for restarting OptiSweep in Windows Services.",
+    "The source does not provide an estimated completion time.",
+    "The source does not explicitly state whether production stop or LOTO is required beyond the E-stop instruction.",
+    "The source does not define exact role boundaries for who physically applies or releases the E-stop at the site.",
+    "The source does not provide additional recovery steps if Ignition or OptiSweep still fail after the documented restart sequence."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_incident_runbook_finalization",
+    "source_id": "source_case_228086",
+    "source_type": "incident_case",
+    "source_title": "Case 228086 Data",
+    "source_version": "0.1",
+    "ingestion_batch_id": "batch_20260629T175753Z",
+    "source_quality": "incident_case",
+    "incident_context": {
+      "case_id": "228086",
+      "site": "UPS Fort Worth, TX (Haslet)",
+      "incident_start_time": "2026-02-20T07:19:00",
+      "incident_resolved_time": "2026-02-20T14:58:00",
+      "time_to_resolve": "7h 39m",
+      "resolution_confirmed": true
+    }
+  }
+}

@@ -1,0 +1,645 @@
+{
+  "procedure_id": "proc_process_a_tote_at_the_hospital_station_v1",
+  "candidate_id": "candidate_operator_process_tote_at_hospital_station",
+  "title": "Process a Tote at the Hospital Station",
+  "procedure_type": "operation",
+  "summary": "Extract an arriving tote from the system at the hospital station, identify it by barcode scan, perform the task indicated by the HMI status fields, and return the tote to the system on the induct side when needed.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when a tote arrives at the hospital station and must be extracted, identified, manually handled according to the HMI status fields, and possibly returned to the system.",
+  "not_for": [
+    "Do not use when the correct HMI screen or required task cannot be determined from the status fields; the source provides no further guidance.",
+    "Do not use as a recovery procedure when the Tote ID field does not automatically populate after scanning; the source provides no recovery steps."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "operator",
+      "responsibilities": [
+        "Observe tote arrival at the hospital station.",
+        "Use the HMI status fields to identify the corresponding screen.",
+        "Scan the tote barcode with the green scanner.",
+        "Verify Tote ID population on the HMI.",
+        "Perform the task indicated by the status fields.",
+        "If returning the tote to the system, place it on the left-side induct area flush against the end stops."
+      ]
+    }
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Hospital station access",
+    "HMI access to the corresponding hospital station screen",
+    "Visibility of status fields on the HMI",
+    "Green barcode scanner",
+    "Access to the Tote ID field on the HMI",
+    "Physical access to the right side and left-side induct area of the station"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Hospital station access",
+      "HMI access to the corresponding hospital station screen"
+    ],
+    "system_preconditions": [
+      "A tote has arrived at the hospital station.",
+      "The tote has been brought by the AGV to the right side of the hospital station.",
+      "The HMI status fields are visible so the operator can determine the corresponding screen and required task."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_manual_hospital_station_status_fields_reference_v1",
+    "ctx_manual_scanner_setup_overview_v1",
+    "ctx_manual_hospital_station_overview_v1",
+    "ctx_manual_hospital_station_main_menu_access_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_page_92_image_2",
+      "description": "Hospital station tote-handling procedure image associated with page 92 hospital station operation content.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_30_hospital_hmi_operations_screen",
+      "description": "Hospital HMI Operations screen showing status fields, AGV#, Tote ID, Bar Code, and Status used to identify the correct screen and task.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_32_hospital_hmi_remove_tote_screen",
+      "description": "Hospital HMI Remove Tote screen used to remove a tote from the system after it is positioned on the extract side.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+      "description": "Hospital HMI Add Tote screen used when sending a tote back into the system from the induct side.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen",
+      "description": "Example hospital HMI screen showing Tote ID and barcode-related fields for mismatch handling.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_4_35_hospital_hmi_tote_failed_to_empty_screen",
+      "description": "Example hospital HMI screen showing tote identification and remove-tote workflow for failed-to-empty handling.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen",
+      "description": "Example hospital HMI screen showing tote scanning and remove-tote workflow for sent-from-bagging-station handling.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Confirm tote arrival on the right side of the hospital station",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Verify that the arriving tote is in the expected extract-side location for hospital station handling.",
+      "instruction": "Confirm that the AGV has brought the tote to the right side of the hospital station.",
+      "expected_result": "The tote is present on the right side of the hospital station.",
+      "healthy_condition": "The tote is visibly at the right side of the hospital station where the AGV delivers it.",
+      "failure_condition": "The tote is not at the right side of the hospital station or its arrival location cannot be confirmed.",
+      "actions": [
+        {
+          "action_type": "physical_inspection",
+          "label": "Check tote arrival location",
+          "exact_action": "Confirm the arriving tote has been brought by the AGV to the right side of the hospital station.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Hospital station view associated with tote arrival and handling; use it to orient to the station sides and tote-handling area."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The tote is not on the right side of the hospital station.",
+        "The operator cannot confirm the tote arrival location from the station view."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 92,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation",
+          "quote_or_summary": "When a tote arrives at a hospital station: An AGV brings a tote to the right side of the hospital station.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "quote_or_summary": "Page 92 of the OptiSweep Operation and Maintenance Manual, section 5.9 Hospital Station Operation, contains an artifact related to hospital station tote handling."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Open the corresponding HMI screen",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Select the correct hospital station HMI screen needed to extract the tote from the system.",
+      "instruction": "Use the information shown in the status fields to determine and open the corresponding HMI screen for extracting the tote from the system.",
+      "expected_result": "The correct HMI screen for the tote is open.",
+      "healthy_condition": "The operator can identify the corresponding screen from the status fields and open it.",
+      "failure_condition": "The correct HMI screen cannot be determined from the status fields.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Open corresponding screen",
+          "exact_action": "Open the corresponding screen on the HMI to extract the tote from the system, using the information shown in the status fields to determine the correct screen.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_30_hospital_hmi_operations_screen",
+          "what_to_look_at": "Status-related fields such as AGV#, Tote ID, Bar Code, and Status that help determine the correct hospital station screen."
+        },
+        {
+          "artifact_id": "artifact_fig_4_32_hospital_hmi_remove_tote_screen",
+          "what_to_look_at": "Example remove-tote screen used when extracting a tote from the system."
+        },
+        {
+          "artifact_id": "artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen",
+          "what_to_look_at": "Example status-driven hospital station screen showing extract position information and tote handling context."
+        },
+        {
+          "artifact_id": "artifact_fig_4_35_hospital_hmi_tote_failed_to_empty_screen",
+          "what_to_look_at": "Example status-driven hospital station screen for a tote requiring manual handling."
+        },
+        {
+          "artifact_id": "artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen",
+          "what_to_look_at": "Example status-driven hospital station screen showing tote identification and mismatch context."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The correct HMI screen cannot be determined from the status fields."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 92,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation",
+          "quote_or_summary": "Open the corresponding screen on the HMI to extract the tote from the system (determined by information in the status fields).",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "context_id": "ctx_manual_hospital_station_status_fields_reference_v1",
+          "quote_or_summary": "The corresponding HMI screen is determined by information in the status fields, and whatever task needs to be performed is also determined by the information in the status fields."
+        },
+        {
+          "artifact_id": "artifact_fig_4_30_hospital_hmi_operations_screen",
+          "quote_or_summary": "Important terms from the source include AGV#, Tote ID, Bar Code, and Status for both the induct side and extract side of the station. The nearby text states that the status messages tell the station operator why the tote is there, what menu they need to use, and what action they need to perform."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Scan the tote barcode with the green scanner",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Identify the tote in the hospital station workflow using the station scanner.",
+      "instruction": "Scan the tote barcode using the green scanner.",
+      "expected_result": "The tote barcode is read by the scanner.",
+      "healthy_condition": "The barcode scan is accepted and the HMI proceeds to populate tote identification information.",
+      "failure_condition": "The barcode scan does not result in tote identification information being populated.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Scan tote barcode",
+          "exact_action": "Scan the tote barcode using the green scanner.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Hospital station procedure image associated with barcode scanning at the station."
+        },
+        {
+          "artifact_id": "artifact_fig_4_32_hospital_hmi_remove_tote_screen",
+          "what_to_look_at": "Remove Tote screen context showing barcode scan use with the green scanner."
+        },
+        {
+          "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+          "what_to_look_at": "Add Tote screen context showing barcode scan use with the green scanner."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The barcode scan does not lead to Tote ID population on the HMI."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 92,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation",
+          "quote_or_summary": "Scan the tote barcode using the green scanner. The tote ID should automatically populate the Tote ID field after scanning.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "artifact_id": "artifact_fig_4_32_hospital_hmi_remove_tote_screen",
+          "quote_or_summary": "The nearby text states that the operator uses the green scanner to scan the tote bar code to populate the Tote ID and Barcode information."
+        },
+        {
+          "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+          "quote_or_summary": "The nearby text explains that the operator uses the green scanner to scan the tote barcode, which populates the Tote ID and Barcode fields."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify Tote ID field population",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm that the scanned tote has been correctly identified by the HMI.",
+      "instruction": "Verify that the Tote ID automatically populates the Tote ID field after scanning.",
+      "expected_result": "The Tote ID field is populated automatically after the barcode scan.",
+      "healthy_condition": "A Tote ID appears in the Tote ID field without manual entry after scanning.",
+      "failure_condition": "The Tote ID field does not automatically populate after scanning.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check Tote ID field",
+          "exact_action": "Verify that the tote ID automatically populates the Tote ID field after scanning.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_32_hospital_hmi_remove_tote_screen",
+          "what_to_look_at": "Tote ID and Barcode fields populated after scanning on the Remove Tote screen."
+        },
+        {
+          "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+          "what_to_look_at": "Tote ID and Barcode fields populated after scanning on the Add Tote screen."
+        },
+        {
+          "artifact_id": "artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen",
+          "what_to_look_at": "Tote ID-related fields for comparison when barcode-related issues are present."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The Tote ID field does not automatically populate after scanning."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 92,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation",
+          "quote_or_summary": "Scan the tote barcode using the green scanner. The tote ID should automatically populate the Tote ID field after scanning.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "artifact_id": "artifact_fig_4_32_hospital_hmi_remove_tote_screen",
+          "quote_or_summary": "This screen is used to remove a tote from the system. The nearby text states that the operator uses the green scanner to scan the tote bar code to populate the Tote ID and Barcode information."
+        },
+        {
+          "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+          "quote_or_summary": "This hospital station screen is used to send a tote back into the system. The nearby text explains that the operator uses the green scanner to scan the tote barcode, which populates the Tote ID and Barcode fields."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Perform the task indicated by the status fields",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Complete the tote-specific manual handling required at the hospital station.",
+      "instruction": "Perform the required task for the tote as determined by the information in the status fields.",
+      "expected_result": "The tote-specific task indicated by the HMI status fields is completed.",
+      "healthy_condition": "The operator can determine the required task from the status fields and complete it.",
+      "failure_condition": "The required task cannot be determined from the status fields or cannot be completed using the provided source guidance.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Determine required task",
+          "exact_action": "Use the information in the status fields to determine what task needs to be performed.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "physical_action",
+          "label": "Perform required tote task",
+          "exact_action": "Perform whatever task needs to be performed as determined by the information in the status fields.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_30_hospital_hmi_operations_screen",
+          "what_to_look_at": "Status field content that tells the operator why the tote is there, what menu to use, and what action to perform."
+        },
+        {
+          "artifact_id": "artifact_fig_4_34_hospital_hmi_bar_code_mismatch_screen",
+          "what_to_look_at": "Example task-specific hospital station screen for barcode mismatch handling."
+        },
+        {
+          "artifact_id": "artifact_fig_4_35_hospital_hmi_tote_failed_to_empty_screen",
+          "what_to_look_at": "Example task-specific hospital station screen for failed-to-empty handling."
+        },
+        {
+          "artifact_id": "artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen",
+          "what_to_look_at": "Example task-specific hospital station screen for sent-from-bagging-station handling."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The required task cannot be determined from the status fields.",
+        "The source does not provide enough detail to complete the indicated task."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 92,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation",
+          "quote_or_summary": "Perform whatever task needs to be performed as determined by the information in the status fields.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "context_id": "ctx_manual_hospital_station_status_fields_reference_v1",
+          "quote_or_summary": "Status fields determine the corresponding HMI screen and indicate what task needs to be performed for the tote."
+        },
+        {
+          "artifact_id": "artifact_fig_4_30_hospital_hmi_operations_screen",
+          "quote_or_summary": "The nearby text states that the status messages tell the station operator why the tote is there, what menu they need to use, and what action they need to perform."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Place returning tote on the left-side induct area",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Return the tote to the system when the tote must go back into system flow.",
+      "instruction": "If the tote is going back into the system, place it on the induct side on the left side of the station.",
+      "expected_result": "A tote that must re-enter the system is placed on the left-side induct area.",
+      "healthy_condition": "The tote is positioned on the induct side of the station when it is intended to go back into the system.",
+      "failure_condition": "A tote that should go back into the system is not placed on the left-side induct area.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Place tote on induct side",
+          "exact_action": "If the tote is going back into the system, put the tote on the induct side (left side) of the station.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Hospital station induct-side placement area on the left side of the station."
+        },
+        {
+          "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+          "what_to_look_at": "Add Tote screen context for sending a tote back into the system from the induct side."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The tote needs to go back into the system but cannot be placed on the left-side induct area."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 92,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation",
+          "quote_or_summary": "If a tote is going back into the system, put the tote on the induct side (left side) of the station.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+          "quote_or_summary": "This hospital station screen is used to send a tote back into the system... after the tote is positioned properly on the induct side."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Align the tote flush against the end stops",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Ensure correct tote positioning on the induct side before return into the system.",
+      "instruction": "Ensure the tote is flush against the end stops.",
+      "expected_result": "The tote is aligned against the end stops.",
+      "healthy_condition": "The tote sits flush against the end stops on the induct side.",
+      "failure_condition": "The tote is not flush against the end stops.",
+      "actions": [
+        {
+          "action_type": "physical_inspection",
+          "label": "Check tote alignment",
+          "exact_action": "Ensure the tote is flush against the end stops.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Induct-side tote placement and end-stop alignment area associated with the hospital station procedure."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The tote cannot be positioned flush against the end stops."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 92,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation",
+          "quote_or_summary": "Ensure the tote is flush against the end stops.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "quote_or_summary": "Nearby source text states that... if the tote is going back into the system, places it on the induct side on the left with the tote flush against the end stops."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The tote is extracted and identified at the hospital station.",
+    "The Tote ID field automatically populates after barcode scanning.",
+    "The required task indicated by the HMI status fields is completed.",
+    "If the tote is returning to the system, it is placed on the left-side induct area flush against the end stops."
+  ],
+  "healthy_conditions": [
+    "The AGV delivers the tote to the right side of the hospital station.",
+    "The operator can determine the correct HMI screen from the status fields.",
+    "The green scanner reads the tote barcode and the Tote ID field auto-populates.",
+    "The status fields clearly indicate the task to perform.",
+    "A returning tote is placed on the left-side induct side and aligned flush against the end stops."
+  ],
+  "failure_conditions": [
+    "The tote is not at the expected right-side hospital station location.",
+    "The correct HMI screen cannot be determined from the status fields.",
+    "The Tote ID field does not automatically populate after scanning.",
+    "The required task cannot be determined from the status fields.",
+    "A tote returning to the system is not placed on the left-side induct area or is not flush against the end stops."
+  ],
+  "escalation_guidance": [
+    "If the Tote ID field does not automatically populate after scanning, stop and escalate because the source does not provide recovery steps.",
+    "If the correct HMI screen or required task cannot be determined from the status fields, stop and escalate because the source does not provide further guidance."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_page_92_image_2",
+      "what_to_look_at": "Overall hospital station tote-handling procedure context."
+    },
+    {
+      "artifact_id": "artifact_fig_4_30_hospital_hmi_operations_screen",
+      "what_to_look_at": "Status fields and position information used to determine screen selection and task."
+    },
+    {
+      "artifact_id": "artifact_fig_4_32_hospital_hmi_remove_tote_screen",
+      "what_to_look_at": "Remove Tote workflow and Tote ID/Barcode fields."
+    },
+    {
+      "artifact_id": "artifact_fig_4_31_hospital_hmi_add_tote_screen",
+      "what_to_look_at": "Add Tote workflow for returning a tote to the system from the induct side."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 92,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation",
+      "quote_or_summary": "When a tote arrives at a hospital station: An AGV brings a tote to the right side of the hospital station.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 92,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation",
+      "quote_or_summary": "Open the corresponding screen on the HMI to extract the tote from the system (determined by information in the status fields).",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 92,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation",
+      "quote_or_summary": "Scan the tote barcode using the green scanner. The tote ID should automatically populate the Tote ID field after scanning.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 92,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation",
+      "quote_or_summary": "Perform whatever task needs to be performed as determined by the information in the status fields.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 92,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation",
+      "quote_or_summary": "If a tote is going back into the system, put the tote on the induct side (left side) of the station. Ensure the tote is flush against the end stops.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 92,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation",
+      "quote_or_summary": "Artifact appears on page 92 in section optisweep_operation_and_maintenance_manual_final_1_5_9_hospital_station_operation.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_operator_process_tote_at_hospital_station"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide a time estimate for completing this procedure.",
+    "The source does not specify production-stop or LOTO requirements for this procedure.",
+    "The source does not provide recovery steps if the Tote ID field does not automatically populate after scanning.",
+    "The source does not provide further guidance if the correct HMI screen or required task cannot be determined from the status fields.",
+    "The source does not specify the exact HMI button sequence to open the corresponding screen within this page 92 procedure.",
+    "The source does not define the detailed task variants beyond stating that they are determined by the status fields."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

@@ -1,0 +1,312 @@
+{
+  "procedure_id": "proc_recover_empty_agvs_that_lost_tasks_after_rms_restart_v1",
+  "candidate_id": "candidate_l2_recover_empty_agvs_lost_tasks_after_rms_restart",
+  "title": "Recover Empty AGVs That Lost Tasks After an RMS Restart",
+  "procedure_type": "recovery",
+  "summary": "Restore empty AGVs after task loss caused by an RMS restart by stopping RMS, removing and re-adding AGVs without totes twice using Tote API Controls, verifying the documented HMI state when restart is involved, and then resuming RMS using the documented start procedure.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "support_safe": false,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when empty AGVs have lost their tasks because the RMS was restarted.",
+  "not_for": [
+    "Do not use for AGVs with totes; this candidate and source evidence are specific to empty AGVs without totes.",
+    "Do not use to assume restart readiness if AGVs are not in the documented \"szonestaging\" state when restart-related actions are required."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibilities": [
+        "Perform RMS stop/resume actions described by the manual.",
+        "Remove and re-add AGVs without totes twice using Tote API Controls.",
+        "Verify AGV state on the HMI before restart-related actions."
+      ]
+    }
+  ],
+  "safety_notes": [
+    "This procedure includes E-stop use and system recovery actions.",
+    "If the system needs to be restarted, make sure the AGVs are in the \"szonestaging\" state.",
+    "The manual notes that the best practice is to shut down and restart to ensure everything is in sync."
+  ],
+  "access_or_tools_needed": [
+    "RMS access",
+    "Tote API Controls",
+    "HMI access to AGV state/status"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "RMS access",
+      "Tote API Controls",
+      "HMI access to AGV state/status"
+    ],
+    "system_preconditions": [
+      "Empty AGVs have lost their tasks because the RMS was restarted.",
+      "AGVs being processed in this recovery are without totes."
+    ],
+    "external_references": [
+      "Tote API Controls on page 26.",
+      "Starting the System on page 65."
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_agvs_lost_tasks_recovery_context_v1",
+    "ctx_manual_agv_szonestaging_status_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "description": "AGV API Controls screen used to remove and recover AGVs.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "description": "Recovery screen showing the no-empty-AGV workflow and HMI verification of \"szonestaging\".",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "description": "System shut-down mode screen associated with startup/restart context.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "E-stop RMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Place the system into the documented stopped state before performing AGV recovery actions.",
+      "instruction": "E-stop RMS.",
+      "expected_result": "RMS is stopped so AGV recovery actions can be performed.",
+      "healthy_condition": "RMS is in the E-stopped/stopped condition required by the recovery procedure.",
+      "failure_condition": "RMS is not stopped or cannot be placed into the required stopped condition.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "E-stop RMS",
+          "exact_action": "E-stop RMS.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "RMS cannot be E-stopped as required by the documented recovery procedure."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Remove and re-add empty AGVs twice",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Reintroduce empty AGVs that lost tasks using the documented recovery method.",
+      "instruction": "Remove and re-add AGVs without totes twice using the Tote API Controls referenced by the manual.",
+      "expected_result": "The affected empty AGVs have been removed and re-added twice through the documented controls.",
+      "healthy_condition": "AGVs without totes have completed the documented remove/re-add cycle twice.",
+      "failure_condition": "An AGV cannot be removed or re-added, or the remove/re-add cycle is not completed twice.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Remove AGVs without totes",
+          "exact_action": "Remove AGVs without totes using Tote API Controls.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "hmi_action",
+          "label": "Re-add AGVs without totes",
+          "exact_action": "Re-add AGVs without totes using Tote API Controls.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "hmi_action",
+          "label": "Repeat remove and re-add",
+          "exact_action": "Repeat the remove and re-add sequence so AGVs without totes are removed and re-added twice.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_12_agv_api_controls",
+          "what_to_look_at": "AGV API Controls for Remove AGV and Recover AGV functions used to remove and add AGVs back into the system."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The AGV has a tote; this source-backed procedure is for AGVs without totes.",
+        "Tote API Controls needed for Remove AGV or Recover AGV are not available.",
+        "The AGV cannot be successfully removed and re-added twice."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Verify AGVs are in \"szonestaging\" before restart-related actions",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the documented AGV state on the HMI before restart-related actions so readiness is not assumed incorrectly.",
+      "instruction": "If the system is to be restarted, verify on the HMI that the AGVs are in the \"szonestaging\" state.",
+      "expected_result": "The AGV state shown on the HMI is confirmed as \"szonestaging\" when restart-related actions are needed.",
+      "healthy_condition": "Affected AGVs display the \"szonestaging\" state on the HMI.",
+      "failure_condition": "Affected AGVs do not display \"szonestaging\" on the HMI, or their state cannot be verified.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check AGV state on HMI",
+          "exact_action": "Reference AGV state on the HMI and make sure the AGVs are in the \"szonestaging\" state if the system needs to be restarted.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+          "what_to_look_at": "The recovery screen context associated with verifying AGV status is \"szonestaging\" on the HMI."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "AGVs are not in the documented \"szonestaging\" state before restart-related actions.",
+        "AGV state cannot be verified on the HMI."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Press the E-stop again when ready to resume",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Perform the documented transition step before resuming RMS.",
+      "instruction": "Press the E-stop again when ready to resume.",
+      "expected_result": "The documented pre-resume E-stop action has been completed.",
+      "healthy_condition": "The procedure is positioned to proceed to RMS resume per the manual sequence.",
+      "failure_condition": "The E-stop transition step cannot be completed or system state is not ready for resume.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Press E-stop again",
+          "exact_action": "Press the E-stop again when ready to resume.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "System is not ready to resume after recovery actions.",
+        "Required restart-related verification has not been completed when applicable."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Resume RMS using the documented start procedure",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Return the system to operation using the manual's referenced startup procedure.",
+      "instruction": "Resume RMS using the documented system start procedure.",
+      "expected_result": "RMS is resumed using the referenced starting procedure.",
+      "healthy_condition": "RMS resumes successfully after AGV recovery.",
+      "failure_condition": "RMS does not resume successfully or cannot be resumed using the documented procedure.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Resume RMS",
+          "exact_action": "Resume RMS. (See \"Starting the System\" on page 65.)",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+          "what_to_look_at": "System shut-down/startup context associated with restarting and resuming the system."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "RMS cannot be resumed using the documented start procedure.",
+        "AGVs are not in the required state for restart-related actions when applicable."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Empty AGVs that lost tasks have been removed and re-added twice using Tote API Controls.",
+    "When restart-related actions are involved, AGVs are verified on the HMI to be in the \"szonestaging\" state.",
+    "RMS is resumed using the documented system start procedure."
+  ],
+  "healthy_conditions": [
+    "RMS can be placed into the required stopped state for recovery.",
+    "AGVs without totes can be removed and re-added through the documented controls.",
+    "The HMI shows AGVs in the \"szonestaging\" state when restart-related actions are required.",
+    "RMS resumes successfully after recovery."
+  ],
+  "failure_conditions": [
+    "RMS cannot be E-stopped or resumed as required.",
+    "Affected AGVs cannot be removed and re-added twice.",
+    "AGVs are not in the documented \"szonestaging\" state before restart-related actions.",
+    "The required HMI state cannot be verified.",
+    "System synchronization concerns remain after recovery actions."
+  ],
+  "escalation_guidance": [
+    "Do not assume readiness if AGVs are not in the documented \"szonestaging\" state before restart-related actions.",
+    "If recovery does not restore synchronization, follow the manual note that best practice is to shut down and restart to ensure everything is in sync.",
+    "Escalate if RMS stop/resume actions or AGV remove/re-add actions cannot be completed with the documented controls."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "what_to_look_at": "Remove AGV and Recover AGV controls used during the recovery."
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "what_to_look_at": "HMI/recovery context for verifying AGV status is \"szonestaging\"."
+    },
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "what_to_look_at": "System startup/shutdown context referenced for restart and resume."
+    }
+  ],
+  "source_refs": [],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_l2_recover_empty_agvs_lost_tasks_after_rms_restart"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source packet does not provide the exact control/button sequence for E-stop RMS.",
+    "The source packet does not provide the exact click-by-click Tote API Controls sequence for removing and re-adding AGVs twice.",
+    "The source packet references \"Starting the System\" on page 65 but does not include that procedure text in this packet.",
+    "The source packet does not provide an estimated completion time.",
+    "The source packet does not explicitly state whether production stop or LOTO is required."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

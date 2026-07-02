@@ -1,0 +1,347 @@
+{
+  "procedure_id": "proc_verify_trailing_agv_back_fill_during_exchange_fault_recovery_v1",
+  "candidate_id": "candidate_check_trailing_agv_backfill_during_exchange_fault_recovery",
+  "title": "Verify Trailing AGV Back Fill During Exchange Fault Recovery",
+  "procedure_type": "diagnostic",
+  "summary": "Use this source-specific diagnostic procedure during the manual's AGV fault during exchange recovery scenario to verify whether the AGV behind the faulted lifted AGV has back filled, and to document whether the manual's condition for also removing the trailing AGV applies.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when working from the manual's AGV fault during exchange recovery guidance on page 91 and you need to determine whether the AGV behind the lifted AGV that faulted while leaving the RMS has back filled, because the manual states that if it does not back fill, that AGV is also removed.",
+  "not_for": [
+    "Do not use to define a precise back fill position or visual indicator, because the source does not provide one.",
+    "Do not use as a complete AGV removal or replacement procedure; this runbook only finalizes the source-specific verification and documentation of trailing AGV back fill behavior.",
+    "Do not invent additional criteria for back fill beyond the source wording."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L1_support",
+      "responsibility": "Place the RMS in E-stop state as referenced, identify the faulted and trailing AGVs, observe whether back fill occurred, and document whether the manual's removal condition applies."
+    }
+  ],
+  "safety_notes": [
+    "The candidate references placing the RMS in E-stop state before performing the check.",
+    "Use only the source-supported condition for the trailing AGV decision: if the AGV behind the faulted AGV does not back fill, also remove that AGV.",
+    "Escalate unresolved ambiguity because the source does not define the exact expected back fill position or visual indicator."
+  ],
+  "access_or_tools_needed": [
+    "Access to the RMS area or system view needed to identify the trailing AGV",
+    "Access to the documented fault-recovery section on page 91"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the RMS area or system view needed to identify the trailing AGV",
+      "Access to the documented fault-recovery section on page 91"
+    ],
+    "system_preconditions": [
+      "The scenario is an AGV fault during exchange involving a lifted AGV that faulted while leaving the RMS.",
+      "The RMS is placed in E-stop state as referenced in the fault-recovery section."
+    ],
+    "external_references": [
+      "Manual page 91, section 5.8.2.5 'AGV FAULT DURING EXCHANGE'.",
+      "AGV API Controls reference as cited by the packet context."
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_agv_fault_during_exchange_v1",
+    "ctx_manual_rms_estop_fault_recovery_v1",
+    "ctx_manual_agv_api_controls_reference_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+      "description": "Page 91 AGV-related fault recovery screen artifact near the relevant recovery content.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "description": "System screen reference that may help orient the user to RMS stopped or shut-down state context.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "description": "AGV API Controls reference screen cited by related context for AGV removal and insertion actions surrounding this recovery scenario.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "description": "Related AGV recovery screen from nearby fault recovery content.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+      "description": "Related AGV fault recovery screen showing fault recovery interface patterns.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Place the RMS in E-stop state",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Establish the fault-recovery control state referenced by the source before verifying AGV positions.",
+      "instruction": "Place the RMS in E-stop state as referenced in the fault-recovery section before checking the AGV positions involved in the exchange fault scenario.",
+      "expected_result": "The RMS is in the E-stop state used for AGV-related fault recovery.",
+      "healthy_condition": "The system is in the referenced stopped state and the AGV recovery scenario can be assessed safely within the source context.",
+      "failure_condition": "The RMS is not in the referenced E-stop state or the operator cannot confirm that the recovery check is being performed under the documented fault-recovery condition.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "E-stop RMS",
+          "exact_action": "Place the RMS in E-stop state as referenced in the fault-recovery section.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+          "what_to_look_at": "Use as a general visual reference for a stopped or shut-down system state context."
+        },
+        {
+          "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+          "what_to_look_at": "Use as nearby AGV fault recovery visual context on page 91."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "You cannot confirm the RMS is in the referenced E-stop state.",
+        "The source context for the exchange fault scenario is unclear."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Identify the faulted lifted AGV",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Determine which AGV is the reference AGV for the trailing back fill check.",
+      "instruction": "Identify the lifted AGV that faulted while leaving the RMS during the exchange scenario described by the manual.",
+      "expected_result": "The specific faulted lifted AGV is identified.",
+      "healthy_condition": "The AGV being evaluated matches the source scenario: the lifted AGV that faulted while leaving the RMS.",
+      "failure_condition": "The operator cannot determine which AGV is the faulted lifted AGV in the exchange scenario.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Identify faulted AGV",
+          "exact_action": "Identify the lifted AGV that faulted while leaving the RMS during the exchange.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+          "what_to_look_at": "Use as a nearby AGV fault visual reference while identifying the faulted AGV."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "You cannot distinguish the faulted lifted AGV from other AGVs.",
+        "The observed condition does not clearly match the manual's exchange fault scenario."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Locate the AGV behind the faulted AGV",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Identify the trailing AGV whose back fill status determines whether the manual says it should also be removed.",
+      "instruction": "Locate the AGV behind the faulted AGV in the exchange sequence.",
+      "expected_result": "The trailing AGV behind the faulted AGV is identified for observation.",
+      "healthy_condition": "The AGV immediately behind the faulted AGV is identified.",
+      "failure_condition": "The operator cannot determine which AGV is behind the faulted AGV.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate trailing AGV",
+          "exact_action": "Locate the AGV behind the faulted AGV.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+          "what_to_look_at": "Use as nearby AGV fault recovery context while locating the AGV behind the faulted AGV."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The trailing AGV cannot be identified from the RMS area or system view.",
+        "AGV ordering or position is ambiguous."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Observe whether the trailing AGV back filled",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the manual's back fill condition is met.",
+      "instruction": "Observe whether the AGV behind the faulted AGV has back filled into the expected position based only on the source wording. Do not apply any additional criteria not stated by the source.",
+      "expected_result": "A determination is made whether the trailing AGV did or did not back fill.",
+      "healthy_condition": "The observer can state whether back fill occurred using only the source-supported condition.",
+      "failure_condition": "Back fill status cannot be determined from the available view, or determination would require assumptions not supported by the source.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Observe back fill",
+          "exact_action": "Observe whether the trailing AGV has back filled into the expected position based on the source wording.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+          "what_to_look_at": "Use as nearby AGV fault recovery visual context while observing AGV position."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The exact expected back fill position or visual indicator is unclear.",
+        "You would need to invent criteria beyond the source wording to decide whether back fill occurred."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Record the back fill result",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Document the observed state for the recovery record.",
+      "instruction": "Record whether the trailing AGV did or did not back fill.",
+      "expected_result": "The recovery record reflects whether the trailing AGV back filled.",
+      "healthy_condition": "The record clearly states either that the trailing AGV back filled or did not back fill.",
+      "failure_condition": "The result is not recorded, or the record includes unsupported interpretation beyond the source wording.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Document result",
+          "exact_action": "Record whether the trailing AGV did or did not back fill.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The observer cannot confidently determine whether back fill occurred from the source-supported evidence."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Document the source-backed removal condition",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Capture the manual's explicit outcome when the trailing AGV does not back fill.",
+      "instruction": "If documenting the source-backed outcome, note that the manual states the trailing AGV is also removed when it does not back fill.",
+      "expected_result": "The record includes the manual's explicit condition for also removing the trailing AGV when applicable.",
+      "healthy_condition": "If the trailing AGV did not back fill, the documentation reflects that the manual states to also remove that AGV.",
+      "failure_condition": "The documentation omits the manual's stated condition or adds unsupported removal criteria.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Document removal condition",
+          "exact_action": "If documenting the source-backed outcome, note that the manual states the trailing AGV is also removed when it does not back fill.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_12_agv_api_controls",
+          "what_to_look_at": "Use as the referenced AGV removal interface context if the documented outcome indicates the trailing AGV must also be removed."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The back fill result is ambiguous.",
+        "The operator is being asked to define removal criteria beyond the manual's explicit statement."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The faulted lifted AGV and the AGV behind it are identified.",
+    "A source-grounded determination is made whether the trailing AGV back filled.",
+    "The recovery record states whether the trailing AGV did or did not back fill.",
+    "If the trailing AGV did not back fill, the documentation notes the manual's instruction that the AGV is also removed."
+  ],
+  "healthy_conditions": [
+    "The RMS is in the referenced E-stop state for the recovery check.",
+    "The trailing AGV can be identified and observed.",
+    "The back fill determination is made without adding unsupported criteria.",
+    "Documentation matches the manual's wording."
+  ],
+  "failure_conditions": [
+    "The exact expected back fill position or visual indicator cannot be determined from the source.",
+    "The faulted or trailing AGV cannot be confidently identified.",
+    "The observer would need to invent additional criteria to decide whether back fill occurred.",
+    "The result cannot be documented clearly from source-supported evidence."
+  ],
+  "escalation_guidance": [
+    "Escalate if the exact expected back fill position or visual indicator is ambiguous, because the source does not define it.",
+    "Escalate if the AGV behind the faulted AGV cannot be confidently identified.",
+    "Escalate rather than inventing additional criteria for back fill beyond the source wording."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+      "what_to_look_at": "Nearby AGV fault recovery visual context on page 91."
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "what_to_look_at": "Referenced AGV removal interface context if documenting that the trailing AGV must also be removed."
+    },
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "what_to_look_at": "General stopped-system context for the E-stop prerequisite."
+    }
+  ],
+  "source_refs": [],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_check_trailing_agv_backfill_during_exchange_fault_recovery"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source does not define the exact expected back fill position.",
+    "The source does not define a specific visual indicator or HMI field to confirm back fill.",
+    "The source does not provide a time expectation for how long to wait before deciding the trailing AGV did not back fill.",
+    "The source does not specify a formal recording location or template for documenting the result.",
+    "The source does not explicitly state whether production stop is required beyond the referenced E-stop condition.",
+    "The source does not specify whether any supporting role must review the determination."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

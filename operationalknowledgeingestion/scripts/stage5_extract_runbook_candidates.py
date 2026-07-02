@@ -15,7 +15,7 @@ if str(SRC) not in sys.path:
 
 import typer
 
-from operationalknowledgeingestion.src.optisweep_ingestion.tools.runbook_candidate_extractor import (
+from optisweep_ingestion.stage5_runbook_candidates import (
     AzureOpenAIRunbookCandidateClient,
     extract_runbook_candidates,
 )

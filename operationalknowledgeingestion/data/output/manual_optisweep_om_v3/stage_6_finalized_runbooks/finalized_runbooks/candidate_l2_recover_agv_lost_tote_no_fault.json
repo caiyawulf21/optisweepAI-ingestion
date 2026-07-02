@@ -1,0 +1,478 @@
+{
+  "procedure_id": "proc_recover_an_agv_that_lost_a_tote_without_faulting_v1",
+  "candidate_id": "candidate_l2_recover_agv_lost_tote_no_fault",
+  "title": "Recover an AGV That Lost a Tote Without Faulting",
+  "procedure_type": "recovery",
+  "summary": "Restore an AGV and tote to service after an AGV loses a tote without faulting by stopping RMS, manually moving the AGV to the Hospital, removing and re-adding the AGV at the Hospital station PC, power cycling the AGV, positioning it over the QR code in front of the Inbound Hospital Station, and removing and re-adding the missing tote so the AGV can return the tote to the sorter.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "support_safe": false,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when an AGV has lost a tote without faulting and must be restored to service through the Hospital workflow described in section 5.8.2.6.",
+  "not_for": [
+    "Do not use when the AGV is faulted; the packet references separate faulted-AGV recovery content.",
+    "Do not use when the missing tote cannot be removed or added back using the documented tote procedures.",
+    "Do not use when the AGV cannot be physically moved to the Hospital or cannot be re-added through the Hospital station PC."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibilities": [
+        "E-stop RMS.",
+        "Use the AGV brake release and manually move the AGV to the Hospital.",
+        "Remove and re-add the AGV at the Hospital station PC/Hospital HMI.",
+        "Power cycle the AGV and verify the AGV lights turn green.",
+        "Position the AGV over the QR code in front of the Inbound Hospital Station.",
+        "Locate the missing tote and complete tote removal and add-back using the documented procedures."
+      ]
+    }
+  ],
+  "safety_notes": [
+    "This procedure is not marked support-safe in the candidate.",
+    "The procedure includes E-stop use, brake release use, manual AGV movement, and AGV power cycling.",
+    "Only maintenance or a supervisor should remove an AGV from the system, per the Add/Remove AGV source reference attached to the Hospital HMI screen artifact."
+  ],
+  "access_or_tools_needed": [
+    "Access to RMS E-stop control",
+    "Physical access to the AGV",
+    "Access to the AGV brake release",
+    "Access to the Hospital area",
+    "Access to the Hospital station PC",
+    "Access to the Inbound Hospital Station QR code location",
+    "Access to documented Add/Remove AGV procedure",
+    "Access to documented Remove Tote procedure",
+    "Access to documented Add Tote procedure"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "RMS E-stop control",
+      "Hospital station PC / Hospital HMI access",
+      "Physical access to the affected AGV and Hospital area"
+    ],
+    "system_preconditions": [
+      "The affected condition is an AGV that lost a tote without faulting.",
+      "The missing tote can be located for Hospital handling and re-entry."
+    ],
+    "external_references": [
+      "Section 5.8.2.6, page 91",
+      "Referenced source: 1.7 Add/Remove AGV, page 52",
+      "Referenced source: 1.2 Remove Tote, page 47",
+      "Referenced source: 1.1 Add Tote, page 46"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_hospital_hmi_agv_management_v1",
+    "ctx_manual_rms_estop_resume_reference_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+      "description": "Recovery-related AGV/tote screen artifact associated in the packet with section 5.8.2.6 on page 91.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "description": "AGV API Controls screen showing Remove AGV and Recover AGV controls.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "description": "System screen artifact relevant to RMS stop/shut-down state context.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "description": "Recovery screen artifact showing related AGV recovery context and Hospital/add-agv workflow references.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen",
+      "description": "Hospital HMI screen for tote scanning and REMOVE TOTE workflow.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_92_image_2",
+      "description": "Hospital Station Operation artifact for tote handling at the Hospital station.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_37_hospital_hmi_add_remove_agv_screen",
+      "description": "Hospital HMI Add/Remove AGV screen used to remove and insert AGVs into the system.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_page_93_image_2",
+      "description": "Add Tote-related artifact showing tote barcode scan and Confirm & Execute workflow.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "E-stop the RMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Place the system into a stopped state before performing manual AGV recovery actions.",
+      "instruction": "E-stop the RMS before beginning recovery of the AGV that lost a tote without faulting.",
+      "expected_result": "RMS is in an E-stopped or shut-down state suitable for recovery work.",
+      "healthy_condition": "The system is stopped and recovery actions can proceed.",
+      "failure_condition": "RMS cannot be E-stopped or the system state does not allow safe recovery progression.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "E-stop RMS",
+          "exact_action": "E-stop the RMS.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+          "what_to_look_at": "System shut-down mode visual context for stopped system state."
+        },
+        {
+          "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+          "what_to_look_at": "Recovery-related screen context showing E-stop use in AGV/tote recovery."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "RMS cannot be E-stopped.",
+        "The system does not enter a stopped state needed for recovery."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Release the AGV brake",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Allow the AGV to be manually moved to the Hospital.",
+      "instruction": "Press the brake release on the AGV that lost a tote.",
+      "expected_result": "The AGV brake is released so the AGV can be rolled manually.",
+      "healthy_condition": "The brake release can be used and the AGV is movable.",
+      "failure_condition": "The brake release cannot be used or the AGV remains immovable.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Press brake release",
+          "exact_action": "Press the brake release on the AGV that lost a tote.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The brake release cannot be used.",
+        "The AGV cannot be prepared for manual movement."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Move the AGV to the Hospital",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Bring the affected AGV to the Hospital area for re-registration and tote recovery handling.",
+      "instruction": "Push the AGV over to the Hospital.",
+      "expected_result": "The AGV is physically positioned at the Hospital.",
+      "healthy_condition": "The AGV reaches the Hospital area and is available for Hospital station PC actions.",
+      "failure_condition": "The AGV cannot be moved to the Hospital.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Push AGV to Hospital",
+          "exact_action": "Push the AGV over to the Hospital.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Hospital station area context for tote handling and AGV arrival."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The AGV cannot be moved to the Hospital.",
+        "The Hospital area cannot be accessed for recovery."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Remove and re-add the AGV at the Hospital station PC",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Re-register the AGV in the system from the Hospital interface.",
+      "instruction": "At the Hospital station PC, remove the AGV and then add the AGV back into the system.",
+      "expected_result": "The AGV is removed and then reinserted into the system through the Hospital station interface.",
+      "healthy_condition": "The Hospital station PC/Hospital HMI accepts the AGV removal and add-back actions.",
+      "failure_condition": "The AGV cannot be removed or cannot be added back into the system.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Remove AGV",
+          "exact_action": "At the Hospital station PC, remove the AGV.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "hmi_action",
+          "label": "Add AGV back",
+          "exact_action": "Then, add the AGV back into the system.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_37_hospital_hmi_add_remove_agv_screen",
+          "what_to_look_at": "AGV ID entry and the Hospital HMI controls used to remove an AGV and INSERT INTO SYSTEM."
+        },
+        {
+          "artifact_id": "artifact_fig_4_12_agv_api_controls",
+          "what_to_look_at": "Related AGV Remove AGV and Recover AGV controls context."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The Hospital station PC/Hospital HMI does not allow AGV removal.",
+        "The AGV cannot be added back into the system.",
+        "Required AGV management controls are unavailable."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Power cycle the AGV",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Reset the AGV after re-registration so it can return to a healthy state.",
+      "instruction": "Turn the AGV off, then turn it on again.",
+      "expected_result": "The AGV powers back on and proceeds toward a normal status indication.",
+      "healthy_condition": "After the power cycle, the AGV lights turn green.",
+      "failure_condition": "The AGV lights do not turn green after the power cycle.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Power off AGV",
+          "exact_action": "Turn the AGV off.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "physical_action",
+          "label": "Power on AGV",
+          "exact_action": "Then turn it on again.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The AGV does not power back on.",
+        "The AGV lights do not turn green after the power cycle."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Position the AGV over the Inbound Hospital Station QR code",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Place the AGV at the specified location for continued system handling after recovery.",
+      "instruction": "When the AGV lights turn green, roll it over the QR code in front of the Inbound Hospital Station.",
+      "expected_result": "The AGV is positioned over the QR code in front of the Inbound Hospital Station.",
+      "healthy_condition": "AGV lights are green and the AGV is correctly positioned over the QR code.",
+      "failure_condition": "The AGV does not reach green-light status or cannot be positioned over the QR code.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Roll AGV to QR code",
+          "exact_action": "When the AGV lights turn green, roll it over the QR code in front of the Inbound Hospital Station.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The AGV lights do not turn green.",
+        "The AGV cannot be positioned over the QR code in front of the Inbound Hospital Station."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Locate the missing tote and remove it from the system",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Recover the missing tote record through the Hospital tote-removal workflow before re-adding it.",
+      "instruction": "Locate the missing tote and bring it to the Hospital to remove it from the system.",
+      "expected_result": "The missing tote is at the Hospital and has been removed from the system using the documented tote-removal process.",
+      "healthy_condition": "The tote is found, brought to the Hospital, and successfully removed from the system.",
+      "failure_condition": "The missing tote cannot be located or cannot be removed using the documented procedure.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Bring tote to Hospital",
+          "exact_action": "Locate the missing tote and bring it to the Hospital.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "hmi_action",
+          "label": "Remove tote from system",
+          "exact_action": "Remove it from the system.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen",
+          "what_to_look_at": "Hospital HMI tote scan fields and REMOVE TOTE button."
+        },
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Hospital station tote handling flow, including scanning tote barcode and extracting tote from the system."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The missing tote cannot be located.",
+        "The tote cannot be removed from the system using the documented tote procedure."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 8,
+      "title": "Add the tote back into the system",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Return the tote to active service so the AGV can transport it back to the sorter.",
+      "instruction": "Add the tote back into the system. The AGV should then take the tote back to the sorter.",
+      "expected_result": "The tote is added back into the system and the AGV takes the tote back to the sorter.",
+      "healthy_condition": "The tote add-back is accepted and the AGV returns the tote to the sorter.",
+      "failure_condition": "The tote cannot be added back into the system or the AGV does not take the tote back to the sorter.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Add tote back",
+          "exact_action": "Add the tote back into the system.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_93_image_2",
+          "what_to_look_at": "Add Tote screen workflow: scan tote barcode, verify Tote ID, and press Confirm & Execute."
+        },
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Hospital station tote placement context if the tote is going back into the system."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The tote cannot be added back using the documented Add Tote procedure.",
+        "The AGV does not take the tote back to the sorter after tote add-back."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The AGV has been removed and added back into the system at the Hospital station PC.",
+    "The AGV lights turn green after the power cycle.",
+    "The AGV is rolled over the QR code in front of the Inbound Hospital Station.",
+    "The missing tote is located, removed from the system, and added back into the system.",
+    "The AGV takes the tote back to the sorter."
+  ],
+  "healthy_conditions": [
+    "RMS can be E-stopped for recovery.",
+    "The AGV brake release works and the AGV can be moved to the Hospital.",
+    "The Hospital station PC/Hospital HMI accepts AGV removal and add-back.",
+    "The AGV lights turn green after power cycling.",
+    "The tote can be removed and re-added using the documented tote procedures.",
+    "After tote add-back, the AGV takes the tote back to the sorter."
+  ],
+  "failure_conditions": [
+    "Brake release cannot be used.",
+    "AGV cannot be moved to the Hospital.",
+    "AGV cannot be removed and added back at the Hospital station PC.",
+    "AGV lights do not turn green after the power cycle.",
+    "Missing tote cannot be located.",
+    "Missing tote cannot be removed and re-added using the documented tote procedures.",
+    "After tote add-back, the AGV does not take the tote back to the sorter."
+  ],
+  "escalation_guidance": [
+    "Escalate if the brake release cannot be used or the AGV cannot be moved to the Hospital.",
+    "Escalate if the AGV cannot be removed and added back at the Hospital station PC.",
+    "Escalate if the AGV lights do not turn green after the power cycle.",
+    "Escalate if the missing tote cannot be located or cannot be removed and re-added using the documented tote procedures."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_4_37_hospital_hmi_add_remove_agv_screen",
+      "what_to_look_at": "Hospital HMI Add/Remove AGV controls for AGV removal and insertion into system."
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "what_to_look_at": "AGV API controls including Remove AGV and Recover AGV context."
+    },
+    {
+      "artifact_id": "artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen",
+      "what_to_look_at": "Hospital HMI tote scan fields and REMOVE TOTE control."
+    },
+    {
+      "artifact_id": "artifact_page_92_image_2",
+      "what_to_look_at": "Hospital station tote handling and placement context."
+    },
+    {
+      "artifact_id": "artifact_page_93_image_2",
+      "what_to_look_at": "Add Tote workflow including barcode scan and Confirm & Execute."
+    }
+  ],
+  "source_refs": [],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_l2_recover_agv_lost_tote_no_fault"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide the exact RMS resume step for this specific procedure, so no resume action was added.",
+    "The packet does not provide the exact Hospital station PC field-by-field sequence for AGV removal/add-back in section 5.8.2.6 beyond remove then add back.",
+    "The packet does not provide a visual artifact for the QR code in front of the Inbound Hospital Station.",
+    "The packet does not provide an estimated completion time.",
+    "The packet does not explicitly state whether production stop or LOTO is required for this procedure."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

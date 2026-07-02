@@ -1,0 +1,386 @@
+{
+  "procedure_id": "proc_recover_a_faulted_agv_with_tote_v1",
+  "candidate_id": "candidate_l2_recover_faulted_agv_with_tote",
+  "title": "Recover a Faulted AGV With Tote",
+  "procedure_type": "recovery",
+  "summary": "Restore RMS operation after an AGV faults while carrying a tote by E-stopping RMS, removing the AGV from RMS through AGV API Controls, taking the tote to the Hospital, removing the AGV through the Hospital HMI or Hospital station PC, adding the AGV back into RMS, and resuming RMS using the documented start/resume procedure.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "support_safe": false,
+  "requires_production_stop": true,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when an AGV has faulted while still carrying a tote and the documented recovery sequence on page 91 applies.",
+  "not_for": [
+    "Do not use for AGV bump fault recovery covered by the separate bump fault procedure.",
+    "Do not use for no-empty-AGV zone recovery covered by the separate add-AGV-to-zone procedure.",
+    "Do not use when a different documented RMS start or AGV recovery scenario applies."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibilities": [
+        "Initiate RMS E-stop for the recovery sequence.",
+        "Remove and add the AGV using AGV API Controls.",
+        "Coordinate tote handling at the Hospital.",
+        "Remove the AGV through the Hospital HMI or Hospital station PC.",
+        "Resume RMS using the documented start/resume procedure."
+      ]
+    }
+  ],
+  "safety_notes": [
+    "This procedure is not marked support-safe in the candidate.",
+    "The procedure begins with E-stop RMS before AGV recovery actions.",
+    "Only maintenance or a supervisor should remove an AGV from the system, according to the Hospital HMI Add/Remove AGV screen reference."
+  ],
+  "access_or_tools_needed": [
+    "Access to RMS E-stop control",
+    "Access to AGV API Controls",
+    "Access to the Hospital area",
+    "Access to the Hospital HMI",
+    "Access to the documented RMS start/resume procedure"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "RMS E-stop control access",
+      "AGV API Controls access",
+      "Hospital HMI or Hospital station PC access"
+    ],
+    "system_preconditions": [
+      "An AGV has faulted while carrying a tote.",
+      "The recovery is being performed under the documented faulted-AGV-with-tote scenario."
+    ],
+    "external_references": [
+      "AGV API Controls, page 24",
+      "1.7 Add/Remove AGV, page 52",
+      "Starting the System, page 65"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_faulted_agv_with_tote_screen_v1",
+    "ctx_manual_hospital_hmi_agv_management_v1",
+    "ctx_manual_agv_api_controls_reference_v1",
+    "ctx_manual_rms_estop_resume_reference_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+      "description": "Faulted AGV with Tote screen for the recovery context.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "description": "AGV API Controls screen used to remove and recover AGVs.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_4_37_hospital_hmi_add_remove_agv_screen",
+      "description": "Hospital HMI Add/Remove AGV screen used for AGV removal at the Hospital.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "description": "System shut-down mode screen referenced for start/resume context.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_92_image_2",
+      "description": "Hospital station operation artifact supporting tote handling context.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "E-stop RMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Place RMS into a stopped state before performing AGV and tote recovery actions.",
+      "instruction": "E-stop RMS.",
+      "expected_result": "RMS is E-stopped and recovery actions can proceed.",
+      "healthy_condition": "RMS is in the expected stopped state for fault recovery.",
+      "failure_condition": "RMS cannot be E-stopped or does not enter the expected stopped state.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "E-stop RMS",
+          "exact_action": "E-stop RMS.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+          "what_to_look_at": "Faulted AGV with tote recovery context."
+        },
+        {
+          "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+          "what_to_look_at": "System stopped or shut-down mode context related to start/resume references."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "RMS cannot be E-stopped.",
+        "The system does not enter the expected stopped state for recovery."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Remove the AGV from RMS using AGV API Controls",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Remove the faulted AGV from RMS before handling the tote and Hospital-side recovery.",
+      "instruction": "Remove the AGV from RMS using the AGV API Controls.",
+      "expected_result": "The faulted AGV is removed from RMS.",
+      "healthy_condition": "The AGV is no longer active in RMS after the remove action.",
+      "failure_condition": "The AGV cannot be removed from RMS using AGV API Controls.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Remove AGV in AGV API Controls",
+          "exact_action": "Remove the AGV from RMS using the AGV API Controls.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_12_agv_api_controls",
+          "what_to_look_at": "AGV API Controls screen showing Remove AGV and Recover AGV controls."
+        },
+        {
+          "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+          "what_to_look_at": "Faulted AGV with tote scenario being recovered."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "AGV removal through AGV API Controls cannot be completed."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Take the tote to the Hospital and remove the AGV via the Hospital HMI",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Move the tote into the Hospital workflow and remove the AGV through the Hospital interface as directed by the source.",
+      "instruction": "Take the tote to the Hospital and remove the AGV via the Hospital HMI.",
+      "expected_result": "The tote is taken to the Hospital and the AGV is removed through the Hospital HMI or Hospital station PC.",
+      "healthy_condition": "The tote is at the Hospital and the AGV has been removed using the Hospital interface.",
+      "failure_condition": "The tote cannot be handled at the Hospital or the AGV cannot be removed via the Hospital HMI.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Take tote to Hospital",
+          "exact_action": "Take the tote to the Hospital.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "hmi_action",
+          "label": "Remove AGV via Hospital HMI",
+          "exact_action": "Remove the AGV via the Hospital HMI.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+          "what_to_look_at": "Screen showing a faulted AGV with a tote during the fault recovery procedure."
+        },
+        {
+          "artifact_id": "artifact_fig_4_37_hospital_hmi_add_remove_agv_screen",
+          "what_to_look_at": "Hospital HMI Add/Remove AGV screen used to remove an AGV from the system."
+        },
+        {
+          "artifact_id": "artifact_page_92_image_2",
+          "what_to_look_at": "Hospital station tote handling context."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The AGV cannot be removed via the Hospital HMI as referenced by the source."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Add the AGV back into RMS using AGV API Controls",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Return the AGV to RMS after Hospital-side removal is complete.",
+      "instruction": "Add the AGV back into RMS using the AGV API Controls.",
+      "expected_result": "The AGV is added back into RMS.",
+      "healthy_condition": "The AGV is restored in RMS through the documented AGV API Controls recovery action.",
+      "failure_condition": "The AGV cannot be added back into RMS using AGV API Controls.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Recover AGV in AGV API Controls",
+          "exact_action": "Add the AGV back into RMS using the AGV API Controls.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_12_agv_api_controls",
+          "what_to_look_at": "AGV API Controls screen showing Recover AGV for adding an AGV back into the system."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "AGV addition through AGV API Controls cannot be completed."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Press the E-Stop again",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Perform the documented second E-stop action before resuming RMS.",
+      "instruction": "Press the E-Stop again.",
+      "expected_result": "The documented second E-stop action is completed.",
+      "healthy_condition": "The second E-stop action is completed as required by the source sequence.",
+      "failure_condition": "The E-stop cannot be actuated again as required by the procedure.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Press E-Stop again",
+          "exact_action": "Press the E-Stop again.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The E-stop cannot be actuated again as required by the documented sequence."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Resume RMS using the documented system start or resume procedure",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Return RMS to operation after the AGV and tote recovery sequence is complete.",
+      "instruction": "Resume RMS using the documented system start/resume procedure.",
+      "expected_result": "RMS is resumed using the documented start/resume procedure.",
+      "healthy_condition": "RMS returns to operation through the documented start/resume process.",
+      "failure_condition": "RMS cannot be resumed using the documented start/resume procedure.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Resume RMS",
+          "exact_action": "Resume RMS using the documented system start/resume procedure.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+          "what_to_look_at": "Faulted AGV with Tote recovery context for the resume step."
+        },
+        {
+          "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+          "what_to_look_at": "System state context associated with the Starting the System reference."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "RMS cannot be resumed using the documented start/resume procedure."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The faulted AGV is removed from RMS.",
+    "The tote is taken to the Hospital.",
+    "The AGV is removed through the Hospital HMI or Hospital station PC.",
+    "The AGV is added back into RMS.",
+    "RMS is resumed using the documented start/resume procedure."
+  ],
+  "healthy_conditions": [
+    "RMS can be E-stopped and later resumed.",
+    "AGV API Controls allow removal and recovery of the AGV.",
+    "Hospital-side AGV removal can be completed through the documented interface.",
+    "The recovery sequence completes without requiring an alternate path."
+  ],
+  "failure_conditions": [
+    "AGV removal through AGV API Controls cannot be completed.",
+    "The AGV cannot be removed via the Hospital HMI.",
+    "The AGV cannot be added back into RMS.",
+    "RMS cannot be resumed using the documented start/resume procedure."
+  ],
+  "escalation_guidance": [
+    "Escalate if AGV removal or addition through AGV API Controls cannot be completed.",
+    "Escalate if the AGV cannot be removed via the Hospital HMI as referenced by the source.",
+    "Escalate if RMS cannot be resumed using the documented start/resume procedure.",
+    "Escalate when role authorization is unclear, because the Hospital HMI reference states only maintenance or a supervisor should remove an AGV from the system."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+      "what_to_look_at": "Faulted AGV with Tote screen."
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "what_to_look_at": "Remove AGV and Recover AGV controls."
+    },
+    {
+      "artifact_id": "artifact_fig_4_37_hospital_hmi_add_remove_agv_screen",
+      "what_to_look_at": "Hospital HMI Add/Remove AGV controls."
+    },
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "what_to_look_at": "System shut-down or start/resume context."
+    },
+    {
+      "artifact_id": "artifact_page_92_image_2",
+      "what_to_look_at": "Hospital station tote handling context."
+    }
+  ],
+  "source_refs": [],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_l2_recover_faulted_agv_with_tote"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide detailed validation checks after AGV removal, Hospital removal, AGV re-addition, or RMS resume.",
+    "The source does not provide exact button names or field-by-field instructions for the page 91 recovery sequence beyond referenced interfaces.",
+    "The source does not provide an estimated completion time.",
+    "The source does not provide alternate recovery paths if the documented sequence fails.",
+    "The source does not explicitly define whether LOTO is required."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

@@ -104,22 +104,32 @@ Builder            Builder
 
              │
 
-      Stage 5
+      Stage 5 [LLM Assisted]
       Runbook Candidates
 
              │
 
-      Stage 6
-      Candidate Pool
+      Stage 6 [LLM Assisted]
+      Finalized Source Runbooks
 
              │
 
-      Stage 7
-      Canonical Runbooks
+      Shared Stage 6.5 [Deterministic]
+      Runbook Pool + Merge Clusters
 
              │
 
-      Stage 8
+      Shared Stage 7 [LLM Assisted, selective]
+      Merge Clusters Only
+
+             │
+
+      Shared Stage 8 [LLM Assisted]
+      Playbook Linking
+
+             │
+
+      Stage 9
       Relationship Linking
 
              │

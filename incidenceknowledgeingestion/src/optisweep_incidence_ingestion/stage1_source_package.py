@@ -45,6 +45,13 @@ def build_incident_source_package(
         for index, page in enumerate(document, start=1):
             text = page.get_text("text") or ""
             image_count = len(page.get_images(full=True))
+            parsed_text_length = len(text.strip())
+            page_diagnostics = build_stage1_page_diagnostics(
+                parsed_text_length=parsed_text_length,
+                embedded_image_count=image_count,
+                width=float(page.rect.width),
+                height=float(page.rect.height),
+            )
             pages.append(
                 {
                     "page_number": index,
@@ -52,8 +59,11 @@ def build_incident_source_package(
                     "width": round(float(page.rect.width), 2),
                     "height": round(float(page.rect.height), 2),
                     "parsed_text": text,
-                    "parsed_text_length": len(text.strip()),
+                    "parsed_text_length": parsed_text_length,
                     "embedded_image_count": image_count,
+                    "page_diagnostics": page_diagnostics,
+                    "likely_scanned_or_screenshot": page_diagnostics["likely_scanned_or_screenshot"],
+                    "needs_ocr": page_diagnostics["needs_ocr"],
                     "rendered_page_image_ref": None,
                     "ocr_text": None,
                     "ocr_confidence": None,
@@ -140,7 +150,33 @@ def build_stage1_report(package: dict[str, Any]) -> dict[str, Any]:
         "pages_with_selectable_text": sum(1 for page in pages if page.get("parsed_text_length", 0) > 20),
         "pages_with_embedded_images": sum(1 for page in pages if page.get("embedded_image_count", 0) > 0),
         "total_embedded_images": sum(int(page.get("embedded_image_count") or 0) for page in pages),
+        "pages_needing_ocr": sum(1 for page in pages if page.get("needs_ocr")),
+        "likely_scanned_or_screenshot_pages": sum(1 for page in pages if page.get("likely_scanned_or_screenshot")),
         "warnings": package.get("warnings") or [],
+    }
+
+
+def build_stage1_page_diagnostics(
+    *,
+    parsed_text_length: int,
+    embedded_image_count: int,
+    width: float,
+    height: float,
+) -> dict[str, Any]:
+    page_area = max(width * height, 1.0)
+    aspect_ratio = round(width / max(height, 1.0), 4)
+    has_selectable_text = parsed_text_length > 20
+    likely_scanned_or_screenshot = embedded_image_count > 0 and parsed_text_length < 80
+    needs_ocr = not has_selectable_text or likely_scanned_or_screenshot
+    return {
+        "has_selectable_text": has_selectable_text,
+        "selectable_text_length": parsed_text_length,
+        "embedded_image_count": embedded_image_count,
+        "page_area": round(page_area, 2),
+        "aspect_ratio": aspect_ratio,
+        "likely_scanned_or_screenshot": likely_scanned_or_screenshot,
+        "needs_ocr": needs_ocr,
+        "ocr_priority": "high" if likely_scanned_or_screenshot or parsed_text_length == 0 else "normal",
     }
 
 
@@ -153,4 +189,6 @@ def _stage1_warnings(pages: list[dict[str, Any]]) -> list[str]:
         )
     if any(page.get("embedded_image_count", 0) > 0 for page in pages):
         warnings.append("PDF contains embedded images; Stage 2 should extract both rendered pages and embedded image evidence.")
+    if any(page.get("likely_scanned_or_screenshot") for page in pages):
+        warnings.append("One or more pages look like scanned screenshots; Stage 2 should use OCR retries and quality reporting.")
     return warnings

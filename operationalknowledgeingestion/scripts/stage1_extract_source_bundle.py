@@ -13,7 +13,7 @@ if str(SRC) not in sys.path:
 import typer
 
 from optisweep_ingestion.stage_paths import stage_dir
-from optisweep_ingestion.tools.source_bundle_builder import build_source_bundle
+from optisweep_ingestion.stage1_source_bundle import build_source_bundle
 
 app = typer.Typer(add_completion=False)
 

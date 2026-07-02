@@ -27,7 +27,8 @@ Stage 1: Source bundle extraction
   -> Stage 3: Source artifact enrichment
   -> Stage 4: Operational context extraction
   -> Stage 5: Runbook candidate discovery
-  -> Stage 6: Candidate pool generation
+  -> Stage 6: Source runbook finalization
+  -> Stage 6.5: Shared runbook pool generation
   -> Training video bundle generation: video + VTT normalization
   -> Stage 7: Canonical runbook drafting and merging
   -> Stage 8: Relationship linking
@@ -43,7 +44,7 @@ The intended production shape is one LangGraph pipeline with explicit nodes for 
 
 ## Directed Stage Graph
 
-This graph shows the intended direction of data flow. Stages 1 through 6 are implemented as local scripts today. Stages 7 through 12 and the production publishing path are planned next steps.
+This graph shows the intended direction of data flow. Stages 1 through 6.5 are implemented as local scripts today. Stages 7 through 12 and the production publishing path are planned next steps.
 
 ```mermaid
 flowchart TD
@@ -56,21 +57,22 @@ flowchart TD
     C --> G["Stage 5<br/>runbook_candidates.json<br/>candidate reports"]
     E --> G
     F --> G
-    G --> H["Stage 6<br/>candidate_pool.json"]
-    H --> I["Stage 7<br/>canonical runbooks<br/>planned"]
-    E --> I
-    F --> I
-    I --> J["Stage 8<br/>relationship linking<br/>planned"]
+    G --> H["Stage 6<br/>finalized_runbooks/"]
+    H --> I["Stage 6.5<br/>runbook_pool.json"]
+    I --> J["Stage 7<br/>canonical runbooks<br/>planned"]
     E --> J
     F --> J
-    G --> J
-    J --> K["Stage 9<br/>validation and repair<br/>planned"]
-    K --> L["Stage 10<br/>final reviewed outputs<br/>planned"]
-    L --> M["Stage 11<br/>vector embeddings<br/>planned"]
-    L --> N["Stage 12<br/>operational knowledge graph<br/>planned"]
-    M --> O["Azure Cosmos DB<br/>knowledge records + vectors + graph relationships"]
-    N --> O
-    O --> P["OptiSweep AI troubleshooting app<br/>RAG retrieval"]
+    J --> K["Stage 8<br/>relationship linking<br/>planned"]
+    E --> K
+    F --> K
+    G --> K
+    K --> L["Stage 9<br/>validation and repair<br/>planned"]
+    L --> M["Stage 10<br/>final reviewed outputs<br/>planned"]
+    M --> N["Stage 11<br/>vector embeddings<br/>planned"]
+    M --> O["Stage 12<br/>operational knowledge graph<br/>planned"]
+    N --> P["Azure Cosmos DB<br/>knowledge records + vectors + graph relationships"]
+    O --> P
+    P --> Q["OptiSweep AI troubleshooting app<br/>RAG retrieval"]
 ```
 
 ## Standard Paths
@@ -97,7 +99,8 @@ data/output/manual_optisweep_om_v3/
   stage_3_artifact_enrichment/
   stage_4_operational_context/
   stage_5_runbook_candidates/
-  stage_6_candidate_pool/
+  stage_6_finalized_runbooks/
+  stage_6_5_runbook_pool/
   stage_10_final_outputs/
 ```
 
@@ -108,6 +111,46 @@ python scripts/extract_operational_knowledge.py \
   --source-pdf "data/input/manuals/OptiSweep Operation and Maintenance Manual - Final 1.pdf" \
   --output-dir data/output/manual_optisweep_om_v3 \
   --stages 1,2
+```
+
+Stage modules and scripts follow the same stage numbering as output folders:
+
+```text
+src/optisweep_ingestion/
+  stage1_source_bundle.py
+  stage1_training_video_builder.py
+  stage2_source_artifacts.py
+  stage2_training_video_preparer.py
+  stage3_artifact_enrichment.py
+  stage4_operational_context.py
+  stage5_runbook_candidates.py
+  stage6_runbook_finalization.py
+  stage6_5_runbook_pool.py
+  stage7_runbook_drafter.py
+  stage8_relationship_linking.py
+  stage9_validation_repair.py
+  stage10_report_writer.py
+  tools/artifact_linker.py
+  tools/pdf_parser.py
+  tools/docx_parser.py
+  tools/source_bundle_loader.py
+scripts/
+  stage1_extract_source_bundle.py
+  stage1_build_training_video_bundle.py
+  stage2_extract_source_artifacts.py
+  stage2_prepare_training_video_for_extraction.py
+  stage3_enrich_source_artifacts.py
+  stage4_extract_operational_context.py
+  stage4_repair_operational_context_sections.py
+  stage4_rerun_artifact_link_enrichment.py
+  stage4_report_image_link_metrics.py
+  stage5_extract_runbook_candidates.py
+  stage6_finalize_runbooks.py
+  stage6_5_build_runbook_pool.py
+  stage9_validate_output.py
+  stage10_inspect_output.py
+  stage10_migrate_source_lineage.py
+  extract_operational_knowledge.py
 ```
 
 ## Stage 1: Source Bundle Extraction
@@ -309,9 +352,47 @@ python scripts/stage5_extract_runbook_candidates.py \
 
 Stage 5 requires `--llm`. Use `--backfill-missing-sections` only when conservative missing-section candidates are desired after the main LLM pass.
 
-## Stage 6: Candidate Pool Generation
+## Stage 6: Source Runbook Finalization
 
-Stage 6 combines one or more runbook candidate files into a candidate pool.
+Stage 6 turns Stage 5 runbook candidates into finalized source runbooks.
+
+**Purpose**
+
+Draft one finalized runbook JSON per accepted candidate, grounded in source artifacts, operational context, and the source bundle.
+
+**Inputs**
+
+```text
+data/output/manual_optisweep_om_v3/stage_5_runbook_candidates/runbook_candidates.json
+data/output/manual_optisweep_om_v3/stage_3_artifact_enrichment/source_artifacts_enriched.json
+data/output/manual_optisweep_om_v3/stage_4_operational_context/operational_context.json
+data/output/manual_optisweep_om_v3/stage_1_source_bundle/source_bundle.json
+```
+
+**Outputs**
+
+```text
+data/output/manual_optisweep_om_v3/stage_6_finalized_runbooks/finalized_runbooks/<candidate_id>.json
+data/output/manual_optisweep_om_v3/stage_6_finalized_runbooks/runbook_finalization_report.json
+```
+
+**Run**
+
+```bash
+python scripts/stage6_finalize_runbooks.py \
+  --runbook-candidates data/output/manual_optisweep_om_v3/stage_5_runbook_candidates/runbook_candidates.json \
+  --source-artifacts data/output/manual_optisweep_om_v3/stage_3_artifact_enrichment/source_artifacts_enriched.json \
+  --operational-context data/output/manual_optisweep_om_v3/stage_4_operational_context/operational_context.json \
+  --source-bundle data/output/manual_optisweep_om_v3/stage_1_source_bundle/source_bundle.json \
+  --output-dir data/output/manual_optisweep_om_v3 \
+  --llm
+```
+
+Stage 6 requires `--llm`.
+
+## Stage 6.5: Shared Runbook Pool Generation
+
+Stage 6.5 combines one or more runbook candidate files into a shared runbook pool.
 
 **Purpose**
 
@@ -328,7 +409,7 @@ The `--candidates` option can be repeated for multiple sources.
 **Outputs**
 
 ```text
-data/output/manual_optisweep_om_v3/stage_6_candidate_pool/candidate_pool.json
+data/output/manual_optisweep_om_v3/stage_6_5_runbook_pool/candidate_pool.json
 ```
 
 `candidate_pool.json` contains pooled candidates and generated cluster information for review.
@@ -336,12 +417,12 @@ data/output/manual_optisweep_om_v3/stage_6_candidate_pool/candidate_pool.json
 **Run**
 
 ```bash
-python scripts/stage6_build_candidate_pool.py \
+python scripts/stage6_5_build_runbook_pool.py \
   --candidates data/output/manual_optisweep_om_v3/stage_5_runbook_candidates/runbook_candidates.json \
   --output-dir data/output/manual_optisweep_om_v3
 ```
 
-Stage 6 is deterministic and does not call an LLM.
+Stage 6.5 is deterministic and does not call an LLM.
 
 ## Training Video Bundle Generation
 
@@ -364,7 +445,7 @@ data/input/videos/example.vtt
 data/output/training_video_example/stage_1_source_bundle/source_artifacts.json
 data/output/training_video_example/stage_1_source_bundle/training_video_slide_segments.json
 data/output/training_video_example/stage_1_source_bundle/training_video_ingestion_report.json
-data/output/training_video_example/images/
+data/output/training_video_example/stage_1_source_bundle/images/
 ```
 
 **Run**
@@ -463,7 +544,7 @@ These may consolidate into one canonical procedure such as `proc_start_operator_
 **Inputs**
 
 ```text
-data/output/manual_optisweep_om_v3/stage_6_candidate_pool/candidate_pool.json
+data/output/manual_optisweep_om_v3/stage_6_5_runbook_pool/candidate_pool.json
 data/output/manual_optisweep_om_v3/stage_3_artifact_enrichment/source_artifacts_enriched.json
 data/output/manual_optisweep_om_v3/stage_4_operational_context/operational_context.json
 ```
@@ -571,7 +652,7 @@ Stage 11 should embed the fields that best represent retrieval intent, not every
 data/output/manual_optisweep_om_v3/stage_3_artifact_enrichment/source_artifacts_enriched.json
 data/output/manual_optisweep_om_v3/stage_4_operational_context/operational_context.json
 data/output/manual_optisweep_om_v3/stage_5_runbook_candidates/runbook_candidates.json
-data/output/manual_optisweep_om_v3/stage_6_candidate_pool/candidate_pool.json
+data/output/manual_optisweep_om_v3/stage_6_5_runbook_pool/candidate_pool.json
 data/output/manual_optisweep_om_v3/stage_7_canonical_runbooks/runbooks.json
 ```
 
@@ -605,7 +686,7 @@ python scripts/generate_embeddings.py \
   --source-artifacts data/output/manual_optisweep_om_v3/stage_3_artifact_enrichment/source_artifacts_enriched.json \
   --operational-context data/output/manual_optisweep_om_v3/stage_4_operational_context/operational_context.json \
   --runbook-candidates data/output/manual_optisweep_om_v3/stage_5_runbook_candidates/runbook_candidates.json \
-  --candidate-pool data/output/manual_optisweep_om_v3/stage_6_candidate_pool/candidate_pool.json \
+  --candidate-pool data/output/manual_optisweep_om_v3/stage_6_5_runbook_pool/candidate_pool.json \
   --output-dir data/output/manual_optisweep_om_v3
 ```
 
@@ -634,7 +715,7 @@ data/output/manual_optisweep_om_v3/stage_1_source_bundle/source_bundle.json
 data/output/manual_optisweep_om_v3/stage_3_artifact_enrichment/source_artifacts_enriched.json
 data/output/manual_optisweep_om_v3/stage_4_operational_context/operational_context.json
 data/output/manual_optisweep_om_v3/stage_5_runbook_candidates/runbook_candidates.json
-data/output/manual_optisweep_om_v3/stage_6_candidate_pool/candidate_pool.json
+data/output/manual_optisweep_om_v3/stage_6_5_runbook_pool/candidate_pool.json
 data/output/manual_optisweep_om_v3/stage_7_canonical_runbooks/runbooks.json
 data/output/manual_optisweep_om_v3/stage_11_embeddings/embedding_records.json
 ```
@@ -666,7 +747,7 @@ python scripts/build_knowledge_graph.py \
   --source-artifacts data/output/manual_optisweep_om_v3/stage_3_artifact_enrichment/source_artifacts_enriched.json \
   --operational-context data/output/manual_optisweep_om_v3/stage_4_operational_context/operational_context.json \
   --runbook-candidates data/output/manual_optisweep_om_v3/stage_5_runbook_candidates/runbook_candidates.json \
-  --candidate-pool data/output/manual_optisweep_om_v3/stage_6_candidate_pool/candidate_pool.json \
+  --candidate-pool data/output/manual_optisweep_om_v3/stage_6_5_runbook_pool/candidate_pool.json \
   --embedding-records data/output/manual_optisweep_om_v3/stage_11_embeddings/embedding_records.json \
   --output-dir data/output/manual_optisweep_om_v3
 ```

@@ -1,0 +1,405 @@
+{
+  "procedure_id": "proc_add_an_agv_to_a_zone_when_no_empty_agv_is_available_v1",
+  "candidate_id": "candidate_l2_recover_add_agv_to_zone_with_no_empty_agv",
+  "title": "Add an AGV to a Zone When No Empty AGV Is Available",
+  "procedure_type": "recovery",
+  "summary": "Restore operation by stopping RMS, moving an AGV into the zone under the tote rack, adding the AGV in RMS using the referenced Tote API Controls, confirming the AGV turns blue, verifying the HMI state is \"szonestaging,\" and then resuming RMS using the documented system start procedure.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "support_safe": false,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this recovery procedure when an AGV must be added to a zone and no empty AGV is available, as documented in manual section 5.8.2.2.",
+  "not_for": [
+    "Do not use this procedure to accept an AGV state other than \"szonestaging\" as the recovery verification state.",
+    "Do not use this procedure as a substitute for the separate documented system start procedure; the source explicitly refers the user to \"Starting the System\" for RMS resumption."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Perform the documented recovery actions including E-stop use, physically moving the AGV into the zone, adding the AGV in RMS, verifying AGV color/state, and resuming RMS per the referenced start procedure."
+    }
+  ],
+  "safety_notes": [
+    "This procedure includes E-stop use.",
+    "This procedure includes physically moving an AGV into the zone under the tote rack.",
+    "Do not resume RMS until the AGV has turned blue and the HMI status is verified as \"szonestaging.\""
+  ],
+  "access_or_tools_needed": [
+    "RMS access",
+    "Tote API Controls",
+    "HMI access to AGV state/status",
+    "Ability to view AGV color/status indication",
+    "Physical access to move an AGV into the zone under the tote rack"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "RMS access",
+      "Tote API Controls",
+      "HMI access to AGV state/status",
+      "Physical access to the zone under the tote rack"
+    ],
+    "system_preconditions": [
+      "An AGV is available to be moved into the zone under the tote rack.",
+      "RMS can be E-stopped before the AGV is moved and added."
+    ],
+    "external_references": [
+      "Manual page 26, \"Tote API Controls\".",
+      "Manual page 65, \"Starting the System\"."
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_agv_status_screen_v1",
+    "ctx_manual_agv_szonestaging_status_v1",
+    "ctx_manual_agv_green_lights_status_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "description": "Figure 5-3 screen associated with the documented recovery procedure for adding an AGV to a zone when no empty AGV is available.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "description": "System shut-down mode screen associated with the referenced AGV system start-up/resume context.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "description": "AGV API Controls screen showing related AGV control context in the System HMI screens section.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "E-stop RMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Place RMS into the stopped condition required before performing the AGV recovery actions.",
+      "instruction": "E-stop RMS.",
+      "expected_result": "RMS is E-stopped and the recovery can proceed.",
+      "healthy_condition": "RMS is in the stopped condition required by the procedure.",
+      "failure_condition": "RMS is not successfully E-stopped before continuing.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "E-stop RMS",
+          "exact_action": "E-stop RMS.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+          "what_to_look_at": "Use the figure associated with this recovery procedure for context on the no-empty-AGV recovery."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if RMS cannot be placed into the E-stopped condition required by the source procedure."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Move an AGV into the zone under the tote rack",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Position the AGV in the required zone so it can be added back into RMS.",
+      "instruction": "Move an AGV into the zone under the tote rack.",
+      "expected_result": "An AGV is physically positioned in the target zone under the tote rack.",
+      "healthy_condition": "The AGV is in the zone under the tote rack and ready to be added in RMS.",
+      "failure_condition": "The AGV is not correctly positioned in the zone under the tote rack.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Move AGV into zone",
+          "exact_action": "Move an AGV into the zone under the tote rack.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+          "what_to_look_at": "Reference the Add AGV to Zone with No Empty AGV screen and associated zone context for this recovery."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the AGV cannot be moved into the zone under the tote rack."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Add the AGV in RMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Register the positioned AGV back into RMS using the documented control reference.",
+      "instruction": "Add the AGV in RMS. See \"Tote API Controls\" on page 26.",
+      "expected_result": "The AGV is added in RMS.",
+      "healthy_condition": "RMS accepts the AGV add action.",
+      "failure_condition": "The AGV is not added in RMS.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Add AGV in RMS",
+          "exact_action": "Add AGV in RMS. (See \"Tote API Controls\" on page 26.)",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+          "what_to_look_at": "Use the recovery figure associated with adding an AGV to a zone when no empty AGV is available."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the AGV cannot be added in RMS using the documented controls."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Wait for the AGV to turn blue",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the documented visual indication that the AGV has reached the expected recovery condition.",
+      "instruction": "Wait for the AGV to turn blue.",
+      "expected_result": "The AGV turns blue.",
+      "healthy_condition": "The AGV color/status indication is blue.",
+      "failure_condition": "The AGV does not turn blue.",
+      "actions": [
+        {
+          "action_type": "physical_inspection",
+          "label": "Observe AGV color",
+          "exact_action": "Wait for AGV to turn blue.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+          "what_to_look_at": "Use the procedure figure for the no-empty-AGV recovery while confirming the AGV reaches the documented visual state."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the AGV does not turn blue."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Verify AGV status is szonestaging on the HMI",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the AGV has reached the exact HMI state required by the source before restart.",
+      "instruction": "Verify AGV status is \"szonestaging.\" Reference AGV state on HMI.",
+      "expected_result": "The HMI shows the AGV status/state as \"szonestaging.\"",
+      "healthy_condition": "AGV status on the HMI is exactly \"szonestaging.\"",
+      "failure_condition": "The HMI does not show the AGV status/state as \"szonestaging.\"",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check AGV state on HMI",
+          "exact_action": "Verify AGV status is \"szonestaging\". (Reference AGV state on HMI.)",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+          "what_to_look_at": "Use the screen associated with this recovery procedure while verifying the AGV state."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the AGV does not show the documented \"szonestaging\" state.",
+        "Do not assume another AGV state is acceptable."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Re-add the AGV if it is moving to the Hospital",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Correct the documented undesired routing condition before proceeding.",
+      "instruction": "If the AGV is moving to the Hospital, remove the AGV and add it again.",
+      "expected_result": "The AGV is removed and re-added when the Hospital movement condition occurs.",
+      "healthy_condition": "The AGV is not moving to the Hospital, or if it was, it has been removed and added again per the source.",
+      "failure_condition": "The AGV continues moving to the Hospital or is not re-added as instructed.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Remove and re-add AGV",
+          "exact_action": "If the AGV is moving to the Hospital, remove the AGV and add it again.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+          "what_to_look_at": "Use the recovery figure associated with this procedure while checking for Hospital movement behavior."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the AGV is moving to the Hospital and cannot be removed and added again as instructed."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Press the E-stop again",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Perform the documented final E-stop action before resuming RMS.",
+      "instruction": "Press the E-stop again.",
+      "expected_result": "The documented second E-stop action is completed.",
+      "healthy_condition": "The second E-stop action has been performed as directed by the source.",
+      "failure_condition": "The second E-stop action is not performed before RMS resumption.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Press E-stop again",
+          "exact_action": "Press the E-stop again.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+          "what_to_look_at": "Use the procedure figure for context on the final recovery sequence."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the documented second E-stop action cannot be completed."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 8,
+      "title": "Resume RMS using the documented system start procedure",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Return the system to operation using the manual's referenced startup procedure.",
+      "instruction": "Resume RMS. See \"Starting the System\" on page 65.",
+      "expected_result": "RMS is resumed after the AGV has been verified in the required state.",
+      "healthy_condition": "RMS is resumed only after the AGV is blue and the HMI state is \"szonestaging.\"",
+      "failure_condition": "RMS is resumed without the documented AGV verification state, or RMS cannot be resumed.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Resume RMS",
+          "exact_action": "Resume RMS. (See \"Starting the System\" on page 65.)",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+          "what_to_look_at": "Reference the AGV system shut-down/start-up context associated with the documented resume/start procedure."
+        },
+        {
+          "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+          "what_to_look_at": "Use the no-empty-AGV recovery figure for the immediate procedure context before resuming RMS."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the AGV has not been verified as blue and in \"szonestaging\" before resuming RMS.",
+        "Stop if RMS cannot be resumed using the documented start procedure."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The AGV is added to the zone.",
+    "The AGV turns blue.",
+    "The HMI shows the AGV status/state as \"szonestaging.\"",
+    "RMS is resumed using the documented system start procedure."
+  ],
+  "healthy_conditions": [
+    "RMS is E-stopped before recovery actions begin.",
+    "The AGV is positioned in the zone under the tote rack.",
+    "The AGV is successfully added in RMS.",
+    "The AGV turns blue.",
+    "The AGV status on the HMI is exactly \"szonestaging.\"",
+    "RMS is resumed after verification."
+  ],
+  "failure_conditions": [
+    "RMS cannot be E-stopped.",
+    "The AGV cannot be moved into the zone under the tote rack.",
+    "The AGV cannot be added in RMS.",
+    "The AGV does not turn blue.",
+    "The AGV does not show the documented \"szonestaging\" state on the HMI.",
+    "The AGV moves to the Hospital and the remove/re-add action does not correct the condition.",
+    "RMS cannot be resumed using the documented start procedure."
+  ],
+  "escalation_guidance": [
+    "Escalate if the AGV does not show the documented \"szonestaging\" state; do not assume another state is acceptable.",
+    "If the AGV is moving to the Hospital, remove the AGV and add it again as instructed by the source.",
+    "Escalate for review if E-stop use, physical AGV movement, or RMS resumption cannot be completed as documented."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "what_to_look_at": "Primary visual reference for the Add AGV to Zone with No Empty AGV recovery procedure."
+    },
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "what_to_look_at": "Reference for the AGV system shut-down/start-up context tied to RMS resumption."
+    }
+  ],
+  "source_refs": [],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_l2_recover_add_agv_to_zone_with_no_empty_agv"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide the exact E-stop device/location or interface details.",
+    "The packet does not provide the exact Tote API Controls screen sequence for adding the AGV.",
+    "The packet does not provide the exact HMI navigation path used to verify \"szonestaging\" within this specific procedure excerpt.",
+    "The packet does not state whether production stop or LOTO is formally required beyond the documented E-stop actions.",
+    "The packet does not provide a time estimate for completing the procedure."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

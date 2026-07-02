@@ -1,0 +1,571 @@
+{
+  "procedure_id": "proc_start_a_left_or_right_tipper_cycle_using_the_operator_station_push_buttons_v1",
+  "candidate_id": "candidate_operator_start_tipper_cycle_from_operator_station_push_buttons",
+  "title": "Start A Left Or Right Tipper Cycle Using The Operator Station Push-Buttons",
+  "procedure_type": "operation",
+  "summary": "Use the operator station push-buttons to identify which tipper side is ready, determine whether the tote requires the standard or Surepost cycle based on the flashing button color, and press the corresponding flashing button to start the left or right tipper cycle.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this procedure when a tote has arrived at the operator station tipper and the operator must start the left or right tipping cycle using the physical push-buttons at the operator station.",
+  "not_for": [
+    "Do not use the emergency stop push-button as part of normal tipper cycle initiation.",
+    "Do not rely on a tip button press made before a tote is in the gripper, because the source states that command is ignored."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "operator",
+      "responsibility": "Observe the operator station push-button status, identify the correct left or right tipper button and package type, ensure the appropriate bag is ready for Surepost packages, and press the corresponding flashing button to initiate the tipping cycle."
+    }
+  ],
+  "safety_notes": [
+    "The emergency stop button is only used if there is imminent danger to personnel or damage to equipment.",
+    "Do not use the emergency stop push-button during normal tipper cycle initiation.",
+    "If the tip button is pressed before a tote is in the gripper, the tipper will ignore that command."
+  ],
+  "access_or_tools_needed": [
+    "Physical access to the operator station",
+    "Visual access to the operator station push-buttons",
+    "Operator station push-button layout from Figure 3-3 and Table 3-2"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Physical access to the operator station",
+      "Ability to view the operator station push-buttons"
+    ],
+    "system_preconditions": [
+      "A tote has arrived at a tipper and the corresponding tip button is flashing",
+      "For Surepost packages, the appropriate bag is ready before pressing the yellow button"
+    ],
+    "external_references": [
+      "Figure 3-3 Operator Station Push-Buttons",
+      "Table 3-2 Operator Station Push-Buttons"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_operator_station_push_buttons_overview_v1",
+    "ctx_manual_tipper_axis_mapping_v1",
+    "ctx_manual_hmi_axis_button_status_v1",
+    "ctx_manual_operator_station_tipper_interlock_status_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_3_3_operator_station_push_buttons",
+      "description": "Operator station push-button layout showing left tipper buttons on top, right tipper buttons on bottom, Surepost buttons, and emergency stop location.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_3_1_operator_station_panels_removed_for_clarity",
+      "description": "Reference view of the operator station location and hardware layout.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Identify the operator station push-button layout",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Ensure the operator can distinguish the left and right tipper controls before starting a cycle.",
+      "instruction": "Go to the operator station and identify the push-button layout. Use the top two buttons for the left tipper and the bottom two buttons for the right tipper. Identify the emergency stop push-button separately from the cycle start buttons.",
+      "expected_result": "The operator can correctly identify which buttons belong to the left tipper, which belong to the right tipper, and which button is the emergency stop.",
+      "healthy_condition": "The operator station layout matches Figure 3-3, with four push-buttons plus a separate emergency stop push-button.",
+      "failure_condition": "The operator cannot clearly identify the left and right tipper buttons or cannot distinguish the emergency stop from the cycle buttons.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Identify left and right tipper buttons",
+          "exact_action": "Identify the left tipper controls on the top two buttons and the right tipper controls on the bottom two buttons.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_3_3_operator_station_push_buttons",
+          "what_to_look_at": "Top two buttons for left tipper, bottom two buttons for right tipper, and emergency stop location."
+        },
+        {
+          "artifact_id": "artifact_fig_3_1_operator_station_panels_removed_for_clarity",
+          "what_to_look_at": "Overall operator station location and physical control area."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the push-button layout does not match the documented arrangement.",
+        "Stop and escalate if the emergency stop cannot be clearly distinguished from the cycle buttons."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 26,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_2_2_operator_station_push_buttons",
+          "figure_id": "fig_3_3",
+          "figure_number": "Figure 3-3",
+          "quote_or_summary": "The operator station has four push-buttons and an emergency stop push-button. The top two buttons control the left tipper; the bottom two buttons control the right tipper.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Observe which tipper button is flashing",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Determine which tipper side has a tote ready for cycle initiation.",
+      "instruction": "Observe the operator station push-buttons and identify which button is flashing for the tote that has arrived at the tipper.",
+      "expected_result": "A flashing button indicates the tipper side and cycle type that is ready to be started.",
+      "healthy_condition": "The corresponding tip button flashes only once a tote is gripped by the gripper.",
+      "failure_condition": "No corresponding button flashes after a tote is expected to be ready, or button behavior does not match the documented flashing behavior.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Observe flashing button",
+          "exact_action": "Observe which tipper button is flashing for the tote that has arrived.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_3_3_operator_station_push_buttons",
+          "what_to_look_at": "The physical push-buttons used to start left or right tipper cycles, including Surepost buttons and emergency stop."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the observed button behavior does not match the documented flashing behavior.",
+        "Escalate if a tote is expected to be gripped but no corresponding button flashes."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 26,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_2_2_operator_station_push_buttons",
+          "figure_id": "fig_3_3",
+          "figure_number": "Figure 3-3",
+          "quote_or_summary": "When a tote comes into the tipper, the yellow button will start flashing to indicate that a tote with Surepost packages is being delivered to the tipper; the green button for that tipper will start flashing for all other packages.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 26,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_2_2_operator_station_push_buttons",
+          "figure_id": "fig_3_3",
+          "figure_number": "Figure 3-3",
+          "quote_or_summary": "NOTE: If the tip button is pressed before a tote is in the gripper, the tipper will ignore that command. Only once a tote is gripped by the gripper, the corresponding tip button will flash.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Interpret a flashing green button as the standard cycle",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm that a green flashing button indicates the standard tipper cycle for non-Surepost packages.",
+      "instruction": "If the flashing button is green, identify it as the standard tipper cycle button for that tipper.",
+      "expected_result": "The operator recognizes that the green flashing button is the correct button for a standard tipping cycle.",
+      "healthy_condition": "A green flashing button is understood as the normal cycle indicator for all other packages.",
+      "failure_condition": "The operator cannot determine whether the flashing green button represents the standard cycle.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Interpret green button",
+          "exact_action": "If the flashing button is green, identify it as the standard tipper cycle button for that tipper.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_3_3_operator_station_push_buttons",
+          "what_to_look_at": "Green button assignment for standard left or right tipper cycle."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the button color indication does not match the documented package-type behavior."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 26,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_2_2_operator_station_push_buttons",
+          "figure_id": "fig_3_3",
+          "figure_number": "Figure 3-3",
+          "quote_or_summary": "When a tote comes into the tipper, the yellow button will start flashing to indicate that a tote with Surepost packages is being delivered to the tipper; the green button for that tipper will start flashing for all other packages.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Interpret a flashing yellow button as the Surepost cycle",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm that a yellow flashing button indicates a Surepost tote and that the cycle should only be started after the appropriate bag is ready.",
+      "instruction": "If the flashing button is yellow, identify it as the Surepost tipper cycle button for that tipper and press it only after the appropriate bag is ready for the Surepost packages.",
+      "expected_result": "The operator recognizes the Surepost cycle condition and waits until the appropriate bag is ready before starting the cycle.",
+      "healthy_condition": "A yellow flashing button is treated as the Surepost cycle indicator, and the bag is ready before the button is pressed.",
+      "failure_condition": "The yellow button is pressed before the appropriate bag is ready, or the operator cannot determine the correct Surepost condition.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Interpret yellow button",
+          "exact_action": "If the flashing button is yellow, identify it as the Surepost tipper cycle button for that tipper.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "physical_action",
+          "label": "Verify Surepost bag readiness",
+          "exact_action": "Press it only after the appropriate bag is ready for the Surepost packages.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_3_3_operator_station_push_buttons",
+          "what_to_look_at": "Yellow button assignment for Surepost left or right tipper cycle."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the appropriate bag for Surepost packages is not ready.",
+        "Escalate if the button color indication does not match the documented package-type behavior."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 26,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_2_2_operator_station_push_buttons",
+          "figure_id": "fig_3_3",
+          "figure_number": "Figure 3-3",
+          "quote_or_summary": "When a tote comes into the tipper, the yellow button will start flashing to indicate that a tote with Surepost packages is being delivered to the tipper; the green button for that tipper will start flashing for all other packages.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 26,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_2_2_operator_station_push_buttons",
+          "figure_id": "fig_3_3",
+          "figure_number": "Figure 3-3",
+          "quote_or_summary": "The operator presses the corresponding green button to initiate the tipping cycle or presses the yellow button to initiate the tipping cycle after the appropriate bag is ready for the Surepost packages.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Press the corresponding flashing button to start the cycle",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Initiate the left or right tipping cycle for the ready tote using the correct physical push-button.",
+      "instruction": "Press the corresponding flashing button for the left or right tipper to initiate the tipping cycle.",
+      "expected_result": "The selected left or right tipper cycle is initiated for the tote and package type indicated by the flashing button.",
+      "healthy_condition": "The correct flashing button is pressed and the tipping cycle initiates.",
+      "failure_condition": "The cycle does not initiate after a valid flashing button press.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Press flashing cycle button",
+          "exact_action": "Press the corresponding flashing button for the left or right tipper to initiate the tipping cycle.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_3_3_operator_station_push_buttons",
+          "what_to_look_at": "The physical green or yellow button corresponding to the ready left or right tipper."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the cycle does not initiate after a valid flashing button press.",
+        "Stop if the only button being considered is the emergency stop push-button."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 26,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_2_2_operator_station_push_buttons",
+          "figure_id": "fig_3_3",
+          "figure_number": "Figure 3-3",
+          "quote_or_summary": "The operator presses the corresponding green button to initiate the tipping cycle or presses the yellow button to initiate the tipping cycle after the appropriate bag is ready for the Surepost packages.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Observe button behavior when both sides are waiting",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm expected interlock behavior when both tippers have AGVs waiting.",
+      "instruction": "If both sides are flashing because both sides have AGVs waiting, press the button for the side you are starting and observe that the opposite side stops flashing until the opposite cycle is done.",
+      "expected_result": "After one tip button is pressed, the opposite side stops flashing until the opposite cycle is done.",
+      "healthy_condition": "Both buttons may flash when both sides have AGVs waiting, and once one side is started the opposite button stops flashing until that opposite cycle is done.",
+      "failure_condition": "The opposite side continues flashing unexpectedly after one side is started, or the interlock behavior does not match the documented behavior.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Observe dual-side flashing behavior",
+          "exact_action": "If both sides are flashing because both sides have AGVs waiting, press the button for the side you are starting and observe that the opposite side stops flashing until the opposite cycle is done.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_3_3_operator_station_push_buttons",
+          "what_to_look_at": "Both left and right tipper buttons and the change in opposite-side flashing after one side is started."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the opposite side does not stop flashing after one tip button is pressed when both sides were waiting.",
+        "Escalate if button behavior does not match the documented interlock behavior."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 26,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_2_2_operator_station_push_buttons",
+          "figure_id": "fig_3_3",
+          "figure_number": "Figure 3-3",
+          "quote_or_summary": "If a tipping cycle is in process for any tipper, and the other tipper has a tote, the other button will not start flashing until the cycle for the first tipper is completed. Both buttons can flash if both sides have AGVs and are waiting, but as soon as one tip button is pressed, the opposite button will stop flashing until the opposite cycle is done.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Do not rely on a button press made before the tote is gripped",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Prevent false assumptions about cycle initiation when a button is pressed too early.",
+      "instruction": "Do not rely on a button press made before a tote is gripped. If the tip button was pressed before a tote was in the gripper, expect that command to be ignored. Wait until the corresponding tip button flashes once the tote is gripped, then use the flashing button.",
+      "expected_result": "The operator understands that only a flashing button after tote grip indicates a valid cycle-start opportunity.",
+      "healthy_condition": "The operator waits for the corresponding button to flash only after the tote is gripped before attempting cycle initiation.",
+      "failure_condition": "A button was pressed before the tote was gripped and the operator expects the cycle to start from that earlier press.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify tote is gripped before relying on button press",
+          "exact_action": "Do not rely on a button press made before a tote is gripped; the source states that a tip button pressed before a tote is in the gripper is ignored, and the corresponding button flashes only once the tote is gripped.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_3_3_operator_station_push_buttons",
+          "what_to_look_at": "The corresponding tip button flashing only after the tote is gripped."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if a valid flashing button press does not initiate the cycle after the tote is gripped.",
+        "Do not continue assuming an early button press was accepted before tote grip."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 26,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_2_2_operator_station_push_buttons",
+          "figure_id": "fig_3_3",
+          "figure_number": "Figure 3-3",
+          "quote_or_summary": "NOTE: If the tip button is pressed before a tote is in the gripper, the tipper will ignore that command. Only once a tote is gripped by the gripper, the corresponding tip button will flash.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The operator identifies the correct left or right tipper push-button.",
+    "The operator correctly interprets green as the standard cycle and yellow as the Surepost cycle.",
+    "For Surepost packages, the operator waits until the appropriate bag is ready before pressing the yellow button.",
+    "The corresponding flashing button is pressed and the selected tipping cycle is initiated."
+  ],
+  "healthy_conditions": [
+    "The operator station push-button layout matches the documented arrangement in Figure 3-3.",
+    "The corresponding tip button flashes only once a tote is gripped.",
+    "Green flashing indicates the standard cycle for all other packages.",
+    "Yellow flashing indicates a Surepost tote.",
+    "If both sides have AGVs waiting, both buttons may flash until one side is started, after which the opposite side stops flashing until the opposite cycle is done."
+  ],
+  "failure_conditions": [
+    "The emergency stop push-button is used as part of normal cycle initiation.",
+    "A button is pressed before a tote is in the gripper and the operator expects the command to be accepted.",
+    "Observed button behavior does not match the documented flashing behavior.",
+    "The cycle does not initiate after a valid flashing button press."
+  ],
+  "escalation_guidance": [
+    "Escalate if the observed button behavior does not match the documented flashing behavior.",
+    "Escalate if the cycle does not initiate after a valid flashing button press.",
+    "Escalate if the push-button layout or button assignment does not match the documented arrangement."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_3_3_operator_station_push_buttons",
+      "what_to_look_at": "Operator station push-button layout, left and right tipper button positions, Surepost buttons, and emergency stop location."
+    },
+    {
+      "artifact_id": "artifact_fig_3_1_operator_station_panels_removed_for_clarity",
+      "what_to_look_at": "Overall operator station physical location and control area."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page_start": 26,
+      "page_end": 26,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_2_2_operator_station_push_buttons",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 26,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_2_2_operator_station_push_buttons",
+      "figure_id": "fig_3_3",
+      "figure_number": "Figure 3-3",
+      "quote_or_summary": "The operator station has four push-buttons and an emergency stop push-button. The top two buttons control the left tipper; the bottom two buttons control the right tipper.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 26,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_2_2_operator_station_push_buttons",
+      "figure_id": "fig_3_3",
+      "figure_number": "Figure 3-3",
+      "quote_or_summary": "When a tote comes into the tipper, the yellow button will start flashing to indicate that a tote with Surepost packages is being delivered to the tipper; the green button for that tipper will start flashing for all other packages.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 26,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_2_2_operator_station_push_buttons",
+      "figure_id": "fig_3_3",
+      "figure_number": "Figure 3-3",
+      "quote_or_summary": "The operator presses the corresponding green button to initiate the tipping cycle or presses the yellow button to initiate the tipping cycle after the appropriate bag is ready for the Surepost packages.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 26,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_2_2_operator_station_push_buttons",
+      "figure_id": "fig_3_3",
+      "figure_number": "Figure 3-3",
+      "quote_or_summary": "If a tipping cycle is in process for any tipper, and the other tipper has a tote, the other button will not start flashing until the cycle for the first tipper is completed. Both buttons can flash if both sides have AGVs and are waiting, but as soon as one tip button is pressed, the opposite button will stop flashing until the opposite cycle is done.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 26,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_3_2_2_operator_station_push_buttons",
+      "figure_id": "fig_3_3",
+      "figure_number": "Figure 3-3",
+      "quote_or_summary": "NOTE: If the tip button is pressed before a tote is in the gripper, the tipper will ignore that command. Only once a tote is gripped by the gripper, the corresponding tip button will flash.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_operator_start_tipper_cycle_from_operator_station_push_buttons"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide a detailed cycle completion confirmation indicator beyond documented button flashing behavior.",
+    "The source does not provide an estimated completion time for this procedure.",
+    "The source does not specify production-stop or LOTO requirements for this normal operator action."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

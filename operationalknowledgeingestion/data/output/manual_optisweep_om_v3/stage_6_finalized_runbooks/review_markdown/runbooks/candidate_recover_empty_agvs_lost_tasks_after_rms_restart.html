@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Recover Empty AGVs That Lost Tasks After an RMS Restart</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Recover Empty AGVs That Lost Tasks After an RMS Restart</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_recover_empty_agvs_that_lost_tasks_after_rms_restart_v1</td></tr>
+<tr><th>Title</th><td>Recover Empty AGVs That Lost Tasks After an RMS Restart</td></tr>
+<tr><th>Procedure Type</th><td>recovery</td></tr>
+<tr><th>Primary Role</th><td>L1_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Restore empty AGVs to a recoverable state after their tasks were lost following an RMS restart by E-stopping RMS, removing and re-adding AGVs without totes twice using Tote API Controls, verifying AGV state as &quot;szonestaging&quot; on the HMI if a restart is needed, then resuming RMS.</p>
+<h2>When To Use</h2>
+<p>Use when empty AGVs have lost their tasks because the RMS was restarted.</p>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — E-stop RMS</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>E-stop RMS.</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS is E-stopped and ready for AGV recovery actions.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_5_1_system_in_shut_down_mode.jpeg" alt="artifact_fig_5_1_system_in_shut_down_mode" /><figcaption>System state context associated with shut-down mode before restart or resume-related actions.</figcaption></figure>
+<figure><img src="assets/artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen" /><figcaption>Nearby fault recovery screen context on page 90 associated with E-stop and AGV recovery flow.</figcaption></figure>
+<hr>
+<h3>Step 2 — Remove and re-add empty AGVs twice using Tote API Controls</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using Tote API Controls in RMS, remove and re-add AGVs without totes twice.</p>
+<p><strong>Expected result:</strong></p>
+<p>The affected empty AGVs have been removed and re-added twice in RMS using Tote API Controls.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_4_12_agv_api_controls.jpeg" alt="artifact_fig_4_12_agv_api_controls" /><figcaption>AGV API Controls showing Remove AGV and Recover AGV controls relevant to the remove and re-add actions.</figcaption></figure>
+<figure><img src="assets/artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen" /><figcaption>Nearby page 90 recovery screen used as contextual support for AGV add/remove actions in RMS.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The affected AGV is not empty and instead has a tote.</li>
+<li>The documented remove and re-add actions cannot be completed in Tote API Controls.</li>
+<li>Additional recovery actions seem necessary beyond the documented remove and re-add steps.</li>
+</ul>
+<hr>
+<h3>Step 3 — Verify AGVs are in &quot;szonestaging&quot; if restart is needed</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the system needs to be restarted, verify on the HMI that the AGVs are in the &quot;szonestaging&quot; state.</p>
+<p><strong>Expected result:</strong></p>
+<p>When a restart is needed, the AGV state is verified on the HMI as &quot;szonestaging&quot;.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen" /><figcaption>AGV status context on the nearby recovery screen and any indication of the &quot;szonestaging&quot; state.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The system needs to be restarted and the AGVs cannot be verified as &quot;szonestaging&quot; on the HMI.</li>
+<li>The HMI does not show the AGVs in the &quot;szonestaging&quot; state.</li>
+</ul>
+<hr>
+<h3>Step 4 — Press the E-stop again when ready to resume</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Press the E-stop again when ready to resume.</p>
+<p><strong>Expected result:</strong></p>
+<p>The documented pre-resume E-stop action has been completed.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_5_1_system_in_shut_down_mode.jpeg" alt="artifact_fig_5_1_system_in_shut_down_mode" /><figcaption>System state context associated with transitioning from stopped to resumed operation.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>You are not ready to resume RMS.</li>
+<li>Required prior recovery actions have not been completed.</li>
+</ul>
+<hr>
+<h3>Step 5 — Resume RMS</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Resume RMS. See &quot;Starting the System&quot; on page 65.</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS is resumed after the AGV recovery sequence.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/artifact_fig_5_1_system_in_shut_down_mode.jpeg" alt="artifact_fig_5_1_system_in_shut_down_mode" /><figcaption>System state context relevant to resuming from shut-down or stopped mode.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>RMS cannot be resumed after completing the documented recovery steps.</li>
+</ul>
+<hr>
+</body>
+</html>

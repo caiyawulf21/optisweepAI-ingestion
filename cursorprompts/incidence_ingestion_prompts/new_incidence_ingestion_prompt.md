@@ -1,6 +1,6 @@
 <!--
 Incidence pipeline stage-contract planning prompt.
-Defines source-specific Stages 1-11, shared finalization stages, downstream
+Defines source-specific Stages 1-6, shared finalization Stages 6.5+, downstream
 input contracts, and the file-header convention for scripts, src, and prompts.
 -->
 
@@ -70,18 +70,20 @@ not approved for general runtime use
 The operational knowledge pipeline follows this pattern:
 
 ```text
-Stage 1: Source bundle extraction
-Stage 2: Source artifact and image extraction
-Stage 3: Source artifact enrichment
-Stage 4: Operational context extraction
-Stage 5: Runbook candidate discovery
-Stage 6: Candidate pool generation
-Stage 7: Canonical runbook drafting and merging
-Stage 8: Relationship linking
-Stage 9: Validation and repair
-Stage 10: Final output writing
-Stage 11: Vector embedding generation
-Stage 12: LangGraph orchestration / publishing later
+Stage 1: Source bundle extraction [Deterministic]
+Stage 2: Source artifact and image extraction [Deterministic]
+Stage 3: Source artifact enrichment [LLM Assisted]
+Stage 4: Operational context extraction [LLM Assisted]
+Stage 5: Runbook candidate discovery [LLM Assisted]
+Stage 6: Source runbook finalization [LLM Assisted]
+Shared Stage 6.5: Shared runbook pool and merge preparation [Deterministic]
+Shared Stage 7: Cross-source runbook merge [LLM Assisted, selective]
+Shared Stage 8: Playbook finalization and runbook linking [LLM Assisted]
+Shared Stage 9: Relationship linking [Deterministic]
+Shared Stage 10: Validation and repair [Deterministic]
+Shared Stage 11: Final output writing [Deterministic]
+Shared Stage 12: Vector embedding generation [Deterministic]
+Shared Stage 13: LangGraph orchestration / publishing later
 ```
 
 The incident pipeline should reuse this pattern where it makes sense, especially:
@@ -95,8 +97,9 @@ artifact records and image refs
 artifact enrichment patterns
 operational context extraction packet patterns
 runbook candidate schema shape
-candidate pool format
-canonical runbook Markdown + JSON review pattern
+finalized runbook format (Stage 6)
+shared runbook pool format (Stage 6.5)
+canonical runbook Markdown + JSON review pattern (Runbook Example.md)
 relationship linking patterns
 validation and extraction report patterns
 ```
@@ -199,22 +202,21 @@ The goal is to reduce LLM noise without losing traceability.
 
 ## High-Level Source-Specific Incident Pipeline
 
-The incidence pipeline should be source-specific through its first set of stages.
+The incidence pipeline should be source-specific through Stage 6.
 
 Recommended source-specific stages:
 
 ```text
-Stage 1: Incident source package loading
-Stage 2: OCR and evidence artifact extraction
-Stage 2.5: Artifact enrichment packet preparation
-Stage 3: Incident artifact enrichment
-Stage 4: Create canonical incident records and timeline
-Stage 5: Incident operational context extraction
-Stage 6: Incident runbook candidate discovery
-Stage 7: Draft incident-derived workflow/playbook discovery
-Stage 8: Candidate pool contribution
-Stage 9: Source-specific validation and extraction report
-Stage 10: Source-specific final output writing
+Stage 1: Incident source package loading [Deterministic]
+Stage 2: OCR and evidence artifact extraction [Deterministic]
+Stage 2.5: Artifact enrichment packet preparation [Deterministic]
+Stage 3: Incident artifact enrichment [LLM Assisted]
+Stage 4: Create canonical incident records and timeline [LLM Assisted]
+Stage 5: Incident runbook candidate discovery [LLM Assisted]
+         + incident playbook candidate discovery [LLM Assisted, Prompt A/B]
+Stage 6: Source runbook finalization for runbook candidates [LLM Assisted]
+Stage 7: Source-specific validation and extraction report [Deterministic]
+Stage 8: Source-specific final output writing [Deterministic]
 ```
 
 For v1, we may build only the core subset first:
@@ -225,13 +227,15 @@ Stage 2: OCR and evidence artifact extraction
 Stage 2.5: Artifact enrichment packet preparation
 Stage 3: Incident artifact enrichment
 Stage 4: Create canonical incident records and timeline
-Stage 5: Incident operational context extraction
-Stage 6: Incident runbook candidate discovery
-Stage 7: Draft incident-derived workflow/playbook creation
-Stage 9: Source-specific validation and extraction report
+Stage 5: Incident runbook candidate discovery
+         + incident playbook candidate discovery (Prompt A/B)
+Stage 6: Source runbook finalization for runbook candidates
+Stage 7: Source-specific validation and extraction report
 ```
 
-This lets us create a usable draft workflow from Case 228086 now without pretending it is canonical.
+Playbook candidates remain source-specific discovery outputs. They do not enter
+Stage 6 runbook finalization or Shared Stage 6.5 runbook pooling. Shared Stage 8
+links playbooks to finalized/canonical runbooks.
 
 ## Shared Finalization Pipeline
 
@@ -240,17 +244,21 @@ After source-specific operational and incident extraction, both pipelines feed s
 Recommended shared stages:
 
 ```text
-Shared Stage 6: Unified candidate pool generation
-Shared Stage 7: Canonical runbook drafting and merging
-Shared Stage 8: Canonical workflow/playbook synthesis
-Shared Stage 9: Relationship linking
-Shared Stage 10: Validation and repair
-Shared Stage 11: Final reviewed output writing
-Shared Stage 12: Embedding generation / publishing later
-Shared Stage 13: Knowledge graph relationship generation later
+Shared Stage 6.5: Shared runbook pool and merge preparation [Deterministic]
+Shared Stage 7: Cross-source runbook merge [LLM Assisted, selective]
+Shared Stage 8: Playbook finalization and runbook linking [LLM Assisted]
+Shared Stage 9: Relationship linking [Deterministic]
+Shared Stage 10: Validation and repair [Deterministic]
+Shared Stage 11: Final reviewed output writing [Deterministic]
+Shared Stage 12: Embedding generation / publishing later [Deterministic]
+Shared Stage 13: Knowledge graph relationship generation later [Deterministic]
 ```
 
-The exact numbering can be refined later, but the dependency order matters.
+Stages 1–6 are source-specific. Stages 6.5–8 are shared.
+
+Stage 5 drafts runbook candidates. Stage 6 finalizes source runbooks with
+artifacts attached. Stage 7 merges only merge clusters (not every runbook).
+Stage 8 links playbooks to finalized/canonical runbooks.
 
 ## Critical Dependency Rule
 
@@ -268,7 +276,7 @@ Draft incident-derived workflows may temporarily reference runbook candidate IDs
 
 Canonical workflows should reference stable canonical procedure IDs.
 
-Correct current-state dependency chain:
+Correct current-state dependency chain for runbook finalization:
 
 ```text
 Case 228086
@@ -277,31 +285,33 @@ canonical incident record
         ↓
 timeline events
         ↓
-incident runbook candidates
+incident runbook candidates (Stage 5)
         ↓
-draft incident-derived workflow/playbook
+incident runbook candidates (Stage 5, drafted)
         ↓
-demo/review workflow
+incident finalized runbooks (Stage 6)
+        ↓
+Shared Stage 6.5 runbook pool + merge clusters
+        ↓
+Shared Stage 7 merge clusters only
+        ↓
+Shared Stage 8 playbook linking + finalization
+        ↓
+Workflow nodes reference finalized/canonical runbook IDs
 ```
 
-Correct future-state dependency chain:
+Incident playbook candidates (Stage 5 Prompt A/B) feed Shared Stage 8 after
+finalized/canonical runbooks exist.
+
+Optional demo-only path (not canonical):
 
 ```text
-Operational runbook candidates
-Incident runbook candidates
+incident playbook candidates (Stage 5 Prompt A/B)
         ↓
-Shared candidate pool
-        ↓
-Canonical runbook drafting / merging
-        ↓
-Canonical procedure library
-        ↓
-Canonical workflow/playbook synthesis
-        ↓
-Workflow nodes reference canonical procedure IDs
+draft incident-derived workflow/playbook for demo/review
 ```
 
-The draft workflow is useful now for UX testing, demo validation, and stakeholder review.
+The draft workflow is useful for UX testing, demo validation, and stakeholder review.
 
 It must not be promoted as canonical until later.
 
@@ -764,10 +774,11 @@ Draft incident-derived workflow/playbook:
   Supporting input: canonical incident record and enriched artifacts.
   Must remain draft, single-incident, review-only, and not canonical.
 
-Candidate pool contribution:
-  Primary input: runbook_candidates.json.
-  Supporting input: enriched artifacts, timeline links, and source refs.
-  Must preserve incident provenance and review status.
+Runbook finalization (Stage 6):
+  Primary input: runbook_candidates.json (already drafted in Stage 5).
+  Supporting input: enriched artifacts, timeline/evidence chunks, operational context.
+  Must produce one finalized source runbook per candidate with artifacts attached.
+  Must not merge across sources.
 
 Validation/reporting:
   Validate every claim against source_refs, page refs, artifact refs, OCR confidence, duplicate metadata, and uncertainty notes.
@@ -798,10 +809,10 @@ artifact_enrichment_packets.json
 source_artifacts_enriched.json
 canonical_incident_record.json
 timeline_events.json
-operational_context.json
 runbook_candidates.json
-draft_incident_workflow.json
-candidate_pool_contribution.json
+playbook_candidates.json
+stage_6_finalized_runbooks/finalized_runbooks/*.json
+stage_6_finalized_runbooks/review_markdown/runbooks/*.md
 extraction_report.json
 images/
 ```
@@ -816,7 +827,9 @@ source_artifacts_enriched.json
 canonical_incident_record.json
 timeline_events.json
 runbook_candidates.json
-draft_incident_workflow.json
+playbook_candidates.json
+stage_6_finalized_runbooks/finalized_runbooks/*.json
+stage_6_finalized_runbooks/review_markdown/runbooks/*.md
 extraction_report.json
 images/
 ```
@@ -885,6 +898,16 @@ Do not start with embeddings.
 Do not start with knowledge graph generation.
 
 Build the local pipeline first, then wrap stages as LangGraph nodes after the stage contracts are stable.
+
+Future LangGraph shape:
+
+```text
+Source-specific subgraph: Stages 1–6
+Shared subgraph: Stage 6.5 pool/merge prep, Stage 7 merge clusters only, Stage 8 playbook linking
+```
+
+Stage 5 drafts candidates. Stage 6 finalizes source runbooks. Stage 7 merges
+only merge clusters. Stage 8 links playbooks to finalized/canonical runbooks.
 
 Recommended first CLI shape:
 
@@ -1184,48 +1207,7 @@ Use enriched artifacts when a page message includes, requests, discusses, valida
 
 This should preserve visible timestamps, action ordering, artifact refs, and uncertainty.
 
-### Step 7 - Build Stage 5 incident operational context extraction
-
-Goal:
-
-```text
-Extract structured operational context from the incident without turning it into a runbook.
-```
-
-Output:
-
-```text
-operational_context.json
-operational_context_extraction_report.json
-```
-
-Inputs:
-
-```text
-incident_source_package.json.source_bundle
-page_inventory.json
-source_artifacts_enriched.json
-timeline_events.json
-canonical_incident_record.json
-```
-
-The operational context should capture source-supported:
-
-```text
-systems and tools mentioned
-symptoms and observed states
-commands and exact command evidence
-services and applications mentioned
-roles or actors when visible
-validation checks
-remote access or escalation context
-uncertainty and missing details
-source_refs, page_refs, and artifact_refs
-```
-
-Do not infer hostnames, URLs, service names, root cause, access paths, or responsibilities unless the source explicitly supports them.
-
-### Step 8 - Build Stage 6 incident runbook candidate discovery
+### Step 7 - Build Stage 5 incident runbook candidate discovery [LLM Assisted]
 
 Goal:
 
@@ -1257,12 +1239,11 @@ runbook_candidate_extraction_report.json
 Inputs:
 
 ```text
-incident_source_package.json.source_bundle
-page_inventory.json
+incident_source_package.json
 source_artifacts_enriched.json
+stage4_evidence_chunks.json
 timeline_events.json
 canonical_incident_record.json
-operational_context.json
 ```
 
 Each runbook candidate and step must identify whether its support came from:
@@ -1279,90 +1260,70 @@ Do not turn a single incident into a final general procedure.
 
 Do not create final canonical runbooks here.
 
-### Step 9 - Build Stage 7 draft incident-derived workflow creation
+### Deferred - Incident operational context extraction
+
+Operational context extraction may be added later if the incident pipeline needs
+a separate context asset. For the current v1 sequence, Stage 5 runbook candidate
+discovery consumes Stage 4 timeline/evidence handoff directly.
+
+### Step 8 - Build Stage 6 source runbook finalization [LLM Assisted]
 
 Goal:
 
 ```text
-Create a draft workflow/playbook from Case 228086 for demo, review, and runtime prototyping.
+Finalize each incident runbook candidate into a complete source-specific runbook
+with artifacts, context, and lineage attached.
 ```
 
 Output:
 
 ```text
-draft_incident_workflow.json
-draft_incident_workflow_extraction_report.json
+stage_6_finalized_runbooks/finalized_runbooks/*.json
+stage_6_finalized_runbooks/review_markdown/runbooks/*.md
+runbook_finalization_report.json
 ```
-
-Inputs:
-
-```text
-canonical_incident_record.json
-timeline_events.json
-runbook_candidates.json
-operational_context.json
-source_artifacts_enriched.json
-incident_source_package.json.source_bundle
-```
-
-This workflow may reference runbook candidate IDs temporarily.
-
-It must include:
-
-```text
-workflow_status: draft
-validation_status: needs_sme_review
-source_quality: single_incident_case
-execution_scope: demo_or_review_only
-canonicalization_status: not_canonical
-requires_sme_approval_before_runtime: true
-observed_sequence_only: true
-do_not_treat_as_validated_workflow: true
-requires_canonical_runbook_mapping: true
-```
-
-It should preserve:
-
-```text
-timeline_event_refs
-runbook_candidate_refs
-artifact_refs
-source_refs
-role_required
-escalation conditions
-validation nodes
-uncertainty notes
-```
-
-### Step 10 - Build candidate pool contribution
-
-Goal:
-
-```text
-Prepare incident runbook candidates to enter the shared candidate pool.
-```
-
-Output:
-
-```text
-candidate_pool_contribution.json
-```
-
-This should be compatible with the operational pipeline’s candidate pool format.
 
 Inputs:
 
 ```text
 runbook_candidates.json
 source_artifacts_enriched.json
-timeline_events.json
 canonical_incident_record.json
-operational_context.json
+timeline_events.json
+stage4_evidence_chunks.json
+incident_source_package.json
 ```
 
-For v1, this can be deferred until runbook candidates are stable.
+Stage 5 already drafted the candidates. Stage 6 expands them into full runbooks
+per Runbook Example.md.
 
-### Step 11 - Build validation and quality reporting
+Responsibilities:
+
+```text
+attach relevant incident artifacts
+attach timeline and evidence chunks
+attach OCR text when available
+attach source lineage and metadata
+produce one finalized runbook per candidate
+```
+
+Do NOT:
+
+```text
+search other sources
+merge candidates across sources
+make cross-source merge decisions
+```
+
+Shared Stage 7 handles cross-source merging only for merge clusters.
+
+### Deferred - Incident playbook demo workflow
+
+Draft incident-derived workflow/playbook creation from Stage 5 playbook candidates
+may be used for demo and review, but canonical playbooks are finalized at Shared
+Stage 8 after finalized/canonical runbooks exist from Stages 6–7.
+
+### Step 11 - Build validation and quality reporting [Deterministic]
 
 Goal:
 
@@ -1406,44 +1367,60 @@ draft workflow incorrectly marked canonical
 
 ## Shared Finalization Plan After Source-Specific Extraction
 
-After both operational and incidence pipelines produce runbook candidates:
+After both operational and incidence pipelines produce Stage 6 finalized runbooks:
 
-### Shared Stage 6 — Unified Candidate Pool
+### Shared Stage 6.5 — Runbook Pool & Merge Preparation [Deterministic]
 
 Inputs:
 
 ```text
-operational runbook_candidates.json
-incident runbook_candidates.json
-SOP runbook_candidates.json later
-SME-authored candidates later
+operational finalized_runbooks/*.json
+incident finalized_runbooks/*.json
+training finalized_runbooks/*.json
+SOP finalized_runbooks/*.json later
+SME finalized_runbooks/*.json later
 ```
 
-Output:
+Outputs:
 
 ```text
-candidate_pool.json
+runbook_pool.json
+retrieval_cards.json
+runbook_similarity.json
+runbook_retrieval_index.json
+merge_clusters.json
+pass_through_runbooks.json
 ```
 
 Responsibilities:
 
 ```text
-pool candidates
-group likely similar candidates
-preserve source lineage
-do not lose candidate IDs
-do not fully merge yet if uncertain
+index all finalized runbooks
+create retrieval cards
+compute cross-source similarity
+identify merge clusters for Stage 7
+mark singleton pass-through runbooks (no Stage 7 LLM)
+preserve complete source lineage
+do not merge runbook content
 ```
 
-### Shared Stage 7 — Canonical Runbook Drafting and Merging
+### Shared Stage 7 — Cross-Source Runbook Merge [LLM Assisted, Selective]
 
-Inputs:
+Cost rule:
 
 ```text
-candidate_pool.json
-source_artifacts_enriched.json from relevant sources
-operational_context.json from relevant sources
-existing canonical runbook library if present
+Stage 7 must NOT run on every runbook
+run only on merge clusters from Stage 6.5
+singleton runbooks pass through without Stage 7 LLM
+```
+
+Inputs (per merge cluster):
+
+```text
+finalized runbooks in the cluster
+runbook_similarity.json evidence
+merge hints from Stage 6.5
+existing canonical runbook (if applicable)
 ```
 
 Outputs:
@@ -1458,51 +1435,41 @@ candidate_to_procedure_mapping.json
 Responsibilities:
 
 ```text
-select best candidates
-merge duplicate or complementary candidates
-draft canonical runbooks
-preserve all source refs
-map candidate IDs to canonical procedure IDs
-mark review status
+merge cross-source evidence when cluster members are the same procedure
+preserve all source refs and merge history
+record unresolved conflicts and gaps
+do not re-draft singleton runbooks
 ```
 
-### Shared Stage 8 — Canonical Workflow/Playbook Synthesis
+### Shared Stage 8 — Playbook Finalization & Runbook Linking [LLM Assisted]
 
 Inputs:
 
 ```text
+pass_through_runbooks.json
 canonical_runbooks.json
-candidate_to_procedure_mapping.json
-draft_incident_workflow.json
-timeline_events.json
-canonical incident records
-operational context
-source artifacts
-existing approved workflow library if present
+playbook_candidates.json (incident Stage 5)
+operational context and artifacts as needed
 ```
 
 Outputs:
 
 ```text
-canonical_workflows.json
-review_markdown/workflows/*.md
-workflow_synthesis_report.json
-workflow_candidate_to_canonical_mapping.json
+canonical_playbooks.json
+review_markdown/playbooks/*.md
+playbook_runbook_links.json
+playbook_finalization_report.json
 ```
 
 Responsibilities:
 
 ```text
-create draft canonical workflows/playbooks
-reference canonical procedure IDs in workflow nodes
-remap draft incident workflow nodes from runbook candidate IDs to canonical procedure IDs
-preserve source workflow candidate refs
-preserve source runbook candidate refs
-preserve timeline and incident evidence
-do not approve until SME-reviewed
+resolve playbook runbook_placeholder nodes to finalized or canonical runbook IDs
+finalize playbooks for review
+preserve symptom-driven entry logic and source lineage
 ```
 
-### Shared Stage 9 — Relationship Linking
+### Shared Stage 9 — Relationship Linking [Deterministic]
 
 Link:
 
@@ -1518,7 +1485,7 @@ components ↔ incidents
 systems ↔ procedures
 ```
 
-### Shared Stage 10 — Validation and Repair
+### Shared Stage 10 — Validation and Repair [Deterministic]
 
 Validate:
 
@@ -1561,8 +1528,8 @@ Before writing Codex prompts, we need to decide:
 6. How aggressive should image duplicate detection be?
 7. Should canonical incident record extraction happen before or after timeline extraction?
 8. Should incident operational context be required for v1 or deferred?
-9. Should draft workflow creation be included in v1? Current answer: yes, for Case 228086 demo/review only.
-10. What exact compatibility contract should candidate_pool_contribution.json follow?
+9. Should draft playbook demo workflow creation remain optional outside the canonical path? Current answer: optional; canonical playbooks are synthesized at Shared Stage 8.
+10. What exact finalized runbook schema should Stage 6 emit for Shared Stage 6.5 compatibility?
 11. What exact workflow node schema should support temporary runbook candidate refs now and canonical procedure refs later?
 
 ## Recommended MVP Decision
@@ -1578,7 +1545,7 @@ Recommended v1 build:
 3. Artifact enrichment
 4. Create canonical incident records and timeline
 5. Incident runbook candidate discovery
-6. Draft incident-derived workflow creation
+6. Source runbook finalization for runbook candidates
 7. Validation/extraction report
 ```
 
@@ -1586,8 +1553,9 @@ Defer:
 
 ```text
 incident operational context extraction
-candidate pool contribution
-shared canonical workflow synthesis
+shared Stage 6.5 runbook pool and merge clusters
+shared Stage 7 merge-only LLM
+shared Stage 8 playbook linking
 relationship linking
 embeddings
 Cosmos publishing
@@ -1608,22 +1576,41 @@ Can we identify the useful screenshots?
 Can we group duplicates?
 Can we create a concise canonical incident record?
 Can we create a trustworthy timeline?
-Can we extract source-grounded runbook candidates without inventing details?
+Can we finalize source-grounded runbooks in Stage 6 without inventing details?
+Can Shared Stage 6.5 identify merge clusters and pass-through singletons correctly?
+Can Shared Stage 7 merge only when needed without re-drafting every runbook?
+```
+
+Shared playbook quality gate:
+
+```text
+Can Shared Stage 8 link playbooks to finalized/canonical runbook IDs?
+```
+
+Previous draft-workflow demo question (optional, non-canonical):
+
+```text
 Can we create a draft incident-derived workflow that is clearly marked as demo/review-only?
 ```
 
 ## Final Architectural Rule
 
-The incidence pipeline produces evidence and draft review workflows.
+The incidence and operational pipelines produce draft candidates (Stage 5) and
+finalized source runbooks (Stage 6) through source-specific Stages 1–6.
 
-The operational pipeline produces evidence and runbook candidates.
+The shared finalization pipeline (Stages 6.5–8) pools finalized runbooks,
+merges clusters selectively at Stage 7, and links/finalizes playbooks at Stage 8.
 
-The shared finalization pipeline produces canonical runbooks and canonical workflows/playbooks.
+Stages 1–6 are source-specific. Stages 6.5–8 are shared.
 
-Single-incident workflows are allowed now for demo and review, but they are not canonical.
+Stage 7 must not run on every runbook. Singleton runbooks pass through without
+Stage 7 LLM cost.
+
+Optional single-incident playbook demo outputs may exist for review, but they are
+not canonical.
 
 Final workflows/playbooks must eventually reference canonical procedure IDs, not raw runbook candidate IDs.
 
-Draft incident-derived workflows may temporarily reference runbook candidate IDs, but they must be remapped after shared canonical runbook drafting and merging.
+Draft incident-derived workflows may temporarily reference runbook candidate IDs, but they must be remapped after Shared Stage 8 playbook finalization.
 
 This keeps the system useful now while preserving the path to a traceable, reviewable, stable architecture later.

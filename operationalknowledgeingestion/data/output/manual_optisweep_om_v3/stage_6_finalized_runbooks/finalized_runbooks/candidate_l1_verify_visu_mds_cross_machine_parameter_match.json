@@ -1,0 +1,509 @@
+{
+  "procedure_id": "proc_verify_visu_mds_machine_data_values_match_across_machines_v1",
+  "candidate_id": "candidate_l1_verify_visu_mds_cross_machine_parameter_match",
+  "title": "Verify VISU_MDS Machine Data Values Match Across Machines",
+  "procedure_type": "diagnostic",
+  "summary": "Use the VISU_MDS Machine Data screen to review axis machine data values and compare them across machines. The source states that most listed values should match from machine to machine, with documented exceptions for MD5 Tote Pickup Position and MD21 Home Offset, which are unique for every machine and every axis.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this procedure when reviewing VISU_MDS Machine Data parameter consistency between machines for the same axis set, based on the manual's documented list of values that should match from machine to machine.",
+  "not_for": [
+    "Do not use this procedure to change VISU_MDS parameters; the source states these values generally do not require changing unless a motor is replaced.",
+    "Do not treat MD5 Tote Pickup Position as a mismatch solely because it differs between machines.",
+    "Do not treat MD21 Home Offset as a mismatch solely because it differs between machines.",
+    "Do not use this procedure as a corrective action procedure for mismatched values; the source does not provide corrective actions."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L1_support",
+      "responsibility": "Open the VISU_MDS Machine Data screen, review the specified axis values, compare them across machines, and record mismatches against the documented expectations."
+    }
+  ],
+  "safety_notes": [
+    "This runbook is diagnostic only and does not instruct parameter changes.",
+    "The source states VISU_MDS Machine Data parameters generally should not be changed unless a motor is replaced."
+  ],
+  "access_or_tools_needed": [
+    "Access to the operator station HMI",
+    "VISU_MDS Machine Data screen on the machines being compared",
+    "Documented Table 4-10 machine data ID list"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the operator station HMI",
+      "Ability to view the VISU_MDS Machine Data screen for the machines being compared"
+    ],
+    "system_preconditions": [
+      "The machine data values for the relevant axes must be viewable on each machine being compared."
+    ],
+    "external_references": [
+      "Figure 4-26 Operator Station HMI Machine Data Screen",
+      "Table 4-10 machine data ID list"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_visu_data_screen_overview_v1",
+    "ctx_manual_visu_mds_parameter_change_guidance_v1",
+    "ctx_manual_visu_mds_matching_values_exceptions_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_4_26_operator_station_hmi_machine_data_screen",
+      "description": "Operator Station HMI Machine Data screen showing axis parameter settings for Z1, A1, Z2, and A2.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_page_194_image_2",
+      "description": "Operator station HMI screen reference indicating navigation to the Visu_MDs screen during controller parameter work.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_208_image_2",
+      "description": "AGV/tipper HMI screen artifact associated with Visu_MDs parameter viewing during commissioning.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_page_208_image_3",
+      "description": "AGV/tipper control screen artifact associated with setting tote dump position from the Visu_MDs screen.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the VISU_MDS Machine Data screen",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Access the screen that contains the machine data parameters for each axis.",
+      "instruction": "Open the VISU_MDS \"Machine Data\" screen for the machine being checked.",
+      "expected_result": "The Machine Data screen is displayed and the axis parameter fields are visible.",
+      "healthy_condition": "The VISU_MDS Machine Data screen is open and shows parameters for the axes.",
+      "failure_condition": "The Machine Data screen cannot be opened or the axis parameter fields are not visible.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Open Machine Data screen",
+          "exact_action": "Open the VISU_MDS \"Machine Data\" screen for the machine being checked.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_26_operator_station_hmi_machine_data_screen",
+          "what_to_look_at": "Machine Data screen showing axis parameter fields and IDs for Z1, A1, Z2, and A2."
+        },
+        {
+          "artifact_id": "artifact_page_194_image_2",
+          "what_to_look_at": "Operator station HMI reference associated with navigating to the Visu_MDs screen."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the VISU_MDS Machine Data screen is not accessible for review."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 55,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_4_visu_mds_screen",
+          "figure_id": "fig_4_26",
+          "figure_number": "Figure 4-26",
+          "quote_or_summary": "The \"Machine Data\" screen contains all of the parameters for each axis (Z1, A1, Z2, and A2).",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Identify the axis being reviewed",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Ensure the comparison is performed against the correct axis on each machine.",
+      "instruction": "Identify the axis being reviewed from Z1, A1, Z2, and A2.",
+      "expected_result": "A single axis is selected for comparison across machines.",
+      "healthy_condition": "The selected axis is clearly identified and corresponds to one of the documented axes.",
+      "failure_condition": "The axis being reviewed is unclear or does not correspond to the documented axis list.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Identify axis",
+          "exact_action": "Identify the axis being reviewed from Z1, A1, Z2, and A2.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_26_operator_station_hmi_machine_data_screen",
+          "what_to_look_at": "Axis sections labeled Z1, A1, Z2, and A2 on the Machine Data screen."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the axis cannot be confidently identified on the Machine Data screen."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 55,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_4_visu_mds_screen",
+          "figure_id": "fig_4_26",
+          "figure_number": "Figure 4-26",
+          "quote_or_summary": "The \"Machine Data\" screen contains all of the parameters for each axis (Z1, A1, Z2, and A2).",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Review the documented machine data IDs",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Use the source-defined list of machine data IDs that are expected to match from machine to machine.",
+      "instruction": "Review the documented machine data IDs that should match from machine to machine: 0 Axis Name, 1 OT Minus, 5 Tote Pickup Position, 6 Plus Travel Opposite Axis Position, 7 Neg Travel Opposite Axis Position, 8 Tote Dump Position, 9 Soft Travel Lim Pos, 10 OT Pos, 11 Base Speed for AutoCycle, 12 Base Acc/Dec for AutoCycle, 13 Jog Speed, 14 Jog Acceleration, 16 Tote Prox Simulation, 20 Home Position, 21 Home Offset, 22 Homing Speed, 23 Homing CAM Speed, and 24 Homing Acceleration.",
+      "expected_result": "The reviewer has the full source-supported list of IDs to compare.",
+      "healthy_condition": "The comparison list includes all documented IDs from the source pages and Table 4-10 continuation.",
+      "failure_condition": "The reviewer is missing part of the documented ID list or is using IDs not supported by the source.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review comparison ID list",
+          "exact_action": "Review the documented machine data IDs that should match from machine to machine: 0 Axis Name, 1 OT Minus, 5 Tote Pickup Position, 6 Plus Travel Opposite Axis Position, 7 Neg Travel Opposite Axis Position, 8 Tote Dump Position, 9 Soft Travel Lim Pos, 10 OT Pos, 11 Base Speed for AutoCycle, 12 Base Acc/Dec for AutoCycle, 13 Jog Speed, 14 Jog Acceleration, 16 Tote Prox Simulation, 20 Home Position, 21 Home Offset, 22 Homing Speed, 23 Homing CAM Speed, and 24 Homing Acceleration.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_26_operator_station_hmi_machine_data_screen",
+          "what_to_look_at": "Machine Data parameter fields corresponding to the documented machine data IDs."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the source-supported ID list appears internally inconsistent and prevents confident comparison."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 55,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_4_visu_mds_screen",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "From machine to machine, the following data values should match: ID 0 Axis Name, 1 OT Minus, 5 Tote Pickup Position, 6 Plus Travel Opposite Axis Position, 7 Neg Travel Opposite Axis Position, 8 Tote Dump Position, 9 Soft Travel Lim Pos, 10 OT Pos, 11 Base Speed for AutoCycle, 12 Base Acc/Dec for AutoCycle, 13 Jog Speed, 14 Jog Acceleration.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 56,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_4_visu_mds_screen",
+          "figure_id": null,
+          "figure_number": "Table 4-10",
+          "quote_or_summary": "Table 4-10 continues with ID 16 Tote Prox Simulation, 20 Home Position, 21 Home Offset, 22 Homing Speed, 23 Homing CAM Speed, and 24 Homing Acceleration; several other IDs are marked N/A.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Compare the values across machines",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the displayed values match across machines where the source says they should match.",
+      "instruction": "Compare the displayed values for the reviewed machine against the corresponding machine data values on the other machine.",
+      "expected_result": "Matching-required values are identified as matching or not matching across the machines.",
+      "healthy_condition": "Values expected to match from machine to machine are the same for the reviewed axis.",
+      "failure_condition": "One or more values expected to match from machine to machine do not match.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Compare machine data values",
+          "exact_action": "Compare the displayed values for the reviewed machine against the corresponding machine data values on the other machine.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_26_operator_station_hmi_machine_data_screen",
+          "what_to_look_at": "Displayed machine data values for the selected axis on the Machine Data screen."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if a value expected to match from machine to machine does not match."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 55,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_4_visu_mds_screen",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "From machine to machine, the following data values should match: ID 0 Axis Name, 1 OT Minus, 5 Tote Pickup Position, 6 Plus Travel Opposite Axis Position, 7 Neg Travel Opposite Axis Position, 8 Tote Dump Position, 9 Soft Travel Lim Pos, 10 OT Pos, 11 Base Speed for AutoCycle, 12 Base Acc/Dec for AutoCycle, 13 Jog Speed, 14 Jog Acceleration.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 56,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_4_visu_mds_screen",
+          "figure_id": null,
+          "figure_number": "Table 4-10",
+          "quote_or_summary": "Table 4-10 continues with ID 16 Tote Prox Simulation, 20 Home Position, 21 Home Offset, 22 Homing Speed, 23 Homing CAM Speed, and 24 Homing Acceleration; several other IDs are marked N/A.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Apply the documented exceptions",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Prevent false mismatch findings for values the source explicitly says are unique per machine and axis.",
+      "instruction": "Treat MD5 Tote Pickup Position and MD21 Home Offset as documented exceptions that are unique for every machine and every axis rather than expected matches.",
+      "expected_result": "MD5 and MD21 are excluded from mismatch findings based solely on cross-machine differences.",
+      "healthy_condition": "Differences in MD5 and MD21 are recognized as source-documented exceptions.",
+      "failure_condition": "MD5 or MD21 is incorrectly flagged as a mismatch solely because it differs between machines.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Apply exception rules",
+          "exact_action": "Treat MD5 Tote Pickup Position and MD21 Home Offset as documented exceptions that are unique for every machine and every axis rather than expected matches.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_fig_4_26_operator_station_hmi_machine_data_screen",
+          "what_to_look_at": "The machine data entries for MD5 Tote Pickup Position and MD21 Home Offset while reviewing comparison results."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the source inconsistency around MD5 prevents confident interpretation.",
+        "Do not treat MD5 Tote Pickup Position or MD21 Home Offset as mismatches solely because they differ."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 56,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_4_visu_mds_screen",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "There are two exceptions for matching values: MD5 Tote Pickup Position will be unique for every machine and every axis. MD21 Home Offset will be unique for every machine and every axis.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Record mismatches against the documented expectation",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Capture any findings for follow-up when values that should match do not match.",
+      "instruction": "Record any values that do not match the documented expectation.",
+      "expected_result": "Any nonmatching values that should match are documented for escalation or review.",
+      "healthy_condition": "No unexpected mismatches are found, or all unexpected mismatches are clearly recorded.",
+      "failure_condition": "Unexpected mismatches are found and not documented, or exception values are incorrectly recorded as mismatches.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Record findings",
+          "exact_action": "Record any values that do not match the documented expectation.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if a value expected to match from machine to machine does not match.",
+        "Do not record MD5 Tote Pickup Position or MD21 Home Offset as mismatches solely because they differ."
+      ],
+      "source_evidence": [
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 55,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_4_visu_mds_screen",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "From machine to machine, the following data values should match: ID 0 Axis Name, 1 OT Minus, 5 Tote Pickup Position, 6 Plus Travel Opposite Axis Position, 7 Neg Travel Opposite Axis Position, 8 Tote Dump Position, 9 Soft Travel Lim Pos, 10 OT Pos, 11 Base Speed for AutoCycle, 12 Base Acc/Dec for AutoCycle, 13 Jog Speed, 14 Jog Acceleration.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        },
+        {
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page": 56,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_4_visu_mds_screen",
+          "figure_id": null,
+          "figure_number": null,
+          "quote_or_summary": "There are two exceptions for matching values: MD5 Tote Pickup Position will be unique for every machine and every axis. MD21 Home Offset will be unique for every machine and every axis.",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The VISU_MDS Machine Data screen was reviewed for the selected axis.",
+    "The documented machine data IDs were compared across machines.",
+    "MD5 Tote Pickup Position and MD21 Home Offset were treated as documented exceptions.",
+    "Any values expected to match but found not to match were recorded for escalation."
+  ],
+  "healthy_conditions": [
+    "The Machine Data screen is accessible and shows parameters for Z1, A1, Z2, and A2.",
+    "Values expected to match from machine to machine are the same across the compared machines.",
+    "MD5 Tote Pickup Position and MD21 Home Offset are excluded from mismatch findings when they differ."
+  ],
+  "failure_conditions": [
+    "The VISU_MDS Machine Data screen cannot be accessed or reviewed.",
+    "A value expected to match from machine to machine does not match.",
+    "MD5 Tote Pickup Position or MD21 Home Offset is incorrectly treated as a mismatch solely because it differs.",
+    "The source does not provide corrective actions for mismatched values."
+  ],
+  "escalation_guidance": [
+    "Escalate if a value expected to match from machine to machine does not match.",
+    "Escalate for SME review if the source inconsistency around MD5 Tote Pickup Position creates uncertainty during interpretation.",
+    "Use escalation rather than corrective action from this runbook because the source does not provide corrective actions for mismatched values."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_4_26_operator_station_hmi_machine_data_screen",
+      "what_to_look_at": "Primary VISU_MDS Machine Data screen used for reviewing axis parameter fields and IDs."
+    },
+    {
+      "artifact_id": "artifact_page_194_image_2",
+      "what_to_look_at": "Supporting HMI reference associated with navigating to the Visu_MDs screen."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 55,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_4_visu_mds_screen",
+      "figure_id": "fig_4_26",
+      "figure_number": "Figure 4-26",
+      "quote_or_summary": "The \"Machine Data\" screen contains all of the parameters for each axis (Z1, A1, Z2, and A2).",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 55,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_4_visu_mds_screen",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "From machine to machine, the following data values should match: ID 0 Axis Name, 1 OT Minus, 5 Tote Pickup Position, 6 Plus Travel Opposite Axis Position, 7 Neg Travel Opposite Axis Position, 8 Tote Dump Position, 9 Soft Travel Lim Pos, 10 OT Pos, 11 Base Speed for AutoCycle, 12 Base Acc/Dec for AutoCycle, 13 Jog Speed, 14 Jog Acceleration.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 56,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_4_visu_mds_screen",
+      "figure_id": null,
+      "figure_number": "Table 4-10",
+      "quote_or_summary": "Table 4-10 continues with ID 16 Tote Prox Simulation, 20 Home Position, 21 Home Offset, 22 Homing Speed, 23 Homing CAM Speed, and 24 Homing Acceleration; several other IDs are marked N/A.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    },
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page": 56,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_4_visu_mds_screen",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "There are two exceptions for matching values: MD5 Tote Pickup Position will be unique for every machine and every axis. MD21 Home Offset will be unique for every machine and every axis.",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_l1_verify_visu_mds_cross_machine_parameter_match"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide corrective actions for mismatched values.",
+    "The source does not provide a required recording location or format for mismatch findings.",
+    "The source does not provide an estimated completion time.",
+    "The source does not state whether production stop or LOTO is required for this review.",
+    "The source text appears to include MD5 Tote Pickup Position in both the match list and the exception list; SME review is needed to resolve this inconsistency."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

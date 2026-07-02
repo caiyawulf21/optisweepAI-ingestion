@@ -19,7 +19,7 @@ from operationalknowledgeingestion.src.optisweep_ingestion.services.source_ref_s
     apply_lineage,
     lineage_from_bundle,
 )
-from operationalknowledgeingestion.src.optisweep_ingestion.tools.operational_context_extractor import (
+from optisweep_ingestion.stage4_operational_context import (
     AzureOpenAIContextClient,
     build_extraction_report,
     build_source_packets,

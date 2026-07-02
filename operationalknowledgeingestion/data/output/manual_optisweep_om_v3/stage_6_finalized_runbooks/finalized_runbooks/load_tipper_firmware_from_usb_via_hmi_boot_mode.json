@@ -1,0 +1,711 @@
+{
+  "procedure_id": "proc_load_tipper_firmware_from_usb_via_hmi_boot_mode_v1",
+  "candidate_id": "load_tipper_firmware_from_usb_via_hmi_boot_mode",
+  "title": "Load tipper firmware from a USB drive using HMI boot mode",
+  "procedure_type": "recovery",
+  "summary": "Install a new firmware version on the tipper controller by powering the tipper down, entering HMI boot mode by holding the top three HMI buttons during power-up, loading firmware from a USB drive, then rebooting normally and verifying the HMI returns to the expected post-boot screens.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "support_safe": false,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when a new firmware version must be installed on the tipper controller from a USB drive and the controller must be returned to normal boot operation with the expected HMI screens visible afterward.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibilities": [
+        "Power the tipper off and on using the disconnect",
+        "Enter HMI boot mode using the top three HMI buttons",
+        "Install firmware from the USB drive",
+        "Verify normal boot and expected HMI screens after reboot"
+      ]
+    }
+  ],
+  "safety_notes": [
+    "This procedure is not marked support-safe in the source candidate.",
+    "The procedure includes powering the tipper off and on with the disconnect.",
+    "Do not continue if the controller does not enter the expected gray-screen mode or does not return to normal boot behavior after firmware loading."
+  ],
+  "access_or_tools_needed": [
+    "Access to the tipper disconnect",
+    "Access to the HMI",
+    "USB drive containing the new firmware version",
+    "USB dongle on the HMI"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the tipper disconnect",
+      "Access to the HMI"
+    ],
+    "system_preconditions": [
+      "USB drive contains the new firmware version",
+      "USB dongle is available on the HMI"
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_page_197_image_2",
+      "description": "HMI-related artifact associated with holding the top three buttons during power-up and waiting for the gray screen.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_197_image_3",
+      "description": "HMI-related artifact associated with startup screen navigation and gray-screen entry sequence.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_200_image_2",
+      "description": "HMI screenshot showing expected normal boot state with the Visu_Default screen and IP/subnet mask display.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_page_200_image_3",
+      "description": "HMI screenshot related to expected post-boot controller startup and network verification state.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_207_image_2",
+      "description": "HMI screenshot associated with navigation to the Visu_MCP_Dual screen using F3.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_205_image_2",
+      "description": "Artifact associated with the Visu_MCP_Dual screen referenced for F3 navigation.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_page_205_image_3",
+      "description": "Artifact associated with the Visu_MCP_Dual screen referenced for F3 navigation.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_page_82_image_2",
+      "description": "System screen artifact related to stopping/startup procedures and power state context.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Turn off power to the tipper",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Place the tipper in the required powered-down state before entering firmware load mode.",
+      "instruction": "Turn off power to the tipper with the disconnect.",
+      "expected_result": "The tipper is powered off.",
+      "healthy_condition": "Power to the tipper is off and the system is ready for the startup button sequence.",
+      "failure_condition": "The tipper cannot be powered off with the disconnect or its power state is unclear.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Power off tipper",
+          "exact_action": "Turn off power to the tipper with the disconnect.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_82_image_2",
+          "what_to_look_at": "General system power-state and stopping/startup screen context related to powering equipment off."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The tipper cannot be powered off with the disconnect."
+      ],
+      "source_evidence": [
+        {
+          "type": "candidate_rough_step",
+          "text": "Turn off power to the tipper with the disconnect."
+        },
+        {
+          "type": "source_ref",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page_start": 209,
+          "page_end": 209,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_23_12_load_firmware",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Press and hold the top three HMI buttons",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Begin the button sequence required to enter the firmware load mode during startup.",
+      "instruction": "Press and hold the top three buttons on the HMI.",
+      "expected_result": "The top three HMI buttons are held continuously in preparation for power-up.",
+      "healthy_condition": "The buttons remain held before and during the next power-on step.",
+      "failure_condition": "The buttons cannot be held or the sequence cannot be started as described.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Hold top three buttons",
+          "exact_action": "Press and hold the top three buttons on the HMI.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_197_image_2",
+          "what_to_look_at": "HMI area associated with the startup button sequence and gray-screen entry."
+        },
+        {
+          "artifact_id": "artifact_page_197_image_3",
+          "what_to_look_at": "HMI setup/startup screen context related to the top-button hold sequence."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The top three HMI buttons cannot be identified or held as required."
+      ],
+      "source_evidence": [
+        {
+          "type": "candidate_rough_step",
+          "text": "Press and hold the top three buttons on the HMI."
+        },
+        {
+          "type": "source_ref",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page_start": 209,
+          "page_end": 209,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_23_12_load_firmware",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Power on while continuing to hold the buttons",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Use the required startup sequence to enter the special firmware load mode.",
+      "instruction": "Continue holding the top three HMI buttons while powering on the tipper.",
+      "expected_result": "The tipper powers on while the top three HMI buttons remain held.",
+      "healthy_condition": "The tipper powers on and the button hold is maintained through startup.",
+      "failure_condition": "The tipper does not power on correctly or the button hold sequence is interrupted.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Power on tipper during button hold",
+          "exact_action": "Continue holding the top three HMI buttons while powering on the tipper.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_197_image_2",
+          "what_to_look_at": "Startup sequence context showing continued button hold during power-on."
+        },
+        {
+          "artifact_id": "artifact_page_197_image_3",
+          "what_to_look_at": "Startup/setup screen context associated with entering the gray-screen mode."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The tipper does not power on as expected during the button-hold sequence."
+      ],
+      "source_evidence": [
+        {
+          "type": "candidate_rough_step",
+          "text": "Continue holding the top three HMI buttons while powering on the tipper."
+        },
+        {
+          "type": "source_ref",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page_start": 209,
+          "page_end": 209,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_23_12_load_firmware",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Wait for the gray screen",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm that the controller has entered the expected firmware load mode.",
+      "instruction": "Keep holding the buttons until a gray screen appears on the HMI.",
+      "expected_result": "A gray screen appears on the HMI.",
+      "healthy_condition": "The HMI displays the gray screen while following the startup button sequence.",
+      "failure_condition": "The gray screen does not appear.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Confirm gray screen",
+          "exact_action": "Keep holding the buttons until a gray screen appears on the HMI.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_197_image_2",
+          "what_to_look_at": "Gray-screen entry context on the HMI during startup."
+        },
+        {
+          "artifact_id": "artifact_page_197_image_3",
+          "what_to_look_at": "Startup/setup screen context associated with the gray screen."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The gray screen does not appear while holding the top three HMI buttons during power-up."
+      ],
+      "source_evidence": [
+        {
+          "type": "candidate_rough_step",
+          "text": "Keep holding the buttons until a gray screen appears on the HMI."
+        },
+        {
+          "type": "failure_note",
+          "text": "If the gray screen does not appear while holding the top three HMI buttons during power-up, stop and escalate."
+        },
+        {
+          "type": "source_ref",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page_start": 209,
+          "page_end": 209,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_23_12_load_firmware",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Insert the firmware USB drive",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Make the firmware file available to the HMI for installation.",
+      "instruction": "Plug the USB drive containing the new firmware version into the USB dongle on the HMI.",
+      "expected_result": "The USB drive is connected to the HMI USB dongle.",
+      "healthy_condition": "The firmware USB drive is inserted and available for selection.",
+      "failure_condition": "The USB drive cannot be connected or is not available to the HMI.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Insert USB drive",
+          "exact_action": "Plug the USB drive containing the new firmware version into the USB dongle on the HMI.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The USB drive containing the new firmware version cannot be connected to the HMI USB dongle."
+      ],
+      "source_evidence": [
+        {
+          "type": "candidate_rough_step",
+          "text": "Plug the USB drive containing the new firmware version into the USB dongle on the HMI."
+        },
+        {
+          "type": "source_ref",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page_start": 209,
+          "page_end": 209,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_23_12_load_firmware",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Select install from file",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Start the firmware installation workflow from the HMI.",
+      "instruction": "Press the INSTALL FROM FILE button.",
+      "expected_result": "The HMI begins the file-based firmware installation process.",
+      "healthy_condition": "The INSTALL FROM FILE control is accepted and the system proceeds to firmware loading.",
+      "failure_condition": "The INSTALL FROM FILE action cannot be started.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Press INSTALL FROM FILE",
+          "exact_action": "Press the INSTALL FROM FILE button.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The firmware cannot be loaded from the USB drive."
+      ],
+      "source_evidence": [
+        {
+          "type": "candidate_rough_step",
+          "text": "Press the INSTALL FROM FILE button."
+        },
+        {
+          "type": "failure_note",
+          "text": "If the firmware cannot be loaded from the USB drive, stop and escalate."
+        },
+        {
+          "type": "source_ref",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page_start": 209,
+          "page_end": 209,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_23_12_load_firmware",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Load the firmware from the USB drive",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Install the new firmware version onto the tipper controller.",
+      "instruction": "Load the firmware from the USB drive.",
+      "expected_result": "The firmware is loaded from the USB drive.",
+      "healthy_condition": "The firmware load completes from the USB drive.",
+      "failure_condition": "The firmware cannot be loaded from the USB drive or the load does not complete.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Load firmware",
+          "exact_action": "Load the firmware from the USB drive.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The firmware cannot be loaded from the USB drive."
+      ],
+      "source_evidence": [
+        {
+          "type": "candidate_rough_step",
+          "text": "Load the firmware from the USB drive."
+        },
+        {
+          "type": "failure_note",
+          "text": "If the firmware cannot be loaded from the USB drive, stop and escalate."
+        },
+        {
+          "type": "source_ref",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page_start": 209,
+          "page_end": 209,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_23_12_load_firmware",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 8,
+      "title": "Reboot the controller normally",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Return the controller to normal operating boot after firmware installation.",
+      "instruction": "Power the controller off and back on, and allow it to boot normally without pressing any buttons.",
+      "expected_result": "The controller reboots and begins a normal boot sequence.",
+      "healthy_condition": "The controller boots normally without requiring button input.",
+      "failure_condition": "The controller does not boot normally after the power cycle.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Power cycle controller",
+          "exact_action": "Power the controller off and back on, and allow it to boot normally without pressing any buttons.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_200_image_2",
+          "what_to_look_at": "Expected normal post-boot HMI state after power cycle."
+        },
+        {
+          "artifact_id": "artifact_page_200_image_3",
+          "what_to_look_at": "Controller startup and network verification screen context after normal boot."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The controller does not boot normally after the power cycle."
+      ],
+      "source_evidence": [
+        {
+          "type": "candidate_rough_step",
+          "text": "Power the controller off and back on, and allow it to boot normally without pressing any buttons."
+        },
+        {
+          "type": "failure_note",
+          "text": "If the controller does not boot normally after the power cycle, stop and escalate."
+        },
+        {
+          "type": "source_ref",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page_start": 209,
+          "page_end": 209,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_23_12_load_firmware",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 9,
+      "title": "Verify the Visu_Default screen",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm that the controller returned to the expected default HMI screen after reboot.",
+      "instruction": "Verify that the HMI shows the \"Visu_Default\" screen displaying the IP and subnet mask settings.",
+      "expected_result": "The HMI shows the Visu_Default screen with the IP and subnet mask settings.",
+      "healthy_condition": "The Visu_Default screen is visible and displays the IP and subnet mask settings.",
+      "failure_condition": "The Visu_Default screen does not appear or does not display the IP and subnet mask settings.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check Visu_Default",
+          "exact_action": "Verify that the HMI shows the \"Visu_Default\" screen displaying the IP and subnet mask settings.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_200_image_2",
+          "what_to_look_at": "The Visu_Default screen and the displayed IP and subnet mask settings."
+        },
+        {
+          "artifact_id": "artifact_page_200_image_3",
+          "what_to_look_at": "Expected post-boot HMI screen state showing network settings."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The Visu_Default screen does not appear.",
+        "The Visu_Default screen does not display the IP and subnet mask settings."
+      ],
+      "source_evidence": [
+        {
+          "type": "candidate_rough_step",
+          "text": "Verify that the HMI shows the \"Visu_Default\" screen displaying the IP and subnet mask settings."
+        },
+        {
+          "type": "failure_note",
+          "text": "If the Visu_Default screen does not appear or does not display the IP and subnet mask settings, stop and escalate."
+        },
+        {
+          "type": "source_ref",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page_start": 209,
+          "page_end": 209,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_23_12_load_firmware",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 10,
+      "title": "Open the Visu_MCP_Dual screen",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm that HMI navigation to the expected operational screen works after firmware installation.",
+      "instruction": "Press F3 to go to the \"Visu_MCP_Dual\" screen.",
+      "expected_result": "F3 opens the Visu_MCP_Dual screen.",
+      "healthy_condition": "The HMI changes to the Visu_MCP_Dual screen when F3 is pressed.",
+      "failure_condition": "F3 does not open the Visu_MCP_Dual screen.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Press F3",
+          "exact_action": "Press F3 to go to the \"Visu_MCP_Dual\" screen.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_page_207_image_2",
+          "what_to_look_at": "The Visu_MCP_Dual screen reached using F3."
+        },
+        {
+          "artifact_id": "artifact_page_205_image_2",
+          "what_to_look_at": "Additional HMI context for the Visu_MCP_Dual screen."
+        },
+        {
+          "artifact_id": "artifact_page_205_image_3",
+          "what_to_look_at": "Additional HMI context for the Visu_MCP_Dual screen."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "F3 does not open the Visu_MCP_Dual screen."
+      ],
+      "source_evidence": [
+        {
+          "type": "candidate_rough_step",
+          "text": "Press F3 to go to the \"Visu_MCP_Dual\" screen."
+        },
+        {
+          "type": "failure_note",
+          "text": "If F3 does not open the Visu_MCP_Dual screen, stop and escalate."
+        },
+        {
+          "type": "source_ref",
+          "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+          "source_type": "manual",
+          "page_start": 209,
+          "page_end": 209,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_23_12_load_firmware",
+          "source_id": "manual_optisweep_om_v3",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The firmware is loaded from the USB drive.",
+    "The controller reboots normally.",
+    "The HMI displays the Visu_Default screen with IP and subnet mask settings.",
+    "F3 opens the Visu_MCP_Dual screen."
+  ],
+  "healthy_conditions": [
+    "A gray screen appears on the HMI during the startup button sequence.",
+    "The firmware load completes from the USB drive.",
+    "The controller boots normally after the power cycle.",
+    "The Visu_Default screen displays the IP and subnet mask settings.",
+    "The Visu_MCP_Dual screen opens when F3 is pressed."
+  ],
+  "failure_conditions": [
+    "The gray screen does not appear while holding the top three HMI buttons during power-up.",
+    "The firmware cannot be loaded from the USB drive.",
+    "The controller does not boot normally after the power cycle.",
+    "The Visu_Default screen does not appear or does not display the IP and subnet mask settings.",
+    "F3 does not open the Visu_MCP_Dual screen."
+  ],
+  "escalation_guidance": [
+    "Stop and escalate if the gray screen does not appear while holding the top three HMI buttons during power-up.",
+    "Stop and escalate if the firmware cannot be loaded from the USB drive.",
+    "Stop and escalate if the controller does not boot normally after the power cycle.",
+    "Stop and escalate if the Visu_Default screen does not appear or does not display the IP and subnet mask settings.",
+    "Stop and escalate if F3 does not open the Visu_MCP_Dual screen."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_page_197_image_2",
+      "what_to_look_at": "Startup button sequence and gray-screen entry context."
+    },
+    {
+      "artifact_id": "artifact_page_197_image_3",
+      "what_to_look_at": "Startup/setup screen context related to entering the gray-screen mode."
+    },
+    {
+      "artifact_id": "artifact_page_200_image_2",
+      "what_to_look_at": "Visu_Default screen with IP and subnet mask settings after normal boot."
+    },
+    {
+      "artifact_id": "artifact_page_200_image_3",
+      "what_to_look_at": "Expected post-boot controller startup and network verification state."
+    },
+    {
+      "artifact_id": "artifact_page_207_image_2",
+      "what_to_look_at": "Visu_MCP_Dual screen reached using F3."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "source_type": "manual",
+      "page_start": 209,
+      "page_end": 209,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_23_12_load_firmware",
+      "source_id": "manual_optisweep_om_v3",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "load_tipper_firmware_from_usb_via_hmi_boot_mode"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The supplied source section text for page 209 is empty in this packet, so step wording is grounded primarily in the candidate and attached source references.",
+    "The source packet does not provide the exact on-screen file selection sequence after pressing INSTALL FROM FILE.",
+    "The source packet does not provide a firmware filename, file path, or file validation method.",
+    "The source packet does not specify whether production must be stopped before performing this procedure.",
+    "The source packet does not specify whether lockout/tagout is required.",
+    "The source packet does not provide an estimated completion time.",
+    "No explicit role boundaries beyond L2_support are stated in the packet."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual"
+  }
+}

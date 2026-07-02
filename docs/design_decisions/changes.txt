@@ -1,0 +1,478 @@
+The main changes should be:
+
+remove candidate lifecycle/status fields
+remove category naming/classification
+stop using runbook_ref as if linking exists
+use plain-text runbook placeholders only
+add internal pattern context as future ML/KG enrichment, not routing truth
+make entry symptoms explicit and symptom/user-language driven
+keep Prompt A and B structurally comparable, with only cardinality/split behavior different
+Exact changes to make in both Prompt A and Prompt B
+1. Replace this line in the opening boundary rules
+
+Current line in both prompts:
+
+- Do not infer root cause.
+
+Replace with:
+
+- Do not infer root cause as fact. You may capture source-supported suspected internal patterns as tentative context for future ML, retrieval, and knowledge graph enrichment, but these patterns must not be treated as confirmed diagnosis or user-facing entry criteria.
+
+Why: this lets the extractor capture useful backend patterns without pretending they are known facts.
+
+2. Add this section after “Candidate Scope” in Prompt A and after “Split Test” in Prompt B
+## Entry Symptoms and Internal Pattern Context
+
+Each playbook candidate must separate user-observable entry symptoms from internal technical interpretation.
+
+Entry symptoms should describe what an operator, L1 support user, or customer-facing support person could reasonably observe or say before the root cause is known.
+
+Internal patterns are tentative technical interpretations extracted from the incident evidence. They are useful for later ML training, retrieval improvement, knowledge graph relationships, and SME review, but they are not final classifications and should not be required for runtime entry into the playbook.
+
+Do not use internal engineering labels as the main user-facing title unless the incident evidence shows that support users would actually describe the issue that way.
+
+The playbook should be entered from observable symptoms and then use diagnostic decisions, procedure placeholders, escalation gates, and validation gates to move toward resolution.
+
+This keeps it generic without hardcoding “AGV state mismatch” or “service crash” everywhere.
+
+3. Replace the current “Runbook Reference Rule” in both prompts
+
+Current Prompt A says to use runbook_ref as a plain-language capability slug or known candidate placeholder, and to set fallback_if_missing_runbook to create_runbook_gap.
+Prompt B has the same rule.
+
+Replace the full section with this:
+
+## Runbook Placeholder Rule
+
+When a playbook node needs a reusable procedure, use `procedure_reference`.
+
+At this discovery stage, do not create or reference canonical runbook IDs. The runbook linking layer has not been performed yet.
+
+Use a plain-text `runbook_placeholder` that describes the needed procedure capability at a high level.
+
+The placeholder should describe what procedure is needed, not how to perform it.
+
+Good:
+
+```yaml
+node_type: procedure_reference
+intent: Determine whether the relevant application/service is healthy.
+runbook_placeholder: Procedure needed to check application/service health using approved support tools.
+
+Good:
+
+node_type: procedure_reference
+intent: Perform approved recovery for the affected service if authorized.
+runbook_placeholder: Procedure needed for authorized service recovery.
+
+Bad:
+
+runbook_ref: restart_optisweep_ignition_service_v1
+fallback_if_missing_runbook: create_runbook_gap
+
+Bad:
+
+steps:
+  - Open Windows Services
+  - Restart the service
+  - Run a command
+
+Do not invent runbook IDs, canonical procedure names, or links between runbooks. Those relationships will be created later by the runbook extraction, normalization, and linking stages.
+
+
+---
+
+## 4. Replace the “Good single-candidate shape” in Prompt A
+
+Current Prompt A:
+
+```text
+symptom or technical state
+  -> diagnostic decision
+  -> procedure reference or runbook gap
+  -> escalation/authorization gate when needed
+  -> validation gate
+
+Replace with:
+
+observable symptom pattern
+  -> diagnostic decision
+  -> procedure reference with plain-text runbook placeholder when needed
+  -> escalation or authorization gate when needed
+  -> validation gate
+
+This removes “technical state” from the entry point and removes “runbook gap” language.
+
+5. Replace the Prompt B split examples
+
+Current Prompt B includes examples like “Service-health recovery flow versus AGV state correction flow” and “HMI/tipper recovery flow versus Windows service crash validation flow.”
+
+Those examples may over-anchor the model to incidents we have already seen. Replace that whole example block with a more generic version:
+
+A separate candidate may be justified when a future user could enter that flow from a different observable symptom pattern and the incident evidence supports a distinct troubleshooting goal.
+
+A separate candidate is usually not justified when the second flow only occurs after completing the first flow, when it is only an exact procedure, or when it is better represented as a branch, validation gate, or runbook placeholder inside the main candidate.
+
+Do not split candidates merely because the incident includes multiple tools, multiple people, multiple messages, several screenshots, several recovery actions, or multiple follow-up checks.
+
+Then keep the existing split test, but revise it as below.
+
+6. Replace Prompt B “Split Test”
+
+Current Prompt B split test:
+
+Create separate playbook candidates only when all of these are true:
+
+1. Each flow has a distinct technical goal.
+2. Each flow has at least two meaningful source-supported nodes.
+3. The flows can be reviewed or reused independently.
+4. Combining them would obscure the troubleshooting intent.
+
+Replace with:
+
+Create separate playbook candidates only when all of these are true:
+
+1. Each flow has a distinct troubleshooting goal.
+2. Each flow could reasonably be selected at runtime from a different observable symptom pattern.
+3. Each flow has enough source-supported evidence to produce a useful lightweight orchestration path.
+4. The flows can be reviewed or reused independently.
+5. Combining them would obscure the troubleshooting intent.
+
+If the second flow would only happen after executing the first flow, prefer a branch, validation gate, escalation gate, or runbook placeholder inside the main candidate.
+
+This is the key improvement for runtime orchestration.
+
+Exact JSON schema changes
+Prompt A: replace the current Required JSON block
+
+Current Prompt A includes candidate_status, incident_pattern, likely_roles, runbook_ref, fallback_if_missing_runbook, and metadata.
+
+Replace the entire Required JSON block with:
+
+{
+  "source_id": "",
+  "source_type": "incident_case",
+  "source_title": "",
+  "source_version": "",
+  "ingestion_batch_id": "",
+  "extraction_mode": "one_playbook_candidate_per_incident",
+  "playbook_candidates": [
+    {
+      "playbook_candidate_id": "playbook_candidate_incident_<case_id>_<short_slug>",
+      "title": "",
+      "user_facing_summary": "",
+      "playbook_goal": "",
+      "observed_entry_symptoms": [],
+      "negative_or_absent_signals": [],
+      "support_user_language_examples": [],
+      "tentative_internal_patterns": [],
+      "internal_pattern_notes": "",
+      "affected_systems_or_components": [],
+      "confidence": "high | medium | low",
+      "confidence_reason": "",
+      "nodes": [
+        {
+          "node_id": "node_1",
+          "node_order": 1,
+          "node_type": "diagnostic_decision | procedure_reference | escalation_gate | validation_gate | branching_condition | recovery_phase_marker",
+          "title": "",
+          "intent": "",
+          "expected_or_observed_result": "",
+          "runbook_placeholder": "",
+          "allowed_roles": ["operator | L1_support | L2_support | L3_support"],
+          "stop_or_escalation_note": "",
+          "source_supported_description": "",
+          "related_artifact_ids": [],
+          "related_event_ids": [],
+          "source_refs": []
+        }
+      ],
+      "branch_hints": [
+        {
+          "from_node_id": "",
+          "condition_or_signal": "",
+          "suggested_next_node_id": "",
+          "reason": "",
+          "source_refs": []
+        }
+      ],
+      "escalation_gates": [
+        {
+          "condition_or_signal": "",
+          "required_role": "operator | L1_support | L2_support | L3_support",
+          "reason": "",
+          "source_refs": []
+        }
+      ],
+      "validation_gates": [
+        {
+          "validation_goal": "",
+          "expected_recovery_signal": "",
+          "failure_outcome": "",
+          "source_refs": []
+        }
+      ],
+      "runbook_placeholders": [
+        {
+          "needed_procedure": "",
+          "why_needed": "",
+          "suggested_role": "operator | L1_support | L2_support | L3_support",
+          "risk_note": "",
+          "source_refs": []
+        }
+      ],
+      "ignored_non_playbook_content": [
+        {
+          "content_type": "intake | routing | communication | support_coordination | exact_procedure | reference_background | other",
+          "example_from_incident": "",
+          "reason_ignored": ""
+        }
+      ],
+      "source_refs": [],
+      "evidence_source_refs": [],
+      "extraction_notes": []
+    }
+  ]
+}
+
+Key removals:
+
+candidate_status
+incident_pattern
+likely_issue_category / category naming
+runbook_ref
+fallback_if_missing_runbook
+metadata.created_by
+metadata.cardinality_mode
+
+Key additions:
+
+observed_entry_symptoms
+negative_or_absent_signals
+support_user_language_examples
+tentative_internal_patterns
+internal_pattern_notes
+branch_hints
+plain-text runbook_placeholders
+Prompt B: replace the current Required JSON block
+
+Current Prompt B’s schema is almost identical to A, but it lacks candidate-count reasoning and rejected split documentation.
+
+Replace the entire Required JSON block with:
+
+{
+  "source_id": "",
+  "source_type": "incident_case",
+  "source_title": "",
+  "source_version": "",
+  "ingestion_batch_id": "",
+  "extraction_mode": "one_or_more_playbook_candidates_when_separable",
+  "candidate_count": 1,
+  "candidate_count_reason": "",
+  "playbook_candidates": [
+    {
+      "playbook_candidate_id": "playbook_candidate_incident_<case_id>_<short_slug>",
+      "title": "",
+      "user_facing_summary": "",
+      "playbook_goal": "",
+      "observed_entry_symptoms": [],
+      "negative_or_absent_signals": [],
+      "support_user_language_examples": [],
+      "tentative_internal_patterns": [],
+      "internal_pattern_notes": "",
+      "affected_systems_or_components": [],
+      "separability_reason": "",
+      "confidence": "high | medium | low",
+      "confidence_reason": "",
+      "nodes": [
+        {
+          "node_id": "node_1",
+          "node_order": 1,
+          "node_type": "diagnostic_decision | procedure_reference | escalation_gate | validation_gate | branching_condition | recovery_phase_marker",
+          "title": "",
+          "intent": "",
+          "expected_or_observed_result": "",
+          "runbook_placeholder": "",
+          "allowed_roles": ["operator | L1_support | L2_support | L3_support"],
+          "stop_or_escalation_note": "",
+          "source_supported_description": "",
+          "related_artifact_ids": [],
+          "related_event_ids": [],
+          "source_refs": []
+        }
+      ],
+      "branch_hints": [
+        {
+          "from_node_id": "",
+          "condition_or_signal": "",
+          "suggested_next_node_id": "",
+          "reason": "",
+          "source_refs": []
+        }
+      ],
+      "escalation_gates": [
+        {
+          "condition_or_signal": "",
+          "required_role": "operator | L1_support | L2_support | L3_support",
+          "reason": "",
+          "source_refs": []
+        }
+      ],
+      "validation_gates": [
+        {
+          "validation_goal": "",
+          "expected_recovery_signal": "",
+          "failure_outcome": "",
+          "source_refs": []
+        }
+      ],
+      "runbook_placeholders": [
+        {
+          "needed_procedure": "",
+          "why_needed": "",
+          "suggested_role": "operator | L1_support | L2_support | L3_support",
+          "risk_note": "",
+          "source_refs": []
+        }
+      ],
+      "ignored_non_playbook_content": [
+        {
+          "content_type": "intake | routing | communication | support_coordination | exact_procedure | reference_background | other",
+          "example_from_incident": "",
+          "reason_ignored": ""
+        }
+      ],
+      "source_refs": [],
+      "evidence_source_refs": [],
+      "extraction_notes": []
+    }
+  ],
+  "rejected_candidate_splits": [
+    {
+      "possible_split": "",
+      "reason_rejected": "",
+      "better_representation": "branch_hint | validation_gate | escalation_gate | runbook_placeholder | ignored_non_playbook_content | not_enough_evidence"
+    }
+  ]
+}
+
+The biggest Prompt B additions are:
+
+candidate_count
+candidate_count_reason
+separability_reason
+rejected_candidate_splits
+
+Those are what let you compare whether the model is over-splitting.
+
+Safety Rules changes for both prompts
+Prompt A current Safety Rules
+
+Prompt A currently says return exactly one candidate, keep nodes lightweight, do not include commands/click paths, do not create support call/Salesforce/intake nodes, keep source lineage, and mark weak candidates low confidence.
+
+Replace with:
+
+## Safety Rules
+
+1. Return exactly one playbook candidate.
+2. Keep nodes lightweight and non-procedural.
+3. Do not include exact commands, screen sequences, click paths, SQL, service restart steps, or tool navigation steps.
+4. Do not create support call, bridge call, communication, Salesforce, case-management, or intake nodes.
+5. Do not create category labels or final issue classifications.
+6. Do not invent root cause as fact.
+7. Do not invent canonical runbook IDs or runbook relationships.
+8. Use plain-text runbook placeholders only when a reusable procedure appears necessary.
+9. Keep source lineage on every meaningful node.
+10. Mark weak or incomplete candidates `confidence: "low"` and explain gaps in `extraction_notes`.
+Prompt B current Safety Rules
+
+Prompt B has the same general safety rules but also includes the split rule.
+
+Replace with:
+
+## Safety Rules
+
+1. Return at least one playbook candidate, but mark it low confidence when the technical playbook pattern is weak or incomplete.
+2. Do not split one troubleshooting flow into multiple candidates unless the split test is satisfied.
+3. Keep nodes lightweight and non-procedural.
+4. Do not include exact commands, screen sequences, click paths, SQL, service restart steps, or tool navigation steps.
+5. Do not create support call, bridge call, communication, Salesforce, case-management, or intake nodes.
+6. Do not create category labels or final issue classifications.
+7. Do not invent root cause as fact.
+8. Do not invent canonical runbook IDs or runbook relationships.
+9. Use plain-text runbook placeholders only when a reusable procedure appears necessary.
+10. Keep source lineage on every meaningful node.
+11. Use `rejected_candidate_splits` to explain likely splits that were considered but not emitted.
+Difference between Prompt A and Prompt B after these edits
+Keep identical in both
+
+Both prompts should use the same:
+
+node types
+node schema
+entry symptom fields
+tentative internal pattern fields
+plain-text runbook placeholder fields
+source lineage rules
+safety boundaries
+non-playbook exclusions
+
+This is important because you are testing cardinality behavior, not two totally different schemas.
+
+Prompt A should only differ here
+
+Prompt A:
+
+Return exactly one playbook candidate.
+If the incident has multiple related phases, represent them as nodes, branch hints, validation gates, escalation gates, or runbook placeholders inside the single candidate.
+Do not emit rejected_candidate_splits.
+Prompt B should only differ here
+
+Prompt B:
+
+Return one or more candidates only when separable troubleshooting flows are source-supported.
+Use candidate_count_reason to explain why the output has that number.
+Use separability_reason inside each candidate.
+Use rejected_candidate_splits when the model considered but rejected a split.
+
+That gives you a clean A/B test:
+
+Test	What it proves
+Prompt A	Can the model compress an incident into one useful playbook candidate without overfitting?
+Prompt B	Can the model decide when not to split, and only split when runtime entry symptoms differ?
+One important wording change I would make in Prompt B
+
+Current Prompt B says:
+
+Return one or more `playbook_candidates`.
+
+Return at least one candidate for every incident packet.
+
+That is fine for your test, but I would make it slightly stricter:
+
+Return at least one candidate for every incident packet in this test run. If the incident does not strongly support a playbook, return one low-confidence candidate that captures the best source-supported troubleshooting shape and explains why it may not be useful.
+
+This makes clear that “at least one” is a testing constraint, not a permanent production rule.
+
+Final direction
+
+The refined prompts should treat this stage as discovery only:
+
+incident evidence
+  -> symptom-driven playbook candidate(s)
+  -> lightweight orchestration nodes
+  -> tentative internal patterns for future ML/KG
+  -> plain-text runbook placeholders
+  -> source lineage and uncertainty
+
+Not:
+
+incident evidence
+  -> final canonical playbook
+  -> issue category
+  -> root cause truth
+  -> runbook IDs
+  -> runbook relationships
+  -> runtime automation graph
+
+That keeps Stage 5 clean and prevents the extractor from pretending downstream linking, ML classification, or canonical workflow synthesis has already happened.

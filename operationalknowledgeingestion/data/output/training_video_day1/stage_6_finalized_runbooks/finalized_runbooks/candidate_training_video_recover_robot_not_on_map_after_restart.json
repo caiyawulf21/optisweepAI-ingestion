@@ -1,0 +1,605 @@
+{
+  "procedure_id": "proc_recover_a_restarted_robot_that_does_not_reappear_on_the_map_v1",
+  "candidate_id": "candidate_training_video_recover_robot_not_on_map_after_restart",
+  "title": "Recover a Restarted Robot That Does Not Reappear on the Map",
+  "procedure_type": "recovery",
+  "summary": "Recover a robot that was restarted while stopped between labels and does not automatically reappear on the map because it cannot identify a label. The source describes confirming the condition, observing the flashing blue state, E-stopping the system, entering the floor, pushing the robot onto a label, waiting for the robot to lock onto the label, clearing the E-stop, and verifying the robot appears on the map and changes from flashing blue to solid blue.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "support_safe": false,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when a robot has been restarted while stopped between two labels, does not snap back onto the map automatically, and the source-described condition indicates it cannot see a label.",
+  "not_for": [
+    "Do not use before the restart cycle reaches the green state if the robot still has locked brakes; the source states to wait until it turns green before moving it because the brakes stay locked until then.",
+    "Do not use as a general operator procedure without site-approved controls; this recovery includes E-stop use, floor entry, and physically moving the robot.",
+    "Do not use for cases where the robot is already positioned at a restart point or QR code cell and displays normally on the map after restart."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Confirm the restart/map visibility condition, apply the system E-stop, enter the floor, physically reposition the robot onto a label, observe label lock behavior, clear the E-stop, and verify map recovery."
+    }
+  ],
+  "safety_notes": [
+    "This procedure is not support-safe for general operator execution based on the source packet.",
+    "The procedure includes use of the system E-stop before entering the floor.",
+    "The procedure includes entering the floor and physically pushing the robot.",
+    "The source states to wait until the robot turns green before moving it because the brakes stay locked until then.",
+    "The source also notes the software E-stop pauses the system but is not a physical emergency stop and robots in motion may continue to the next label before stopping."
+  ],
+  "access_or_tools_needed": [
+    "System E-stop access",
+    "Physical floor access",
+    "Ability to physically push the robot",
+    "Map display",
+    "Visual access to robot color/state indication"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the system E-stop control",
+      "Access to the map display",
+      "Authorized physical access to the floor"
+    ],
+    "system_preconditions": [
+      "The robot has been restarted.",
+      "The robot is stopped between labels and cannot identify a label.",
+      "The robot does not automatically reappear on the map after restart.",
+      "Wait until the robot reaches the green state before moving it because the brakes stay locked until then."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_robot_map_visibility_after_restart_v1",
+    "ctx_training_video_robot_indicator_color_states_v1",
+    "ctx_training_video_robot_brake_lock_restart_behavior_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500",
+      "description": "Training video frame and transcript segment covering restart behavior, flashing blue indication, label reacquisition, brake lock behavior, and successful map recovery.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Confirm the robot is not back on the map after restart",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Verify that the source-described recovery condition exists before taking physical recovery actions.",
+      "instruction": "Confirm that after the restart the robot is not showing on the map as expected and that it cannot see a label.",
+      "expected_result": "The affected robot is confirmed to have not snapped back onto the map automatically after restart because it cannot identify a label.",
+      "healthy_condition": "The condition matches the source description of a restarted robot stopped between labels and not displayed correctly on the map.",
+      "failure_condition": "The robot is already visible on the map or the source-described between-label/no-label condition cannot be confirmed.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check map visibility",
+          "exact_action": "Confirm that after restart the robot is not showing on the map as expected and that it cannot see a label.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500",
+          "what_to_look_at": "Restart guidance indicating the robot may not be displayed on the map after restart unless positioned at a restart point or QR code cell."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the robot is already showing normally on the map.",
+        "Escalate if the observed condition does not match the source-described restart-between-labels scenario."
+      ],
+      "source_evidence": [
+        {
+          "quote_or_summary": "Transcript: 'if your robot is stopped for some reason in between two labels and you perform a restart, it will not snap back onto the map automatically... It's because it can't see a label.'",
+          "source_ref": {
+            "source_id": "training_video_day1",
+            "source_type": "training_video",
+            "source_title": "UPSFORTNA OptiSweep Training Day 1",
+            "source_version": null,
+            "ingestion_batch_id": "batch_training_video_day1",
+            "source_document_id": "training_video_day1_video",
+            "page": 34,
+            "section_id": "training_video_day1_segment_0034",
+            "figure_id": null,
+            "figure_number": null
+          }
+        },
+        {
+          "context_id": "ctx_training_video_robot_map_visibility_after_restart_v1"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Observe the flashing blue robot indication",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Use the source-described visual state to confirm the robot cannot see a label.",
+      "instruction": "Observe whether the robot shows the flashing blue indication mentioned in the source.",
+      "expected_result": "The robot shows the flashing blue indication associated with not seeing a label.",
+      "healthy_condition": "The robot is flashing blue, matching the source-described state for this condition.",
+      "failure_condition": "The robot does not show the flashing blue indication or its state cannot be verified.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check robot indicator state",
+          "exact_action": "Observe whether the robot shows the flashing blue indication mentioned in the source.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500",
+          "what_to_look_at": "The training segment describing the flashing blue sign when the robot cannot see a label after restart."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the robot state does not match the source-described flashing blue condition."
+      ],
+      "source_evidence": [
+        {
+          "quote_or_summary": "Transcript: 'you'll see that flashing blue sign.'",
+          "source_ref": {
+            "source_id": "training_video_day1",
+            "source_type": "training_video",
+            "source_title": "UPSFORTNA OptiSweep Training Day 1",
+            "source_version": null,
+            "ingestion_batch_id": "batch_training_video_day1",
+            "source_document_id": "training_video_day1_video",
+            "page": 34,
+            "section_id": "training_video_day1_segment_0034",
+            "figure_id": null,
+            "figure_number": null
+          }
+        },
+        {
+          "context_id": "ctx_training_video_robot_indicator_color_states_v1"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "E-stop the system before entering the floor",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Pause the system before floor entry and physical interaction with the robot, as described in the source.",
+      "instruction": "E-stop the system before entering the floor, as described in the training segment.",
+      "expected_result": "The system is E-stopped before floor entry.",
+      "healthy_condition": "The E-stop has been applied before entering the floor.",
+      "failure_condition": "The system is not E-stopped before floor entry.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Apply system E-stop",
+          "exact_action": "E-stop the system before entering the floor.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0027_so_let_s_see_number_the_primary_01_04_37_000",
+          "what_to_look_at": "Map monitor summary area showing the system E-stop control."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if floor entry would occur before the system is E-stopped.",
+        "Escalate if site controls require additional authorization not provided in the source."
+      ],
+      "source_evidence": [
+        {
+          "quote_or_summary": "Transcript: 'you will have to E stop the system, walk into the floor...'",
+          "source_ref": {
+            "source_id": "training_video_day1",
+            "source_type": "training_video",
+            "source_title": "UPSFORTNA OptiSweep Training Day 1",
+            "source_version": null,
+            "ingestion_batch_id": "batch_training_video_day1",
+            "source_document_id": "training_video_day1_video",
+            "page": 34,
+            "section_id": "training_video_day1_segment_0034",
+            "figure_id": null,
+            "figure_number": null
+          }
+        },
+        {
+          "quote_or_summary": "The map monitor artifact identifies the system E-stop control and notes the software E-stop pauses the system but is not a physical emergency stop.",
+          "source_ref": {
+            "source_id": "training_video_day1",
+            "source_type": "training_video",
+            "ingestion_batch_id": "batch_training_video_day1",
+            "artifact_id": "artifact_training_video_training_video_day1_0027_so_let_s_see_number_the_primary_01_04_37_000",
+            "segment_id": "segment_training_video_0027"
+          }
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Enter the floor and push the robot onto a label",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Reposition the robot so it can identify a label and recover map position.",
+      "instruction": "Walk into the floor and push the robot onto the label.",
+      "expected_result": "The robot is physically repositioned onto a label.",
+      "healthy_condition": "The robot is placed onto a label so it can identify it.",
+      "failure_condition": "The robot is not on a label or cannot be repositioned onto one.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Push robot onto label",
+          "exact_action": "Walk into the floor and push the robot onto the label.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500",
+          "what_to_look_at": "The recovery description stating to walk into the floor and push the robot onto the label."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Do not move the robot before the source-described restart cycle reaches the green state because the brakes stay locked until then.",
+        "Escalate if the robot cannot be physically moved onto a label."
+      ],
+      "source_evidence": [
+        {
+          "quote_or_summary": "Transcript: 'you will have to E stop the system, walk into the floor, push the robot onto the label...'",
+          "source_ref": {
+            "source_id": "training_video_day1",
+            "source_type": "training_video",
+            "source_title": "UPSFORTNA OptiSweep Training Day 1",
+            "source_version": null,
+            "ingestion_batch_id": "batch_training_video_day1",
+            "source_document_id": "training_video_day1_video",
+            "page": 34,
+            "section_id": "training_video_day1_segment_0034",
+            "figure_id": null,
+            "figure_number": null
+          }
+        },
+        {
+          "quote_or_summary": "Transcript: 'you have to wait till it turns green for you to move it because the brakes stay locked.'",
+          "source_ref": {
+            "source_id": "training_video_day1",
+            "source_type": "training_video",
+            "source_title": "UPSFORTNA OptiSweep Training Day 1",
+            "source_version": null,
+            "ingestion_batch_id": "batch_training_video_day1",
+            "source_document_id": "training_video_day1_video",
+            "page": 34,
+            "section_id": "training_video_day1_segment_0034",
+            "figure_id": null,
+            "figure_number": null
+          }
+        },
+        {
+          "context_id": "ctx_training_video_robot_brake_lock_restart_behavior_v1"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Wait for the robot to identify and lock onto the label",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the robot has reacquired a valid label reference before clearing the E-stop.",
+      "instruction": "Watch for the robot to identify the label and lock itself on the label; the source states this brake-lock behavior is how you know it has identified the label.",
+      "expected_result": "The robot identifies the label and locks itself on the label.",
+      "healthy_condition": "The robot locks itself on the label, indicating successful label identification.",
+      "failure_condition": "The robot does not lock onto the label after being pushed onto it.",
+      "actions": [
+        {
+          "action_type": "physical_inspection",
+          "label": "Observe label lock behavior",
+          "exact_action": "Watch for the robot to identify the label and lock itself on the label.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500",
+          "what_to_look_at": "The transcript statement that the robot will lock itself on the label when it identifies it."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the robot does not lock onto the label after being pushed onto it."
+      ],
+      "source_evidence": [
+        {
+          "quote_or_summary": "Transcript: 'it will lock itself on the label' and this is how you know it has identified the label.",
+          "source_ref": {
+            "source_id": "training_video_day1",
+            "source_type": "training_video",
+            "source_title": "UPSFORTNA OptiSweep Training Day 1",
+            "source_version": null,
+            "ingestion_batch_id": "batch_training_video_day1",
+            "source_document_id": "training_video_day1_video",
+            "page": 34,
+            "section_id": "training_video_day1_segment_0034",
+            "figure_id": null,
+            "figure_number": null
+          }
+        },
+        {
+          "context_id": "ctx_training_video_robot_brake_lock_restart_behavior_v1"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Exit the floor and clear the E-stop",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Return the system from the paused state after the robot has reacquired the label.",
+      "instruction": "Exit the floor and clear the E-stop.",
+      "expected_result": "The floor is exited and the E-stop is cleared.",
+      "healthy_condition": "The E-stop is cleared only after the robot has locked onto the label and personnel have exited the floor.",
+      "failure_condition": "The E-stop cannot be cleared or is cleared before the robot has locked onto the label and floor exit is complete.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Exit floor",
+          "exact_action": "Exit the floor.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "hmi_action",
+          "label": "Clear system E-stop",
+          "exact_action": "Clear the E-stop.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0027_so_let_s_see_number_the_primary_01_04_37_000",
+          "what_to_look_at": "System E-stop control in the map monitor summary area."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Stop if the robot has not yet locked onto the label.",
+        "Escalate if the E-stop cannot be cleared or the system does not resume as expected."
+      ],
+      "source_evidence": [
+        {
+          "quote_or_summary": "Transcript: 'clear the E stop...'",
+          "source_ref": {
+            "source_id": "training_video_day1",
+            "source_type": "training_video",
+            "source_title": "UPSFORTNA OptiSweep Training Day 1",
+            "source_version": null,
+            "ingestion_batch_id": "batch_training_video_day1",
+            "source_document_id": "training_video_day1_video",
+            "page": 34,
+            "section_id": "training_video_day1_segment_0034",
+            "figure_id": null,
+            "figure_number": null
+          }
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Verify the robot appears successfully on the map",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the recovery restored map visibility.",
+      "instruction": "Verify that the robot shows successfully on the map.",
+      "expected_result": "The robot appears successfully on the map.",
+      "healthy_condition": "The robot is shown successfully on the map after the E-stop is cleared.",
+      "failure_condition": "The robot does not appear successfully on the map after the E-stop is cleared.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Verify map recovery",
+          "exact_action": "Verify that the robot shows successfully on the map.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500",
+          "what_to_look_at": "The restart guidance stating the robot will be shown successfully on the map after recovery."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the robot does not appear successfully on the map after the E-stop is cleared."
+      ],
+      "source_evidence": [
+        {
+          "quote_or_summary": "Transcript: 'you'll see the robot being successfully showing successful on the map itself...'",
+          "source_ref": {
+            "source_id": "training_video_day1",
+            "source_type": "training_video",
+            "source_title": "UPSFORTNA OptiSweep Training Day 1",
+            "source_version": null,
+            "ingestion_batch_id": "batch_training_video_day1",
+            "source_document_id": "training_video_day1_video",
+            "page": 34,
+            "section_id": "training_video_day1_segment_0034",
+            "figure_id": null,
+            "figure_number": null
+          }
+        },
+        {
+          "context_id": "ctx_training_video_robot_map_visibility_after_restart_v1"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 8,
+      "title": "Confirm the robot changes from flashing blue to solid blue",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Use the source-described color change as a final visual confirmation of label pickup and recovery progress.",
+      "instruction": "Confirm the color change described in the source from flashing blue to solid blue after label pickup.",
+      "expected_result": "The robot changes from flashing blue to solid blue as described in the source.",
+      "healthy_condition": "The robot is solid blue after label pickup.",
+      "failure_condition": "The robot does not change from flashing blue to solid blue.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify color state change",
+          "exact_action": "Confirm the color change described in the source from flashing blue to solid blue after label pickup.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500",
+          "what_to_look_at": "The training segment describing the robot going from flashing blue to solid blue after label pickup."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the robot does not change from flashing blue to solid blue after label pickup."
+      ],
+      "source_evidence": [
+        {
+          "quote_or_summary": "Transcript: 'it will go from flashing blue to solid blue.'",
+          "source_ref": {
+            "source_id": "training_video_day1",
+            "source_type": "training_video",
+            "source_title": "UPSFORTNA OptiSweep Training Day 1",
+            "source_version": null,
+            "ingestion_batch_id": "batch_training_video_day1",
+            "source_document_id": "training_video_day1_video",
+            "page": 34,
+            "section_id": "training_video_day1_segment_0034",
+            "figure_id": null,
+            "figure_number": null
+          }
+        },
+        {
+          "context_id": "ctx_training_video_robot_indicator_color_states_v1"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The robot identifies a label.",
+    "The robot locks itself on the label.",
+    "The robot appears successfully on the map after the E-stop is cleared.",
+    "The robot changes from flashing blue to solid blue as described in the source."
+  ],
+  "healthy_conditions": [
+    "The robot is confirmed to have been in the source-described between-label restart condition.",
+    "The robot shows the flashing blue indication before recovery.",
+    "The robot locks onto the label after being pushed onto it.",
+    "The robot is shown successfully on the map after recovery.",
+    "The robot changes from flashing blue to solid blue."
+  ],
+  "failure_conditions": [
+    "The robot does not lock onto the label after being pushed onto it.",
+    "The robot does not appear successfully on the map after the E-stop is cleared.",
+    "The robot does not change from flashing blue to solid blue.",
+    "The robot is moved before the restart cycle reaches the green state while brakes are still locked."
+  ],
+  "escalation_guidance": [
+    "Escalate if the robot does not lock onto the label after being pushed onto it.",
+    "Escalate if the robot does not appear successfully on the map after the E-stop is cleared.",
+    "Escalate if the robot state does not match the source-described flashing blue / solid blue recovery pattern.",
+    "Escalate if site-approved floor-entry or safety controls required for this action are not available in the source."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500",
+      "what_to_look_at": "Primary source artifact for restart recovery, flashing blue state, label reacquisition, brake lock behavior, and map recovery."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0027_so_let_s_see_number_the_primary_01_04_37_000",
+      "what_to_look_at": "Map monitor summary area showing the system E-stop control referenced for this recovery."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "timestamp_start": "01:21:18.000",
+      "timestamp_end": "01:24:15.000",
+      "start_time_seconds": 4878.0,
+      "end_time_seconds": 5055.0,
+      "segment_id": "segment_training_video_0034",
+      "source_document_id": "training_video_day1_video",
+      "section_id": "training_video_day1_segment_0034"
+    },
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1",
+      "source_document_id": "training_video_day1_video",
+      "page": 34,
+      "section_id": "training_video_day1_segment_0034",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "Transcript: 'if your robot is stopped for some reason in between two labels and you perform a restart, it will not snap back onto the map automatically... It's because it can't see a label and you'll see that flashing blue sign. In that case... you will have to E stop the system, walk into the floor, push the robot onto the label... it will lock itself on the label... clear the E stop and you'll see the robot being successfully showing successful on the map itself... it will go from flashing blue to solid blue.'"
+    },
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "timestamp_start": "01:22:46.500",
+      "timestamp_end": "01:22:46.500",
+      "start_time_seconds": 4966.5,
+      "end_time_seconds": 4966.5,
+      "artifact_id": "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500",
+      "segment_id": "segment_training_video_0034"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_training_video_recover_robot_not_on_map_after_restart"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide a detailed guarded-area entry procedure or authorization workflow for entering the floor.",
+    "The source does not specify whether a physical emergency stop, lockout/tagout, or additional site safety controls are required.",
+    "The source does not provide a precise map-screen workflow for locating the affected robot during this recovery.",
+    "The source does not provide a time estimate for completing the recovery.",
+    "The source does not provide additional troubleshooting steps if the robot still fails to identify the label after repositioning."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual"
+  }
+}
