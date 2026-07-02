@@ -177,6 +177,13 @@ shared_pipeline_stages/
   stage_6_5/
   tests/
 
+sme_review_runbooks/
+  README.md                          SME-friendly copies of runbook markdown by source
+  manual_optisweep_om_v3/
+  training_video_day1/
+  case_228086/
+  case_228723/
+
 stage_prompts/
   stage_6/                           shared Stage 6 LLM prompts
 
@@ -196,6 +203,7 @@ Each pipeline writes local JSON, reports, and images first. Review locally befor
 | Operational ingestion | `operationalknowledgeingestion/data/output/<source_id>/` | `manual_optisweep_om_v3/` |
 | Incident ingestion | `incidenceknowledgeingestion/data/output/incidents/<case_id>/` | `case_228086/` |
 | Shared pipeline stages | `shared_pipeline_stages/data/output/shared/` | `stage_6_5_runbook_pool/` |
+| SME runbook review copies | `sme_review_runbooks/<source_id>/` | flat markdown per source |
 
 **General review order**
 
