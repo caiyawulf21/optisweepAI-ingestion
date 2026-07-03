@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from shared_pipeline_stages.stage_6_5.cluster_review_markdown import write_merge_cluster_review_markdown
 from shared_pipeline_stages.stage_6_5.embedder import (
     AzureOpenAIEmbedder,
     MockRunbookEmbedder,
@@ -42,6 +43,8 @@ class PoolBuildConfig:
     top_k: int = 10
     skip_embed: bool = False
     use_mock_embedder: bool = False
+    experiment_name: str = ""
+    reuse_embeddings_from: str | Path | None = None
 
 
 def build_runbook_pool(
@@ -61,15 +64,17 @@ def build_runbook_pool(
         high_confidence_score=build_config.high_confidence_score,
     )
     timestamp = generated_at or datetime.now(UTC).isoformat().replace("+00:00", "Z")
-    output_path = Path(output_dir)
-    if output_path.name != STAGE6_5_DIR_NAME:
-        output_path = output_path / STAGE6_5_DIR_NAME
+    output_path = _resolve_output_path(Path(output_dir), build_config.experiment_name)
     output_path.mkdir(parents=True, exist_ok=True)
 
     runbooks, load_warnings = load_finalized_runbooks(source_roots)
     cards = [build_retrieval_card(runbook) for runbook in runbooks]
     index_path = output_path / "runbook_retrieval_index.json"
-    existing_index = _load_existing_index(index_path)
+    reuse_index_path = Path(build_config.reuse_embeddings_from) / "runbook_retrieval_index.json" if build_config.reuse_embeddings_from else None
+    if reuse_index_path and reuse_index_path.exists():
+        existing_index = _load_existing_index(reuse_index_path)
+    else:
+        existing_index = _load_existing_index(index_path)
     active_embedder = _resolve_embedder(build_config, embedder)
     vectors, embeddings_generated, embeddings_cached = _build_vectors(
         cards,
@@ -121,7 +126,26 @@ def build_runbook_pool(
     write_json(output_path / "merge_clusters.json", merge_clusters)
     write_json(output_path / "pass_through_runbooks.json", pass_through)
     write_json(output_path / "runbook_pool_report.json", report)
+    cards_by_id = {card.finalized_runbook_id: card for card in cards}
+    write_merge_cluster_review_markdown(
+        output_path / "merge_cluster_review.md",
+        experiment_name=build_config.experiment_name or STAGE6_5_DIR_NAME,
+        config=asdict(build_config),
+        merge_clusters=merge_clusters,
+        cards_by_id=cards_by_id,
+        embedding_model=active_embedder.model_name,
+        runbook_count=len(cards),
+        pass_through_count=len(pass_through),
+    )
     return result
+
+
+def _resolve_output_path(output_dir: Path, experiment_name: str) -> Path:
+    if experiment_name:
+        return output_dir / experiment_name
+    if output_dir.name == STAGE6_5_DIR_NAME:
+        return output_dir
+    return output_dir / STAGE6_5_DIR_NAME
 
 
 def _resolve_embedder(
