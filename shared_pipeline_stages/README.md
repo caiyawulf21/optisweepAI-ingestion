@@ -13,6 +13,9 @@ shared_pipeline_stages/
   stage_prompts.py
   scripts/
     stage6_5_build_runbook_pool.py
+    stage6_5_tune_weights.py
+    analyze_stage6_5_results.py
+    analyze_stage6_5_nearmisses.py
     sync_sme_review_runbooks.py
     update_readme.py
   tests/

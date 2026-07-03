@@ -4,12 +4,11 @@ import json
 import sys
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[1]
-if str(REPO) not in sys.path:
-    sys.path.insert(0, str(REPO))
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 for candidate in (
-    REPO / "data" / "output" / "shared" / "stage_6_5_runbook_pool",
-    REPO / "shared_pipeline_stages" / "data" / "output" / "shared" / "stage_6_5_runbook_pool",
+    REPO_ROOT / "shared_pipeline_stages" / "data" / "output" / "shared" / "stage_6_5_runbook_pool",
 ):
     if (candidate / "runbook_pool.json").exists():
         BASE = candidate
