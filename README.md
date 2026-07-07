@@ -184,6 +184,9 @@ sme_review_runbooks/
   training_video_day1/
   case_228086/
   case_228723/
+  stage_8_playbooks/
+    prompt_a_one_per_incident/
+    prompt_b_multi_flow/
 
 stage_prompts/
   stage_6/                           shared Stage 6 LLM prompts
@@ -201,6 +204,7 @@ Each pipeline writes local JSON, reports, and images first. Review locally befor
 | Incident ingestion | `incidenceknowledgeingestion/data/output/incidents/<case_id>/` | `case_228086/` |
 | Shared pipeline stages | `shared_pipeline_stages/data/output/shared/` | `stage_6_5_runbook_pool/` |
 | SME runbook review copies | `sme_review_runbooks/<source_id>/` | runbook markdown + `assets/` images per source |
+| SME Stage 8 playbook review | `sme_review_runbooks/stage_8_playbooks/<variant>/` | finalized playbook MD + HTML + `assets/` |
 
 **General review order**
 

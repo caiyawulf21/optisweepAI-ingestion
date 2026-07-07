@@ -10,9 +10,13 @@ shared_pipeline_stages/
     processed/  optional intermediate files
     review/     reviewer-facing samples and validation outputs
   stage_6_5/    runbook pool, similarity, merge prep
+  stage_7/      cross-source merge and canonical catalog
+  stage_8/      playbook finalization and runbook linking
   stage_prompts.py
   scripts/
     stage6_5_build_runbook_pool.py
+    stage7_merge_runbooks.py
+    stage8_finalize_playbooks.py
     stage6_5_tune_weights.py
     analyze_stage6_5_results.py
     analyze_stage6_5_nearmisses.py
@@ -113,6 +117,92 @@ Review in this order:
 - Do not treat similarity scores as proof that two runbooks should merge.
 - Do not publish to Cosmos DB or vector search from Stage 6.5 outputs directly.
 - Stage 6.5 prepares merge candidates; Shared Stage 7 performs selective LLM merge on approved clusters.
+
+## Shared Stage 7: Cross-Source Runbook Merge
+
+Stage 7 reads Stage 6.5 merge clusters and pass-through lists, promotes pass-through finalized runbooks without LLM cost, and runs LLM merge calls only on merge sub-clusters (auto-split to max 3 runbooks per call).
+
+**Inputs**
+
+```text
+shared_pipeline_stages/data/output/shared/stage_6_5_runbook_pool/
+  merge_clusters.json
+  pass_through_runbooks.json
+  runbook_pool.json
+```
+
+**Run (dry-run, pass-through only)**
+
+```powershell
+python shared_pipeline_stages/scripts/stage7_merge_runbooks.py `
+  --pool-dir shared_pipeline_stages/data/output/shared/stage_6_5_runbook_pool `
+  --output-dir shared_pipeline_stages/data/output/shared
+```
+
+**Run (with LLM merge calls)**
+
+```powershell
+python shared_pipeline_stages/scripts/stage7_merge_runbooks.py `
+  --pool-dir shared_pipeline_stages/data/output/shared/stage_6_5_runbook_pool `
+  --output-dir shared_pipeline_stages/data/output/shared `
+  --llm
+```
+
+**Outputs**
+
+```text
+shared_pipeline_stages/data/output/shared/stage_7_merged_runbooks/
+  canonical_runbooks.json
+  candidate_to_procedure_mapping.json
+  runbook_merge_report.json
+  merge_packets.json
+  review_markdown/merge_comparison_review.md
+  review_markdown/runbooks/*.md
+  review_markdown/assets/*
+```
+
+## Shared Stage 8: Playbook Finalization
+
+Stage 8 links incident Stage 5 playbook candidates to canonical runbooks from Stage 7, emits dual Prompt A/B finalized packets, and writes Markdown + HTML review outputs.
+
+**Run (retrieval-only pilot, mock embeddings)**
+
+```powershell
+python shared_pipeline_stages/scripts/stage8_finalize_playbooks.py `
+  --pool-dir shared_pipeline_stages/data/output/shared/stage_6_5_runbook_pool `
+  --stage7-dir shared_pipeline_stages/data/output/shared/stage_7_merged_runbooks `
+  --incidents-root incidenceknowledgeingestion/data/output/incidents `
+  --output-dir shared_pipeline_stages/data/output/shared `
+  --mock-embedder
+```
+
+**Run (Azure embeddings + LLM link refinement)**
+
+```powershell
+python shared_pipeline_stages/scripts/stage8_finalize_playbooks.py `
+  --pool-dir shared_pipeline_stages/data/output/shared/stage_6_5_runbook_pool `
+  --stage7-dir shared_pipeline_stages/data/output/shared/stage_7_merged_runbooks `
+  --incidents-root incidenceknowledgeingestion/data/output/incidents `
+  --output-dir shared_pipeline_stages/data/output/shared `
+  --llm
+```
+
+**Outputs**
+
+```text
+shared_pipeline_stages/data/output/shared/stage_8_finalized_playbooks/
+  prompt_a_one_per_incident/
+    canonical_playbooks.json
+    playbook_runbook_links.json
+    playbook_retrieval_cards.json
+    playbook_retrieval_index.json
+    playbook_finalization_report.json
+    review_markdown/playbooks/*.md
+    review_markdown/playbooks/*.html
+  prompt_b_multi_flow/
+    (same structure)
+  stage_8_comparison_report.json
+```
 
 ## Related Docs
 

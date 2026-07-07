@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zone unable to get a pair with AMRs diverting to hospital after recent robot replacement or remove/add activity</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+.warn { color: #8a4b00; }
+details.linked-runbook { border: 1px solid #ddd; border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0; }
+details.linked-runbook > summary { cursor: pointer; font-size: 1.05rem; margin-bottom: 0.5rem; }
+.missing-image { border: 1px dashed #bbb; padding: 1rem; background: #fafafa; }
+.missing-image-label { font-family: monospace; font-weight: 600; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Zone unable to get a pair with AMRs diverting to hospital after recent robot replacement or remove/add activity</h1>
+<h2>Playbook Header</h2>
+<table>
+<tr><th>Playbook ID</th><td>playbook_incident_228723_zone5_pairing_amr_roster_recovery</td></tr>
+<tr><th>Case ID</th><td>228723</td></tr>
+<tr><th>Extraction Mode</th><td>one_playbook_candidate_per_incident</td></tr>
+<tr><th>Confidence</th><td>medium</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+</table>
+<h2>Entry Symptoms</h2>
+<ul>
+<li>Site reports the ACB system is down</li>
+<li>A specific zone, especially zone 5 in this incident, is unable to get a pair</li>
+<li>After a low-battery AMR event or replacement attempt, AMRs begin going to the hospital lane</li>
+<li>The issue appears after recent robot replacement, remove/add, or attempted addition of one or more AGVs</li>
+</ul>
+<h2>Nodes</h2>
+<h3>1 — Confirm the observable symptom pattern and recent robot-handling context (diagnostic_decision)</h3>
+<p><strong>Intent:</strong> Determine whether the incident matches the pattern of zone pairing failure plus abnormal AMR hospital diversion after a recent low-battery event, replacement attempt, or robot remove/add activity.</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li><code>proc_gather_required_fault_information_before_entering_the_grid_for_agv_recovery_v1</code> (high, score=0.6205) — Gather Required Fault Information Before Entering the Grid for AGV Recovery</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Decision Outcomes:</strong></p>
+<ul>
+<li><code>healthy</code>: Reported symptoms do not match the target pattern of zone pairing failure with broad AMR hospital diversion after recent robot handling activity.</li>
+<li><code>unhealthy</code>: Incident matches the target symptom pattern and warrants RMS abnormal-robot review.</li>
+<li><code>inconclusive</code>: Symptom pattern cannot be confirmed clearly from site report or available RMS views.</li>
+</ul>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_2</code> when pattern_confirmed</li>
+<li><code>inconclusive</code> → <code>node_6</code> when pattern_not_confirmed_or_unclear</li>
+</ul>
+<details class="linked-runbook" open><summary><strong>Runbook:</strong> Gather Required Fault Information Before Entering the Grid for AGV Recovery (<code>proc_gather_required_fault_information_before_entering_the_grid_for_agv_recovery_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> L2_support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Collect the source-required AGV and RMS details before going inside the grid (Dance Floor) to perform fault recovery.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use before going inside the grid (also called the Dance Floor) for AGV fault recovery, to ensure the required Robot ID, RMS fault description, bin/tote status, tote ID when applicable, and under-rack empty-AGV zone status have been gathered.</p>
+<p><strong>Safety Notes:</strong></p><ul>
+<li>Entering the grid (Dance Floor) implies elevated operational risk per the candidate context.</li>
+<li>Before going inside the grid, make sure to have the required Robot ID, fault description from RMS, bin/tote status, tote ID when applicable, and under-rack empty-AGV zone status.</li>
+<li>Do not proceed into the grid without the documented information.</li>
+</ul>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>Reported symptoms do not match the target pattern of zone pairing failure with broad AMR hospital diversion after recent robot handling activity.</td><td><code>node_6</code></td></tr>
+<tr><td><code>unhealthy</code></td><td>Incident matches the target symptom pattern and warrants RMS abnormal-robot review.</td><td><code>node_2</code></td></tr>
+<tr><td><code>inconclusive</code></td><td>Symptom pattern cannot be confirmed clearly from site report or available RMS views.</td><td><code>node_6</code></td></tr>
+</table>
+<p><strong>Source:</strong> manual / manual_optisweep_om_v3</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Identify the Robot ID for the faulted AGV</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Identify and record the Robot ID for the faulted AGV before going inside the grid.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>A single faulted AGV is clearly identified and its Robot ID is available for recovery preparation.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Robot ID for the faulted AGV is known and recorded.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>Look for the AGV fault interface context associated with Robot ID and fault recovery information.</figcaption></figure>
+<figure><img src="assets/4f58f8bb3f0f6aea.jpeg" alt="artifact_fig_4_12_agv_api_controls"><figcaption>Look for AGV details/status context that may support identifying the affected AGV.</figcaption></figure>
+<hr>
+<h5>Step 2 — Obtain the fault description from RMS</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Access RMS and obtain the fault description for the faulted AGV.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The RMS fault description is visible and clearly associated with the identified faulted AGV.</p>
+<p><strong>Expected result:</strong></p>
+<p>The RMS fault description for the faulted AGV is available and recorded.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>Look for the AGV fault screen context referenced for RMS fault description during fault recovery.</figcaption></figure>
+<hr>
+<h5>Step 3 — Check whether RMS indicates the AGV is holding a bin</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Check in RMS whether the faulted AGV is indicated as holding a bin.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>RMS clearly indicates whether the faulted AGV is or is not holding a bin.</p>
+<p><strong>Expected result:</strong></p>
+<p>The bin/tote holding status of the faulted AGV is known.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>Look for fault recovery screen context related to RMS fault and tote/bin status.</figcaption></figure>
+<hr>
+<h5>Step 4 — Record the tote ID if the AGV is holding a bin</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If RMS indicates the faulted AGV is holding a bin, record the tote ID.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>A tote ID is documented for a faulted AGV that RMS shows as holding a bin, or the step is not applicable because no bin is held.</p>
+<p><strong>Expected result:</strong></p>
+<p>The tote ID is recorded when the faulted AGV is holding a bin.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>Look for screen context related to tote ID during AGV fault recovery.</figcaption></figure>
+<figure><img src="assets/d87070d22301b81d.jpeg" alt="artifact_fig_5_4_faulted_agv_with_tote_screen"><figcaption>Look for a faulted AGV with tote context that may help interpret tote-related recovery information.</figcaption></figure>
+<hr>
+<h5>Step 5 — Verify under-rack empty-AGV zone status when applicable</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the faulted AGV is under a rack, verify whether that AGV is the empty AGV for that zone.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>For an AGV under a rack, it is known whether that AGV is the empty AGV for the zone; otherwise the step is not applicable.</p>
+<p><strong>Expected result:</strong></p>
+<p>The under-rack empty-AGV zone status is confirmed when applicable.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/ec83d895fff08cd8.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen"><figcaption>Look for no-empty-AGV zone context relevant to determining whether the under-rack AGV is the empty AGV for that zone.</figcaption></figure>
+<figure><img src="assets/597651fff1a13999.jpeg" alt="artifact_fig_5_1_system_in_shut_down_mode"><figcaption>Look for AGV positioning and zone context that may help interpret under-rack AGV status.</figcaption></figure>
+<hr>
+<h5>Step 6 — Confirm all required information before entering the grid</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Confirm that you have the Robot ID, RMS fault description, bin/tote status, tote ID when applicable, and under-rack empty-AGV zone status when applicable before going inside the grid.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The required information set is complete and ready for use during AGV recovery.</p>
+<p><strong>Expected result:</strong></p>
+<p>All source-required pre-entry information has been collected and confirmed.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>Use as a reference for AGV fault recovery context while confirming the collected information.</figcaption></figure>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>The Robot ID for the faulted AGV is documented.</li>
+<li>The RMS fault description is documented.</li>
+<li>The AGV bin/tote holding status is documented.</li>
+<li>The tote ID is documented when RMS indicates the AGV is holding a bin.</li>
+<li>The under-rack empty-AGV zone status is documented when applicable.</li>
+<li>The information is confirmed before entering the grid.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>Robot ID cannot be confirmed.</li>
+<li>RMS fault description cannot be obtained.</li>
+<li>Bin/tote holding status cannot be determined.</li>
+<li>Tote ID cannot be confirmed when the AGV is holding a bin.</li>
+<li>Under-rack empty-AGV zone status cannot be confirmed when applicable.</li>
+<li>Any required information is missing before grid entry.</li>
+</ul>
+</details>
+<hr>
+<h3>2 — Inspect RMS for abnormal robot roster, mapping, charging, or stuck-state indicators tied to the affected zone (diagnostic_decision)</h3>
+<p><strong>Intent:</strong> Determine whether one or more specific robots appear to be in an abnormal state that could explain the pairing failure and broad AMR diversion behavior.</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li><code>proc_interpret_agv_bump_exception_codes_on_the_bump_fault_screen_v1</code> (high, score=0.5192) — Interpret AGV BUMP Exception Codes On The Bump Fault Screen</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Decision Outcomes:</strong></p>
+<ul>
+<li><code>healthy</code>: No abnormal robot state is identified that explains the pairing failure and diversion behavior.</li>
+<li><code>unhealthy</code>: A specific robot appears abnormal and is a candidate for supported isolation decisioning.</li>
+<li><code>inconclusive</code>: RMS evidence is incomplete or ambiguous and does not support safe action.</li>
+</ul>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_3</code> when abnormal_robot_identified</li>
+<li><code>inconclusive</code> → <code>node_6</code> when no_supported_target</li>
+</ul>
+<details class="linked-runbook" open><summary><strong>Runbook:</strong> Interpret AGV BUMP Exception Codes On The Bump Fault Screen (<code>proc_interpret_agv_bump_exception_codes_on_the_bump_fault_screen_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> reference</li>
+<li><strong>Role:</strong> L1_support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use the documented BUMP exception codes in the source manual to identify whether an AGV BUMP fault corresponds to a front collision bar trigger or an obstacle avoidance trigger, and record the interpretation with the AGV fault details.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use when reviewing an AGV BUMP fault in RMS or on the AGV Bump Fault Screen and you need to interpret the documented meaning of exception code 21057 or 21060 from the source manual.</p>
+<p><strong>Safety Notes:</strong></p><ul>
+<li>This runbook is a reference/interpretation aid only and does not authorize physical intervention or unsupported recovery actions.</li>
+<li>The source states that before going inside the grid (the Dance Floor), specific AGV fault information should be gathered first: Robot ID, fault description from RMS, whether the AGV is holding a bin and tote ID, and whether an AGV under a rack is the empty AGV for that zone.</li>
+</ul>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>The displayed AGV BUMP exception code is identified and matched to a documented source value.</td><td><code></code></td></tr>
+<tr><td><code>unhealthy</code></td><td>The BUMP fault information cannot be accessed or read.</td><td><code></code></td></tr>
+<tr><td><code>unknown</code></td><td>State cannot be confirmed from available runbook evidence.</td><td><code></code></td></tr>
+</table>
+<p><strong>Source:</strong> manual / manual_optisweep_om_v3</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Open or view the AGV Bump Fault Screen or related fault information</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open or view the AGV Bump Fault Screen or related RMS fault information for the affected AGV.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The affected AGV fault information is displayed and available for inspection.</p>
+<p><strong>Expected result:</strong></p>
+<p>The AGV BUMP fault details are visible for review.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>The AGV &quot;Bump&quot; Fault Screen shown in Figure 5-2, used as the reference screen for BUMP fault information.</figcaption></figure>
+<hr>
+<h5>Step 2 — Locate the displayed BUMP exception code</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Locate the displayed exception code associated with the BUMP fault.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The exception code is clearly visible and can be read for comparison.</p>
+<p><strong>Expected result:</strong></p>
+<p>A specific BUMP exception code is identified from the displayed fault information.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>The BUMP fault display area where the exception code information appears.</figcaption></figure>
+<hr>
+<h5>Step 3 — Compare the displayed code to the documented values</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Compare the displayed exception code to the documented values in the source manual.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The displayed code matches one of the documented values: 21057 or 21060.</p>
+<p><strong>Expected result:</strong></p>
+<p>The displayed code is matched to a documented exception meaning or identified as not covered by the source.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>The BUMP fault screen context while comparing the displayed exception code to the documented code meanings.</figcaption></figure>
+<hr>
+<h5>Step 4 — Interpret code 21057 as front collision bar triggered</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the code is 21057, record that the robot front collision bar triggered.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The interpretation recorded for code 21057 is &quot;Robot front collision bar triggers.&quot;</p>
+<p><strong>Expected result:</strong></p>
+<p>Code 21057 is interpreted using the source-provided meaning.</p>
+<hr>
+<h5>Step 5 — Interpret code 21060 as obstacle avoidance triggered</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the code is 21060, record that the robot triggered obstacle avoidance.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The interpretation recorded for code 21060 is &quot;The robot triggers the obstacle avoidance.&quot;</p>
+<p><strong>Expected result:</strong></p>
+<p>Code 21060 is interpreted using the source-provided meaning.</p>
+<hr>
+<h5>Step 6 — Record the Robot ID, RMS fault description, and interpreted meaning</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Record the Robot ID and the fault description from RMS together with the interpreted exception meaning.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The record includes Robot ID, RMS fault description, and the correct interpretation for code 21057 or 21060.</p>
+<p><strong>Expected result:</strong></p>
+<p>The AGV fault record includes the Robot ID, RMS fault description, and the documented meaning of the exception code.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>The AGV Bump Fault Screen context while capturing the Robot ID and fault information for documentation.</figcaption></figure>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>The displayed AGV BUMP exception code is identified and matched to a documented source value.</li>
+<li>Code 21057 is recorded as &quot;Robot front collision bar triggers&quot; when present.</li>
+<li>Code 21060 is recorded as &quot;The robot triggers the obstacle avoidance&quot; when present.</li>
+<li>The Robot ID and RMS fault description are recorded together with the interpreted exception meaning.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>The BUMP fault information cannot be accessed or read.</li>
+<li>The displayed exception code is not 21057 or 21060.</li>
+<li>The user attempts to infer additional meanings or corrective actions not supported by the source.</li>
+<li>Required AGV fault details such as Robot ID or RMS fault description are missing.</li>
+</ul>
+</details>
+<hr>
+<h3>3 — Decide whether an identified robot should be isolated from active operation using an approved procedure (branching_condition)</h3>
+<p><strong>Intent:</strong> Choose whether to proceed with supported robot isolation or remove-from-system handling for a specific abnormal robot, or continue investigation if no supported target is identified.</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li><code>proc_interpret_agv_bump_exception_codes_on_the_bump_fault_screen_v1</code> (high, score=0.4873) — Interpret AGV BUMP Exception Codes On The Bump Fault Screen</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Decision Outcomes:</strong></p>
+<ul>
+<li><code>healthy</code>: Evidence does not support isolating or removing the identified robot under an approved procedure.</li>
+<li><code>unhealthy</code>: Evidence and authorization support isolating the identified abnormal robot.</li>
+<li><code>inconclusive</code>: Decision cannot be made safely from available evidence.</li>
+<li><code>escalate</code>: Higher-tier review is required before any robot isolation action.</li>
+</ul>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_4</code> when approved_isolation_supported</li>
+<li><code>escalate</code> → <code>node_6</code> when not_supported_or_not_authorized</li>
+</ul>
+<details class="linked-runbook" open><summary><strong>Runbook:</strong> Interpret AGV BUMP Exception Codes On The Bump Fault Screen (<code>proc_interpret_agv_bump_exception_codes_on_the_bump_fault_screen_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> reference</li>
+<li><strong>Role:</strong> L1_support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use the documented BUMP exception codes in the source manual to identify whether an AGV BUMP fault corresponds to a front collision bar trigger or an obstacle avoidance trigger, and record the interpretation with the AGV fault details.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use when reviewing an AGV BUMP fault in RMS or on the AGV Bump Fault Screen and you need to interpret the documented meaning of exception code 21057 or 21060 from the source manual.</p>
+<p><strong>Safety Notes:</strong></p><ul>
+<li>This runbook is a reference/interpretation aid only and does not authorize physical intervention or unsupported recovery actions.</li>
+<li>The source states that before going inside the grid (the Dance Floor), specific AGV fault information should be gathered first: Robot ID, fault description from RMS, whether the AGV is holding a bin and tote ID, and whether an AGV under a rack is the empty AGV for that zone.</li>
+</ul>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>The displayed AGV BUMP exception code is identified and matched to a documented source value.</td><td><code></code></td></tr>
+<tr><td><code>unhealthy</code></td><td>The BUMP fault information cannot be accessed or read.</td><td><code></code></td></tr>
+<tr><td><code>unknown</code></td><td>State cannot be confirmed from available runbook evidence.</td><td><code></code></td></tr>
+</table>
+<p><strong>Source:</strong> manual / manual_optisweep_om_v3</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Open or view the AGV Bump Fault Screen or related fault information</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open or view the AGV Bump Fault Screen or related RMS fault information for the affected AGV.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The affected AGV fault information is displayed and available for inspection.</p>
+<p><strong>Expected result:</strong></p>
+<p>The AGV BUMP fault details are visible for review.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>The AGV &quot;Bump&quot; Fault Screen shown in Figure 5-2, used as the reference screen for BUMP fault information.</figcaption></figure>
+<hr>
+<h5>Step 2 — Locate the displayed BUMP exception code</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Locate the displayed exception code associated with the BUMP fault.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The exception code is clearly visible and can be read for comparison.</p>
+<p><strong>Expected result:</strong></p>
+<p>A specific BUMP exception code is identified from the displayed fault information.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>The BUMP fault display area where the exception code information appears.</figcaption></figure>
+<hr>
+<h5>Step 3 — Compare the displayed code to the documented values</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Compare the displayed exception code to the documented values in the source manual.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The displayed code matches one of the documented values: 21057 or 21060.</p>
+<p><strong>Expected result:</strong></p>
+<p>The displayed code is matched to a documented exception meaning or identified as not covered by the source.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>The BUMP fault screen context while comparing the displayed exception code to the documented code meanings.</figcaption></figure>
+<hr>
+<h5>Step 4 — Interpret code 21057 as front collision bar triggered</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the code is 21057, record that the robot front collision bar triggered.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The interpretation recorded for code 21057 is &quot;Robot front collision bar triggers.&quot;</p>
+<p><strong>Expected result:</strong></p>
+<p>Code 21057 is interpreted using the source-provided meaning.</p>
+<hr>
+<h5>Step 5 — Interpret code 21060 as obstacle avoidance triggered</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the code is 21060, record that the robot triggered obstacle avoidance.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The interpretation recorded for code 21060 is &quot;The robot triggers the obstacle avoidance.&quot;</p>
+<p><strong>Expected result:</strong></p>
+<p>Code 21060 is interpreted using the source-provided meaning.</p>
+<hr>
+<h5>Step 6 — Record the Robot ID, RMS fault description, and interpreted meaning</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Record the Robot ID and the fault description from RMS together with the interpreted exception meaning.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The record includes Robot ID, RMS fault description, and the correct interpretation for code 21057 or 21060.</p>
+<p><strong>Expected result:</strong></p>
+<p>The AGV fault record includes the Robot ID, RMS fault description, and the documented meaning of the exception code.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>The AGV Bump Fault Screen context while capturing the Robot ID and fault information for documentation.</figcaption></figure>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>The displayed AGV BUMP exception code is identified and matched to a documented source value.</li>
+<li>Code 21057 is recorded as &quot;Robot front collision bar triggers&quot; when present.</li>
+<li>Code 21060 is recorded as &quot;The robot triggers the obstacle avoidance&quot; when present.</li>
+<li>The Robot ID and RMS fault description are recorded together with the interpreted exception meaning.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>The BUMP fault information cannot be accessed or read.</li>
+<li>The displayed exception code is not 21057 or 21060.</li>
+<li>The user attempts to infer additional meanings or corrective actions not supported by the source.</li>
+<li>Required AGV fault details such as Robot ID or RMS fault description are missing.</li>
+</ul>
+</details>
+<hr>
+<h3>4 — Perform the approved robot isolation or remove-from-system recovery action (procedure_reference)</h3>
+<p><strong>Intent:</strong> Use the authorized operational procedure to remove the identified abnormal robot from active fleet participation or otherwise keep it out of service when that is the supported recovery path.</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li><code>proc_remove_a_faulted_motionless_agv_from_the_floor_and_restore_operation_v1</code> (high, score=0.6018) — Remove A Faulted Motionless AGV From The Floor And Restore Operation</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>healthy</code> → <code>node_5</code> when recovery_action_completed</li>
+<li><code>escalate</code> → <code>node_6</code> when recovery_action_not_completed</li>
+</ul>
+<details class="linked-runbook" open><summary><strong>Runbook:</strong> Remove A Faulted Motionless AGV From The Floor And Restore Operation (<code>proc_remove_a_faulted_motionless_agv_from_the_floor_and_restore_operation_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> recovery</li>
+<li><strong>Role:</strong> L2_support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Recover from an AGV motionless-on-floor fault by locating the faulted AGV, identifying and stopping the correct E-stop zone, removing the AGV from the floor, then restoring operation with the documented E-stop release and blue RESET sequence.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use when an AGV is faulted and motionless on the floor and the documented troubleshooting sequence calls for locating the AGV, stopping the appropriate E-stop zone, removing the AGV, and resetting the system.</p>
+<p><strong>Safety Notes:</strong></p><ul>
+<li>This procedure is not marked support-safe because the source does not describe the safe handling method for physically removing the AGV.</li>
+<li>Use site safety controls and local procedures for physical AGV removal; this source does not provide those details.</li>
+<li>Stop and escalate if the AGV cannot be safely removed.</li>
+</ul>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>The faulted AGV is identified.</td><td><code></code></td></tr>
+<tr><td><code>unhealthy</code></td><td>The faulted AGV cannot be identified from floor observation and RMS reference.</td><td><code></code></td></tr>
+<tr><td><code>unknown</code></td><td>State cannot be confirmed from available runbook evidence.</td><td><code></code></td></tr>
+</table>
+<p><strong>Source:</strong> manual / manual_optisweep_om_v3</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Locate the faulted AGV</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Locate the faulted AGV on the floor. If needed, reference RMS for AGV error information to help identify the AGV.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The specific AGV requiring recovery is clearly identified from floor observation and/or RMS error information.</p>
+<p><strong>Expected result:</strong></p>
+<p>The faulted motionless AGV is identified.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/d87070d22301b81d.jpeg" alt="artifact_fig_5_4_faulted_agv_with_tote_screen"><figcaption>Use as a visual example of a faulted AGV screen context during recovery.</figcaption></figure>
+<hr>
+<h5>Step 2 — Identify the appropriate E-stop zone</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Reference the E-stop zone map to identify the appropriate E-stop zone for the faulted AGV.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The E-stop zone corresponding to the faulted AGV location is known before the zone is stopped.</p>
+<p><strong>Expected result:</strong></p>
+<p>The correct E-stop zone is identified.</p>
+<hr>
+<h5>Step 3 — Stop the appropriate E-stop zone</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Press E-STOP to stop the appropriate E-stop zone.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The intended E-stop zone is stopped and the area is isolated for AGV removal.</p>
+<p><strong>Expected result:</strong></p>
+<p>The appropriate E-stop zone is stopped.</p>
+<hr>
+<h5>Step 4 — Remove the faulted AGV from the floor</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Remove the faulted AGV from the floor.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The faulted AGV is no longer on the floor in the affected area.</p>
+<p><strong>Expected result:</strong></p>
+<p>The faulted AGV is removed from the floor.</p>
+<hr>
+<h5>Step 5 — Release the E-stop</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Pull E-STOP.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The E-stop is pulled out/released and the system is ready for reset.</p>
+<p><strong>Expected result:</strong></p>
+<p>The E-stop is released.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/b2001df0f17c2fc8.jpeg" alt="artifact_page_82_image_2"><figcaption>Reference ESTOP clearing and RESET context associated with pulling out ESTOP and clearing faults.</figcaption></figure>
+<hr>
+<h5>Step 6 — Press the blue RESET button</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Press the blue RESET button.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The reset completes without additional fault indication.</p>
+<p><strong>Expected result:</strong></p>
+<p>The reset is accepted and the system clears the fault condition.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/d87070d22301b81d.jpeg" alt="artifact_fig_5_4_faulted_agv_with_tote_screen"><figcaption>Candidate-provided image support for a faulted AGV screen during the fault recovery procedure.</figcaption></figure>
+<figure><img src="assets/b2001df0f17c2fc8.jpeg" alt="artifact_page_82_image_2"><figcaption>Reference RESET-related HMI context associated with clearing faults after ESTOP is pulled out.</figcaption></figure>
+<hr>
+<h5>Step 7 — Verify the system resumes operation</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Verify that the system resumes operation.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Normal operation resumes after the reset sequence.</p>
+<p><strong>Expected result:</strong></p>
+<p>The system resumes operation.</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>The faulted AGV is identified.</li>
+<li>The appropriate E-stop zone is stopped.</li>
+<li>The faulted AGV is removed from the floor.</li>
+<li>The E-stop is released and the blue RESET button is pressed.</li>
+<li>The system resumes operation.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>The faulted AGV cannot be identified from floor observation and RMS reference.</li>
+<li>The correct E-stop zone cannot be determined.</li>
+<li>The AGV cannot be safely removed.</li>
+<li>The reset sequence does not clear the fault.</li>
+<li>The system does not resume operation after the documented reset sequence.</li>
+</ul>
+</details>
+<hr>
+<h3>5 — Validate that pairing and fleet behavior recover and remain stable during monitoring (validation_gate)</h3>
+<p><strong>Intent:</strong> Confirm that the affected zone can pair again, AMRs are no longer broadly diverting to the hospital lane, and the site remains operational after the recovery action.</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li><code>proc_verify_agvs_are_in_the_szonestaging_state_on_the_hmi_v1</code> (high, score=0.5642) — Verify AGVs Are in the &quot;szonestaging&quot; State on the HMI</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Decision Outcomes:</strong></p>
+<ul>
+<li><code>healthy</code>: Pairing and fleet behavior have recovered and remain stable during monitoring.</li>
+<li><code>unhealthy</code>: Recovery has not been validated because the primary symptoms persist.</li>
+<li><code>inconclusive</code>: Monitoring data is insufficient to declare recovery.</li>
+</ul>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_6</code> when validation_failed</li>
+<li><code>healthy</code> → <code></code> when validation_passed</li>
+</ul>
+<details class="linked-runbook" open><summary><strong>Runbook:</strong> Verify AGVs Are in the &quot;szonestaging&quot; State on the HMI (<code>proc_verify_agvs_are_in_the_szonestaging_state_on_the_hmi_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> L1_support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Confirm on the HMI that the AGVs being checked are displayed in the documented &quot;szonestaging&quot; state before restart or resume actions in AGV fault recovery.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use this check when AGV fault recovery or restart guidance requires confirmation that AGVs are in the documented ready state before restarting or resuming the system.</p>
+<p><strong>Safety Notes:</strong></p><ul>
+<li>Stop and escalate if the HMI does not show AGV state or if the AGVs are not shown as &quot;szonestaging&quot; when this verification is required.</li>
+<li>Do not infer equivalent AGV states that are not explicitly documented in the source.</li>
+</ul>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>Pairing and fleet behavior have recovered and remain stable during monitoring.</td><td><code></code></td></tr>
+<tr><td><code>unhealthy</code></td><td>Recovery has not been validated because the primary symptoms persist.</td><td><code>node_6</code></td></tr>
+<tr><td><code>inconclusive</code></td><td>Monitoring data is insufficient to declare recovery.</td><td><code>node_6</code></td></tr>
+</table>
+<p><strong>Source:</strong> manual / manual_optisweep_om_v3</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Open the HMI view showing AGV state</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open or view the HMI area where AGV state is displayed for the AGVs being checked.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The AGV state field or status area is visible on the HMI.</p>
+<p><strong>Expected result:</strong></p>
+<p>The HMI view showing AGV state is visible.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/ec83d895fff08cd8.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen"><figcaption>Use the nearby page 90 AGV recovery screen as contextual visual support for the HMI-based AGV status verification; review the AGV status area referenced by the source.</figcaption></figure>
+<hr>
+<h5>Step 2 — Identify the AGV state value</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Identify the AGV state value shown on the HMI for the AGVs being checked.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The HMI clearly shows a readable AGV state value.</p>
+<p><strong>Expected result:</strong></p>
+<p>A visible AGV state value is identified for each AGV being checked.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/ec83d895fff08cd8.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen"><figcaption>Look for the AGV status/state information referenced by the page 90 recovery guidance.</figcaption></figure>
+<hr>
+<h5>Step 3 — Verify the state is &quot;szonestaging&quot;</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Verify that the displayed AGV state is exactly &quot;szonestaging&quot; for the AGVs being checked.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The displayed AGV state is exactly &quot;szonestaging&quot;.</p>
+<p><strong>Expected result:</strong></p>
+<p>The AGVs are confirmed either to be in &quot;szonestaging&quot; or not in the required state.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/ec83d895fff08cd8.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen"><figcaption>Confirm the AGV status/state matches the documented value &quot;szonestaging&quot; referenced by the source.</figcaption></figure>
+<hr>
+<h5>Step 4 — Confirm readiness before restart or resume</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Record or confirm that the AGVs are in the documented ready state before proceeding with restart or resume actions.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The AGVs have been confirmed as being in &quot;szonestaging&quot; before restart or resume actions.</p>
+<p><strong>Expected result:</strong></p>
+<p>A clear confirmation is made that the AGVs are in the documented ready state, or escalation is initiated if they are not.</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>The HMI displays AGV state for the AGVs being checked.</li>
+<li>The displayed AGV state is confirmed as exactly &quot;szonestaging&quot;.</li>
+<li>The AGVs are confirmed in the documented ready state before restart or resume actions.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>The HMI does not show AGV state.</li>
+<li>The AGV state cannot be identified or read.</li>
+<li>The AGV state is not &quot;szonestaging&quot; when this verification is required.</li>
+<li>Proceeding would require inferring an undocumented equivalent state.</li>
+</ul>
+</details>
+<hr>
+<h3>6 — Stop and escalate if no supported abnormal-robot recovery path is identified or validation fails (escalation_gate)</h3>
+<p><strong>Intent:</strong> Hand off when RMS review does not reveal a supported robot isolation target, when authorized recovery cannot be performed, or when the zone and fleet behavior do not stabilize after the attempted action.</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li><code>proc_gather_required_fault_information_before_entering_the_grid_for_agv_recovery_v1</code> (high, score=0.5908) — Gather Required Fault Information Before Entering the Grid for AGV Recovery</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Decision Outcomes:</strong></p>
+<ul>
+<li><code>escalate</code>: Escalate with collected symptom summary, RMS evidence, affected robot IDs, attempted actions, and validation results.</li>
+</ul>
+<details class="linked-runbook" open><summary><strong>Runbook:</strong> Gather Required Fault Information Before Entering the Grid for AGV Recovery (<code>proc_gather_required_fault_information_before_entering_the_grid_for_agv_recovery_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> L2_support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Collect the source-required AGV and RMS details before going inside the grid (Dance Floor) to perform fault recovery.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use before going inside the grid (also called the Dance Floor) for AGV fault recovery, to ensure the required Robot ID, RMS fault description, bin/tote status, tote ID when applicable, and under-rack empty-AGV zone status have been gathered.</p>
+<p><strong>Safety Notes:</strong></p><ul>
+<li>Entering the grid (Dance Floor) implies elevated operational risk per the candidate context.</li>
+<li>Before going inside the grid, make sure to have the required Robot ID, fault description from RMS, bin/tote status, tote ID when applicable, and under-rack empty-AGV zone status.</li>
+<li>Do not proceed into the grid without the documented information.</li>
+</ul>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>escalate</code></td><td>Escalate with collected symptom summary, RMS evidence, affected robot IDs, attempted actions, and validation results.</td><td><code></code></td></tr>
+<tr><td><code>healthy</code></td><td>The Robot ID for the faulted AGV is documented.</td><td><code></code></td></tr>
+<tr><td><code>unhealthy</code></td><td>Robot ID cannot be confirmed.</td><td><code></code></td></tr>
+<tr><td><code>unknown</code></td><td>State cannot be confirmed from available runbook evidence.</td><td><code></code></td></tr>
+</table>
+<p><strong>Source:</strong> manual / manual_optisweep_om_v3</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Identify the Robot ID for the faulted AGV</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Identify and record the Robot ID for the faulted AGV before going inside the grid.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>A single faulted AGV is clearly identified and its Robot ID is available for recovery preparation.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Robot ID for the faulted AGV is known and recorded.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>Look for the AGV fault interface context associated with Robot ID and fault recovery information.</figcaption></figure>
+<figure><img src="assets/4f58f8bb3f0f6aea.jpeg" alt="artifact_fig_4_12_agv_api_controls"><figcaption>Look for AGV details/status context that may support identifying the affected AGV.</figcaption></figure>
+<hr>
+<h5>Step 2 — Obtain the fault description from RMS</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Access RMS and obtain the fault description for the faulted AGV.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The RMS fault description is visible and clearly associated with the identified faulted AGV.</p>
+<p><strong>Expected result:</strong></p>
+<p>The RMS fault description for the faulted AGV is available and recorded.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>Look for the AGV fault screen context referenced for RMS fault description during fault recovery.</figcaption></figure>
+<hr>
+<h5>Step 3 — Check whether RMS indicates the AGV is holding a bin</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Check in RMS whether the faulted AGV is indicated as holding a bin.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>RMS clearly indicates whether the faulted AGV is or is not holding a bin.</p>
+<p><strong>Expected result:</strong></p>
+<p>The bin/tote holding status of the faulted AGV is known.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>Look for fault recovery screen context related to RMS fault and tote/bin status.</figcaption></figure>
+<hr>
+<h5>Step 4 — Record the tote ID if the AGV is holding a bin</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If RMS indicates the faulted AGV is holding a bin, record the tote ID.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>A tote ID is documented for a faulted AGV that RMS shows as holding a bin, or the step is not applicable because no bin is held.</p>
+<p><strong>Expected result:</strong></p>
+<p>The tote ID is recorded when the faulted AGV is holding a bin.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>Look for screen context related to tote ID during AGV fault recovery.</figcaption></figure>
+<figure><img src="assets/d87070d22301b81d.jpeg" alt="artifact_fig_5_4_faulted_agv_with_tote_screen"><figcaption>Look for a faulted AGV with tote context that may help interpret tote-related recovery information.</figcaption></figure>
+<hr>
+<h5>Step 5 — Verify under-rack empty-AGV zone status when applicable</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the faulted AGV is under a rack, verify whether that AGV is the empty AGV for that zone.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>For an AGV under a rack, it is known whether that AGV is the empty AGV for the zone; otherwise the step is not applicable.</p>
+<p><strong>Expected result:</strong></p>
+<p>The under-rack empty-AGV zone status is confirmed when applicable.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/ec83d895fff08cd8.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen"><figcaption>Look for no-empty-AGV zone context relevant to determining whether the under-rack AGV is the empty AGV for that zone.</figcaption></figure>
+<figure><img src="assets/597651fff1a13999.jpeg" alt="artifact_fig_5_1_system_in_shut_down_mode"><figcaption>Look for AGV positioning and zone context that may help interpret under-rack AGV status.</figcaption></figure>
+<hr>
+<h5>Step 6 — Confirm all required information before entering the grid</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Confirm that you have the Robot ID, RMS fault description, bin/tote status, tote ID when applicable, and under-rack empty-AGV zone status when applicable before going inside the grid.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The required information set is complete and ready for use during AGV recovery.</p>
+<p><strong>Expected result:</strong></p>
+<p>All source-required pre-entry information has been collected and confirmed.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>Use as a reference for AGV fault recovery context while confirming the collected information.</figcaption></figure>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>The Robot ID for the faulted AGV is documented.</li>
+<li>The RMS fault description is documented.</li>
+<li>The AGV bin/tote holding status is documented.</li>
+<li>The tote ID is documented when RMS indicates the AGV is holding a bin.</li>
+<li>The under-rack empty-AGV zone status is documented when applicable.</li>
+<li>The information is confirmed before entering the grid.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>Robot ID cannot be confirmed.</li>
+<li>RMS fault description cannot be obtained.</li>
+<li>Bin/tote holding status cannot be determined.</li>
+<li>Tote ID cannot be confirmed when the AGV is holding a bin.</li>
+<li>Under-rack empty-AGV zone status cannot be confirmed when applicable.</li>
+<li>Any required information is missing before grid entry.</li>
+</ul>
+</details>
+<hr>
+<h2>Branch Graph</h2>
+<table>
+<tr><th>From Node</th><th>Outcome</th><th>Condition</th><th>Next Node</th></tr>
+<tr><td><code>node_1</code></td><td><code>unhealthy</code></td><td>pattern_confirmed</td><td><code>node_2</code></td></tr>
+<tr><td><code>node_1</code></td><td><code>inconclusive</code></td><td>pattern_not_confirmed_or_unclear</td><td><code>node_6</code></td></tr>
+<tr><td><code>node_2</code></td><td><code>unhealthy</code></td><td>abnormal_robot_identified</td><td><code>node_3</code></td></tr>
+<tr><td><code>node_2</code></td><td><code>inconclusive</code></td><td>no_supported_target</td><td><code>node_6</code></td></tr>
+<tr><td><code>node_3</code></td><td><code>unhealthy</code></td><td>approved_isolation_supported</td><td><code>node_4</code></td></tr>
+<tr><td><code>node_3</code></td><td><code>escalate</code></td><td>not_supported_or_not_authorized</td><td><code>node_6</code></td></tr>
+<tr><td><code>node_4</code></td><td><code>healthy</code></td><td>recovery_action_completed</td><td><code>node_5</code></td></tr>
+<tr><td><code>node_4</code></td><td><code>escalate</code></td><td>recovery_action_not_completed</td><td><code>node_6</code></td></tr>
+<tr><td><code>node_5</code></td><td><code>unhealthy</code></td><td>validation_failed</td><td><code>node_6</code></td></tr>
+<tr><td><code>node_5</code></td><td><code>healthy</code></td><td>validation_passed</td><td><code></code></td></tr>
+<tr><td><code>node_3</code></td><td><code>unhealthy</code></td><td>approved_isolation_supported</td><td><code>node_4</code></td></tr>
+<tr><td><code>node_3</code></td><td><code>escalate</code></td><td>not_supported_or_not_authorized</td><td><code>node_6</code></td></tr>
+</table>
+</body>
+</html>

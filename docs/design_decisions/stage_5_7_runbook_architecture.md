@@ -13,6 +13,7 @@ Related notes:
 
 - [Runbook Candidate Pool, Merge Review, And Azure Publishing Design Notes](runbook_candidate_pool_and_azure_review_design.md)
 - [Stage 5/6 Playbook Extraction Mode Decision Notes](stage_5_6_playbook_extraction_modes.md)
+- [Stage 8 Playbook Finalization & Runbook Linking](stage_8_playbook_finalization.md)
 
 ## Overall Principle
 
@@ -250,7 +251,7 @@ Shared finalization subgraph
 | Stage 6 runbook finalization | Implemented | Implemented | — |
 | Stage 6.5 runbook pool | Legacy pool builder exists; needs refactor | — | Planned |
 | Stage 7 merge-only | Prompt exists; needs merge-only refactor | — | Planned |
-| Stage 8 playbook linking | — | Playbook candidates exist | Planned |
+| Stage 8 playbook linking | — | Playbook candidates exist | Implemented (pilot) |
 
 The existing operational `candidate_pool_builder.py` predates this architecture.
 Refactor it into Stage 6.5 merge preparation over **finalized runbooks**, not
