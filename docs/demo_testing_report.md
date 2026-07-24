@@ -32,12 +32,12 @@ After each demo testing session:
 |-------|-------|
 | **Date** | 2026-07-20 |
 | **Focus** | Phase 0 OptiSweep AI Assistant — Prompt 1 (AGVs stopped, no alarms showing) |
-| **Audience tested** | Customer Support engineers |
+| **Audience tested** | Ekram, Wesley, Mitchel |
 | **Status** | Complete |
 
 #### Objective
 
-Validate whether the Phase 0 OptiSweep AI Assistant enables Customer Support engineers to diagnose Prompt 1 ([AGVs stopped, no alarms showing](optisweep_ai_demo_test_plan.md#prompt-1--agvs-stopped-no-alarms-showing)) using guided troubleshooting, while identifying gaps in usability, workflow design, retrieval quality, and supporting documentation.
+Validate whether the Phase 0 OptiSweep AI Assistant enables testers to diagnose Prompt 1 ([AGVs stopped, no alarms showing](optisweep_ai_demo_test_plan.md#prompt-1--agvs-stopped-no-alarms-showing)) using guided troubleshooting, while identifying gaps in usability, workflow design, retrieval quality, and supporting documentation.
 
 #### What Went Well
 
@@ -69,7 +69,33 @@ This aligns with the project's philosophy of prioritizing safe, evidence-based r
 
 #### Challenges & Opportunities
 
-##### 1. Symptom extraction missed critical information
+##### 1. Prompt 1 did not retrieve the case 228086 playbook
+
+**Priority:** Critical
+
+**Observation**
+
+For Prompt 1 (AGVs stopped, no alarms showing), the assistant failed to retrieve the playbook associated with reference case **228086**.
+
+That playbook is one of the primary expected assets for this prompt. Missing it was among the most significant failures observed in the session — the guided path never landed on the known good incident narrative.
+
+**Why this matters**
+
+If the highest-confidence reference playbook is not retrieved for the canonical demo prompt:
+
+- Users never see the intended troubleshooting path
+- Downstream symptom extraction and routing issues are harder to isolate
+- Demo credibility and trust drop immediately
+- Product validation of playbook-backed guidance cannot succeed
+
+**Proposed Improvements**
+
+- Debug retrieval / routing for Prompt 1 → case 228086 playbook
+- Confirm playbook is published, indexed, and eligible for this symptom set
+- Validate gate phrases / confidence thresholds are not excluding 228086
+- Re-test Prompt 1 until 228086 surfaces reliably
+
+##### 2. Symptom extraction missed critical information
 
 **Priority:** High
 
@@ -99,7 +125,7 @@ The workflow engine is only as good as the structured signals it receives. Missi
 - Improve synonym handling
 - Review prompt engineering for structured symptom extraction
 
-##### 2. Workflows don't always reflect how remote support actually works
+##### 3. Workflows don't always reflect how remote support actually works
 
 **Priority:** High
 
@@ -124,7 +150,7 @@ The assistant should recommend actions that the current user is actually capable
 - Separate physical operator actions from remote support actions
 - Identify when operator confirmation is required
 
-##### 3. Greater role awareness is needed
+##### 4. Greater role awareness is needed
 
 **Priority:** High
 
@@ -149,7 +175,7 @@ Providing instructions outside a user's access level creates unnecessary frictio
 - Render different instructions based on support tier
 - Better identify escalation boundaries
 
-##### 4. Users still depend on external resources
+##### 5. Users still depend on external resources
 
 **Priority:** Medium
 
@@ -200,6 +226,7 @@ Homepage should include:
 
 | Priority | Action | Owner | Status |
 |----------|--------|-------|--------|
+| P0 | Fix Prompt 1 retrieval so case 228086 playbook surfaces | Caiya | Open |
 | P0 | Improve symptom extraction for negative observations | Caiya | Open |
 | P0 | Review workflow routing after symptom extraction updates | Caiya | Open |
 | P0 | Update procedures for remote support workflows | Caiya | Open |
