@@ -1,0 +1,478 @@
+{
+  "procedure_id": "proc_check_ignition_gateway_performance_metrics_v1",
+  "candidate_id": "candidate_training_video_ignition_gateway_performance_check",
+  "title": "Check Ignition Gateway Performance Metrics",
+  "procedure_type": "diagnostic",
+  "summary": "An L2 support user can open the live Ignition gateway performance page in a web browser and review CPU, memory, connection, response-time, slow-response, garbage-collector, and tuning-script indicators for evidence of gateway health or degradation.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "gateway_health",
+    "opc_connection_or_tipper_heartbeat"
+  ],
+  "access_surface": [
+    "ignition_gateway"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "gateway_unhealthy",
+    "opc_connection_faulted",
+    "service_crash_or_restart"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this Ignition gateway diagnostic procedure when gateway health, performance degradation, an unplanned restart, or related OPC and application symptoms require live evidence from the Ignition Gateway performance page.",
+  "not_for": [
+    "Do not use this procedure as a substitute for a physical E-stop, LOTO, or physical AGV recovery.",
+    "Do not infer numeric healthy thresholds for CPU, memory, response time, garbage collectors, or other indicators from this procedure.",
+    "Do not restart services or change gateway configuration as part of this inspection-only procedure."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Open the Ignition gateway performance page and inspect the displayed live indicators."
+    },
+    {
+      "role": "L3_support",
+      "responsibility": "Support interpretation or escalation when gateway performance evidence indicates degradation or the page cannot be opened."
+    }
+  ],
+  "safety_notes": [
+    "This is a diagnostic inspection procedure; do not change gateway settings or restart services based only on this runbook.",
+    "Preserve displayed response events, severity values, and visible trend behavior as escalation evidence."
+  ],
+  "access_or_tools_needed": [
+    "Ignition gateway",
+    "Web browser",
+    "Ignition Gateway performance page at http://localhost:8088/web/status/sys.performance?2"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2 or L3 support access to the Ignition gateway",
+      "A web browser that can reach the Ignition gateway performance page"
+    ],
+    "system_preconditions": [
+      "The Ignition gateway is reachable sufficiently to open its performance page."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_ignition_gateway_performance_metrics_v1",
+    "ctx_training_video_ignition_gateway_diagnostics_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0034_the_tippers_ignition_we_save_it_primary_02_56_53_000",
+      "description": "Ignition gateway performance page showing browser access, the performance URL, and gateway diagnostic sections.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0041_this_is_just_the_gateway_and_primary_03_03_43_000",
+      "description": "Ignition gateway performance page showing CPU and memory trend behavior, including the described memory spike and drop-to-zero pattern.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0043_03_04_58_000_primary_03_04_59_500",
+      "description": "Ignition gateway performance page showing CPU Trend, Memory Trend, Database, OPC Connection, Perspective Session, Vision Clients, System Response, Current Response Time, Recent Slow Response Events, Garbage Collectors, Tuning Scripts, and Severity.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Ignition gateway performance page",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Reach the live Ignition gateway performance surface so its diagnostic indicators can be inspected.",
+      "instruction": "In a web browser on the support host, open the Ignition gateway performance page at http://localhost:8088/web/status/sys.performance?2.",
+      "expected_result": "The Ignition gateway performance page opens and displays gateway performance and diagnostic sections.",
+      "healthy_condition": "The page is reachable and its performance sections render with current displayed information.",
+      "failure_condition": "The page cannot be opened or the performance sections do not render.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open performance page",
+          "exact_action": "Open http://localhost:8088/web/status/sys.performance?2 in a web browser.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L3 support if the Ignition gateway performance page cannot be opened."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "03:04:58.000",
+          "timestamp_end": "03:05:01.000",
+          "start_time_seconds": 11098.0,
+          "end_time_seconds": 11101.0,
+          "segment_id": "segment_training_video_0043",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0043",
+          "page": 43,
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "Ignition Gateway UI is accessed through a web browser and displays CPU Trend, Memory Trend, Database, OPC Connection, Perspective Session, Vision Clients, System Response, Current Response Time, Recent Slow Response Events, Garbage Collectors, and Tuning Scripts."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Inspect CPU and memory trends",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Identify visible gateway performance behavior in the CPU Trend and Memory Trend displays.",
+      "instruction": "On the live Ignition gateway performance page, review the CPU Trend and Memory Trend displays for visible spikes, sustained elevated activity, or a memory pattern in which usage spikes and then drops to zero.",
+      "expected_result": "The CPU Trend and Memory Trend displays provide visible current or recent trend evidence for gateway performance.",
+      "healthy_condition": "No unexplained visible CPU or memory spike or sustained elevated activity is present in the displayed trends.",
+      "failure_condition": "A visible CPU or memory spike, sustained elevated activity, or a memory spike followed by a drop to zero is present without an explained event.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Review CPU trend",
+          "exact_action": "Review the CPU Trend display for visible spikes or sustained elevated activity.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "hmi_inspection",
+          "label": "Review memory trend",
+          "exact_action": "Review the Memory Trend display for visible spikes, sustained elevated activity, or a spike followed by a drop to zero.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate when a visible CPU or memory spike or sustained elevated activity cannot be explained from the available live evidence.",
+        "Escalate when the memory trend shows a crash-related spike followed by a drop to zero and the event cannot be correlated with available live evidence."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "03:03:43.000",
+          "timestamp_end": "03:03:43.000",
+          "start_time_seconds": 11023.0,
+          "end_time_seconds": 11023.0,
+          "segment_id": "segment_training_video_0041",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0041",
+          "page": 41,
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "The Ignition gateway performance page can show memory behavior including a memory spike followed by a drop to zero after a crash."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "03:04:58.000",
+          "timestamp_end": "03:05:01.000",
+          "start_time_seconds": 11098.0,
+          "end_time_seconds": 11101.0,
+          "segment_id": "segment_training_video_0043",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0043",
+          "page": 43,
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "The page displays CPU Trend and Memory Trend."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Review gateway connection and client sections",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Check the live gateway sections that show database, OPC, Perspective, and Vision client information.",
+      "instruction": "On the Ignition gateway performance page, inspect the Database, OPC Connection, Perspective Session, and Vision Clients sections and preserve any displayed live information or fault state.",
+      "expected_result": "The four gateway sections display their current connection or client information, including any displayed OPC connection state.",
+      "healthy_condition": "The sections render with no unexplained faulted or missing connection/client information.",
+      "failure_condition": "An OPC Connection, Database, Perspective Session, or Vision Clients section shows a faulted, missing, or otherwise unexplained condition.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Inspect connection and client sections",
+          "exact_action": "Check Database, OPC Connection, Perspective Session, and Vision Clients for their displayed live information.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate when an OPC connection or another gateway connection/client section shows an unexplained faulted or missing condition."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "03:04:58.000",
+          "timestamp_end": "03:05:01.000",
+          "start_time_seconds": 11098.0,
+          "end_time_seconds": 11101.0,
+          "segment_id": "segment_training_video_0043",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0043",
+          "page": 43,
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "The Ignition gateway page displays Database, OPC Connection, Perspective Session, and Vision Clients sections."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:56:53.000",
+          "timestamp_end": "02:56:53.000",
+          "start_time_seconds": 10613.0,
+          "end_time_seconds": 10613.0,
+          "segment_id": "segment_training_video_0034",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0034",
+          "page": 34,
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "The gateway can show active communications; in the example, Tipper 7-8 communications were powered off and shown as faulted."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Review response and slow-response indicators",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Determine whether the live gateway page shows response-time degradation or recent slow-response evidence.",
+      "instruction": "Review System Response, Current Response Time, and Recent Slow Response Events on the Ignition gateway performance page, including any displayed Severity value.",
+      "expected_result": "The page displays the current response information and shows whether recent slow-response events are listed, including their displayed severity when present.",
+      "healthy_condition": "No unexplained current response-time problem is displayed and Recent Slow Response Events shows no unexplained event or severity indication.",
+      "failure_condition": "The page shows a current response-time problem or a Recent Slow Response Event/Severity indication that cannot be explained from the available live evidence.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Inspect response indicators",
+          "exact_action": "Review System Response, Current Response Time, Recent Slow Response Events, and Severity.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate when a current response-time problem is displayed.",
+        "Escalate when a Recent Slow Response Event or Severity indication cannot be explained from the available live evidence."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "03:04:58.000",
+          "timestamp_end": "03:05:01.000",
+          "start_time_seconds": 11098.0,
+          "end_time_seconds": 11101.0,
+          "segment_id": "segment_training_video_0043",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0043",
+          "page": 43,
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "The page displays System Response, Current Response Time, Recent Slow Response Events, and Severity."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Inspect garbage collectors and tuning scripts",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Complete the gateway performance review using the remaining displayed diagnostic indicators.",
+      "instruction": "Review the Garbage Collectors, including Young Generation and Old Generation where displayed, and the Tuning Scripts indicators. Preserve the displayed values or statuses without treating unclear values as fixed health thresholds.",
+      "expected_result": "The Garbage Collectors and Tuning Scripts indicators are visible and their displayed values or statuses are available as diagnostic evidence.",
+      "healthy_condition": "The indicators are displayed without an unexplained abnormal status or correlated gateway degradation.",
+      "failure_condition": "A displayed abnormal status or value is correlated with gateway degradation, or the indicators cannot be interpreted because the live display is incomplete or unclear.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Inspect diagnostic indicators",
+          "exact_action": "Review Garbage Collectors, Young Generation, Old Generation, and Tuning Scripts as displayed on the Ignition gateway performance page.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate when a displayed garbage-collector or tuning-script condition is associated with gateway degradation.",
+        "Do not assign a numeric healthy threshold to an unclear garbage-collector value."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "03:04:58.000",
+          "timestamp_end": "03:05:01.000",
+          "start_time_seconds": 11098.0,
+          "end_time_seconds": 11101.0,
+          "segment_id": "segment_training_video_0043",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0043",
+          "page": 43,
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "The page displays Garbage Collectors, Young Generation, Old Generation, and Tuning Scripts; collector values in the captured text are unclear."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The live Ignition gateway performance page opens in a web browser.",
+    "CPU Trend, Memory Trend, Database, OPC Connection, Perspective Session, Vision Clients, System Response, Current Response Time, Recent Slow Response Events, Garbage Collectors, and Tuning Scripts are reviewed.",
+    "Displayed response events, severity values, connection states, and visible trend behavior are available as evidence for support or escalation.",
+    "No unexplained visible performance spike, response-time problem, faulted connection, or recent slow-response indication is found."
+  ],
+  "healthy_conditions": [
+    "The Ignition gateway performance page is reachable and renders its diagnostic sections.",
+    "CPU Trend and Memory Trend show no unexplained visible spike or sustained elevated activity.",
+    "Database, OPC Connection, Perspective Session, and Vision Clients sections show no unexplained faulted or missing information.",
+    "System Response and Current Response Time show no unexplained response problem.",
+    "Recent Slow Response Events has no unexplained event or Severity indication.",
+    "Garbage Collectors and Tuning Scripts display information without an unexplained abnormal condition."
+  ],
+  "failure_conditions": [
+    "The Ignition gateway performance page cannot be opened.",
+    "CPU or memory shows an unexplained spike or sustained elevated activity.",
+    "Memory shows a crash-related spike followed by a drop to zero.",
+    "A Database, OPC Connection, Perspective Session, or Vision Clients section shows an unexplained faulted or missing condition.",
+    "Current Response Time shows a problem or Recent Slow Response Events displays an unexplained event or Severity indication.",
+    "Gateway diagnostic indicators are incomplete, unclear, or associated with observed gateway degradation."
+  ],
+  "escalation_guidance": [
+    "Escalate to L3 support if the Ignition gateway performance page cannot be opened.",
+    "Escalate unexplained CPU or memory spikes, sustained elevated activity, or a memory spike followed by a drop to zero.",
+    "Escalate unexplained faulted or missing Database, OPC Connection, Perspective Session, or Vision Clients information.",
+    "Escalate a current response-time problem or unexplained Recent Slow Response Event/Severity indication.",
+    "Include the displayed trend behavior, connection state, response values, event text, and Severity value in the escalation evidence when available.",
+    "Escalate rather than infer numeric health thresholds when the packet provides no threshold or definitive status meaning."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0034_the_tippers_ignition_we_save_it_primary_02_56_53_000",
+      "what_to_look_at": "Browser access to the Ignition gateway performance page and the displayed gateway diagnostic sections."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0041_this_is_just_the_gateway_and_primary_03_03_43_000",
+      "what_to_look_at": "CPU Trend and Memory Trend behavior, including visible spikes and a memory spike followed by a drop to zero."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0043_03_04_58_000_primary_03_04_59_500",
+      "what_to_look_at": "CPU Trend, Memory Trend, Database, OPC Connection, Perspective Session, Vision Clients, System Response, Current Response Time, Recent Slow Response Events, Garbage Collectors, Tuning Scripts, and Severity."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "timestamp_start": "03:04:58.000",
+      "timestamp_end": "03:05:01.000",
+      "start_time_seconds": 11098.0,
+      "end_time_seconds": 11101.0,
+      "segment_id": "segment_training_video_0043",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0043",
+      "page": 43,
+      "figure_id": null,
+      "figure_number": null,
+      "site_code": null,
+      "site_label": null,
+      "quote_or_summary": "Ignition Gateway UI is accessed through a web browser and displays CPU Trend, Memory Trend, Database, OPC Connection, Perspective Session, Vision Clients, System Response, Current Response Time, Recent Slow Response Events, Garbage Collectors, and Tuning Scripts."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0034_the_tippers_ignition_we_save_it_primary_02_56_53_000",
+      "what_to_look_at": "Browser access to the Ignition gateway performance page and the displayed gateway diagnostic sections."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0041_this_is_just_the_gateway_and_primary_03_03_43_000",
+      "what_to_look_at": "CPU Trend and Memory Trend behavior, including visible spikes and a memory spike followed by a drop to zero."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0043_03_04_58_000_primary_03_04_59_500",
+      "what_to_look_at": "CPU Trend, Memory Trend, Database, OPC Connection, Perspective Session, Vision Clients, System Response, Current Response Time, Recent Slow Response Events, Garbage Collectors, Tuning Scripts, and Severity."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_ignition_gateway_performance_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "No numeric healthy thresholds are provided for CPU, memory, response time, garbage collectors, or tuning scripts.",
+    "Definitive meanings for all displayed statuses and Severity values are not provided.",
+    "The packet does not define authentication steps or gateway credentials.",
+    "This runbook inspects gateway indicators only; it does not define service restart, gateway recovery, or configuration-change actions.",
+    "The packet does not provide a site code or site label."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0034_the_tippers_ignition_we_save_it_primary_02_56_53_000",
+    "artifact_training_video_training_video_day2_0041_this_is_just_the_gateway_and_primary_03_03_43_000",
+    "artifact_training_video_training_video_day2_0043_03_04_58_000_primary_03_04_59_500"
+  ]
+}

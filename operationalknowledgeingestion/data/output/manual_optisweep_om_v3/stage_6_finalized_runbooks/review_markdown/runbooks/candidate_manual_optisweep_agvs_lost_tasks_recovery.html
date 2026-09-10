@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Recover Empty AGVs That Lost Tasks After RMS Restart (Remove/Re-add AGVs Twice)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Recover Empty AGVs That Lost Tasks After RMS Restart (Remove/Re-add AGVs Twice)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_recover_empty_agvs_lost_tasks_after_rms_restart_remove_readd_twice_v1</td></tr>
+<tr><th>Title</th><td>Recover Empty AGVs That Lost Tasks After RMS Restart (Remove/Re-add AGVs Twice)</td></tr>
+<tr><th>Procedure Type</th><td>recovery</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>agv_physical_recovery</td></tr>
+<tr><th>Access Surface</th><td>rms_ui, hospital_hmi</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>None</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>If empty AGVs lose their tasks after an RMS restart, stop RMS, remove and re-add the affected empty AGVs without totes twice, verify each AGV is in the &quot;szonestaging&quot; state on the HMI, press E-stop again when ready, then resume RMS.</p>
+<h2>When To Use</h2>
+<p>Use when empty AGVs have lost their tasks because the RMS was restarted, and the recovery guidance calls for removing and re-adding the AGVs twice and confirming &quot;szonestaging&quot; before resuming RMS.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/ec83d895fff08cd8.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen" /><figcaption>RMS screen used during fault recovery showing the AGV add flow and the &quot;szonestaging&quot; verification requirement for recovery.</figcaption></figure>
+<figure><img src="assets/d87070d22301b81d.jpeg" alt="artifact_fig_5_4_faulted_agv_with_tote_screen" /><figcaption>Example RMS/HMI fault recovery screen context showing E-stop RMS and remove/add via API controls as part of recovery flows.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — E-stop RMS on the RMS / fleet status UI</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS / fleet status UI (rms_ui), press the E-stop for RMS.</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS is in an E-stopped state on the RMS / fleet status UI.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If RMS E-stop cannot be engaged, stop and escalate.</li>
+</ul>
+<hr>
+<h3>Step 2 — Remove and re-add empty AGVs without totes twice using Tote API Controls</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the Tote API Controls flow within the RMS / fleet status UI (rms_ui), remove and re-add the affected empty AGVs without totes twice.</p>
+<p><strong>Expected result:</strong></p>
+<p>Each affected empty AGV has been removed and re-added twice via the RMS Tote API Controls flow.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the remove/re-add cycle cannot be completed twice, stop and escalate.</li>
+</ul>
+<hr>
+<h3>Step 3 — Verify AGVs are in &quot;szonestaging&quot; on the HMI</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the system needs to be restarted, verify on the HMI (hospital_hmi) that the affected AGVs are in the &quot;szonestaging&quot; state by referencing the AGV state/value on the HMI.</p>
+<p><strong>Expected result:</strong></p>
+<p>The affected empty AGVs show AGV status/state value &quot;szonestaging&quot; on the HMI.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if AGVs cannot be brought to &quot;szonestaging&quot;.</li>
+</ul>
+<hr>
+<h3>Step 4 — Press E-stop again when ready to resume</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>When the affected empty AGVs are confirmed in &quot;szonestaging&quot; on the HMI, press the E-stop again on the RMS / fleet status UI (rms_ui) when ready to resume.</p>
+<p><strong>Expected result:</strong></p>
+<p>The RMS E-stop control is pressed again (as indicated by the RMS / fleet status UI).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Do not resume RMS until AGVs are confirmed in &quot;szonestaging&quot; state on the HMI.</li>
+</ul>
+<hr>
+<h3>Step 5 — Resume RMS on the RMS / fleet status UI</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS / fleet status UI (rms_ui), resume RMS.</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS resumes/starts successfully on the RMS / fleet status UI.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the lost-task condition persists after the twice remove/re-add process.</li>
+</ul>
+<hr>
+</body>
+</html>

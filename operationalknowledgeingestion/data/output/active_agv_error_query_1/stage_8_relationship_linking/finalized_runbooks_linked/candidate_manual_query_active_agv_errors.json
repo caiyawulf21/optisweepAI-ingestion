@@ -1,0 +1,702 @@
+{
+  "procedure_id": "proc_query_active_agv_errors_from_the_wcs_database_v1",
+  "candidate_id": "candidate_manual_query_active_agv_errors",
+  "title": "Query Active AGV Errors From the WCS Database",
+  "procedure_type": "diagnostic",
+  "summary": "Retrieve current active AGV error records from the WCS database by logging into the WCS primary server, opening the WCS database, creating a new query tab, entering the documented SQL query against [Helix2x_1Prod_Robotics].[dbo].[SystemActiveErrorModel], executing it, and reviewing the returned results.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this procedure when active AGV error records need to be retrieved from the WCS database for investigation or visibility.",
+  "not_for": [
+    "Do not use this procedure as a corrective action for AGV errors; the source only provides retrieval steps.",
+    "Do not use this procedure when WCS primary server or WCS database access is unavailable."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Log into the WCS primary server, access the WCS database, run the documented SQL query, and review the returned active AGV error records."
+    }
+  ],
+  "safety_notes": [
+    "This is a source-backed diagnostic retrieval procedure.",
+    "The source does not provide corrective actions for returned errors; use the output for investigation only."
+  ],
+  "access_or_tools_needed": [
+    "Access to the WCS primary server",
+    "Access to the WCS database",
+    "Database query interface with a new query tab",
+    "The documented SQL query text"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the WCS primary server",
+      "Access to the WCS database"
+    ],
+    "system_preconditions": [
+      "The WCS primary server is reachable for login.",
+      "The WCS database can be opened from the WCS environment.",
+      "A query interface is available that supports opening a new query tab and executing a query."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_manual_wcs_primary_server_access_v1",
+    "ctx_manual_systemactiveerrormodel_reference_v1",
+    "ctx_manual_active_agv_error_fields_v1",
+    "ctx_manual_query_tab_results_screen_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_1_image_1",
+      "description": "Initial WCS primary server and WCS database access context.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_1_image_2",
+      "description": "Initial WCS primary server and WCS database access context.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_2_image_1",
+      "description": "Query tab creation and query editor entry area.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_2_image_2",
+      "description": "Query tab creation and query editor entry area.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_4_image_1",
+      "description": "Results area where active AGV errors appear after execution.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_4_image_2",
+      "description": "Results area where active AGV errors appear after execution.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Log into the WCS primary server",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Access the source system environment used for the active AGV error query.",
+      "instruction": "Log into the WCS primary server.",
+      "expected_result": "You are logged into the WCS primary server and can continue to the database access step.",
+      "healthy_condition": "The WCS primary server is accessible and the session is opened successfully.",
+      "failure_condition": "The WCS primary server cannot be accessed or login cannot be completed.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Log into WCS primary server",
+          "exact_action": "Log into the WCS primary server.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_manual_active_agv_error_query_1_page_1_image_1",
+          "what_to_look_at": "Initial server access or login entry point associated with the first procedure step."
+        },
+        {
+          "artifact_id": "artifact_manual_active_agv_error_query_1_page_1_image_2",
+          "what_to_look_at": "Initial server access or login entry point associated with the first procedure step."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if access to the WCS primary server is not available."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "active_agv_error_query_1",
+          "source_type": "manual",
+          "source_title": "Active AGV error Query 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_20260728T133421Z",
+          "source_document_id": "active_agv_error_query_1",
+          "page": 1,
+          "section_id": "active_agv_error_query_1_active_agv_error_query_1",
+          "quote_or_summary": "Log into the WCS primary server; Open the WCS database."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Open the WCS database",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Reach the database environment where the active AGV error query will be run.",
+      "instruction": "Open the WCS database.",
+      "expected_result": "The WCS database is open and ready for query entry.",
+      "healthy_condition": "The WCS database opens successfully and the query interface can be accessed.",
+      "failure_condition": "The WCS database cannot be opened or is not accessible from the current session.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Open WCS database",
+          "exact_action": "Open the WCS database.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_manual_active_agv_error_query_1_page_1_image_1",
+          "what_to_look_at": "Database access point or initial database selection area after server login."
+        },
+        {
+          "artifact_id": "artifact_manual_active_agv_error_query_1_page_1_image_2",
+          "what_to_look_at": "Database access point or initial database selection area after server login."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if access to the WCS database is not available."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "active_agv_error_query_1",
+          "source_type": "manual",
+          "source_title": "Active AGV error Query 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_20260728T133421Z",
+          "source_document_id": "active_agv_error_query_1",
+          "page": 1,
+          "section_id": "active_agv_error_query_1_active_agv_error_query_1",
+          "quote_or_summary": "Log into the WCS primary server; Open the WCS database."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Open a new query tab",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Create a workspace for entering the documented SQL query.",
+      "instruction": "Open a new query tab by clicking the indicated control.",
+      "expected_result": "A new query tab opens and is ready for SQL entry.",
+      "healthy_condition": "The new query tab appears in the database interface.",
+      "failure_condition": "A new query tab does not open or the query editor is not available.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Open new query tab",
+          "exact_action": "Open a new query tab by clicking here.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_manual_active_agv_error_query_1_page_2_image_1",
+          "what_to_look_at": "UI control used to open a new query tab and where the new tab appears."
+        },
+        {
+          "artifact_id": "artifact_manual_active_agv_error_query_1_page_2_image_2",
+          "what_to_look_at": "UI control used to open a new query tab and where the new tab appears."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the query interface does not allow a new query tab to be opened."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "active_agv_error_query_1",
+          "source_type": "manual",
+          "source_title": "Active AGV error Query 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_20260728T133421Z",
+          "source_document_id": "active_agv_error_query_1",
+          "page": 2,
+          "section_id": "active_agv_error_query_1_active_agv_error_query_1",
+          "quote_or_summary": "Open a new query tab by clicking here; copy and paste the provided query in the newly opened tab."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Paste the documented SQL query into the new tab",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Enter the source-provided query that retrieves active AGV error records.",
+      "instruction": "Copy and paste the provided SQL query into the newly opened query tab.",
+      "expected_result": "The query editor contains the documented SQL statement.",
+      "healthy_condition": "The full SQL query is visible in the new query tab.",
+      "failure_condition": "The query text is incomplete, missing, or cannot be entered into the query tab.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Paste SQL query",
+          "exact_action": "Copy and paste the provided query in the newly opened tab.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_manual_active_agv_error_query_1_page_2_image_1",
+          "what_to_look_at": "Query editor area where the SQL statement should be entered."
+        },
+        {
+          "artifact_id": "artifact_manual_active_agv_error_query_1_page_2_image_2",
+          "what_to_look_at": "Query editor area where the SQL statement should be entered."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the documented query cannot be entered into the query tab."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "active_agv_error_query_1",
+          "source_type": "manual",
+          "source_title": "Active AGV error Query 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_20260728T133421Z",
+          "source_document_id": "active_agv_error_query_1",
+          "page": 2,
+          "section_id": "active_agv_error_query_1_active_agv_error_query_1",
+          "quote_or_summary": "Open a new query tab by clicking here; copy and paste the provided query in the newly opened tab."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Use the documented active AGV error query text",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure the query matches the source-defined table and selected fields for active AGV errors.",
+      "instruction": "Use the provided query text exactly as documented: SELECT TOP (1000) [Id], [EntityInserted], [EntityLastUpdate], [Name], [Area], [Error], [LastSeen], [SystemErrorDescription], [SystemErrorResolution] FROM [Helix2x_1Prod_Robotics].[dbo].[SystemActiveErrorModel].",
+      "expected_result": "The query text references the documented fields and the [Helix2x_1Prod_Robotics].[dbo].[SystemActiveErrorModel] table.",
+      "healthy_condition": "The query includes Id, EntityInserted, EntityLastUpdate, Name, Area, Error, LastSeen, SystemErrorDescription, and SystemErrorResolution from [Helix2x_1Prod_Robotics].[dbo].[SystemActiveErrorModel].",
+      "failure_condition": "The query text does not match the documented fields or does not reference the documented table.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Verify query text",
+          "exact_action": "Use the provided query text: SELECT TOP (1000) [Id], [EntityInserted], [EntityLastUpdate], [Name], [Area], [Error], [LastSeen], [SystemErrorDescription], [SystemErrorResolution] FROM [Helix2x_1Prod_Robotics].[dbo].[SystemActiveErrorModel].",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_manual_active_agv_error_query_1_page_2_image_1",
+          "what_to_look_at": "Query editor area containing the pasted SQL statement."
+        },
+        {
+          "artifact_id": "artifact_manual_active_agv_error_query_1_page_2_image_2",
+          "what_to_look_at": "Query editor area containing the pasted SQL statement."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the documented query text cannot be confirmed or does not match the source."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "active_agv_error_query_1",
+          "source_type": "manual",
+          "source_title": "Active AGV error Query 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_20260728T133421Z",
+          "source_document_id": "active_agv_error_query_1",
+          "page": 3,
+          "section_id": "active_agv_error_query_1_active_agv_error_query_1",
+          "quote_or_summary": "SELECT TOP (1000) ... FROM [Helix2x_1Prod_Robotics].[dbo].[SystemActiveErrorModel]"
+        },
+        {
+          "source_id": "active_agv_error_query_1",
+          "source_type": "manual",
+          "source_title": "Active AGV error Query 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_20260728T133421Z",
+          "source_document_id": "active_agv_error_query_1",
+          "page": 3,
+          "section_id": "active_agv_error_query_1_active_agv_error_query_1",
+          "quote_or_summary": "Selected fields: Id, EntityInserted, EntityLastUpdate, Name, Area, Error, LastSeen, SystemErrorDescription, SystemErrorResolution."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Execute the query",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Run the documented SQL statement to retrieve active AGV error records.",
+      "instruction": "Right click on the query and click execute.",
+      "expected_result": "The query runs and the interface proceeds to display returned results.",
+      "healthy_condition": "The query executes without blocking the results display.",
+      "failure_condition": "The query cannot be executed or execution does not produce a results display.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Execute query",
+          "exact_action": "Right click on the query and click execute.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_manual_active_agv_error_query_1_page_2_image_1",
+          "what_to_look_at": "Query area where the execute action is initiated."
+        },
+        {
+          "artifact_id": "artifact_manual_active_agv_error_query_1_page_2_image_2",
+          "what_to_look_at": "Query area where the execute action is initiated."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the query cannot be executed."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "active_agv_error_query_1",
+          "source_type": "manual",
+          "source_title": "Active AGV error Query 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_20260728T133421Z",
+          "source_document_id": "active_agv_error_query_1",
+          "page": 2,
+          "section_id": "active_agv_error_query_1_active_agv_error_query_1",
+          "quote_or_summary": "Open a new query tab by clicking here; copy and paste the provided query in the newly opened tab."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Review the results area",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm where the active AGV error records are displayed after query execution.",
+      "instruction": "Review the results area where the active errors appear.",
+      "expected_result": "A results area displays the active AGV errors returned by the query.",
+      "healthy_condition": "The results panel or table is visible and populated with active error records.",
+      "failure_condition": "The results area does not display returned active errors.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Review results area",
+          "exact_action": "Review the results area where the active errors appear.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_manual_active_agv_error_query_1_page_4_image_1",
+          "what_to_look_at": "Results panel or table where active AGV errors are shown after execution."
+        },
+        {
+          "artifact_id": "artifact_manual_active_agv_error_query_1_page_4_image_2",
+          "what_to_look_at": "Results panel or table where active AGV errors are shown after execution."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if the results area does not display returned active errors."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "active_agv_error_query_1",
+          "source_type": "manual",
+          "source_title": "Active AGV error Query 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_20260728T133421Z",
+          "source_document_id": "active_agv_error_query_1",
+          "page": 4,
+          "section_id": "active_agv_error_query_1_active_agv_error_query_1",
+          "quote_or_summary": "The active errors will show up here."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 8,
+      "title": "Check the returned fields in the results",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Verify that the returned active AGV error records include the documented fields needed for investigation.",
+      "instruction": "Check the returned fields in the results, including Id, EntityInserted, EntityLastUpdate, Name, Area, Error, LastSeen, SystemErrorDescription, and SystemErrorResolution.",
+      "expected_result": "The results include the documented identifier, timestamp, area, error, description, and resolution fields.",
+      "healthy_condition": "Returned records show Id, EntityInserted, EntityLastUpdate, Name, Area, Error, LastSeen, SystemErrorDescription, and SystemErrorResolution.",
+      "failure_condition": "Expected fields are missing from the returned results.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Verify returned fields",
+          "exact_action": "Check the returned fields in the results, including Id, EntityInserted, EntityLastUpdate, Name, Area, Error, LastSeen, SystemErrorDescription, and SystemErrorResolution.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_manual_active_agv_error_query_1_page_4_image_1",
+          "what_to_look_at": "Returned results table and the displayed columns for active AGV errors."
+        },
+        {
+          "artifact_id": "artifact_manual_active_agv_error_query_1_page_4_image_2",
+          "what_to_look_at": "Returned results table and the displayed columns for active AGV errors."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Escalate if expected fields are not present in the returned results."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "active_agv_error_query_1",
+          "source_type": "manual",
+          "source_title": "Active AGV error Query 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_20260728T133421Z",
+          "source_document_id": "active_agv_error_query_1",
+          "page": 3,
+          "section_id": "active_agv_error_query_1_active_agv_error_query_1",
+          "quote_or_summary": "Selected fields: Id, EntityInserted, EntityLastUpdate, Name, Area, Error, LastSeen, SystemErrorDescription, SystemErrorResolution."
+        },
+        {
+          "source_id": "active_agv_error_query_1",
+          "source_type": "manual",
+          "source_title": "Active AGV error Query 1",
+          "source_version": null,
+          "ingestion_batch_id": "batch_20260728T133421Z",
+          "source_document_id": "active_agv_error_query_1",
+          "page": 4,
+          "section_id": "active_agv_error_query_1_active_agv_error_query_1",
+          "quote_or_summary": "The active errors will show up here."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The WCS primary server is accessed successfully.",
+    "The WCS database is opened successfully.",
+    "A new query tab is opened.",
+    "The documented SQL query against [Helix2x_1Prod_Robotics].[dbo].[SystemActiveErrorModel] is entered.",
+    "The query executes successfully.",
+    "The results area displays active AGV error records.",
+    "Returned results include Id, EntityInserted, EntityLastUpdate, Name, Area, Error, LastSeen, SystemErrorDescription, and SystemErrorResolution."
+  ],
+  "healthy_conditions": [
+    "The WCS primary server and WCS database are accessible.",
+    "The query tab opens and accepts the documented SQL statement.",
+    "The results area displays active AGV error records after execution.",
+    "The returned records include the documented fields."
+  ],
+  "failure_conditions": [
+    "Access to the WCS primary server is not available.",
+    "Access to the WCS database is not available.",
+    "A new query tab cannot be opened.",
+    "The query cannot be executed.",
+    "The results area does not display returned active errors.",
+    "Expected fields are missing from the returned results."
+  ],
+  "escalation_guidance": [
+    "Escalate if access to the WCS primary server or WCS database is not available.",
+    "Escalate if the query cannot be executed or the results area does not display returned active errors.",
+    "Use the output for investigation only; the source does not provide corrective actions for returned errors."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_1_image_1",
+      "what_to_look_at": "Initial WCS primary server and database access context."
+    },
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_1_image_2",
+      "what_to_look_at": "Initial WCS primary server and database access context."
+    },
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_2_image_1",
+      "what_to_look_at": "New query tab control and query editor area."
+    },
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_2_image_2",
+      "what_to_look_at": "New query tab control and query editor area."
+    },
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_4_image_1",
+      "what_to_look_at": "Results area where active AGV errors appear."
+    },
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_4_image_2",
+      "what_to_look_at": "Results area where active AGV errors appear."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "active_agv_error_query_1",
+      "source_type": "manual",
+      "source_title": "Active AGV error Query 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_20260728T133421Z",
+      "source_document_id": "active_agv_error_query_1",
+      "page_start": 1,
+      "page_end": 4,
+      "section_id": "active_agv_error_query_1_active_agv_error_query_1"
+    },
+    {
+      "source_id": "active_agv_error_query_1",
+      "source_type": "manual",
+      "source_title": "Active AGV error Query 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_20260728T133421Z",
+      "source_document_id": "active_agv_error_query_1",
+      "page": 1,
+      "section_id": "active_agv_error_query_1_active_agv_error_query_1",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "Log into the WCS primary server; Open the WCS database."
+    },
+    {
+      "source_id": "active_agv_error_query_1",
+      "source_type": "manual",
+      "source_title": "Active AGV error Query 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_20260728T133421Z",
+      "source_document_id": "active_agv_error_query_1",
+      "page": 2,
+      "section_id": "active_agv_error_query_1_active_agv_error_query_1",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "Open a new query tab by clicking here; copy and paste the provided query in the newly opened tab."
+    },
+    {
+      "source_id": "active_agv_error_query_1",
+      "source_type": "manual",
+      "source_title": "Active AGV error Query 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_20260728T133421Z",
+      "source_document_id": "active_agv_error_query_1",
+      "page": 3,
+      "section_id": "active_agv_error_query_1_active_agv_error_query_1",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "SELECT TOP (1000) ... FROM [Helix2x_1Prod_Robotics].[dbo].[SystemActiveErrorModel]"
+    },
+    {
+      "source_id": "active_agv_error_query_1",
+      "source_type": "manual",
+      "source_title": "Active AGV error Query 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_20260728T133421Z",
+      "source_document_id": "active_agv_error_query_1",
+      "page": 3,
+      "section_id": "active_agv_error_query_1_active_agv_error_query_1",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "Selected fields: Id, EntityInserted, EntityLastUpdate, Name, Area, Error, LastSeen, SystemErrorDescription, SystemErrorResolution."
+    },
+    {
+      "source_id": "active_agv_error_query_1",
+      "source_type": "manual",
+      "source_title": "Active AGV error Query 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_20260728T133421Z",
+      "source_document_id": "active_agv_error_query_1",
+      "page": 4,
+      "section_id": "active_agv_error_query_1_active_agv_error_query_1",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "The active errors will show up here."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_2_image_2",
+      "what_to_look_at": "New query tab control and query editor area."
+    },
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_4_image_2",
+      "what_to_look_at": "Results area where active AGV errors appear."
+    },
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_1_image_1",
+      "what_to_look_at": "Initial WCS primary server and database access context."
+    },
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_2_image_1",
+      "what_to_look_at": "New query tab control and query editor area."
+    },
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_4_image_1",
+      "what_to_look_at": "Results area where active AGV errors appear."
+    },
+    {
+      "artifact_id": "artifact_manual_active_agv_error_query_1_page_1_image_2",
+      "what_to_look_at": "Initial WCS primary server and database access context."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_manual_query_active_agv_errors"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "active_agv_error_query_1",
+      "source_type": "manual",
+      "source_title": "Active AGV error Query 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_20260728T133421Z"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide an estimated completion time.",
+    "The source does not specify whether production stop is required.",
+    "The source does not specify whether LOTO is required.",
+    "The source does not provide exact login credentials, server path, or database navigation details.",
+    "The source does not provide interpretation logic for specific returned error values.",
+    "The source does not provide corrective actions for returned active AGV errors.",
+    "The source does not explicitly document the exact UI location of the execute control beyond the instruction to right click on the query and click execute."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "active_agv_error_query_1",
+    "source_type": "manual",
+    "source_title": "Active AGV error Query 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_20260728T133421Z",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_manual_active_agv_error_query_1_page_1_image_1",
+    "artifact_manual_active_agv_error_query_1_page_1_image_2",
+    "artifact_manual_active_agv_error_query_1_page_2_image_1",
+    "artifact_manual_active_agv_error_query_1_page_2_image_2",
+    "artifact_manual_active_agv_error_query_1_page_4_image_1",
+    "artifact_manual_active_agv_error_query_1_page_4_image_2"
+  ]
+}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check Current and Archived Robot Task Records</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check Current and Archived Robot Task Records</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_current_and_archived_robot_task_records_v1</td></tr>
+<tr><th>Title</th><td>Check Current and Archived Robot Task Records</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>robot_command_or_task_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>None</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use read-only SSMS access to the Robotics database to determine whether a tote task requested by the Sorter Sweeper module is present in the current Robot Task database model table or has been archived to Robot Task Activity.</p>
+<h2>When To Use</h2>
+<p>Use SSMS against the WCS / Helix Robotics database when troubleshooting a tote task requested by the Sorter Sweeper module and determining whether the task is still current or has completed and been archived.</p>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the Robotics database in SSMS</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In SSMS, open the Robotics database and locate the Robot Task database model table.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Robot Task database model table is available for read-only inspection in the Robotics database.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the Robotics database or Robot Task database model table is unavailable.</li>
+</ul>
+<hr>
+<h3>Step 2 — Check the current Robot Task record</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the SSMS Robot Task database model table, inspect the record for the tote task requested by the Sorter Sweeper module and determine whether the task is present.</p>
+<p><strong>Expected result:</strong></p>
+<p>The requested tote task is either found as a row in the current Robot Task database model table or is not present there.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Continue to the archived-record check if the task is not present in the current table.</li>
+<li>Escalate if the task cannot be identified for lookup.</li>
+</ul>
+<hr>
+<h3>Step 3 — Check Robot Task Activity for a completed task</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the tote task is complete or is not present in the current Robot Task database model table, inspect Robot Task Activity in the Robotics database for the archived task record.</p>
+<p><strong>Expected result:</strong></p>
+<p>A completed tote task is found in Robot Task Activity rather than being treated as a current task.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate when the tote task cannot be found in either the current Robot Task table or Robot Task Activity.</li>
+<li>Escalate when the task status cannot be determined from the available records.</li>
+</ul>
+<hr>
+<h3>Step 4 — Classify the task as current or archived</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Record the task as current when its row is present in the Robot Task database model table. Record it as archived when the completed task is present in Robot Task Activity and is no longer treated as current.</p>
+<p><strong>Expected result:</strong></p>
+<p>The task has one clear classification: current or archived, based on the corresponding Robotics database row.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate when a task appears simultaneously current and archived.</li>
+<li>Escalate when the task status cannot be determined from the available records.</li>
+<li>Do not alter task or activity records.</li>
+</ul>
+<hr>
+</body>
+</html>

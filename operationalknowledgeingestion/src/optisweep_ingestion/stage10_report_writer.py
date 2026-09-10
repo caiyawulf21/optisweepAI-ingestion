@@ -66,7 +66,7 @@ def write_source_extraction_report(
         warnings=[*(warnings or []), *validation["warnings"]],
     )
     payload = report.model_dump(mode="json")
-    report_dir = stage_dir(output_path, "10")
+    report_dir = stage_dir(output_path, "9")
     report_dir.mkdir(parents=True, exist_ok=True)
     write_json(report_dir / "extraction_report.json", payload)
     return payload

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hospital tote-induct or site-flow disruption with AGV state anomalies</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+.warn { color: #8a4b00; }
+details.linked-runbook { border: 1px solid #ddd; border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0; }
+details.linked-runbook > summary { cursor: pointer; font-size: 1.05rem; margin-bottom: 0.5rem; }
+details.linked-runbook-group { border: 1px solid #e0e0e0; border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0; background: #fafafa; }
+details.linked-runbook-group > summary { cursor: pointer; font-weight: 600; margin-bottom: 0.5rem; }
+details.linked-runbook-operator { border-left: 4px solid #2f6f4e; }
+details.linked-runbook-support { border-left: 4px solid #2f4f7f; }
+.missing-image { border: 1px dashed #bbb; padding: 1rem; background: #fafafa; }
+.missing-image-label { font-family: monospace; font-weight: 600; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Hospital tote-induct or site-flow disruption with AGV state anomalies</h1>
+<h2>Playbook Header</h2>
+<table>
+<tr><th>Playbook ID</th><td>playbook_incident_223554_hospital_induct_flow</td></tr>
+<tr><th>Case ID</th><td>223554</td></tr>
+<tr><th>Extraction Mode</th><td>one_playbook_candidate_per_incident</td></tr>
+<tr><th>Confidence</th><td>medium</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+</table>
+<h2>Entry Symptoms</h2>
+<ul>
+<li>Hospital station cannot add or induct totes.</li>
+<li>Totes can be removed but cannot be added at the hospital area.</li>
+<li>A robot or AGV is reported in a shut down state.</li>
+<li>The site cannot start sort or goes down during sort.</li>
+<li>Hospital backlog or abnormal tote flow to the hospital area is reported.</li>
+</ul>
+<h2>Nodes</h2>
+<h3>1 — Confirm the observable hospital and site-flow impact (diagnostic_decision)</h3>
+<p><strong>Objective:</strong> Determine whether the current report is an active hospital tote-induct problem, a broader sort disruption, or a localized condition that does not match this response path.</p>
+<p><strong>Why this check is next:</strong> The case subject and closure summary describe inability to induct totes, while Teams messages describe inability to add totes and a later site-down or sort-start failure.</p>
+<p><strong>Action:</strong> Confirm with the site and, when available, the Hospital HMI whether totes can currently be added/inducted and removed at the affected hospital station, whether the reported robot/station is in a shut down state, and whether sort can start and remain running.</p>
+<p><strong>Healthy:</strong> Totes can be added/inducted and removed at the hospital station, and sort starts and remains running normally.</p>
+<p><strong>Unhealthy:</strong> Hospital tote addition/induction is unavailable, the station/robot reports a shut down condition, or sort cannot start and/or stops during operation; hospital backlog continues to increase.</p>
+<p><strong>Inconclusive:</strong> The site cannot identify the affected workflow and/or the Hospital HMI/status evidence is unreadable or missing.</p>
+<p><strong>Suggested database check:</strong></p>
+<ul>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> HospitalDatabaseModel</li>
+<li><strong>Inspect:</strong> Hospital entrance and exit queue locations.</li>
+<li><strong>Inspect:</strong> Hospital tote drop-off location.</li>
+</ul></li>
+<li><strong>Database:</strong> sorter_sweeper
+<ul><li><strong>Model:</strong> HospitalTagsModel</li>
+<li><strong>Inspect:</strong> Whether tag is in or out; drives action.</li>
+<li><strong>Inspect:</strong> List of hospital controller tags.</li>
+<li><strong>Inspect:</strong> Modular typed value columns (string/bool) selected by variable type.</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> RobotDatabaseModel</li>
+<li><strong>Inspect:</strong> Robot state enum (Tipper/Hospital/Charger/Sorter/GLD/ShutDown family).</li>
+<li><strong>Inspect:</strong> Tote currently associated with robot.</li>
+<li><strong>Inspect:</strong> Assigned sorter side.</li>
+</ul></li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L1_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>They can remove totes but cannot add; surrounding HMI-style evidence is discussed.</li>
+<li>Client unable to induct totes at the station; robot in a shut down state.</li>
+<li>Site reported down and unable to start sort or went down during sort.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_2</code> when Hospital induct blocked or sort cannot start/sustain</li>
+<li><code>healthy</code> → <code></code> when Hospital add/remove works and sort operating normally</li>
+<li><code>inconclusive</code> → <code></code> when Cannot confirm current state</li>
+</ul>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h3>2 — Check for AGV location, roster, and tote-association anomalies (diagnostic_decision)</h3>
+<p><strong>Objective:</strong> Determine whether the reported hospital-flow problem coincides with an AGV in an unexpected location, duplicate occupancy, disconnected tote, or residual tote association.</p>
+<p><strong>Why this check is next:</strong> Teams messages and annotated HMI-style images describe an AGV in an unexpected location, two AGVs under a rack, and possible disconnected or residual tote associations.</p>
+<p><strong>Action:</strong> Compare the affected hospital/expected AGV locations and station/rack occupancy with the displayed HMI evidence and the system/fleet/API evidence to identify whether anomalies exist (unexpected location, duplicate rack occupancy, missing expected AGV, residual/disconnected tote association).</p>
+<p><strong>Healthy:</strong> AGVs occupy expected locations and no disconnected/residual tote association is reported; hospital station tote state matches physical/operational intent.</p>
+<p><strong>Unhealthy:</strong> AGVs are in unexpected locations, duplicate rack occupancy appears, an expected rack/location is missing AGV presence, or a disconnected/residual tote association persists; hospital tote state cannot be reconciled with displayed AGV state.</p>
+<p><strong>Inconclusive:</strong> Identifiers/locations/tote associations cannot be confirmed due to unreadable legends or inability to compare physical vs displayed states.</p>
+<p><strong>Suggested database check:</strong></p>
+<ul>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> RobotDatabaseModel</li>
+<li><strong>Inspect:</strong> Robot state enum (Tipper/Hospital/Charger/Sorter/GLD/ShutDown family).</li>
+<li><strong>Inspect:</strong> Tote currently associated with robot.</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> RobotLocationDatabaseModel</li>
+<li><strong>Inspect:</strong> Station / workstation number for the location.</li>
+<li><strong>Inspect:</strong> Whether the location is currently occupied.</li>
+<li><strong>Inspect:</strong> Zone associated with the location (sorter-side zones).</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> AgvActiveErrorDatabaseModel</li>
+<li><strong>Inspect:</strong> Robot code.</li>
+<li><strong>Inspect:</strong> Active error code.</li>
+<li><strong>Inspect:</strong> Error description.</li>
+</ul></li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L1_support, L2_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>This AGV doesn&#x27;t belong here; two AGVs were under the rack in the same zone.</li>
+<li>AGV with disconnected tote was in the system; other AGVs were under the rack.</li>
+<li>Aveva was used to remove an AGV from a zone and add a tote to a station.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_4</code> when Unexpected AGV location or residual/disconnected tote association indicated</li>
+<li><code>inconclusive</code> → <code>node_3</code> when No anomaly / evidence cannot confirm anomaly</li>
+</ul>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h3>3 — Determine whether the hospital-station service condition is contributing (diagnostic_decision)</h3>
+<p><strong>Objective:</strong> Determine whether the reported AGV hospital-station server or OptiSweep service condition is present and sufficiently correlated with the hospital or site-flow symptoms.</p>
+<p><strong>Why this check is next:</strong> The source documents AGV hospital-station server issues, a need to reset services, and a closure statement that OptiSweep services were reset before Hospital Lane was restarted.</p>
+<p><strong>Action:</strong> Review the current health of the hospital-station server and OptiSweep/WCS services using Windows Events/Services (when authorized) and correlate that with current Hospital Lane/HMI responsiveness; do not assume historical reset implies current fault.</p>
+<p><strong>Healthy:</strong> The relevant service and the hospital interface respond normally; no current abnormal service condition is evident.</p>
+<p><strong>Unhealthy:</strong> Current evidence shows an AGV hospital-station server / OptiSweep service abnormality, and Hospital Lane/HMI is unresponsive or aligns with the reported disruption.</p>
+<p><strong>Inconclusive:</strong> Only a historical note says services need reset; current service health and named service/host details are not available.</p>
+<p><strong>Suggested database check:</strong></p>
+<ul>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> HospitalDatabaseModel</li>
+<li><strong>Inspect:</strong> Hospital entrance and exit queue locations.</li>
+<li><strong>Inspect:</strong> Hospital tote drop-off location.</li>
+</ul></li>
+<li><strong>Database:</strong> sorter_sweeper
+<ul><li><strong>Model:</strong> HospitalTagsModel</li>
+<li><strong>Inspect:</strong> Whether tag is in or out; drives action.</li>
+<li><strong>Inspect:</strong> List of hospital controller tags.</li>
+<li><strong>Inspect:</strong> Modular typed value columns (string/bool) selected by variable type.</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> RobotDatabaseModel</li>
+<li><strong>Inspect:</strong> Robot state enum (Tipper/Hospital/Charger/Sorter/GLD/ShutDown family).</li>
+<li><strong>Inspect:</strong> Tote currently associated with robot.</li>
+<li><strong>Inspect:</strong> Assigned sorter side.</li>
+</ul></li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> L1_support, L2_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li class="warn"><code>proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1</code> (low, support, score=0.5705) — Windows Event Viewer and Services diagnostic for OptiSweep and WCSWebApplication failures</li>
+</ul>
+<p><strong>Evidence Collection Procedures:</strong></p>
+<ul>
+<li><code>proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1</code> — Windows Event Viewer and Services diagnostic for OptiSweep and WCSWebApplication failures (L2_support): Use Windows Event Viewer / services to inspect the live Windows Application and System logs, then verify the current OptiSweep service state. Correlate WCSWebApplication database-command errors around 6:35-6:36 AM with OptiSweep Service Control Manager Event 7031 and the current Windows Services status before further recovery.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>AGV hospital station is having server issues; services need to be reset.</li>
+<li>Resolution details say OptiSweep services were reset and the site restarted Hospital Lane.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_4</code> when Current service or hospital-lane abnormality indicated</li>
+<li><code>healthy</code> → <code></code> when Service/hospital-lane checks healthy or evidence historical/inconclusive</li>
+</ul>
+<details class="linked-runbook-group linked-runbook-support" open><summary><strong>Support runbooks</strong> (1)</summary>
+<details class="linked-runbook linked-runbook-support" open><summary><strong>Support runbook:</strong> Windows Event Viewer and Services diagnostic for OptiSweep and WCSWebApplication failures (<code>proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> L2_support</li>
+<li><strong>Audience:</strong> support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use Windows Event Viewer / services to inspect the live Windows Application and System logs, then verify the current OptiSweep service state. Correlate WCSWebApplication database-command errors around 6:35-6:36 AM with OptiSweep Service Control Manager Event 7031 and the current Windows Services status before further recovery.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use Windows Event Viewer / services when the live OptiSweep or WCS-backed system is unresponsive, when clustered WCSWebApplication errors are suspected, or when a service crash or restart must be correlated with the incident. Inspect the live Windows Application and System logs and current Windows Services state before performing further recovery.</p>
+<p><strong>Safety Notes:</strong></p><ul>
+<li>This is an inspection and diagnostic procedure; do not infer root cause from clustered errors.</li>
+<li>Automatic restart configuration records an intended Windows action, not confirmed service recovery.</li>
+<li>Do not perform further recovery based only on the historical service-state screenshot.</li>
+</ul>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>Service condition is not currently contributing; Hospital Lane/HMI responds normally.</td><td><code></code></td></tr>
+<tr><td><code>unhealthy</code></td><td>Current service abnormality is present and correlates with hospital/sort disruption.</td><td><code>node_4</code></td></tr>
+<tr><td><code>inconclusive</code></td><td>Only historical reset context exists; current status/named service details are missing.</td><td><code></code></td></tr>
+</table>
+<p><strong>Source:</strong> incident_case / source_case_228086</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Inspect the Windows Event Viewer Application log</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In Windows Event Viewer / services, open Windows Logs &gt; Application and inspect entries around 2/20/2026 6:35:24-6:36:07 AM. Open the WCSWebApplication error details, including Event ID 20102, and check nearby Application Error or Windows Error Reporting entries.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>No new or repeated WCSWebApplication or related application errors appear in the current inspection window.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Application log shows whether WCSWebApplication Event ID 20102 with &#x27;Failed executing DbCommand (1,840ms)&#x27; and nearby clustered application errors are present in the inspected time window.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/abd43e133aa30f1d.jpeg" alt="artifact_incident_228086_page_027_embedded_image_01"><figcaption>Windows Event Viewer Application log showing Windows Error Reporting Event 1001 and clustered WCSWebApplication and Application Error entries around 6:36 AM.</figcaption></figure>
+<figure><img src="assets/d4f3abbd8bd09df2.jpeg" alt="artifact_incident_228086_page_028_embedded_image_01"><figcaption>Windows Event Viewer Application log showing WCSWebApplication Event ID 20102 and the &#x27;Failed executing DbCommand (1,840ms)&#x27; message.</figcaption></figure>
+<hr>
+<h5>Step 2 — Inspect the OptiSweep termination event</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In Windows Event Viewer / services, select Windows Logs &gt; System and open the Service Control Manager event for OptiSweep. Check for Event ID 7031, Level Error, and inspect whether the message states that OptiSweep terminated unexpectedly and Windows planned to restart it after 60000 milliseconds.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>No new or repeated OptiSweep Event ID 7031 termination is present in the current System log inspection.</p>
+<p><strong>Expected result:</strong></p>
+<p>The System log identifies whether an OptiSweep Event ID 7031 termination is present and whether the event contains the 60000-millisecond restart message.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/dabb6bbd62f07c7c.png" alt="artifact_incident_228086_page_029_embedded_image_01"><figcaption>Windows Event Viewer System log showing OptiSweep Service Control Manager Event 7031, unexpected termination, and the planned 60000-millisecond restart.</figcaption></figure>
+<hr>
+<h5>Step 3 — Verify the current OptiSweep service state</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In Windows Event Viewer / services, open Windows Services, select OptiSweep, and inspect the current Status and Startup Type.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>OptiSweep is currently shown as Running and its Startup Type is shown as Automatic.</p>
+<p><strong>Expected result:</strong></p>
+<p>Windows Services displays the current OptiSweep Status and Startup Type, allowing the live service state to be compared with the Event Viewer evidence.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/3832c5ce44b05a86.png" alt="artifact_incident_228086_page_019_embedded_image_01"><figcaption>Windows Services showing OptiSweep selected with Status Running and Startup Type Automatic.</figcaption></figure>
+<hr>
+<h5>Step 4 — Correlate Windows Event Viewer / services evidence with the live incident state</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Compare the timestamps and live entries in Windows Event Viewer / services with the current incident state and the current OptiSweep status in Windows Services. Do not treat the configured automatic restart as proof that recovery completed.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The current Windows Services state is Running and the current Event Viewer inspection shows no new or repeated relevant errors.</p>
+<p><strong>Expected result:</strong></p>
+<p>The diagnostic conclusion separately identifies the observed WCSWebApplication errors, any OptiSweep Event 7031 termination, and the current OptiSweep service state.</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>Windows Event Viewer / services inspection identifies whether current Application log evidence includes WCSWebApplication Event ID 20102 or clustered related errors.</li>
+<li>Windows Event Viewer / services inspection identifies whether an OptiSweep Event ID 7031 termination is present and whether a 60000-millisecond restart was configured.</li>
+<li>Windows Services shows the current OptiSweep Status and Startup Type.</li>
+<li>The diagnostic conclusion does not claim recovery or root cause without live supporting evidence.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>WCSWebApplication Event ID 20102 or clustered application errors are present or repeating in the current inspection.</li>
+<li>OptiSweep Event ID 7031 is present or repeating in the current System log inspection.</li>
+<li>OptiSweep is not shown as Running in Windows Services.</li>
+<li>The available evidence only shows a configured restart and does not establish that recovery completed.</li>
+<li>The evidence is insufficient to establish a definitive root cause.</li>
+</ul>
+</details>
+</details>
+<hr>
+<h3>4 — Apply authorized high-level recovery for the identified condition (procedure_reference)</h3>
+<p><strong>Objective:</strong> Use the approved recovery procedure appropriate to the confirmed condition: service or lane recovery, correction of supported AGV/tote state, or controlled physical AGV handling.</p>
+<p><strong>Why this check is next:</strong> Historical evidence describes service reset and Hospital Lane restart, API dog removal of tote state, Aveva-based AGV/tote state correction, and removal of several AGVs during recovery. These actions are preserved as high-level source evidence, not procedural instructions.</p>
+<p><strong>Action:</strong> Execute the authorized high-level recovery corresponding to the confirmed condition (either service/lane recovery, or authorized AGV/tote state correction) using the approved procedure; do not perform any unsupported reset or any physical AGV handling unless role limits and safety/authorization conditions are satisfied and the responsible recovery procedure is selected.</p>
+<p><strong>Healthy:</strong> The selected authorized recovery completes and the affected service/lane or AGV/tote state is corrected without introducing additional discrepancies.</p>
+<p><strong>Unhealthy:</strong> Recovery cannot be completed or the abnormal state persists; recovery introduces additional tote/AGV discrepancies.</p>
+<p><strong>Inconclusive:</strong> The incident packet does not identify exact service names, authorization boundaries, or safe physical conditions needed for recovery.</p>
+<p><strong>Procedure Reference:</strong></p>
+<ul>
+<li><strong>Trigger condition:</strong> Authorized support or site personnel complete the applicable approved recovery and record whether it completed. Recovery signal: the source-supported service or lane recovery is completed, or the affected AGV/tote state is corrected through the approved API/Aveva or physical procedure. Unsuccessful signal: the action cannot be completed, the state remains abnormal, or the action introduces additional tote or AGV discrepancies. Inconclusive: the source does not identify the exact service, authorization, or safe physical conditions required.</li>
+<li><strong>Selected procedure:</strong> Recover From AGV Fault During Exchange (RMS E-stop, remove faulted AGV, backfill, introduce new tote + empty AGV) (`proc_recover_from_agv_fault_during_exchange_recovery_v1`)</li>
+<li><strong>Selection rationale:</strong> Retrieval match (0.6764, boosted 0.8464).</li>
+<li><strong>Success confirmation:</strong> Faulted AGV is removed from RMS.</li>
+<li><strong>Failure boundary:</strong> Trailing AGV does not backfill and cannot be removed/cleared as described.</li>
+</ul>
+<p><strong>Prerequisites:</strong></p>
+<ul>
+<li>rms_ui</li>
+</ul>
+<p><strong>Safety checks:</strong></p>
+<ul>
+<li>Perform an RMS E-stop as the first recovery action for this fault scenario.</li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> L2_support, L3_support, operator</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li class="warn"><code>proc_recover_from_agv_fault_during_exchange_recovery_v1</code> (low, support, score=0.6764) — Recover From AGV Fault During Exchange (RMS E-stop, remove faulted AGV, backfill, introduce new tote + empty AGV)</li>
+</ul>
+<p><strong>Evidence Collection Procedures:</strong></p>
+<ul>
+<li><code>proc_recover_from_agv_fault_during_exchange_recovery_v1</code> — Recover From AGV Fault During Exchange (RMS E-stop, remove faulted AGV, backfill, introduce new tote + empty AGV) (L2_support): Restore exchange flow after an AGV faults while leaving by stopping RMS, removing the faulted AGV from the RMS, optionally removing the trailing AGV if it does not backfill, then introducing a new tote and placing an empty AGV in the affected zone.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>API dog was used to remove inducted and hospital tote state; several AGVs were taken out to restore operation.</li>
+<li>Aveva was used to remove an AGV from a zone and add a tote to a station.</li>
+<li>OptiSweep services were reset and Hospital Lane was restarted.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Decision Outcomes:</strong></p>
+<ul>
+<li><code>healthy</code> (observer=site_or_remote; tool=Recovery control surfaces + post-recovery read-only verification): Approved recovery completed and appropriate state restored.</li>
+<li><code>unhealthy</code> (observer=remote; tool=Hospital HMI + RMS/fleet view read-only evidence): Recovery unsuccessful; abnormal state persists or new discrepancies appear.</li>
+<li><code>inconclusive</code> (observer=remote; tool=Notes + authorization check): Cannot safely execute/verify due to missing authorization/service/physical safety details.</li>
+</ul>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>healthy</code> → <code>node_5</code> when Authorized recovery completed</li>
+</ul>
+<details class="linked-runbook-group linked-runbook-support" open><summary><strong>Support runbooks</strong> (1)</summary>
+<details class="linked-runbook linked-runbook-support" open><summary><strong>Support runbook:</strong> Recover From AGV Fault During Exchange (RMS E-stop, remove faulted AGV, backfill, introduce new tote + empty AGV) (<code>proc_recover_from_agv_fault_during_exchange_recovery_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> recovery</li>
+<li><strong>Role:</strong> L2_support</li>
+<li><strong>Audience:</strong> support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Restore exchange flow after an AGV faults while leaving by stopping RMS, removing the faulted AGV from the RMS, optionally removing the trailing AGV if it does not backfill, then introducing a new tote and placing an empty AGV in the affected zone.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use when an AGV faults during exchange while leaving and you need to restore exchange flow by removing the faulted AGV from RMS, handling backfill behavior, and reintroducing the correct tote + empty-AGV state in the affected zone.</p>
+<p><strong>Safety Notes:</strong></p><ul>
+<li>Perform an RMS E-stop as the first recovery action for this fault scenario.</li>
+</ul>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>Faulted AGV is removed from RMS.</td><td><code></code></td></tr>
+<tr><td><code>unhealthy</code></td><td>Trailing AGV does not backfill and cannot be removed/cleared as described.</td><td><code></code></td></tr>
+<tr><td><code>unknown</code></td><td>State cannot be confirmed from available runbook evidence.</td><td><code></code></td></tr>
+</table>
+<p><strong>Source:</strong> manual / manual_optisweep_om_v3</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — E-stop RMS</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS / fleet status UI (rms_ui), perform an E-stop of the RMS.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>RMS remains stopped (no exchange movement continuing) while you proceed with AGV removal actions.</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS is in an E-stopped state (fleet movement is stopped) on the RMS / fleet status UI.</p>
+<hr>
+<h5>Step 2 — Remove the faulted AGV that is lifted and faulted out while leaving</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS / fleet status UI (rms_ui), identify the AGV that is lifted and has faulted out while leaving, then remove that AGV from the RMS using the AGV API Controls flow referenced by the manual.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Only the faulted AGV is removed; the RMS remains stopped while you confirm the removal is reflected in the RMS UI.</p>
+<p><strong>Expected result:</strong></p>
+<p>The faulted AGV is removed from the RMS (it no longer appears as an active AGV in the RMS fleet context for the affected zone).</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/d87070d22301b81d.jpeg" alt="artifact_fig_5_4_faulted_agv_with_tote_screen"><figcaption>HMI screenshot showing the faulted AGV with tote state (used as visual context for the faulted condition during exchange recovery).</figcaption></figure>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen"><figcaption>RMS screen showing an AGV fault example (visual context for RMS fault screens; not specific to this exact exchange-fault step).</figcaption></figure>
+<figure><img src="assets/4f58f8bb3f0f6aea.jpeg" alt="artifact_fig_4_12_agv_api_controls"><figcaption>AGV API Controls screen showing controls such as Remove AGV / Recover AGV / Pause All AGVs / Resume All AGVs (used for the AGV removal action referenced by the recovery procedure).</figcaption></figure>
+<hr>
+<h5>Step 3 — Check backfill; remove trailing AGV if it does not backfill</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS / fleet status UI (rms_ui), check whether the AGV behind the faulted AGV backfills into the expected position. If it does not backfill, remove that trailing AGV as well using the same AGV API Controls flow referenced by the manual.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Backfill occurs as expected, or the trailing AGV is successfully removed so the zone can be re-established with the correct tote + empty AGV state.</p>
+<p><strong>Expected result:</strong></p>
+<p>Either (a) the AGV behind backfills into the expected position, or (b) the trailing AGV is removed from RMS when it does not backfill.</p>
+<hr>
+<h5>Step 4 — Introduce new tote and place an empty AGV in the affected zone</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Introduce a new tote at the faulted location and place an empty AGV in that zone using the RMS UI actions referenced by the manual.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The affected exchange location shows the newly introduced tote and an empty AGV in the zone (exchange can resume).</p>
+<p><strong>Expected result:</strong></p>
+<p>A newly introduced tote is present at the affected location, and an empty AGV is placed in that zone so exchange can proceed.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/ec83d895fff08cd8.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen"><figcaption>RMS screen for adding an AGV to a zone when no empty AGV is present (visual support for re-establishing empty AGV state in the affected zone).</figcaption></figure>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>Faulted AGV is removed from RMS.</li>
+<li>If the AGV behind did not backfill, the trailing AGV is also removed.</li>
+<li>Affected exchange location has a newly introduced tote and an empty AGV placed in the correct zone so exchange can proceed.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>Trailing AGV does not backfill and cannot be removed/cleared as described.</li>
+<li>New tote and/or empty AGV cannot be introduced into the correct zone.</li>
+</ul>
+</details>
+</details>
+<hr>
+<h3>5 — Validate hospital flow, AGV state, and sustained sort recovery (validation_gate)</h3>
+<p><strong>Objective:</strong> Confirm that recovery restored the affected workflow without leaving residual AGV, tote, or station-state anomalies.</p>
+<p><strong>Why this check is next:</strong> The source reports that totes could again be added and removed, robots were re-added and running, movement started, and the system was running by the later recovery updates.</p>
+<p><strong>Validate:</strong> Validate that hospital tote flow is restored and remains stable, that AGV roster/location and tote association are consistent, and that sort resumes and sustains operation (not just transient movement).</p>
+<p><strong>Success:</strong> Totes can be added/removed; Hospital Lane accepts normal flow; AGVs are consistent with expected locations; movement resumes and sort starts and remains stable; no disconnected/residual tote association persists.</p>
+<p><strong>Failure:</strong> Hospital tote addition remains blocked, AGVs remain stopped/misplaced, disconnected tote state persists, or sort fails again during monitoring.</p>
+<p><strong>Inconclusive:</strong> Only generic &#x27;system is running&#x27; is available without confirming hospital tote-flow behavior and residual AGV/tote consistency or without stable observation period.</p>
+<p><strong>Validation Gate:</strong></p>
+<p><strong>Validation checklist:</strong></p>
+<ul>
+<li>Confirm the owning service remains running and stable.</li>
+<li>Confirm the supported API or control endpoint responds.</li>
+<li>Compare database or fleet state with the live HMI or site-observed state.</li>
+<li>Observe the affected workflow for recurrence during the stated observation window.</li>
+</ul>
+<p><strong>Required evidence sources:</strong> Service state, API response, fleet or database state, site observation</p>
+<p><strong>Stable-operation observation:</strong> Observe the affected workflow for recurrence during the defined observation window; a reachable screen or successful request alone is not recovery.</p>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L1_support, L2_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>Site could add and remove totes again; all robots were re-added and back up and running.</li>
+<li>Movement had started.</li>
+<li>System was running; incident summary states issue resolved by approximately 9 PM ET.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>healthy</code> → <code></code> when Totes add/remove works and stable sort recovery confirmed</li>
+<li><code>unhealthy</code> → <code></code> when Tote add remains blocked or anomalies persist or sort fails again</li>
+</ul>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h2>Branch Graph</h2>
+<table>
+<tr><th>From Node</th><th>Outcome</th><th>Condition</th><th>Next Node</th></tr>
+<tr><td><code>node_1</code></td><td><code>unhealthy</code></td><td>Hospital induct blocked or sort cannot start/sustain</td><td><code>node_2</code></td></tr>
+<tr><td><code>node_1</code></td><td><code>healthy</code></td><td>Hospital add/remove works and sort operating normally</td><td><code></code></td></tr>
+<tr><td><code>node_1</code></td><td><code>inconclusive</code></td><td>Cannot confirm current state</td><td><code></code></td></tr>
+<tr><td><code>node_2</code></td><td><code>unhealthy</code></td><td>Unexpected AGV location or residual/disconnected tote association indicated</td><td><code>node_4</code></td></tr>
+<tr><td><code>node_2</code></td><td><code>inconclusive</code></td><td>No anomaly / evidence cannot confirm anomaly</td><td><code>node_3</code></td></tr>
+<tr><td><code>node_3</code></td><td><code>unhealthy</code></td><td>Current service or hospital-lane abnormality indicated</td><td><code>node_4</code></td></tr>
+<tr><td><code>node_3</code></td><td><code>healthy</code></td><td>Service/hospital-lane checks healthy or evidence historical/inconclusive</td><td><code></code></td></tr>
+<tr><td><code>node_4</code></td><td><code>healthy</code></td><td>Authorized recovery completed</td><td><code>node_5</code></td></tr>
+<tr><td><code>node_5</code></td><td><code>healthy</code></td><td>Totes add/remove works and stable sort recovery confirmed</td><td><code></code></td></tr>
+<tr><td><code>node_5</code></td><td><code>unhealthy</code></td><td>Tote add remains blocked or anomalies persist or sort fails again</td><td><code></code></td></tr>
+</table>
+</body>
+</html>

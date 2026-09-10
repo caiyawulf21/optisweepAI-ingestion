@@ -1,0 +1,345 @@
+{
+  "schema_version": "0.4",
+  "catalog_id": "rms_ui",
+  "access_surface": "rms_ui",
+  "title": "Geek+ RMS (Robot Management System) web UI",
+  "aliases": [
+    "rms",
+    "fleet_status_ui",
+    "Geek+ RMS",
+    "robotControl",
+    "map monitor",
+    "RMS / fleet status UI",
+    "rms_ui"
+  ],
+  "purpose": "Web fleet / robot status UI at the site RMS IP. Primary site/operator surface for AGV alarms, roster/map, and overall fleet health; L1 may use the same overview remotely; L2/L3 use deeper RMS views plus WCS SQL/API corroboration. Not SSMS and not tipper WebVisu.",
+  "when_to_use": [
+    "AGV alarms / active error overview",
+    "Roster / map / robotControl membership and disconnects",
+    "Confirm loads before coaching master E-stop clear",
+    "Blank or unreachable RMS as system-down symptom",
+    "Orange/map collision or location cues mentioned in training"
+  ],
+  "not_for": [
+    "Deep SSMS SystemActiveError column interpretation (use wcs_sql)",
+    "Tipper VISU alarms (use tipper_hmi)",
+    "Physical E-stop reset (operator only)",
+    "RMS soft stop mutate is L2/L3 only — not L1"
+  ],
+  "architecture_notes": [
+    "Same capability (e.g. agv_active_errors) may be done on rms_ui (operator/L1) and wcs_sql/wcs_api (L2/L3).",
+    "Direct RMS/API bypass of OptiSweep can desync — prefer documented OptiSweep paths.",
+    "Blank RMS often pairs with wcs_service_health / Event Viewer / unplanned restart trio."
+  ],
+  "audience_roles_typical": [
+    "operator",
+    "L1_support",
+    "L2_support",
+    "L3_support"
+  ],
+  "role_paths": {
+    "operator": "Primary day-to-day RMS user on site (overview / AGV status / map).",
+    "L1_support": "Remote overview / AGV status / map entry views; coach site; no soft-stop mutate.",
+    "L2_support": "Deeper fleet views + corroborate with SSMS/API; PauseAGVs only if soft-stop capability.",
+    "L3_support": "Persistent fleet issues / RCA."
+  },
+  "screens_or_views": [
+    {
+      "id": "rms_overview",
+      "title": "RMS overview / AGV status",
+      "purpose": "Fleet alarms and AGV status at a glance.",
+      "aliases": [
+        "AGV status",
+        "overview"
+      ],
+      "key_points": [
+        "alarms present/clear",
+        "RMS blank = escalate service health"
+      ]
+    },
+    {
+      "id": "rms_map_robotcontrol",
+      "title": "Map monitor / robotControl",
+      "purpose": "Map locations, workstation IDs, disconnect / E-stop cues on map.",
+      "aliases": [
+        "robotControl",
+        "map monitor"
+      ],
+      "key_points": [
+        "robot disconnected",
+        "emergency stop trigger on map",
+        "orange locations"
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "agv_alarm",
+      "label": "AGV alarm / fault on overview",
+      "capability_hints": [
+        "agv_active_errors"
+      ]
+    },
+    {
+      "id": "robot_roster",
+      "label": "Robot roster / mapped membership",
+      "capability_hints": [
+        "device_roster_state"
+      ]
+    },
+    {
+      "id": "robotcontrol_load",
+      "label": "robotControl load before master E-stop clear",
+      "capability_hints": [
+        "e_stop_or_safety_stop"
+      ]
+    }
+  ],
+  "activities": [
+    {
+      "id": "rms_overview_agv_status",
+      "label": "Open RMS overview / AGV status",
+      "observables": [
+        "alarms present",
+        "alarms clear",
+        "RMS blank"
+      ],
+      "capability_hints": [
+        "agv_active_errors",
+        "fleet_system_status"
+      ],
+      "audience_roles": [
+        "operator",
+        "L1_support",
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "rms_map_monitor",
+      "label": "Map monitor / robotControl",
+      "observables": [
+        "robot disconnected",
+        "emergency stop trigger on map",
+        "workstation IDs",
+        "orange locations"
+      ],
+      "capability_hints": [
+        "device_roster_state",
+        "e_stop_or_safety_stop"
+      ],
+      "audience_roles": [
+        "operator",
+        "L1_support",
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "rms_before_master_estop_clear",
+      "label": "Confirm load / robots before master E-stop clear coaching",
+      "observables": [
+        "robotControl loads"
+      ],
+      "capability_hints": [
+        "e_stop_or_safety_stop",
+        "wcs_service_health"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "notes": "Physical E-stop clear remains operator-only."
+    }
+  ],
+  "related_capabilities": [
+    "agv_active_errors",
+    "device_roster_state",
+    "fleet_system_status",
+    "sort_lifecycle_state",
+    "hospital_diversion",
+    "zone_pairing_state",
+    "zone_config_state",
+    "e_stop_or_safety_stop",
+    "rms_soft_stop",
+    "wcs_service_health",
+    "wcs_api_responsiveness",
+    "agv_physical_recovery",
+    "robot_dwell_or_shutdown_staging",
+    "agv_charging_state",
+    "sorter_item_or_scan_state",
+    "tote_exchange_sequence",
+    "bag_out_or_closeout_state",
+    "wcs_system_faults"
+  ],
+  "related_failure_patterns": [
+    "system_fault",
+    "bump_fault",
+    "agv_tracking_or_path_lost",
+    "object_blocking_agv",
+    "mapping_abnormal",
+    "zone_agv_mismatch",
+    "rms_map_collision_display",
+    "site_stoppage",
+    "sort_lifecycle_stuck",
+    "hospital_diversion",
+    "pairing_failure",
+    "unplanned_restart",
+    "service_crash_or_restart",
+    "api_unresponsive",
+    "shutdown_or_dwell_abnormal",
+    "charging_abnormal",
+    "miss_scan_or_dimension_fallback",
+    "hot_bin_or_missort_exchange",
+    "bag_out_stuck"
+  ],
+  "distinguish_from": {
+    "wcs_sql": "Authoritative AGV/system error rows and locations — corroborate, don't replace overview.",
+    "tipper_hmi": "Tipper WebVisu station HMI — different job.",
+    "aveva_hmi": "Site Aveva overall/totes — operator primary; not Geek+ RMS."
+  },
+  "gaps": [
+    "Full Geek+ RMS field dictionary per screen not in training corpus."
+  ],
+  "evidence": [
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "So Sorter Sweeper module orchestrates the movement of totes tote tippers and the Sorter Robotics module manages the HV tasks based on Sorter sweeper directives. OPC COM module manages communication between the Robot Robotics module and Geek Plus RMS server, and then XLE COM module manages the communication between the "
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "The Robot Location database model table contains all the information about the locations, including the station number, whether it's occupied or not, zone, it's closeout zone, the location type, the Max number of Agvs allowed at that location, and whether the location should be tracked for dwell time there. Listed belo"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "the sense to me. Yeah, if it is a queue, if it is a queue, right, that that sequence number that I see there, I think it's gonna go over. You have 4 Agvs, right? You have 4 zones. This is your 4th zone, right? So this AGV, you get shut down and it looks up the table that he said code, right and says I don't have a code"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Let's see and the last one sorted side database module I what's the damage? That's just which sort of side it's on. You know, you have remember the past one we had solar side 1A1B2A2B. So those all associate with one or two or three or four. Oh, it's a model ID. It's just a model ID. OK, it's names and all right. The c"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "The Robot Command Database model table tracks the status of the robot commands requested by the Robotics module for AG VS. When commands are complete, they're archived to robot command activity. Some of the commands. So this is the commands we send to the geek module that gets translated into the POST request or geek f"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Right? Moving on. Excuse me? The Robot Task database model table tracks the status of the tote task requested by the Sortter Sweeper module. When tasks are complete, they're archived to robot task activity. So it's the same thing as the last one. There's one that's current and one that's archived. The AGV error model t"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "All right, finish with brother. Send this order seeker. You have to go up there for this. This is just a overview as well, just like robotics on the tables and some foreign keys and how it's connected. This one has 22 storage, Yeah. And where you're talking about a lot of it is, you know, storage data like. So you look"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "yeah, you know, it's it's a small box. All right. So the exchange, when a when a chute is closed, an active exchange is created in the active exchange model. When an empty tote replaces it, the exchange is closed and archived to the exchange activity. So just like previously with the archiving it, it keeps the active e"
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Geek+ AGV and RMS control architecture overview: According to the segment, Geek+ AGVs operate over QR codes. The AGVs are directly controlled by Geek+ RMS, which handles all movement and determines the best route from point A to point B. RMS is described as external to the AGV and functions as the robot management system that dictates what the robot needs to do."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Map Monitor screen purpose: The speaker says that once the sidebar is expanded, the second option is Map Monitor. The transcript describes it as probably where users will spend most of their time in RMS. The OCR text states that Map Monitor allows users to view the map and AGV movements."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Robot count summary metrics on the map monitor: The segment explains that one summary point is the active robot count, which indicates how many robots are actively running in the system. Another displayed count shows how many robots are actively charging at the moment."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "RMS Map Monitor emergency-stop status: The screen capture shows the RMS Map Monitor with a message that the system is currently in an emergency-stop state. It also includes a statement that the RMS map monitoring page triggers a system emergency stop. The visible screen contains robot information, map-monitoring controls, and an emergency-stop button label."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "RMS monitor and robot-control screen: The displayed URL is https://fortna-rms-primary.txrth.otnet.ups.com/static/rms/#/monitor/robotControl. The slide refers to logging into RMS and confirming that the screen loads; this record identifies the referenced screen without defining a procedure."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Off-end sorter destinations remain visible through sort confirmations: In response to a question about parcels that do not sort down to the chute, the transcript explains that at Hazleton, parcels going off the end enter a Gaylord and that the system receives sort confirmations indicating one of two off-end destinations."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "RMS home screen navigation overview: The speaker explains that users will see buttons that help navigate around the RMS application. The top-right area includes language selection. A sidebar menu may be hidden and can be expanded."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "RMS language selection control: The speaker states that Geek Plus is a Chinese company and that sometimes, when logging in, the default language is Chinese. The language section is described as the third icon from the right in the top-right corner, and it can be clicked to switch the interface to English."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "RMS sidebar menu expansion and collapse: The speaker notes that the sidebar menu is sometimes hidden. A control identified in the explanation as item number three can be clicked to expand the menu. The OCR text also indicates that the menu can be expanded or collapsed."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "RMS treats a station as a generic station concept: The source states, 'in RMS world, a station is a station.' This indicates that RMS uses a generic station concept. The presenter contrasts this with local operational interpretation, where the same modeled location may represent different functional areas."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Disconnected AGV count and RMS communication concept: The segment defines disconnected AGVs as AGVs that have lost communication from RMS. RMS is described as the application running on the server, while AGVs are on Wi-Fi. The speaker notes that disconnection can happen for multiple reasons, including site Wi-Fi communication loss or an AGV being turned off."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Message panel relation to red robot status: The segment explains that red indicates the robot has a fault or a low battery. It further states that both of these conditions will show up in the message panel."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Low-legibility HMI video frame reference: The related artifact at timestamp 02:06:45.500 is described as belonging to an HMI discussion or Q&A segment. OCR extracted only the character \"x\" with low confidence."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Bottom section filtered to AGVs with errors: The source OCR states that the bottom section shows only AGVs with errors. This indicates the screen includes a focused exception or alarm-oriented subsection for error visibility, separate from the all-AGV detail section above."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Thin-client visibility limits affect direct RMS viewing: The presenter states that because the environment uses thin clients, 'we as Ford' cannot see RMS directly. As a result, they are dependent on pulling an API, using an API tool, or using the database to determine what is on the screen."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "RMS page is referenced for remote availability: In this segment, a speaker asks whether the function is remotely available and answers affirmatively. The transcript also states, \"go to RMS page,\" indicating that the RMS page is the referenced interface for viewing the discussed information remotely."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Remote access to the computer: The transcript states, \"I can remote into the computer,\" but does not identify the remote-access method, access path, or required permissions."
+    }
+  ],
+  "source_refs": [
+    {
+      "source": "training_video_day2"
+    },
+    {
+      "source": "training_video_day1"
+    },
+    {
+      "source": "support_roles_components_and_adjacency.md"
+    },
+    {
+      "source": "docs/ontology/catalogs/capability_catalog.json"
+    }
+  ]
+}

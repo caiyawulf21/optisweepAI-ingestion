@@ -139,6 +139,35 @@ def write_stage4_review_markdown(
     if kpi.get("notes"):
         lines.extend(["### KPI Notes", "", *_bullet_lines(kpi.get("notes") or []), ""])
 
+    early_failure_signals = canonical_record.get("early_failure_signals") or []
+    if early_failure_signals:
+        lines.extend(
+            [
+                "## Early Failure Signals (Before KPI Start)",
+                "",
+                "| Timestamp | Type | Summary | Linked event |",
+                "| --- | --- | --- | --- |",
+            ]
+        )
+        for signal in early_failure_signals:
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        _md_cell(signal.get("timestamp")),
+                        _md_cell(signal.get("event_type")),
+                        _md_cell(_truncate(signal.get("summary") or "", 180)),
+                        _md_cell(signal.get("event_id")),
+                    ]
+                )
+                + " |"
+            )
+        lines.append("")
+
+    linked_timeline_ids = canonical_record.get("supporting_timeline_event_ids") or []
+    if linked_timeline_ids:
+        lines.extend(["## Linked Timeline Events", "", *_bullet_lines(linked_timeline_ids), ""])
+
     lines.extend(
         [
             "## Incident Narrative",
@@ -393,13 +422,20 @@ def write_stage5_playbook_candidate_review_markdown(
                 [
                     "#### Nodes",
                     "",
-                    "| # | Type | Title | Intent | Runbook placeholder | Source-supported description |",
-                    "| --- | --- | --- | --- | --- | --- |",
+                    "| # | Type | Title | Intent | Expects | Runbook placeholder | Source-supported description |",
+                    "| --- | --- | --- | --- | --- | --- | --- |",
                 ]
             )
             for node in nodes:
                 intent = node.get("intent") or node.get("goal") or ""
                 runbook_placeholder = node.get("runbook_placeholder") or node.get("needed_runbook_capability") or ""
+                expects = ", ".join(
+                    [
+                        *(f"cap:{item}" for item in node.get("expects_capability") or []),
+                        *(f"surf:{item}" for item in node.get("expects_surface") or []),
+                        *(f"aud:{item}" for item in node.get("preferred_audience") or []),
+                    ]
+                )
                 lines.append(
                     "| "
                     + " | ".join(
@@ -408,6 +444,7 @@ def write_stage5_playbook_candidate_review_markdown(
                             _md_cell(node.get("node_type")),
                             _md_cell(node.get("title")),
                             _md_cell(intent),
+                            _md_cell(expects),
                             _md_cell(runbook_placeholder),
                             _md_cell(_truncate(node.get("source_supported_description") or "", 180)),
                         ]
@@ -516,6 +553,13 @@ def _source_ref_label(ref: Any) -> str:
 
 def _site_label(site: Any) -> str:
     if isinstance(site, dict):
+        ingestion_site = site.get("ingestion_site") if isinstance(site.get("ingestion_site"), dict) else {}
+        ingestion_label = str(ingestion_site.get("site_label") or "").strip()
+        if ingestion_label:
+            primary = str(site.get("primary_label") or "").strip()
+            if primary and primary != ingestion_label:
+                return f"{primary} (ingestion: {ingestion_label})"
+            return ingestion_label
         return str(site.get("primary_label") or site.get("observed_location_text") or "")
     return str(site or "")
 

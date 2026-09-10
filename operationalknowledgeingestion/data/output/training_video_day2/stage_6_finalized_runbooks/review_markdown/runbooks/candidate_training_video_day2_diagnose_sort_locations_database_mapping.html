@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Diagnose Sorter Location and Queue Mapping in the Robotics Database</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Diagnose Sorter Location and Queue Mapping in the Robotics Database</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_diagnose_sorter_location_queue_mapping_in_robotics_database_v1</td></tr>
+<tr><th>Title</th><td>Diagnose Sorter Location and Queue Mapping in the Robotics Database</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>zone_config_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>mapping_abnormal, zone_agv_mismatch</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use read-only SSMS access to the WCS / Helix Robotics database to verify sorted-location rows, associated queue locations, sorter-side associations, and sorter-entry sequence when investigating sorter mapping behavior.</p>
+<h2>When To Use</h2>
+<p>Use this diagnostic on the WCS / Helix DB (SSMS) when support needs to verify sorter-side, sorted-location, queue-location, or sorter-entry sequence configuration associated with an observed sorter mapping issue.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/566cf64c9e45d275.jpg" alt="artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500" /><figcaption>Robotics database view showing sort-location concepts, queue locations, sorter-side association, and sequence-related data.</figcaption></figure>
+<figure><img src="assets/eedfe29104bb9440.jpg" alt="artifact_training_video_training_video_day2_0012_the_sense_to_me_yeah_if_primary_00_34_18_500" /><figcaption>RMS / fleet status UI and mapping explanation showing sequence values beginning at the sorter entrance queue and resolving the corresponding location.</figcaption></figure>
+<figure><img src="assets/e6b308f21a2ed402.jpg" alt="artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500" /><figcaption>Robotics database view showing sorter-side fields including entrance and exit queue locations, tipper count, and disabled state.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the Robotics database model in SSMS</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS), open the Robotics database and locate the SortLocationsDatabaseModel table/model. Do not edit rows or database configuration.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Robotics database exposes the sort-location model for read-only inspection.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The Robotics database or sort locations model is unavailable to the assigned support role.</li>
+<li>The investigation would require modifying database configuration.</li>
+</ul>
+<hr>
+<h3>Step 2 — Inspect sorted-location and queue-location rows</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS), review the relevant SortLocationsDatabaseModel rows. Inspect the sorted-location identifier and its associated queue-location identifier; where present, use the model fields SorterId, StagingId, and QueueId to distinguish the sorter location, staging location, and queue location.</p>
+<p><strong>Expected result:</strong></p>
+<p>The affected sorted locations and their associated queue locations are visible as rows that can be compared with the observed sorter configuration.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The required location row is missing.</li>
+<li>The queue-location association is absent.</li>
+<li>The database row cannot be related to the affected sorter location.</li>
+</ul>
+<hr>
+<h3>Step 3 — Check sorter-side and entrance-queue sequence</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS), inspect the sorter-side association and Sequence for each relevant row. Compare the recorded sequence with the observed sorter entrance queue order. Sequence values are used to order the locations from the sorter entrance queue; the supplied model reference describes sequence values 1–4 as starting at that entrance queue.</p>
+<p><strong>Expected result:</strong></p>
+<p>Each relevant location has a sorter-side association and a sequence that can be compared to its expected position from the sorter entrance queue.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Sorter-side and sequence values do not correspond to the observed configuration.</li>
+<li>The sequence cannot be reconciled with the sorter entrance queue order.</li>
+<li>The observed configuration is insufficient to determine whether the database mapping is correct.</li>
+</ul>
+<hr>
+<h3>Step 4 — Confirm complete mapping for the affected sorter side</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS), verify that all locations and queue associations needed for the affected sorter side are present and that their sorter-side and Sequence values remain consistent with the observed sorter entrance queue order. Keep the inspection read-only.</p>
+<p><strong>Expected result:</strong></p>
+<p>The affected sorter side has a complete, internally consistent set of sorted-location and queue-location mappings.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The required location row is missing.</li>
+<li>The queue-location association is absent.</li>
+<li>Sorter-side or sequence values do not correspond to the observed configuration.</li>
+<li>A database change would be needed to make the mapping consistent.</li>
+</ul>
+<hr>
+</body>
+</html>

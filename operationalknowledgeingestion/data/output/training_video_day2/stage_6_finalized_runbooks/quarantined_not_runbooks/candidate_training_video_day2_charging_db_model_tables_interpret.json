@@ -1,0 +1,388 @@
+{
+  "procedure_id": "proc_interpret_charging_db_model_tables_v1",
+  "candidate_id": "candidate_training_video_day2_charging_db_model_tables_interpret",
+  "title": "Interpret Charging Database Model Tables to Understand Charging Areas, Chargers, and Thresholds",
+  "procedure_type": "diagnostic",
+  "summary": "Use the charging-related database model tables in the OptiSweep/WCS database to explain how charging areas (with entrance/exit IDs and disabled flags), charging locations (chargers tied to stations and tote stands, with disabled flags), and charging threshold variables drive AGV charging decisions—normal charge, kick-off, and emergency charging behavior.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_charging_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "charging_abnormal",
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to interpret how the system’s charging configuration and threshold variables are represented in the charging database model tables, to explain or troubleshoot AGV charging behavior (including emergency charging) based on the stored mappings and variables.",
+  "not_for": [
+    "Do not use this procedure to make configuration changes based only on this segment’s described tables/fields; use it to gather evidence and explain behavior."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support: Access the OptiSweep/WCS database via SSMS and identify the charging area, charging location, and charging threshold records/values needed to explain charging behavior."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "SSMS",
+    "Helix/WCS database access (charging database model tables described in the segment)"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "SSMS access to the Helix/WCS database that contains the charging database model tables described in the segment"
+    ],
+    "system_preconditions": [],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_charging_database_tables_v1",
+    "ctx_training_video_charging_threshold_usage_v1",
+    "ctx_training_video_charging_area_layout_mapping_v1",
+    "ctx_training_video_assigned_chargers_and_emergency_fallback_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0013_let_s_see_and_the_last_primary_00_53_44_500",
+      "description": "Segment frame describing the three charging-related database model tables (charging areas with entrance/exit IDs, charging locations with chargers/stations/tote stands and disabled flags, and charging threshold variables used by code for charge/kick-off/emergency charge).",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Identify the charging database model tables described in the segment",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish which three charging-related database model tables you must use to explain charging areas/entrances/exits, chargers/tote stands, and the threshold variables used by code.",
+      "instruction": "In the Helix/WCS database accessed via SSMS, identify the three charging-related database model tables described in the segment: (1) charging area database model table, (2) charging location database model table, and (3) charging threshold database model table.",
+      "expected_result": "You can name and locate the three charging-related database model tables in the database that correspond to: charging areas (entrance/exit IDs), charging locations (chargers/stations/tote stands and disabled flags), and charging threshold variables (values used by code for charge/kick-off/emergency charge).",
+      "healthy_condition": "All three charging-related tables are present and accessible in the database you are querying.",
+      "failure_condition": "One or more of the described charging-related tables cannot be found or are not accessible in the database.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate charging area/location/threshold model tables",
+          "exact_action": "Identify the charging database model tables described in the segment: charging area database model table, charging location database model table, and charging threshold database model table.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the database does not contain the described tables/fields, escalate to deeper support for database schema/model verification."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 13,
+          "section_id": "training_video_day2_segment_0013",
+          "timestamp_start": "00:53:44.500",
+          "timestamp_end": "00:53:44.500",
+          "quote_or_summary": "Charging database model table stores charging areas and entrance/exit locations; charging location database model table stores individual chargers, stations, and tote stands (and disabled flags); charging threshold database model table stores values used in code to decide charge vs kick-off vs emergency charge."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Verify charging area records: entrance IDs, exit IDs, and disabled state",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm how charging areas map to entrance and exit locations and whether a charging area is marked disabled.",
+      "instruction": "Using SSMS, query the charging area database model table and locate records for charging areas. Verify that each charging area record includes: entrance IDs, exit IDs, and whether the area is marked disabled or not.",
+      "expected_result": "For the charging area(s) relevant to the behavior you are explaining, you can point to the stored entrance IDs and exit IDs and confirm the disabled/not-disabled state for that area.",
+      "healthy_condition": "Charging area records show entrance IDs and exit IDs and include a disabled indicator/state that is consistent with whether the area should be used.",
+      "failure_condition": "Entrance/exit IDs or disabled state cannot be found for the charging area records you need to explain.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check charging area entrance/exit IDs and disabled flag/state",
+          "exact_action": "In the charging area database model table, locate records for charging areas and verify the stored entrance IDs and exit IDs, plus whether the area is marked disabled or not.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the expected mappings (entrance/exit IDs, disabled flags) cannot be found, escalate to deeper support for database schema/model verification."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 13,
+          "section_id": "training_video_day2_segment_0013",
+          "timestamp_start": "00:53:44.500",
+          "timestamp_end": "00:53:44.500",
+          "quote_or_summary": "Charging areas have entrance IDs and exit IDs and are whether it's disabled or not."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Verify charging location records: charger-to-station, charger-to-tote-stand, and disabled state",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm how individual chargers are represented, including their station association, tote stand association, and whether each charger record is disabled.",
+      "instruction": "Using SSMS, query the charging location database model table and locate individual charger records. Verify the stored station association and tote stand association for each charger record, and confirm whether each charger record is marked disabled or not.",
+      "expected_result": "For the charger(s) relevant to the behavior you are explaining, you can point to the stored station association and tote stand association and confirm the disabled/not-disabled state for each charger record.",
+      "healthy_condition": "Charging location records include charger-to-station association, charger-to-tote-stand association, and a disabled indicator/state.",
+      "failure_condition": "Station association, tote stand association, or disabled state cannot be found for the charger records you need to explain.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check charger station/tote stand association and disabled flag/state",
+          "exact_action": "In the charging location database model table, locate individual charger records and verify the stored station association and tote stand association, plus whether each charger record is marked disabled or not.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the expected mappings (charger-to-station, charger-to-tote-stand associations, disabled flags) cannot be found, escalate to deeper support for database schema/model verification."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 13,
+          "section_id": "training_video_day2_segment_0013",
+          "timestamp_start": "00:53:44.500",
+          "timestamp_end": "00:53:44.500",
+          "quote_or_summary": "Charging location database model table stores the individual chargers and the stations they're located at, and the tote stands associated with the chargers... whether it's disabled or not and what charging area it's associated with."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify charging threshold values used by code for charge, kick-off, and emergency charge",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Identify the threshold variables that the code uses to decide whether an AGV needs charge, can be kicked off the charger, or needs an emergency charge.",
+      "instruction": "Using SSMS, query the charging threshold database model table and locate the threshold values/variables described as being used by code to decide: (a) whether an AGV needs charge, (b) whether it can be kicked off the charger, and (c) whether it needs an emergency charge.",
+      "expected_result": "You can point to the specific threshold values/variables in the charging threshold database model table that correspond to normal charge vs kick-off vs emergency charge decisions.",
+      "healthy_condition": "Charging threshold records/variables exist and clearly represent values used by code for charge, kick-off, and emergency charge decisions.",
+      "failure_condition": "Threshold values/variables cannot be found in the charging threshold database model table, or they do not correspond to the described charge/kick-off/emergency charge decision inputs.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check charging threshold variables for charge/kick-off/emergency charge",
+          "exact_action": "In the charging threshold database model table, locate the threshold values used by code to decide whether an AGV needs charge, can be kicked off the charger, or needs an emergency charge.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the expected threshold variables cannot be found, escalate to deeper support for database schema/model verification."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 13,
+          "section_id": "training_video_day2_segment_0013",
+          "timestamp_start": "00:53:44.500",
+          "timestamp_end": "00:53:44.500",
+          "quote_or_summary": "Charging threshold database model table stores values that we use in the code to decide whether an AGV needs charge or can be kicked off the charger, or if it needs an emergency charge."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Explain charging behavior using the stored layout mapping and threshold variables",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Tie together the charging area/entrance/exit mapping and charging location associations with the threshold variables to explain the charging decisions.",
+      "instruction": "Using the records you identified in Steps 2–4, explain how the stored mapping/variables determine charging behavior: charging decisions are driven by the threshold values, and the layout mapping ties entrance/exit IDs and tote stand IDs to the chargers/areas.",
+      "expected_result": "You can produce an evidence-based explanation that references: (1) the charging area entrance/exit IDs and disabled state, (2) the charger-to-station and charger-to-tote-stand associations and disabled state, and (3) the threshold variables used by code for charge vs kick-off vs emergency charge.",
+      "healthy_condition": "Your explanation is consistent with the stored relationships: entrance/exit IDs and tote stand IDs map to the chargers/areas, and the threshold variables correspond to the decision types (charge/kick-off/emergency).",
+      "failure_condition": "You cannot connect the stored mappings to the decision thresholds (e.g., missing associations or missing threshold variables).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Correlate mappings to threshold-driven decisions",
+          "exact_action": "Use the stored mapping/variables to explain the documented behavior: charging decisions are driven by the threshold values, and the layout mapping ties entrance/exit IDs and tote stand IDs to the chargers/areas.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the database does not contain the described tables/fields or the expected mappings (entrance/exit IDs, disabled flags, charger-to-tote stand associations, threshold values) cannot be found, escalate to deeper support for database schema/model verification.",
+        "Do not attempt configuration changes based only on this training segment; use it to gather evidence and explain behavior."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 13,
+          "section_id": "training_video_day2_segment_0013",
+          "timestamp_start": "00:53:44.500",
+          "timestamp_end": "00:53:44.500",
+          "quote_or_summary": "Charging areas have entrance IDs and exit IDs... charging location... chargers and the stations they're located at, and the tote stands associated with the chargers... charging threshold... values that we use in the code to decide whether an AGV needs charge or can be kicked off the charger, or if it needs an emergency charge."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 13,
+          "section_id": "training_video_day2_segment_0013",
+          "timestamp_start": "00:35:50.000",
+          "timestamp_end": "01:11:39.000",
+          "quote_or_summary": "This is a mapping... How is the charger gonna be this your entrance, this your exit? This is your tote stand ID, so you know where to drop the tote off."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "If emergency charging is involved, verify emergency fallback behavior and cycling/lowest-charge behavior",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the emergency charging behavior described for cases where an AGV’s own sorter-side charger is not available, including fallback to another sorter side’s free charger and the system’s cycling/lowest-charge behavior.",
+      "instruction": "When the issue involves emergency charging, verify the segment’s described emergency behavior: if an AGV’s own sorter-side charger is not available, it can use a charger from another sorter side; also note that AGVs keep cycling on the charge and the system keeps the lowest charge on the charger.",
+      "expected_result": "You can explain emergency charging behavior using the described fallback rule (use another sorter side’s free charger when own is unavailable) and the described cycling/lowest-charge behavior.",
+      "healthy_condition": "Your emergency-charging explanation matches the described behavior: fallback to another sorter side’s free charger and continuous cycling that results in the lowest-charge AGV being kept on the charger.",
+      "failure_condition": "You cannot reconcile the emergency behavior with the stored charging configuration/mappings and threshold variables, or the described emergency fallback behavior cannot be supported by the available evidence.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Validate emergency fallback and cycling/lowest-charge behavior (evidence-based explanation)",
+          "exact_action": "If the issue involves emergency charging, verify the segment’s documented emergency behavior: if an AGV’s own sorter-side charger is not available, it can use a charger from another sorter side; also note the segment’s statement that AGVs keep cycling on the charge and the system keeps the lowest charge on the charger.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the database does not contain the described tables/fields or the expected mappings (entrance/exit IDs, disabled flags, charger-to-tote stand associations, threshold values) cannot be found, escalate to deeper support for database schema/model verification."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 13,
+          "section_id": "training_video_day2_segment_0013",
+          "timestamp_start": "00:35:50.000",
+          "timestamp_end": "01:11:39.000",
+          "quote_or_summary": "Any emergency charge... if its own is not available... it'll use the other one... we always keep AGV cycling on the charge... So it always keeps puts the lowest charge on there."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You can identify the three charging-related database model tables described in the segment (charging area, charging location, charging threshold).",
+    "You can point to charging area records showing entrance IDs, exit IDs, and disabled state.",
+    "You can point to charging location records showing charger-to-station association, charger-to-tote-stand association, and disabled state.",
+    "You can point to charging threshold values/variables used by code for charge vs kick-off vs emergency charge decisions.",
+    "For emergency charging scenarios, you can explain the described fallback behavior (use another sorter side’s free charger when own is unavailable) and the described cycling/lowest-charge behavior."
+  ],
+  "healthy_conditions": [
+    "All three charging-related tables are present and contain the described stored entities (areas with entrance/exit IDs and disabled state; chargers with station/tote stand associations and disabled state; threshold variables used by code)."
+  ],
+  "failure_conditions": [
+    "Charging area entrance/exit IDs or disabled state cannot be found for relevant records.",
+    "Charging location charger-to-station or charger-to-tote-stand associations or disabled state cannot be found for relevant records.",
+    "Charging threshold values/variables used by code for charge/kick-off/emergency charge cannot be found.",
+    "Emergency fallback behavior cannot be supported by the available evidence from the stored mappings/variables."
+  ],
+  "escalation_guidance": [
+    "If the database does not contain the described tables/fields or the expected mappings (entrance/exit IDs, disabled flags, charger-to-tote stand associations, threshold values) cannot be found, escalate to deeper support for database schema/model verification."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0013_let_s_see_and_the_last_primary_00_53_44_500",
+      "what_to_look_at": "Segment frame describing the three charging-related database model tables and their roles (areas/entrance-exit, chargers/tote stands/disabled, and threshold values for charge/kick-off/emergency charge)."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 13,
+      "section_id": "training_video_day2_segment_0013",
+      "timestamp_start": "00:35:50.000",
+      "timestamp_end": "01:11:39.000",
+      "quote_or_summary": "Charging database model table stores charging areas and entrance/exit locations; charging location database model table stores individual chargers, stations, and tote stands (and disabled flags); charging threshold database model table stores values used in code to decide charge vs kick-off vs emergency charge."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0013_let_s_see_and_the_last_primary_00_53_44_500",
+      "what_to_look_at": "Segment frame describing the three charging-related database model tables (charging areas with entrance/exit IDs, charging locations with chargers/stations/tote stands and disabled flags, and charging threshold variables used by code for charge/kick-off/emergency charge)."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_charging_db_model_tables_interpret"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide exact SSMS navigation paths or exact table/column names beyond the conceptual table names (charging area database model table, charging location database model table, charging threshold database model table).",
+    "The source does not provide the specific threshold variable names/fields or their numeric meanings; it only states that the charging threshold database model table stores values used by code for charge vs kick-off vs emergency charge."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source",
+    "expected results are not concrete/observable on a live surface"
+  ]
+}

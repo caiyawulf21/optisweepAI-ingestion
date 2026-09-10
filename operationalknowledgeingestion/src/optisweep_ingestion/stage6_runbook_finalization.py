@@ -13,9 +13,6 @@ import os
 import re
 import shutil
 import sys
-import urllib.error
-import urllib.parse
-import urllib.request
 
 from dotenv import load_dotenv
 
@@ -23,19 +20,29 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from shared_pipeline_stages.llm_pacing import default_azure_api_version, request_azure_chat_json
+from shared_pipeline_stages.ontology_rag import ontology_snippets_for_stage6
+from shared_pipeline_stages.runbook_eligibility import (
+    allowed_access_surfaces_packet,
+    eligibility_errors_for_runbook,
+)
 from shared_pipeline_stages.stage_prompts import (
     compose_stage6_system_prompt,
     load_prompt_file,
     resolve_stage6_operational_prompt_path,
     resolve_stage6_structure_reference_path,
 )
+from shared_pipeline_stages.runbook_tags import normalize_runbook_tags
 
 from operationalknowledgeingestion.src.optisweep_ingestion.schemas.runbook_candidate import (
     ALLOWED_PROCEDURE_TYPES,
     ALLOWED_ROLES,
     FORBIDDEN_FIELDS,
 )
-from operationalknowledgeingestion.src.optisweep_ingestion.tools.artifact_linker import collect_candidate_artifact_ids
+from operationalknowledgeingestion.src.optisweep_ingestion.tools.artifact_linker import (
+    collect_candidate_artifact_ids,
+    is_weak_evidence_text,
+)
 from operationalknowledgeingestion.src.optisweep_ingestion.tools.context_id_resolver import resolve_context_ids
 from operationalknowledgeingestion.src.optisweep_ingestion.services.id_generator import slugify
 from operationalknowledgeingestion.src.optisweep_ingestion.services.source_ref_service import lineage_from_bundle
@@ -45,8 +52,9 @@ FOUNDRY_API_VERSION = "2025-04-01-preview"
 CLASSIC_AZURE_OPENAI_API_VERSION = "2024-10-21"
 
 MAX_SECTION_TEXT_CHARS = 6000
-MAX_ARTIFACT_TEXT_CHARS = 1200
-MAX_CONTEXT_TEXT_CHARS = 1200
+MAX_ARTIFACT_TEXT_CHARS = 2500
+MAX_CONTEXT_TEXT_CHARS = 2000
+MAX_NEARBY_TEXT_CHARS = 3500
 
 
 class RunbookFinalizationClient(Protocol):
@@ -69,7 +77,7 @@ class AzureOpenAIRunbookFinalizationClient:
         self.api_key = _clean_env_value(api_key or os.getenv("AZURE_OPENAI_API_KEY"))
         self.deployment = _clean_env_value(deployment or os.getenv("AZURE_OPENAI_DEPLOYMENT"))
         env_api_version = _clean_env_value(os.getenv("AZURE_OPENAI_API_VERSION"))
-        self.api_version = _clean_env_value(api_version) or self._default_api_version(env_api_version)
+        self.api_version = _clean_env_value(api_version) or default_azure_api_version(self.endpoint, env_api_version)
         default_prompt = resolve_stage6_operational_prompt_path()
         task_prompt = load_prompt_file(prompt_path or default_prompt)
         self.prompt = compose_stage6_system_prompt(
@@ -90,55 +98,17 @@ class AzureOpenAIRunbookFinalizationClient:
             raise RuntimeError("Azure OpenAI is not configured. Set these environment variables: " + ", ".join(missing))
 
     def finalize(self, packet: dict[str, Any]) -> dict[str, Any]:
-        body = {
-            "messages": [
-                {"role": "system", "content": self.prompt},
-                {"role": "user", "content": json.dumps(packet, ensure_ascii=False)},
-            ],
-            "temperature": 0.1,
-            "response_format": {"type": "json_object"},
-        }
-        errors: list[str] = []
-        for url, headers, include_model in self._candidate_requests(self.api_version):
-            request_body = body | ({"model": self.deployment} if include_model else {})
-            request = urllib.request.Request(
-                url,
-                data=json.dumps(request_body).encode("utf-8"),
-                headers=headers,
-                method="POST",
-            )
-            try:
-                with urllib.request.urlopen(request, timeout=240) as response:
-                    payload = json.loads(response.read().decode("utf-8"))
-                return parse_llm_response(payload["choices"][0]["message"]["content"])
-            except urllib.error.HTTPError as exc:
-                details = exc.read().decode("utf-8", errors="replace")
-                errors.append(f"HTTP {exc.code}: {details}")
-                if exc.code not in {400, 404}:
-                    raise RuntimeError(f"Azure OpenAI request failed with HTTP {exc.code}: {details}") from exc
-            except urllib.error.URLError as exc:
-                raise RuntimeError(f"Azure OpenAI request failed: {exc.reason}") from exc
-        raise RuntimeError("Azure OpenAI request failed for endpoint patterns tried: " + " | ".join(errors))
-
-    def _candidate_requests(self, api_version: str) -> list[tuple[str, dict[str, str], bool]]:
-        encoded_deployment = urllib.parse.quote(self.deployment, safe="")
-        query = urllib.parse.urlencode({"api-version": api_version})
-        headers = {"Content-Type": "application/json", "api-key": self.api_key}
-        parsed = urllib.parse.urlparse(self.endpoint)
-        if self._is_foundry_project_endpoint():
-            foundry_base = urllib.parse.urlunparse((parsed.scheme, parsed.netloc, "", "", "", "")).rstrip("/")
-            return [(f"{foundry_base}/models/chat/completions?{query}", headers, True)]
-        return [(f"{self.endpoint}/openai/deployments/{encoded_deployment}/chat/completions?{query}", headers, False)]
-
-    def _is_foundry_project_endpoint(self) -> bool:
-        parsed = urllib.parse.urlparse(self.endpoint)
-        return parsed.netloc.endswith(".services.ai.azure.com") and "/api/projects/" in parsed.path
-
-    def _default_api_version(self, env_api_version: str = "") -> str:
-        parsed = urllib.parse.urlparse(self.endpoint)
-        if parsed.netloc.endswith(".services.ai.azure.com") and "/api/projects/" in parsed.path:
-            return FOUNDRY_API_VERSION
-        return env_api_version or CLASSIC_AZURE_OPENAI_API_VERSION
+        parsed = request_azure_chat_json(
+            endpoint=self.endpoint,
+            api_key=self.api_key,
+            deployment=self.deployment,
+            api_version=self.api_version,
+            system_prompt=self.prompt,
+            user_content=json.dumps(packet, ensure_ascii=False),
+            label="Stage 6",
+            timeout=240,
+        )
+        return parse_llm_response(parsed)
 
 
 def finalize_operational_runbooks(
@@ -164,6 +134,7 @@ def finalize_operational_runbooks(
         raise ValueError("operational_context.json must contain a list.")
 
     lineage = lineage_from_bundle(bundle)
+    _hydrate_training_sections_from_pages(bundle)
     artifact_index = {str(item.get("artifact_id")): item for item in artifacts if item.get("artifact_id")}
     context_index = {str(item.get("context_id")): item for item in contexts if item.get("context_id")}
     section_index = {str(item.get("section_id")): item for item in (bundle.get("sections") or []) if item.get("section_id")}
@@ -227,22 +198,22 @@ def finalize_operational_runbooks(
                 continue
             write_json(finalized_dir / f"{candidate_id}.json", runbook)
             review_path = review_dir / f"{candidate_id}.md"
-            review_path.write_text(
+            _write_text(
+                review_path,
                 write_runbook_review_markdown(
                     runbook,
                     artifact_index=artifact_index,
                     review_markdown_path=review_path,
                 ),
-                encoding="utf-8",
             )
             html_path = review_dir / f"{candidate_id}.html"
-            html_path.write_text(
+            _write_text(
+                html_path,
                 write_runbook_review_html(
                     runbook,
                     artifact_index=artifact_index,
                     review_html_path=html_path,
                 ),
-                encoding="utf-8",
             )
             finalized.append(runbook)
 
@@ -256,7 +227,49 @@ def finalize_operational_runbooks(
         llm_used=llm_used,
     )
     write_json(output_path / "runbook_finalization_report.json", report)
+
+    _ingest_finalized_runbooks_into_brain(finalized, lineage.source_id)
+
     return finalized, report
+
+
+def _ingest_finalized_runbooks_into_brain(finalized: list[dict[str, Any]], source_id: str) -> None:
+    """Fires the in-tandem Brain hook on this stage's own new finalized
+    runbooks. Gated by BRAIN_INGESTION_ENABLED (default on) -- same
+    pattern as every other stage hook in this repo."""
+    from brain_service.pipeline_hook import brain_enabled
+
+    if not brain_enabled():
+        return
+
+    source_id = str(source_id or "").strip()
+    if not source_id:
+        return
+
+    from brain_service.adapters.finalized_runbooks import finalized_runbooks_to_records
+    from brain_service.pipeline_hook import ingest_stage_output
+    from providers.azure_openai_llm import AzureOpenAILLMProvider
+    from providers.local_storage import LocalStorageProvider
+
+    ingest_stage_output(
+        llm=AzureOpenAILLMProvider(),
+        storage=LocalStorageProvider(),
+        pipeline="operational",
+        stage_name="stage6_finalized_runbooks",
+        source_id=source_id,
+        scope=f"operational_sources/{source_id}",
+        records=finalized_runbooks_to_records(finalized),
+        record_kind="finalized_runbook",
+    )
+
+
+def _write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    raw = str(path.resolve())
+    if os.name == "nt" and not raw.startswith("\\\\?\\"):
+        raw = "\\\\?\\" + raw
+    with open(raw, "w", encoding="utf-8") as handle:
+        handle.write(text)
 
 
 def build_operational_finalization_packet(
@@ -277,12 +290,17 @@ def build_operational_finalization_packet(
     )
     related_context_ids = _string_list(candidate.get("related_context_ids"))
     section_ids = _section_ids_from_refs(candidate.get("source_refs") or [])
+    related_artifacts = [
+        _compact_artifact(artifacts[artifact_id]) for artifact_id in related_artifact_ids if artifact_id in artifacts
+    ]
     return {
         "packet_type": "stage_6_operational_runbook_finalization_packet",
         "schema_version": "0.1",
         "runbook_candidate": candidate,
-        "related_artifacts": [_compact_artifact(artifacts[artifact_id]) for artifact_id in related_artifact_ids if artifact_id in artifacts],
-        "related_context_records": [_compact_context(contexts[context_id]) for context_id in related_context_ids if context_id in contexts],
+        "related_artifacts": related_artifacts,
+        "related_context_records": [
+            _compact_context(contexts[context_id]) for context_id in related_context_ids if context_id in contexts
+        ],
         "source_sections": [_compact_section(sections[section_id]) for section_id in section_ids if section_id in sections],
         "source_lineage": {
             "source_id": lineage.source_id,
@@ -291,10 +309,16 @@ def build_operational_finalization_packet(
             "source_version": lineage.source_version,
             "ingestion_batch_id": lineage.ingestion_batch_id,
         },
+        "allowed_access_surfaces": allowed_access_surfaces_packet(),
+        "ontology_snippets": ontology_snippets_for_stage6(candidate, artifacts=related_artifacts),
         "instructions": [
             "Finalize exactly one source-specific runbook from the supplied candidate.",
             "Use only evidence from this packet.",
             "Do not merge with other candidates or sources.",
+            "Name only verified live access surfaces from allowed_access_surfaces (or their labels).",
+            "Use ontology_snippets for surface/field/observable grounding; source/OCR evidence still wins on conflicts.",
+            "Never tell the user to consult the training source/OCR; write live-system steps only.",
+            "If this candidate is orientation-only or invents a UI not in the packet, do not polish it — leave missing_details naming the gap (Stage 6 validation will reject).",
         ],
     }
 
@@ -355,10 +379,20 @@ def normalize_runbook(
     runbook["visual_references"] = _dict_list(runbook.get("visual_references"))
     runbook["source_refs"] = _dict_list(runbook.get("source_refs")) or _dict_list(candidate.get("source_refs"))
     runbook["image_refs"] = _dict_list(runbook.get("image_refs"))
+    _strip_weak_evidence_image_buckets(runbook)
+    _strip_step_images_already_on_runbook(runbook)
+    runbook["image_refs"] = _backfill_image_refs(
+        runbook.get("image_refs"),
+        screens_or_images=runbook.get("screens_or_images"),
+        visual_references=runbook.get("visual_references"),
+        steps=runbook.get("steps"),
+        source_refs=runbook.get("source_refs"),
+    )
     runbook["source_candidate_ids"] = _string_list(runbook.get("source_candidate_ids")) or ([candidate_id] if candidate_id else [])
     runbook["source_lineage"] = _dict_list(runbook.get("source_lineage"))
     runbook["missing_details"] = _string_list(runbook.get("missing_details"))
     runbook["validation_status"] = str(runbook.get("validation_status") or "needs_sme_review")
+    normalize_runbook_tags(runbook)
     metadata = runbook.get("metadata") if isinstance(runbook.get("metadata"), dict) else {}
     metadata.update(
         {
@@ -405,6 +439,7 @@ def validate_runbook(
             errors.append(f"unknown related_context_id: {context_id}")
     if str(runbook.get("metadata", {}).get("merge_status") or "") != "source_finalized":
         errors.append("metadata.merge_status must be source_finalized")
+    errors.extend(eligibility_errors_for_runbook(runbook))
     return errors
 
 
@@ -434,6 +469,10 @@ def write_runbook_review_markdown(
             f"| Primary Role | `{runbook.get('role_required')}` |",
             f"| Supporting Roles | {', '.join(f'`{role}`' for role in runbook.get('supporting_roles') or []) or 'None'} |",
             f"| Support Safe | {'Yes' if runbook.get('support_safe') else 'No'} |",
+            f"| Capability Tags | {', '.join(f'`{item}`' for item in runbook.get('capability_tags') or []) or 'None'} |",
+            f"| Access Surface | {', '.join(f'`{item}`' for item in runbook.get('access_surface') or []) or 'None'} |",
+            f"| Audience Roles | {', '.join(f'`{item}`' for item in runbook.get('audience_roles') or []) or 'None'} |",
+            f"| Failure Pattern Tags | {', '.join(f'`{item}`' for item in runbook.get('failure_pattern_tags') or []) or 'None'} |",
             f"| Validation Status | `{runbook.get('validation_status')}` |",
             f"| Merge Status | `{metadata.get('merge_status')}` |",
             "",
@@ -455,6 +494,15 @@ def write_runbook_review_markdown(
         lines.extend(["## Access Or Tools Needed", "", *_bullet_lines(runbook.get("access_or_tools_needed") or []), ""])
     if runbook.get("related_context_ids"):
         lines.extend(["## Related Operational Context", "", *_bullet_lines(runbook.get("related_context_ids") or []), ""])
+    visual_image_lines = _render_screen_or_image_markdown(
+        _collect_runbook_visual_refs(runbook),
+        artifact_index=artifact_index,
+        review_markdown_path=review_path,
+        repo_root=root,
+        asset_link_cache=asset_link_cache,
+    )
+    if visual_image_lines:
+        lines.extend(["## Visual References", "", *visual_image_lines])
     lines.extend(["## Procedure Steps", ""])
     for step in runbook.get("steps") or []:
         if not isinstance(step, dict):
@@ -545,6 +593,10 @@ def write_runbook_review_html(
         f"<tr><th>Procedure Type</th><td>{html.escape(str(runbook.get('procedure_type') or ''))}</td></tr>",
         f"<tr><th>Primary Role</th><td>{html.escape(str(runbook.get('role_required') or ''))}</td></tr>",
         f"<tr><th>Support Safe</th><td>{'Yes' if runbook.get('support_safe') else 'No'}</td></tr>",
+        f"<tr><th>Capability Tags</th><td>{html.escape(', '.join(str(item) for item in runbook.get('capability_tags') or []) or 'None')}</td></tr>",
+        f"<tr><th>Access Surface</th><td>{html.escape(', '.join(str(item) for item in runbook.get('access_surface') or []) or 'None')}</td></tr>",
+        f"<tr><th>Audience Roles</th><td>{html.escape(', '.join(str(item) for item in runbook.get('audience_roles') or []) or 'None')}</td></tr>",
+        f"<tr><th>Failure Pattern Tags</th><td>{html.escape(', '.join(str(item) for item in runbook.get('failure_pattern_tags') or []) or 'None')}</td></tr>",
         f"<tr><th>Validation Status</th><td>{html.escape(str(runbook.get('validation_status') or ''))}</td></tr>",
         f"<tr><th>Merge Status</th><td>{html.escape(str(metadata.get('merge_status') or ''))}</td></tr>",
         "</table>",
@@ -553,6 +605,15 @@ def write_runbook_review_html(
         "<h2>When To Use</h2>",
         f"<p>{html.escape(str(runbook.get('when_to_use') or ''))}</p>",
     ]
+    visual_blocks = _render_screen_or_image_html(
+        _collect_runbook_visual_refs(runbook),
+        artifact_index=artifact_index,
+        review_markdown_path=review_path,
+        repo_root=root,
+        asset_link_cache=asset_link_cache,
+    )
+    if visual_blocks:
+        parts.extend(["<h2>Visual References</h2>", *visual_blocks])
     parts.append("<h2>Procedure Steps</h2>")
     for step in runbook.get("steps") or []:
         if not isinstance(step, dict):
@@ -704,6 +765,11 @@ def _artifact_ids_in_runbook(runbook: dict[str, Any]) -> set[str]:
     for ref in runbook.get("screens_or_images") or []:
         if isinstance(ref, dict) and ref.get("artifact_id"):
             artifact_ids.add(str(ref["artifact_id"]))
+    for ref in runbook.get("image_refs") or []:
+        if isinstance(ref, dict) and ref.get("artifact_id"):
+            artifact_ids.add(str(ref["artifact_id"]))
+        elif isinstance(ref, str) and ref.strip():
+            artifact_ids.add(ref.strip())
     for step in runbook.get("steps") or []:
         if not isinstance(step, dict):
             continue
@@ -729,12 +795,18 @@ def _section_ids_from_refs(refs: list[Any]) -> list[str]:
 def _compact_artifact(artifact: dict[str, Any]) -> dict[str, Any]:
     return {
         "artifact_id": artifact.get("artifact_id"),
+        "title": artifact.get("title") or artifact.get("detected_title") or artifact.get("caption_text"),
         "page_number": artifact.get("page_number"),
+        "section_id": artifact.get("section_id"),
         "image_type": artifact.get("image_type"),
         "short_description": _truncate(artifact.get("short_description") or artifact.get("summary"), MAX_ARTIFACT_TEXT_CHARS),
+        "nearby_text": _truncate(artifact.get("nearby_text"), MAX_NEARBY_TEXT_CHARS),
+        "ocr_text": _truncate(artifact.get("ocr_text"), MAX_ARTIFACT_TEXT_CHARS),
+        "what_to_look_at": artifact.get("what_to_look_at") or [],
         "retrieval_text": _truncate(artifact.get("retrieval_text"), MAX_ARTIFACT_TEXT_CHARS),
         "source_refs": artifact.get("source_refs") or [],
         "image_ref": artifact.get("image_ref"),
+        "storage_path": artifact.get("storage_path"),
     }
 
 
@@ -747,17 +819,51 @@ def _compact_context(context: dict[str, Any]) -> dict[str, Any]:
         "retrieval_text": _truncate(context.get("retrieval_text"), MAX_CONTEXT_TEXT_CHARS),
         "source_refs": context.get("source_refs") or [],
         "image_refs": context.get("image_refs") or [],
+        "related_artifact_ids": context.get("related_artifact_ids") or [],
     }
 
 
 def _compact_section(section: dict[str, Any]) -> dict[str, Any]:
     return {
         "section_id": section.get("section_id"),
-        "heading": section.get("heading"),
+        "heading": section.get("heading") or section.get("title"),
+        "title": section.get("title") or section.get("heading"),
         "page_start": section.get("page_start"),
         "page_end": section.get("page_end"),
-        "text": _truncate(section.get("text"), MAX_SECTION_TEXT_CHARS),
+        "text": _truncate(section.get("text") or section.get("text_preview"), MAX_SECTION_TEXT_CHARS),
+        "start_timecode": section.get("start_timecode"),
+        "end_timecode": section.get("end_timecode"),
     }
+
+
+def _hydrate_training_sections_from_pages(bundle: dict[str, Any]) -> None:
+    """Fill empty section.text from page text (training video preparer historically omitted section.text)."""
+    pages_by_number = {
+        int(page.get("page_number") or 0): page
+        for page in bundle.get("pages") or []
+        if isinstance(page, dict) and page.get("page_number") is not None
+    }
+    for section in bundle.get("sections") or []:
+        if not isinstance(section, dict):
+            continue
+        if str(section.get("text") or "").strip():
+            continue
+        page_start = int(section.get("page_start") or 0)
+        page_end = int(section.get("page_end") or page_start)
+        chunks: list[str] = []
+        for page_number in range(page_start, page_end + 1):
+            page = pages_by_number.get(page_number)
+            if not page:
+                continue
+            text = str(page.get("text") or "").strip()
+            if text:
+                chunks.append(text)
+        if chunks:
+            section["text"] = "\n".join(chunks)
+        elif section.get("text_preview"):
+            section["text"] = str(section.get("text_preview") or "")
+        if not section.get("heading"):
+            section["heading"] = section.get("title")
 
 
 def _allowed(value: Any, allowed: set[str], default: str) -> str:
@@ -775,6 +881,139 @@ def _dict_list(value: Any) -> list[dict[str, Any]]:
     if not isinstance(value, list):
         return []
     return [item for item in value if isinstance(item, dict)]
+
+
+def _artifact_id_from_image_ref(ref: Any) -> str:
+    if isinstance(ref, str):
+        return ref.strip()
+    if isinstance(ref, dict):
+        return str(ref.get("artifact_id") or "").strip()
+    return ""
+
+
+def _collect_runbook_visual_refs(runbook: dict[str, Any]) -> list[dict[str, Any]]:
+    refs: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for bucket in (
+        runbook.get("visual_references") or [],
+        runbook.get("screens_or_images") or [],
+    ):
+        for ref in bucket:
+            if not isinstance(ref, dict):
+                continue
+            artifact_id = str(ref.get("artifact_id") or "").strip()
+            if artifact_id and artifact_id not in seen:
+                seen.add(artifact_id)
+                refs.append(ref)
+    for step in runbook.get("steps") or []:
+        if not isinstance(step, dict):
+            continue
+        for ref in step.get("screens_or_images") or []:
+            if not isinstance(ref, dict):
+                continue
+            artifact_id = str(ref.get("artifact_id") or "").strip()
+            if artifact_id and artifact_id not in seen:
+                seen.add(artifact_id)
+                refs.append(ref)
+    return refs
+
+
+def _strip_weak_evidence_image_buckets(runbook: dict[str, Any]) -> None:
+    for field in ("screens_or_images", "visual_references", "image_refs"):
+        runbook[field] = [
+            ref
+            for ref in (runbook.get(field) or [])
+            if isinstance(ref, dict) and not _is_weak_evidence_image_ref(ref)
+        ]
+    for step in runbook.get("steps") or []:
+        if not isinstance(step, dict):
+            continue
+        step["screens_or_images"] = [
+            ref
+            for ref in (step.get("screens_or_images") or [])
+            if isinstance(ref, dict) and not _is_weak_evidence_image_ref(ref)
+        ]
+
+
+def _is_weak_evidence_image_ref(ref: dict[str, Any]) -> bool:
+    blob = " ".join(
+        [
+            str(ref.get("artifact_id") or ""),
+            str(ref.get("what_to_look_at") or ""),
+            str(ref.get("description") or ""),
+            str(ref.get("caption") or ""),
+        ]
+    )
+    return is_weak_evidence_text(blob)
+
+
+def _strip_step_images_already_on_runbook(runbook: dict[str, Any]) -> None:
+    """Drop step-level screens_or_images when the artifact is already on the runbook."""
+    runbook_ids: set[str] = set()
+    for bucket in (
+        runbook.get("screens_or_images") or [],
+        runbook.get("visual_references") or [],
+        runbook.get("image_refs") or [],
+    ):
+        for ref in bucket:
+            artifact_id = _artifact_id_from_image_ref(ref)
+            if artifact_id:
+                runbook_ids.add(artifact_id)
+    if not runbook_ids:
+        return
+    for step in runbook.get("steps") or []:
+        if not isinstance(step, dict):
+            continue
+        kept: list[Any] = []
+        for ref in step.get("screens_or_images") or []:
+            artifact_id = _artifact_id_from_image_ref(ref)
+            if artifact_id and artifact_id in runbook_ids:
+                continue
+            kept.append(ref)
+        step["screens_or_images"] = kept
+
+
+def _backfill_image_refs(
+    image_refs: Any,
+    *,
+    screens_or_images: Any = None,
+    visual_references: Any = None,
+    steps: Any = None,
+    source_refs: Any = None,
+) -> list[dict[str, Any]]:
+    by_id: dict[str, dict[str, Any]] = {}
+
+    def _add(ref: Any, *, default_look_at: str = "") -> None:
+        if isinstance(ref, str):
+            artifact_id = ref.strip()
+            look_at = default_look_at
+        elif isinstance(ref, dict):
+            artifact_id = str(ref.get("artifact_id") or "").strip()
+            look_at = str(ref.get("what_to_look_at") or ref.get("caption") or default_look_at or "").strip()
+        else:
+            return
+        if not artifact_id or is_weak_evidence_text(artifact_id):
+            return
+        existing = by_id.get(artifact_id) or {"artifact_id": artifact_id}
+        if look_at and not str(existing.get("what_to_look_at") or "").strip():
+            existing["what_to_look_at"] = look_at
+        by_id[artifact_id] = existing
+
+    for ref in image_refs or []:
+        _add(ref)
+    for bucket in (screens_or_images or [], visual_references or []):
+        for ref in bucket:
+            _add(ref)
+    for step in steps or []:
+        if not isinstance(step, dict):
+            continue
+        for ref in step.get("screens_or_images") or []:
+            _add(ref)
+    for ref in source_refs or []:
+        if isinstance(ref, dict) and ref.get("artifact_id"):
+            _add(ref, default_look_at=str(ref.get("quote_or_summary") or "").strip())
+
+    return list(by_id.values())
 
 
 def _truncate(value: Any, max_chars: int) -> str:

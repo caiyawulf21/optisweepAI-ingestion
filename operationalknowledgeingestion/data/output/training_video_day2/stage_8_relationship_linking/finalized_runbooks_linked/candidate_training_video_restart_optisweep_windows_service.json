@@ -1,0 +1,324 @@
+{
+  "procedure_id": "proc_restart_optisweep_windows_service_v1",
+  "candidate_id": "candidate_training_video_restart_optisweep_windows_service",
+  "title": "Restart the OptiSweep Windows Service in Windows Services",
+  "procedure_type": "recovery",
+  "summary": "Use the Windows Event Viewer / services surface, specifically Windows Services MMC, to locate the OptiSweep service, restart it, and verify that its Status is Running and Startup Type remains Automatic.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "wcs_service_health",
+    "windows_service_or_event_log"
+  ],
+  "access_surface": [
+    "event_viewer"
+  ],
+  "audience_roles": [
+    "L1_support"
+  ],
+  "failure_pattern_tags": [
+    "service_crash_or_restart"
+  ],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use Windows Services when a tipper heartbeat is flatlined and the source-associated condition is delayed OptiSweep startup relative to Ignition and WCS.",
+  "not_for": [
+    "Do not use this procedure as a substitute for a detailed Ignition health check; the supplied source does not provide that check.",
+    "Do not use this procedure to diagnose or repair a physical tipper, AGV, or OPC connection fault beyond restarting the OptiSweep Windows service."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L1_support",
+      "responsibility": "Access Windows Services MMC, inspect the OptiSweep service, restart it, and verify the resulting service state."
+    }
+  ],
+  "safety_notes": [
+    "Confirm the OptiSweep service state after the restart before treating the recovery as successful.",
+    "Escalate rather than repeatedly restarting if the service does not return to Running or the heartbeat remains flatlined."
+  ],
+  "access_or_tools_needed": [
+    "Windows Event Viewer / services",
+    "Windows Services MMC",
+    "OptiSweep Windows service"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L1_support access to the Windows Services MMC on the applicable OptiSweep host"
+    ],
+    "system_preconditions": [
+      "A tipper heartbeat is flatlined or OptiSweep startup is delayed relative to Ignition and WCS."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_heartbeat_flatline_v1",
+    "ctx_training_video_optisweep_windows_service_v1",
+    "ctx_training_video_startup_timing_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500",
+      "description": "Windows Services MMC showing the OptiSweep service, the Status and Startup Type fields, and the Restart the service control.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open Windows Services and locate OptiSweep",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Access the live Windows service entry associated with the delayed OptiSweep startup.",
+      "instruction": "In the Windows Event Viewer / services surface, open Windows Services MMC and locate the service named OptiSweep.",
+      "expected_result": "The OptiSweep service entry is visible with its service controls and Status and Startup Type fields.",
+      "healthy_condition": "The OptiSweep row is identifiable and its Status and Startup Type values are available for inspection.",
+      "failure_condition": "The OptiSweep service entry cannot be located in Windows Services.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate OptiSweep",
+          "exact_action": "Open Windows Services through the Windows Services MMC and locate the service named OptiSweep.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the OptiSweep service entry cannot be located."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0051",
+          "timestamp_start": "03:13:27.000",
+          "timestamp_end": "03:14:04.000",
+          "quote_or_summary": "The Windows Services console shows the OptiSweep service and service controls."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Inspect the OptiSweep service state",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the displayed service state and startup configuration match the expected live values.",
+      "instruction": "In Windows Services MMC, select the OptiSweep entry and inspect the displayed Status and Startup Type values.",
+      "expected_result": "The OptiSweep entry displays Status as Running and Startup Type as Automatic when the service is in the expected state.",
+      "healthy_condition": "Status is Running and Startup Type is Automatic.",
+      "failure_condition": "Status is not Running, or Startup Type is not Automatic.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check service fields",
+          "exact_action": "Check the OptiSweep service entry and note the displayed Status and Startup Type values.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the OptiSweep entry is not present or its displayed fields cannot be inspected."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0051",
+          "timestamp_start": "03:13:27.000",
+          "timestamp_end": "03:14:04.000",
+          "quote_or_summary": "The visible OptiSweep service state is Running with Automatic startup."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0049",
+          "timestamp_start": "03:13:10.000",
+          "timestamp_end": "03:13:10.000",
+          "quote_or_summary": "A flatlined heartbeat is associated with attention to the OptiSweep service."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Restart the OptiSweep service",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Recover OptiSweep when its startup is delayed relative to Ignition and WCS.",
+      "instruction": "In Windows Services MMC, use the service control labeled Restart the service for the OptiSweep entry.",
+      "expected_result": "The Windows Services console initiates the restart of the OptiSweep service.",
+      "healthy_condition": "The restart control is available for the OptiSweep entry and the service proceeds to a post-restart state that can be rechecked.",
+      "failure_condition": "The restart cannot be initiated or the service does not transition back to a Running state.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Restart OptiSweep",
+          "exact_action": "Use the Services console control labeled Restart the service.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the OptiSweep service does not return to Running after the restart."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0051",
+          "artifact_id": "artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500",
+          "timestamp_start": "03:13:45.500",
+          "timestamp_end": "03:13:45.500",
+          "quote_or_summary": "The Services console includes the Restart the service control for OptiSweep."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify the post-restart service state",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Confirm that the OptiSweep service recovered with the expected startup configuration.",
+      "instruction": "Refresh or recheck the OptiSweep entry in Windows Services MMC after the restart and inspect its Status and Startup Type.",
+      "expected_result": "The refreshed OptiSweep entry displays Status as Running and Startup Type as Automatic.",
+      "healthy_condition": "Status is Running and Startup Type remains Automatic.",
+      "failure_condition": "Status remains stopped or otherwise not Running, Startup Type is not Automatic, or the associated heartbeat remains flatlined.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify post-restart state",
+          "exact_action": "Recheck the OptiSweep entry after the restart and verify that its Status is Running and its Startup Type remains Automatic.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the OptiSweep service does not return to Running.",
+        "Escalate if the heartbeat remains flatlined after the OptiSweep service restart."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0051",
+          "timestamp_start": "03:13:27.000",
+          "timestamp_end": "03:14:04.000",
+          "quote_or_summary": "The visible OptiSweep service state is Running with Automatic startup, and the segment describes restarting the service when startup is delayed."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The OptiSweep service is visible in Windows Services MMC after the restart.",
+    "The OptiSweep Status is Running.",
+    "The OptiSweep Startup Type remains Automatic.",
+    "The associated heartbeat is no longer flatlined, when that heartbeat symptom was the trigger."
+  ],
+  "healthy_conditions": [
+    "Windows Services MMC shows OptiSweep with Status Running.",
+    "Windows Services MMC shows OptiSweep with Startup Type Automatic."
+  ],
+  "failure_conditions": [
+    "OptiSweep does not return to Running after the restart.",
+    "OptiSweep Startup Type is not Automatic after the restart.",
+    "The associated heartbeat remains flatlined after the service restart."
+  ],
+  "escalation_guidance": [
+    "Stop and escalate if the OptiSweep service does not return to Running after the restart.",
+    "Escalate if the heartbeat remains flatlined after the OptiSweep service restart.",
+    "The supplied source does not define a further diagnostic sequence for Ignition, OPC, or Windows service logs."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500",
+      "what_to_look_at": "Windows Services MMC showing the OptiSweep entry, Status, Startup Type, and the Restart the service control."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 51,
+      "section_id": "training_video_day2_segment_0051",
+      "timestamp_start": "03:13:27.000",
+      "timestamp_end": "03:14:04.000",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "The segment describes restarting the OptiSweep service when startup is delayed and the heartbeat is flatlined. The Services console shows OptiSweep with service controls including Restart the service; the visible service state is Running with Automatic startup."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500",
+      "what_to_look_at": "Windows Services MMC showing the OptiSweep entry, Status, Startup Type, and the Restart the service control."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_restart_optisweep_windows_service"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide a detailed live Ignition gateway health check or a defined heartbeat verification procedure.",
+    "The source does not specify the host-selection method, permissions, service account, restart wait time, or Windows service log checks.",
+    "No source-supported command-line or API command is provided."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500"
+  ]
+}

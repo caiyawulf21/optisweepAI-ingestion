@@ -16,6 +16,11 @@ from optisweep_incidence_ingestion.services.ids import (
     make_source_id,
     make_source_package_id,
 )
+from optisweep_incidence_ingestion.services.site_location import (
+    resolve_site_location,
+    site_location_label,
+    site_ref_fields,
+)
 from optisweep_incidence_ingestion.utils.json_utils import write_json
 
 
@@ -25,6 +30,9 @@ def build_incident_source_package(
     case_id: str,
     source_title: str | None = None,
     ingestion_batch_id: str | None = None,
+    site_code: str | None = None,
+    site_location_json: str | Path | None = None,
+    site_location: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     try:
         import fitz  # type: ignore
@@ -39,6 +47,11 @@ def build_incident_source_package(
     source_id = make_source_id(case_id)
     package_id = make_source_package_id(case_id, pdf_path)
     title = source_title or pdf_path.stem
+    resolved_site_location = resolve_site_location(
+        site_code=site_code,
+        site_location_json=site_location_json,
+        site_location=site_location,
+    )
     pages: list[dict[str, Any]] = []
     with fitz.open(pdf_path) as document:
         metadata = dict(document.metadata or {})
@@ -75,6 +88,7 @@ def build_incident_source_package(
                             ingestion_batch_id=batch_id,
                             case_id=case_id,
                             page_number=index,
+                            site_location=resolved_site_location,
                         )
                     ],
                 }
@@ -88,6 +102,7 @@ def build_incident_source_package(
         "source_type": "incident_evidence_pdf",
         "source_case_id": case_id,
         "source_title": title,
+        "site_location": resolved_site_location,
         "source_file_path": str(pdf_path),
         "source_file_name": pdf_path.name,
         "ingestion_batch_id": batch_id,
@@ -121,6 +136,7 @@ def build_incident_source_ref(
     page_number: int,
     artifact_id: str | None = None,
     quote_or_summary: str | None = None,
+    site_location: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     ref: dict[str, Any] = {
         "source_id": source_id,
@@ -131,6 +147,7 @@ def build_incident_source_ref(
         "page": page_number,
         "page_ref": make_page_ref(case_id, page_number),
     }
+    ref.update(site_ref_fields(site_location))
     if artifact_id:
         ref["artifact_id"] = artifact_id
     if quote_or_summary:
@@ -145,6 +162,8 @@ def build_stage1_report(package: dict[str, Any]) -> dict[str, Any]:
         "source_id": package["source_id"],
         "source_case_id": package["source_case_id"],
         "source_type": package["source_type"],
+        "site_location": package.get("site_location") or {},
+        "site_label": site_location_label(package.get("site_location")),
         "ingestion_batch_id": package["ingestion_batch_id"],
         "page_count": len(pages),
         "pages_with_selectable_text": sum(1 for page in pages if page.get("parsed_text_length", 0) > 20),

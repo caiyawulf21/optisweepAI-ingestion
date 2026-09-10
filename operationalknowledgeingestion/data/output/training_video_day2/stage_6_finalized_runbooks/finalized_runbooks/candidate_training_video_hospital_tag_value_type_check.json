@@ -1,0 +1,383 @@
+{
+  "procedure_id": "proc_check_hospital_tag_variable_types_and_stored_values_v1",
+  "candidate_id": "candidate_training_video_hospital_tag_value_type_check",
+  "title": "Check Hospital Tag Variable Types and Stored Values in the WCS Database",
+  "procedure_type": "diagnostic",
+  "summary": "Use the WCS / Helix DB (SSMS) read-only view of the Sorter Sweeper Database to inspect HospitalTag records. Verify TagTypeParent, TagTypeChild, TagPath, VariableType, the applicable typed value field, and Disabled state for a hospital or PLC tag.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "wcs_system_faults"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this WCS / Helix DB (SSMS) diagnostic when validating how a hospital-controller or PLC tag is represented in the Sorter Sweeper HospitalTag model, especially when the observed tag value, type, or communication path is in question.",
+  "not_for": [
+    "Do not use this read-only check to change database configuration or tag definitions.",
+    "Do not use this procedure as a substitute for confirming an active hospital or PLC communication path when the record is Disabled."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support performs the read-only WCS / Helix DB (SSMS) inspection.",
+    "L3_support reviews or receives escalation when the tag record is missing, the TagPath is not identifiable, VariableType does not align with the populated value field, or the tag is Disabled when an active path is required."
+  ],
+  "safety_notes": [
+    "Use the WCS / Helix DB (SSMS) view for read-only inspection.",
+    "Do not change database configuration as part of this check."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "Sorter Sweeper Database",
+    "HospitalTag / Hospital Tags Model"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2_support or L3_support access to the read-only WCS / Helix DB (SSMS) surface."
+    ],
+    "system_preconditions": [
+      "The Sorter Sweeper Database and HospitalTag / Hospital Tags Model records must be available for inspection."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_hospital_tags_model_v1",
+    "ctx_training_video_tag_variable_types_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+      "description": "Hospital Tags Model view showing TagTypeParent, TagTypeChild, TagPath, VariableType, StringValue, IntValue, UintValue, BoolValue, Date_Time, and example tag records.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the HospitalTag model in WCS / Helix DB (SSMS)",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Access the live Sorter Sweeper tag records that define hospital-controller and PLC tag communication.",
+      "instruction": "In the WCS / Helix DB (SSMS) read-only view, open the Sorter Sweeper Database and locate the HospitalTag / Hospital Tags Model records. Inspect the fields TagTypeParent, TagTypeChild, TagPath, VariableType, StringValue, IntValue, UintValue, BoolValue, Date_Time, and Disabled.",
+      "expected_result": "A HospitalTag record or set of records is visible with the named tag-definition and typed-value fields.",
+      "healthy_condition": "The HospitalTag model is available and the fields required for identifying the tag and its stored value can be inspected.",
+      "failure_condition": "The HospitalTag model or required fields cannot be located in the Sorter Sweeper Database.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect HospitalTag records",
+          "exact_action": "Locate the HospitalTag / Hospital Tags Model records in the Sorter Sweeper Database and inspect the named fields.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L3_support if the HospitalTag record or required fields are missing."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "source_document_id": "training_video_day2_video",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:48:01.000",
+          "timestamp_end": "02:01:19.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+          "quote_or_summary": "The Hospital Tags Model processes data from the hospital controller and contains TagTypeParent, TagPath, VariableType, and typed value fields including StringValue, IntValue, UintValue, BoolValue, and Date_Time.",
+          "site_code": null,
+          "site_label": null
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Identify the tag type and WCS / Helix DB (SSMS) TagPath",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Confirm which hospital or PLC tag the database record represents and how its parent and child tag types are classified.",
+      "instruction": "In the WCS / Helix DB (SSMS) HospitalTag record, inspect TagTypeParent and TagTypeChild. Confirm that TagPath identifies the associated hospital controller or PLC tag. TagTypeParent indicates whether the tag is an input or output.",
+      "expected_result": "The record shows identifiable TagTypeParent and TagTypeChild values and a TagPath associated with the expected hospital controller or PLC tag.",
+      "healthy_condition": "TagPath identifies the expected hospital or PLC tag, and the parent and child type fields are populated or otherwise observable.",
+      "failure_condition": "TagPath is missing or does not identify the expected hospital or PLC tag, or the tag type fields cannot be interpreted from the record.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect tag identity",
+          "exact_action": "Inspect TagTypeParent, TagTypeChild, and TagPath for the selected HospitalTag record.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if TagPath does not identify the expected hospital or PLC tag."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:48:01.000",
+          "timestamp_end": "02:01:19.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+          "quote_or_summary": "Hospital tags are subscribed to and acted on based on TagTypeParent; the model contains TagTypeParent, TagTypeChild, and TagPath fields.",
+          "site_code": null,
+          "site_label": null
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Determine the typed value field in WCS / Helix DB (SSMS)",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Use VariableType to identify which stored value column contains the tag value.",
+      "instruction": "Inspect VariableType in the WCS / Helix DB (SSMS) HospitalTag record. Use the indicated type to determine whether the applicable value is stored in StringValue, IntValue, UintValue, BoolValue, or Date_Time.",
+      "expected_result": "VariableType identifies the value representation and points to the corresponding typed value field.",
+      "healthy_condition": "VariableType is present and its associated value field can be identified among StringValue, IntValue, UintValue, BoolValue, and Date_Time.",
+      "failure_condition": "VariableType is missing, cannot be interpreted, or does not identify an applicable typed value field.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect VariableType",
+          "exact_action": "Inspect VariableType and determine the corresponding typed value field.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if VariableType does not identify or align with an applicable value field."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "source_document_id": "training_video_day2_video",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:48:01.000",
+          "timestamp_end": "02:01:19.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+          "quote_or_summary": "The tag model uses a variable type and a lookup indication to identify which value column applies; supported value columns include StringValue, IntValue, UintValue, BoolValue, and Date_Time.",
+          "site_code": null,
+          "site_label": null
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Compare the stored value with VariableType in WCS / Helix DB (SSMS)",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Verify that the live tag value is stored in the field selected by VariableType rather than being read from an unrelated value column.",
+      "instruction": "Inspect the value field associated with VariableType in the WCS / Helix DB (SSMS) record. Compare the observed value with VariableType. Treat unrelated value fields that are NULL as unused fields for that record when the selected typed value field contains the tag value.",
+      "expected_result": "The applicable typed value field contains the observed tag value, while unrelated value fields may be NULL.",
+      "healthy_condition": "The populated value field matches VariableType; for example, the record examples show StringValue values such as `00000336` or `CloseOut`, IntValue values such as `0`, and BoolValue-associated records with the other typed fields NULL.",
+      "failure_condition": "The value is populated in a field that does not correspond to VariableType, or no applicable value field contains the tag value.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect the applicable value",
+          "exact_action": "Inspect the value field selected by VariableType and compare the stored value with the record's VariableType.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if VariableType and the populated value field do not align."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "source_document_id": "training_video_day2_video",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:48:01.000",
+          "timestamp_end": "02:01:19.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+          "quote_or_summary": "The model supports different tag types and stores the value in the corresponding value column; example records show StringValue, IntValue, and BoolValue-associated entries.",
+          "site_code": null,
+          "site_label": null
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Inspect Disabled state and record the WCS / Helix DB (SSMS) observation",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Determine whether the tag is enabled for the expected communication path and preserve the diagnostic observation.",
+      "instruction": "Inspect Disabled in the WCS / Helix DB (SSMS) HospitalTag record. Record the observed Disabled state together with TagPath, VariableType, and the value in the applicable typed field.",
+      "expected_result": "Disabled is observable, and the diagnostic record contains the tag path, variable type, applicable stored value, and disabled state.",
+      "healthy_condition": "The tag is not Disabled when an active hospital or PLC communication path is required, and its TagPath, VariableType, and applicable value field are identifiable.",
+      "failure_condition": "The tag is Disabled when an active hospital or PLC communication path is required, or the required identifying and value fields cannot be recorded.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect Disabled state",
+          "exact_action": "Inspect Disabled and record the observed value, type, tag path, applicable stored value, and tag state.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if the tag is Disabled when an active hospital or PLC communication path is required.",
+        "Do not change database configuration as part of this check."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "source_document_id": "training_video_day2_video",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:48:01.000",
+          "timestamp_end": "02:01:19.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+          "quote_or_summary": "The Hospital Tags Model includes Disabled and typed value fields for hospital-controller and PLC tag records.",
+          "site_code": null,
+          "site_label": null
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "A HospitalTag record is located in the Sorter Sweeper Database through the WCS / Helix DB (SSMS) read-only view.",
+    "TagTypeParent, TagTypeChild, and TagPath are observable, with TagPath identifying the expected hospital or PLC tag.",
+    "VariableType identifies the applicable typed value field.",
+    "The applicable value field contains the observed tag value, with unrelated value fields allowed to be NULL.",
+    "Disabled state is observable and recorded."
+  ],
+  "healthy_conditions": [
+    "The HospitalTag model and required fields are available in WCS / Helix DB (SSMS).",
+    "TagPath identifies the expected hospital controller or PLC tag.",
+    "VariableType aligns with the populated field among StringValue, IntValue, UintValue, BoolValue, or Date_Time.",
+    "The tag is not Disabled when an active hospital or PLC communication path is required."
+  ],
+  "failure_conditions": [
+    "The HospitalTag record or required fields are missing.",
+    "TagPath does not identify the expected hospital or PLC tag.",
+    "VariableType does not align with the populated value field.",
+    "No applicable typed value field contains the observed tag value.",
+    "The tag is Disabled when an active hospital or PLC communication path is required."
+  ],
+  "escalation_guidance": [
+    "Escalate to L2/L3 support when the tag record is missing, TagPath is not identifiable, or VariableType does not align with the populated value field.",
+    "Escalate when Disabled is set for a tag required by an active hospital or PLC communication path.",
+    "Do not modify database configuration during this diagnostic."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+      "what_to_look_at": "Hospital Tags Model fields and example records: TagTypeParent, TagTypeChild, TagPath, VariableType, StringValue, IntValue, UintValue, BoolValue, Date_Time, and Disabled."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 22,
+      "section_id": "training_video_day2_segment_0022",
+      "timestamp_start": "01:48:01.000",
+      "timestamp_end": "02:01:19.000",
+      "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+      "quote_or_summary": "The Hospital Tags Model uses TagTypeParent, TagPath, VariableType, and typed value fields including StringValue, IntValue, UintValue, BoolValue, and Date_Time.",
+      "site_code": null,
+      "site_label": null
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+      "what_to_look_at": "Hospital Tags Model fields and example records: TagTypeParent, TagTypeChild, TagPath, VariableType, StringValue, IntValue, UintValue, BoolValue, Date_Time, and Disabled."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_hospital_tag_value_type_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide an exact SSMS database navigation path, query, filter, or record-selection method.",
+    "The packet does not provide a complete lookup table mapping every VariableType value to its typed value column.",
+    "The packet does not define the exact Disabled value semantics or an acceptance threshold for a tag required by an active communication path.",
+    "The packet does not provide a live-system confirmation method outside the WCS / Helix DB (SSMS) record."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

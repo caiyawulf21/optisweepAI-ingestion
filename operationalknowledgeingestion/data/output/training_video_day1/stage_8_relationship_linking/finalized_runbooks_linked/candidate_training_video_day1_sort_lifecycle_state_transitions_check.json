@@ -1,0 +1,340 @@
+{
+  "procedure_id": "proc_verify_optsweep_sort_lifecycle_state_transitions_startup_to_shutdown_v1",
+  "candidate_id": "candidate_training_video_day1_sort_lifecycle_state_transitions_check",
+  "title": "Verify OptiSweep Sort Lifecycle State Transitions (Startup → Bulk Sort → Bag-Out → Shutdown to Chargers)",
+  "procedure_type": "diagnostic",
+  "summary": "Observe an OptiSweep sort cycle and verify AGVs progress through the lifecycle stages: shutdown (charging locations) → power cycling → staged for sort (startup) → bulk sort (full totes to tippers for bagging) → bag-out cycles (locations with tote items finish out the sort) → shutdown (stage two cycle to the charger). If a transition stalls or fails, use the system’s visible faults/waiting conditions as evidence (examples: AGV waiting to do an exchange during shutdown; startup delay waiting for an AGV on the charger).",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "sort_lifecycle_state",
+    "wcs_system_faults"
+  ],
+  "access_surface": [
+    "rms_ui",
+    "wcs_api"
+  ],
+  "audience_roles": [
+    "L1_support"
+  ],
+  "failure_pattern_tags": [
+    "gateway_unhealthy",
+    "robot_task_or_command_stuck",
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when you need to confirm that an active OptiSweep sort cycle is moving through the expected lifecycle stages (startup → bulk sort → bag-out → shutdown to chargers) and to pinpoint the lifecycle stage where transitions appear delayed or faulted.",
+  "not_for": [
+    "Do not use this procedure as a substitute for deeper database/message-flow troubleshooting when transitions fail; this procedure only identifies the lifecycle stage and the visible fault/waiting evidence to guide next steps."
+  ],
+  "roles_and_responsibilities": [
+    "L1_support: Execute the observation-based lifecycle check and capture the lifecycle stage where transitions stall/fail, including the visible fault/waiting condition examples observed."
+  ],
+  "safety_notes": [
+    "Do not attempt mutating configuration changes based solely on lifecycle observation; use the observed fault/waiting evidence to guide deeper troubleshooting."
+  ],
+  "access_or_tools_needed": [
+    "Access to live OptiSweep system views where AGV state transitions and system faults are visible (source does not name a specific screen/tool).",
+    "Ability to observe AGV states/behavior across: shutdown state, power cycling state, staged for sort, bulk sort, bag-out, stage two, and charger-related waiting."
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Live access to OptiSweep system views that show AGV state transitions and system faults."
+    ],
+    "system_preconditions": [
+      "A sort cycle is in progress (or about to start) so that transitions can be observed across startup, bulk sort, bag-out, and shutdown."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_sort_lifecycle_overview_v1",
+    "ctx_training_video_agv_startup_and_shutdown_states_v1",
+    "ctx_training_video_bulk_sort_and_bag_out_functions_v1",
+    "ctx_training_video_state_transition_fault_visibility_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500",
+      "description": "Lifecycle of a sort overview frame showing the expected stage sequence: startup (power cycling → staged for sort), bulk sort (items sorted; AGVs take full totes to tippers for bagging), bag out cycles (locations with tote items finish out sort), and shutdown (AGVs stage two cycle to the charger), plus examples that state transitions can fail and the system reports faults/waiting conditions.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Observe the beginning of a sort cycle (shutdown state at charging locations)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Establish the baseline lifecycle stage at the start of the cycle: AGVs should be in shutdown and positioned at specific locations where they charge.",
+      "instruction": "On the live OptiSweep system views, observe the start of the sort cycle and confirm AGVs are in the shutdown state at specific locations where they charge.",
+      "expected_result": "AGVs are observed in a shutdown state while sitting on specific locations associated with charging.",
+      "healthy_condition": "AGVs remain in shutdown at charging locations as the cycle begins.",
+      "failure_condition": "AGVs are not observed in shutdown at the expected charging locations when the cycle begins.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm AGVs are in shutdown at charging locations",
+          "exact_action": "Observe AGVs start in a shutdown state at specific locations and charge up.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Verify startup transitions (power cycling → staged for sort)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Confirm the system transitions AGVs from power cycling into the stage-for-sort state as startup begins.",
+      "instruction": "During startup, observe the AGV lifecycle state change from power cycling into a stage for sort state (staged for sort).",
+      "expected_result": "AGVs transition from power cycling into staged for sort as startup proceeds.",
+      "healthy_condition": "The transition from power cycling to staged for sort is observed without prolonged delay.",
+      "failure_condition": "Startup does not progress (e.g., startup delay) when waiting conditions/faults indicate an AGV is not available on the charger.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm power cycling to staged for sort",
+          "exact_action": "Startup takes the AGVs from a power cycling state to begin a stage for sort state.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If startup does not start up and you observe a delay consistent with “waiting for an AGV on the charger.”"
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Verify bulk sort is running (items sorted; full totes to tippers for bagging)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Confirm the main sorting phase is active and that AGVs are taking full totes to the tippers for bagging.",
+      "instruction": "During the main sorting phase, observe that bulk sort is running: items are being sorted and AGVs take full totes to the tippers for bagging.",
+      "expected_result": "Bulk sort activity is observed: items are sorted and AGVs are observed taking full totes to tippers for bagging.",
+      "healthy_condition": "AGVs and sorting activity continue through the bulk sort phase without stalling.",
+      "failure_condition": "Bulk sort does not appear to run (no observed sorting activity / no observed full-tote-to-tipper bagging behavior).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm bulk sort activity and full totes to tippers",
+          "exact_action": "…running bulk of the sort where items are sorted and Agvs take full totes to the tippers for bagging.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Observe bag-out cycles (locations with tote items finish out the sort)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Confirm the bag-out phase occurs and that locations with tote items are cycled to finish out the sort.",
+      "instruction": "Observe the bag-out phase and confirm that bag out cycles occur for locations that have any items in a tote to finish out the sort.",
+      "expected_result": "Bag-out cycles are observed at locations with tote items, completing the remaining portion of the sort.",
+      "healthy_condition": "Locations with tote items transition through bag-out behavior and the sort progresses toward shutdown.",
+      "failure_condition": "Bag-out does not occur for locations with tote items (remaining tote items persist without bag-out cycling).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm bag-out cycles for tote-item locations",
+          "exact_action": "We have bag out cycles, all locations that have any items in a tote to finish out the sort.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Verify shutdown transitions (stage two cycle to the charger)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Confirm the system transitions to shutdown and that AGVs stage two cycle to the charger.",
+      "instruction": "Observe shutdown and confirm that the system returns to shutdown and that AGVs stage two cycle to the charger.",
+      "expected_result": "AGVs are observed in shutdown behavior and stage two cycling toward the charger is observed.",
+      "healthy_condition": "Shutdown completes and AGVs cycle to the charger as expected.",
+      "failure_condition": "Shutdown stalls due to waiting conditions such as an AGV waiting to do an exchange.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm shutdown and stage two cycle to charger",
+          "exact_action": "…we go back into shut down that all the Agvs stage two cycle to the charger.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you observe an AGV waiting to do an exchange during shutdown."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "If a transition stalls/fails, identify the lifecycle stage and capture the visible fault/waiting evidence",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Pinpoint where the lifecycle transition fails by using the system’s visible faults/waiting conditions as evidence.",
+      "instruction": "If any lifecycle transition appears delayed or faulted, look for system faults / visible waiting conditions and record the lifecycle stage where it stalls/fails using the stage names: shutdown, power cycling, staged for sort, bulk sort, bag-out, stage two, charger.",
+      "expected_result": "You can name the lifecycle stage where the transition stalls/fails and you have an observed fault/waiting condition consistent with the source examples (AGV waiting to do an exchange during shutdown; startup delay waiting for an AGV on the charger).",
+      "healthy_condition": "No prolonged delays; when delays occur, the system faults/waiting conditions align with the expected examples.",
+      "failure_condition": "The system does not progress through the lifecycle stages or faults/waiting conditions persist beyond normal expectations.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Record the stalled lifecycle stage and the visible waiting/fault condition",
+          "exact_action": "Record the observed lifecycle stage where the transition appears delayed or faulted, using the source’s stage names (shutdown, power cycling, staged for sort, bulk sort, bag-out, stage two, charger).",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the system does not progress through the lifecycle stages described by the source.",
+        "Escalate if faults/waiting conditions persist beyond normal expectations."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "AGVs and the sort process progress through the documented lifecycle stages: shutdown → power cycling → staged for sort (startup) → bulk sort → bag-out → shutdown with stage two cycling to the charger.",
+    "If delays occur, the system exposes faults or waiting conditions consistent with the source examples (AGV waiting to do an exchange during shutdown; startup delay waiting for an AGV on the charger)."
+  ],
+  "healthy_conditions": [
+    "AGVs start in shutdown at charging locations and charge up.",
+    "Startup transitions AGVs from power cycling to staged for sort.",
+    "Bulk sort runs with items sorted and AGVs taking full totes to tippers for bagging.",
+    "Bag-out cycles occur for locations with tote items to finish out the sort.",
+    "Shutdown returns AGVs to stage two cycling to the charger."
+  ],
+  "failure_conditions": [
+    "Startup does not start up or shows delay consistent with waiting for an AGV on the charger.",
+    "Shutdown stalls with an AGV waiting to do an exchange.",
+    "The system does not progress through the lifecycle stages described by the source."
+  ],
+  "escalation_guidance": [
+    "Escalate if the system does not progress through the lifecycle stages described by the source or if faults/waiting conditions persist beyond normal expectations.",
+    "Do not attempt mutating configuration changes based solely on lifecycle observation; use the observed fault/waiting evidence to guide deeper troubleshooting."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500",
+      "what_to_look_at": "Lifecycle of a sort stage sequence and the examples that state transitions can fail and the system reports faults/waiting conditions (AGV waiting to do an exchange during shutdown; startup delay waiting for an AGV on the charger)."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "source_document_id": "training_video_day1_video",
+      "page": 10,
+      "section_id": "training_video_day1_segment_0010",
+      "quote_or_summary": "Start up: AGVs start in shutdown state at specific locations and charge; startup takes AGVs from power cycling to staged for sort while running bulk of the sort; bag out cycles finish out sort at locations with tote items; shutdown cycles AGVs stage two to the charger. State transitions can fail; system tells you with system faults (e.g., AGV waiting to do an exchange during shutdown; startup delay waiting for an AGV on the charger).",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500",
+      "what_to_look_at": "Lifecycle of a sort stage sequence and the examples that state transitions can fail and the system reports faults/waiting conditions (AGV waiting to do an exchange during shutdown; startup delay waiting for an AGV on the charger)."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0021_yes_so_there_s_something_wrong_primary_00_47_36_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0066_so_kind_of_what_i_was_primary_02_18_32_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0045_i_i_would_say_like_the_primary_01_37_38_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day1_sort_lifecycle_state_transitions_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The source does not name specific live HMI screens, UI labels, or tools to view AGV state transitions and system faults; steps therefore describe what to observe in general terms on the live OptiSweep system views."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500",
+    "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+    "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000",
+    "artifact_training_video_training_video_day1_0021_yes_so_there_s_something_wrong_primary_00_47_36_500",
+    "artifact_training_video_training_video_day1_0045_i_i_would_say_like_the_primary_01_37_38_000",
+    "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000",
+    "artifact_training_video_training_video_day1_0066_so_kind_of_what_i_was_primary_02_18_32_000",
+    "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000"
+  ]
+}

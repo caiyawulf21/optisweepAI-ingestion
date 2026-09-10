@@ -42,6 +42,8 @@ FRONT_MATTER_MARKERS = (
     "preface",
 )
 FOOTER_MARKERS = ("copyright", "©", "fortna inc", "confidential")
+FORMATTED_MARK_RE = re.compile(r"^Formatted:\s*.+$", re.IGNORECASE)
+PLACEHOLDER_MARK_RE = re.compile(r"^<[^>]*(?:space|holder|placeholder)[^>]*>$", re.IGNORECASE)
 STEP_VERBS = (
     "navigate",
     "press",
@@ -72,8 +74,18 @@ def build_source_bundle(
     ingestion_batch_id: str | None = None,
 ) -> SourceBundle:
     parsed = parse_pdf(source_pdf)
+    cleaned_pages = []
+    for page in parsed["pages"]:
+        cleaned_text = clean_extracted_page_text(str(page.get("text") or ""))
+        cleaned_pages.append(
+            {
+                **page,
+                "text": cleaned_text,
+                "text_length": len(cleaned_text),
+            }
+        )
     bundle = build_source_bundle_from_pages(
-        pages=parsed["pages"],
+        pages=cleaned_pages,
         source_path=str(source_pdf),
         metadata=parsed.get("metadata") or {},
         source_bundle_id=source_bundle_id,
@@ -129,10 +141,28 @@ def build_source_bundle_from_pages(
     )
 
     sections = detect_sections_from_pages(pages, bundle_id)
+    if not sections:
+        sections = _document_level_fallback_section(pages, bundle_id, resolved_title)
+        if sections:
+            build_metadata_note = "document_level_section_fallback"
+        else:
+            build_metadata_note = None
+    else:
+        build_metadata_note = None
     source_pages = _build_pages(pages, sections)
     section_by_page = _section_by_page(sections)
     figure_refs = _detect_refs(pages, section_by_page, FIGURE_RE, "figure")
     table_refs = _detect_refs(pages, section_by_page, TABLE_RE, "table")
+
+    build_metadata = {
+        "builder": "source_bundle_builder",
+        "stage": "stage_1_source_bundle",
+        "pipeline": "source_knowledge_extraction",
+        "llm_used": False,
+        "built_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if build_metadata_note:
+        build_metadata["section_detection"] = build_metadata_note
 
     return SourceBundle(
         source_bundle_id=bundle_id,
@@ -142,13 +172,7 @@ def build_source_bundle_from_pages(
         sections=sections,
         figure_refs=figure_refs,
         table_refs=table_refs,
-        build_metadata={
-            "builder": "source_bundle_builder",
-            "stage": "stage_1_source_bundle",
-            "pipeline": "source_knowledge_extraction",
-            "llm_used": False,
-            "built_at": datetime.now(timezone.utc).isoformat(),
-        },
+        build_metadata=build_metadata,
     )
 
 
@@ -192,6 +216,46 @@ def detect_sections_from_pages(pages: list[dict[str, Any]], bundle_id: str = "ma
         section.page_end = max(section.page_start or 0, next_start - 1) if next_start else _last_page_number(pages)
         section.parent_section_id = _find_parent_section_id(section, sections[:index])
     return sections
+
+
+def _document_level_fallback_section(
+    pages: list[dict[str, Any]],
+    bundle_id: str,
+    title: str,
+) -> list[SourceSection]:
+    if not pages:
+        return []
+    page_numbers = [int(page["page_number"]) for page in pages if page.get("page_number") is not None]
+    if not page_numbers:
+        return []
+    page_start = min(page_numbers)
+    page_end = max(page_numbers)
+    heading = (title or "").strip() or "Document procedure"
+    section_id = make_section_id(bundle_id, heading)
+    first_text = next((str(page.get("text") or "") for page in pages if str(page.get("text") or "").strip()), "")
+    return [
+        SourceSection(
+            section_id=section_id,
+            title=heading,
+            level=1,
+            page_start=page_start,
+            page_end=page_end,
+            text_preview=_preview(first_text),
+        )
+    ]
+
+
+def clean_extracted_page_text(text: str) -> str:
+    cleaned_lines: list[str] = []
+    for raw_line in str(text or "").splitlines():
+        line = raw_line.strip()
+        if not line:
+            cleaned_lines.append("")
+            continue
+        if FORMATTED_MARK_RE.match(line) or PLACEHOLDER_MARK_RE.match(line):
+            continue
+        cleaned_lines.append(raw_line.rstrip())
+    return "\n".join(cleaned_lines).strip()
 
 
 def is_likely_section_heading(line: str) -> bool:

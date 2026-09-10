@@ -1,0 +1,249 @@
+{
+  "schema_version": "0.4",
+  "catalog_id": "stunnel",
+  "access_surface": "stunnel",
+  "title": "S-Tunnel / UPS Chat xLE path",
+  "aliases": [
+    "s_tunnel",
+    "chat_xle_path",
+    "S-Tunnel",
+    "Stunnel",
+    "Chat xLE",
+    "XLE chat",
+    "SortationChat",
+    "AI01",
+    "AI02",
+    "S-Tunnel / Chat path",
+    "stunnel"
+  ],
+  "purpose": "Stunnel on primary secures OTNet↔UPS chat (AI01, AI02, SortationChat). Used so OptiSweep XLE COM can exchange scan/sort/hot-bin messages with UPS chat.",
+  "when_to_use": [
+    "Scan/sort/hot-bin messages not flowing",
+    "After unplanned restart — verify Stunnel connections",
+    "L1 asks whether Chat messages are flowing"
+  ],
+  "not_for": [
+    "RMS AGV alarms as substitute for message-path health",
+    "Tipper VISU faults"
+  ],
+  "architecture_notes": [
+    "Day2: File → Connections shows current Stunnel connections on bottom.",
+    "XLE COM module manages SorterSweeper ↔ UPS chat server over this path.",
+    "Part of unplanned-restart host checks with Ignition + OptiSweep."
+  ],
+  "audience_roles_typical": [
+    "L1_support",
+    "L2_support",
+    "L3_support"
+  ],
+  "role_paths": {
+    "L1_support": "Ask if Chat/sort messages flowing.",
+    "L2_support": "Stunnel File → Connections (AI01/AI02/SortationChat).",
+    "L3_support": "Persistent Stunnel/Chat ownership.",
+    "operator": "Report site message-flow symptoms if observable."
+  },
+  "screens_or_views": [
+    {
+      "id": "stunnel_connections",
+      "title": "File → Connections",
+      "purpose": "List AI01 / AI02 / SortationChat connection state.",
+      "aliases": [
+        "connections list"
+      ],
+      "key_points": [
+        "connected vs missing",
+        "check after restart"
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "ai01",
+      "label": "Stunnel AI01",
+      "capability_hints": [
+        "ups_chat_or_stunnel_health"
+      ]
+    },
+    {
+      "id": "ai02",
+      "label": "Stunnel AI02",
+      "capability_hints": [
+        "ups_chat_or_stunnel_health"
+      ]
+    },
+    {
+      "id": "sortation_chat",
+      "label": "SortationChat",
+      "capability_hints": [
+        "ups_chat_or_stunnel_health"
+      ]
+    }
+  ],
+  "activities": [
+    {
+      "id": "stunnel_connections_list",
+      "label": "File → Connections list",
+      "observables": [
+        "AI01/AI02/SortationChat connected",
+        "connection missing"
+      ],
+      "capability_hints": [
+        "ups_chat_or_stunnel_health"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "ask_messages_flowing",
+      "label": "Ask if Chat/sort messages flowing (L1)",
+      "observables": [
+        "site reports messages flowing / not"
+      ],
+      "capability_hints": [
+        "ups_chat_or_stunnel_health"
+      ],
+      "audience_roles": [
+        "L1_support"
+      ]
+    }
+  ],
+  "related_capabilities": [
+    "wcs_service_health",
+    "ups_chat_or_stunnel_health"
+  ],
+  "related_failure_patterns": [
+    "unplanned_restart",
+    "service_crash_or_restart",
+    "stunnel_or_chat_down"
+  ],
+  "distinguish_from": {
+    "wcs_api": "Internal OptiSweep APIs — not UPS chat tunnel.",
+    "ignition_gateway": "OPC/tags — parallel host check, different protocol."
+  },
+  "gaps": [
+    "Per-connection advanced Stunnel config fields not in training."
+  ],
+  "evidence": [
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "So we kind of started this yesterday. This is kind of like the overview of the architecture. You've got, you know, UPSI don't know if that's kind of blurry. So you have, you know, the scanner. What? So yeah, I did too. So on the UPS side, of course you have the scanner, ASX, XLE printers, sort of PLCS. We kind of talke"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "So Sorter Sweeper module orchestrates the movement of totes tote tippers and the Sorter Robotics module manages the HV tasks based on Sorter sweeper directives. OPC COM module manages communication between the Robot Robotics module and Geek Plus RMS server, and then XLE COM module manages the communication between the "
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Yeah. Question about ignition. Are we going to move towards using the HMI side of the ignition or only the services and OPC connections and stuff? I mean, I like as the product progresses, like that's what I would, you know, I would like, but I'm not in charge of be able to collect stuff from Aviva and RMS. Then yeah, "
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Or is there a different place to check those tags? I mean designer, like these screenshots are from designer Designer, Yeah, you can read them from the web view,"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "This is just the gateway and not perspective. So it's like the memory, you know, if if you had a crash, which we did right, this would show you that the memory spiked and then dropped to 0, right? So this is just the performance page of Ignition itself. So something we can use for support, like if something happens, wh"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "So this is actually pulled premier knowledge base in Salesforce, so you could look it up on your own. So we have our primary services. There are three programs that must be running for the system to run Ignition of course, S tunnel. That's what we talked about. Securely talks to the UPS chat and then of course our Opti"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Check to make sure that tippers are getting heartbeats. If the heartbeats are flat lines, this is kind of goes back to ignition just ******** itself. If you're not getting heartbeats, you have to restart Opti Sweep because OPC is stupid. Yep, ignition."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "You know this is like, you know, check your heart beats, you know on the you know, pick a tipper, you know restart the service because sometimes ignition just opti sweep is delayed restart on startup but ignition sometimes takes longer so it needs to be restarted. Check your test tunnel. You can under file click connec"
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "UPS Chat as the standard building communication layer: According to the transcript, UPS has a standard communication approach across buildings, referred to in the segment as UPS Chat and possibly previously called Chat XLE. The speaker states that all the sorters talk the same way and that communication goes onto a chat layer."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Chat XLE and S-Tunnel across the OTNet and UPS network boundary: The source states that OptiSweep runs on the OT net, which is separate from the UPS network. It describes the OT net and the UPS network as separate 'islands.' The WCS or OptiSweep software needs to communicate from the OT-side environment to UPS Chat XLE on the UPS-side environment to obtain order-related information..."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep architecture overview: The architecture includes an XLe chat communication module, Sorter Sweeper module, Robotics module, Geek+ comm module, XLe chat OBC communication, sorter and tipper PLCs, Ignition OPC server, Aveva HMI, SQL Server, scanners, ASX, and printers."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Primary services required for OptiSweep system operation: Ignition is used for OPC connections, Stunnel provides secure encryption for communication to the UPS Xle chat, and OptiSweep is Fortna's service that coordinates all operations."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Services screen and Open stunnel entry: The artifact OCR identifies the visible labels \"Services,\" \"Unplanned restart,\" and \"Open stunnel.\" The screen also includes a menu instruction referring to connections under File."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "stunnel active connection display: The visible log text states \"It should show 3 connections\" and later reports \"Listed 3 active connection(s).\" Individual entries include service names rendered in the OCR as AI01chat and SortationChat, along with bytes sent to TLS and to the socket."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Lane Activity and Dimension Data: The chat states that Lane Activity records Scandata, Induct, and SortConf. It also states that missing dimension data was observed when AI01 was not sending data, causing default dimensions to be used and resulting in overfilling totes."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "RMS and OptiSweep communicate through APIs including REST API references: In the discussion, communication between RMS and OptiSweep is described as occurring through APIs. REST API is explicitly named in the exchange. The segment also references existing APIs for tasks and mentions custom APIs developed through work with Geek Plus, but does not provide endpoint-level details."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "XLE COM and UPS Chat communication: The source describes XLE as the UPS version of WCS and identifies XLE COM as the communication layer between Sorter Sweeper and the UPS Chat server. The UPS Chat communication includes tote, destination, scan, sort, close, and printer-related messages."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "MDI Support chat for Haslet: The source image OCR includes the text \"MDI Support chat for Haslet.\" The source does not describe the chat's purpose, participants, access method, or relationship to the crash example."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Service and Network Ownership: The segment describes the service as being on the customer's network while FORTNA manages it in the customer's environment. The discussion treats service ownership and network ownership as related but distinct concepts."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Contractual and Legal Service Boundary: Participants characterize the discussed change as something that cannot currently happen because it would conflict with contractual obligations and be highly illegal. The exact change under discussion is not clearly identified in the transcript."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "MDI Support Chat package data view: The displayed view includes fields and classifications such as PackageClassification, Missing DimensionData, MissingInduct, Tote Not Found, Diverted, Off The End, Recirc, Zone, LaneName, Package Uid, Tracking Number, Length, Width, Height, Weight, Cube, ToteId, and Message."
+    }
+  ],
+  "source_refs": [
+    {
+      "source": "training_video_day2"
+    },
+    {
+      "source": "training_video_day1"
+    },
+    {
+      "source": "support_roles_components_and_adjacency.md"
+    },
+    {
+      "source": "docs/ontology/catalogs/capability_catalog.json"
+    }
+  ]
+}

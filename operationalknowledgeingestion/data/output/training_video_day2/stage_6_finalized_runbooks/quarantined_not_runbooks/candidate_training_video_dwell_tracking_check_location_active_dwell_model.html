@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check active dwell events in SSMS via LocationActiveDwellModel (dwell tracking true/false per station)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check active dwell events in SSMS via LocationActiveDwellModel (dwell tracking true/false per station)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_active_dwell_events_ssms_locationactivedwellmodel_v1</td></tr>
+<tr><th>Title</th><td>Check active dwell events in SSMS via LocationActiveDwellModel (dwell tracking true/false per station)</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>agv_active_errors</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>api_unresponsive, system_fault</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use SSMS to verify which stations/locations are currently accumulating dwell time by checking the robot location database model’s DwellTracking (true/false) flag and then inspecting the LocationActiveDwellModel table for active dwell rows. Active dwell events should appear with timing fields such as SatTime, FinishTime, and TotalTime, and completed dwell should be archived to LocationDwellActivity after the AGV leaves.</p>
+<h2>When To Use</h2>
+<p>When you need to determine which dwell-tracked stations/locations currently have active dwell events and to interpret the active dwell timing fields shown in LocationActiveDwellModel.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/4da092dc0229edfc.jpg" alt="artifact_training_video_training_video_day2_0016_so_everybody_s_at_a_location_primary_01_32_39_000" /><figcaption>Slide/frame showing LocationActiveDwellModel displays active dwells at locations marked for DwellTracking (true/false) and lists fields including AgvName, Station, SortGuid, SatTime, FinishTime, TotalTime; also notes archiving to LocationDwellActivity once the AGV leaves.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open SSMS and connect to the OptiSweep/WCS database that contains dwell tracking tables</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open SSMS and connect to the OptiSweep/WCS database that contains the robot location database model and dwell tracking tables.</p>
+<p><strong>Expected result:</strong></p>
+<p>SSMS is connected and you can browse/query the database objects needed for dwell tracking (robot location database model and LocationActiveDwellModel).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you cannot access the database or cannot locate the dwell tracking tables/models, stop and escalate to L3_support/vendor support for database access/schema clarification.</li>
+</ul>
+<hr>
+<h3>Step 2 — Identify stations/locations with DwellTracking = true in the robot location database model</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Locate the robot location database model that includes the DwellTracking true/false field, and identify which stations/locations are marked for dwell tracking (DwellTracking set to true).</p>
+<p><strong>Expected result:</strong></p>
+<p>You can identify the set of stations/locations where DwellTracking is true.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the expected tables/fields (including DwellTracking) are not present or cannot be found, stop and escalate to L3_support/vendor support for database access/schema clarification.</li>
+</ul>
+<hr>
+<h3>Step 3 — Open LocationActiveDwellModel and confirm it shows active dwells for DwellTracking=true locations</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the LocationActiveDwellModel table and confirm it is displaying active dwells at locations marked for DwellTracking.</p>
+<p><strong>Expected result:</strong></p>
+<p>LocationActiveDwellModel contains active dwell rows corresponding to stations/locations where DwellTracking is true.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If LocationActiveDwellModel shows no active dwell rows for stations you expect to be dwell-tracked, re-check the robot location database model’s DwellTracking true/false setting for those stations.</li>
+<li>If the expected tables/fields (LocationActiveDwellModel) are not present or cannot be found, stop and escalate to L3_support/vendor support for database access/schema clarification.</li>
+</ul>
+<hr>
+<h3>Step 4 — Review LocationActiveDwellModel timing and identity fields (AgvName, Station, SortGuid, SatTime, FinishTime, TotalTime)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In LocationActiveDwellModel, review the columns/fields shown in the source: AgvName, Station, SortGuid, SatTime, FinishTime, and TotalTime.</p>
+<p><strong>Expected result:</strong></p>
+<p>The LocationActiveDwellModel view/table shows the fields AgvName, Station, SortGuid, SatTime, FinishTime, and TotalTime for active dwell rows.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the expected tables/fields (LocationActiveDwellModel and the listed columns) are not present or cannot be found, stop and escalate to L3_support/vendor support for database access/schema clarification.</li>
+</ul>
+<hr>
+<h3>Step 5 — Confirm the dwell event is represented as an active record (current in LocationActiveDwellModel vs archived)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>For the active dwell rows you are investigating, confirm the dwell event is currently represented in LocationActiveDwellModel (active) rather than only archived.</p>
+<p><strong>Expected result:</strong></p>
+<p>The dwell event you are investigating appears in LocationActiveDwellModel as an active record.</p>
+<hr>
+<h3>Step 6 — Record observed active dwell values for the dwell rows under investigation</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Record the relevant observed values for the active dwell rows you are investigating (AgvName, Station, SortGuid, SatTime/FinishTime/TotalTime as displayed).</p>
+<p><strong>Expected result:</strong></p>
+<p>You have a list of active dwell rows with the values for AgvName, Station, SortGuid, SatTime, FinishTime, and TotalTime.</p>
+<hr>
+</body>
+</html>

@@ -1,0 +1,111 @@
+[
+  {
+    "id": "procedure:confirm_hospital_diversion_path:case_218550_proc_hospital_hmi_lane_ui_fault_acknowledge_retry_check_v1",
+    "type": "procedure",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_218550:runbook_proc_hospital_hmi_lane_ui_fault_acknowledge_retry_check_v1"
+    ],
+    "constraints": {
+      "sites": [],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T16:59:38.915776Z",
+    "updated_at": "2026-09-08T16:59:38.915776Z",
+    "capability_id": "capability:confirm_hospital_diversion_path",
+    "procedure_type": "verification",
+    "title": "Hospital HMI / lane UI fault acknowledge-and-retry check",
+    "summary": "Use the Hospital HMI / lane UI at UPS Haslet TX (TXRTH) to acknowledge a displayed fault, retry the operation without unplugging the Hospital HMI / lane UI, confirm that the affected tote is tote 28, and verify that the site reports the condition as all good.",
+    "when_to_use": [
+      "Use this Hospital HMI / lane UI check when the Hospital HMI / lane UI displays a fault associated with a hospital-station tote and an acknowledge-and-retry response is appropriate."
+    ],
+    "not_for": [
+      "Do not use this as a recovery sequence for a stuck task; the incident identifies a stuck-task visibility limitation on the Hospital HMI / lane UI but does not provide a reusable stuck-task recovery sequence.",
+      "Do not unplug the Hospital HMI / lane UI as a troubleshooting action."
+    ],
+    "allowed_role_entity_ids": [
+      "entity:role:operator",
+      "entity:role:l2_support"
+    ],
+    "steps": [
+      {
+        "step_number": 1,
+        "title": "Inspect the displayed Hospital HMI / lane UI fault",
+        "instruction": "Open the Hospital HMI / lane UI and inspect the live station screen for the reported fault. Do not unplug the Hospital HMI / lane UI.",
+        "responsible_role_entity_id": "entity:role:operator",
+        "supporting_role_entity_id": "entity:role:l2_support",
+        "purpose": "Confirm that the reported fault is present on the live Hospital HMI / lane UI before taking the acknowledge-and-retry action.",
+        "expected_result": "The reported fault is visible on the Hospital HMI / lane UI and the live screen is available for interaction.",
+        "healthy_condition": "The Hospital HMI / lane UI remains displayed and usable, with the reported fault visible for acknowledgement.",
+        "failure_condition": "The Hospital HMI / lane UI cannot be accessed, the reported fault is not visible, or the screen is not usable for the next action.",
+        "stop_or_escalate_if": [
+          "The Hospital HMI / lane UI cannot be accessed or the fault is not visible.",
+          "The HMI appears to require unplugging; do not unplug it and escalate for further support."
+        ],
+        "actions": [
+          {
+            "label": "Inspect Hospital HMI / lane UI fault",
+            "exact_action": "Open the Hospital HMI / lane UI and confirm that the fault is displayed; do not unplug the HMI.",
+            "role_entity_id": "entity:role:operator"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_218550:runbook_proc_hospital_hmi_lane_ui_fault_acknowledge_retry_check_v1"
+        ]
+      },
+      {
+        "step_number": 2,
+        "title": "Acknowledge the fault and retry the operation",
+        "instruction": "On the Hospital HMI / lane UI, select the acknowledge control and retry the operation. Do not unplug the Hospital HMI / lane UI.",
+        "responsible_role_entity_id": "entity:role:operator",
+        "supporting_role_entity_id": "entity:role:l2_support",
+        "purpose": "Apply the incident-supported acknowledge-and-retry response to the displayed Hospital HMI / lane UI fault.",
+        "expected_result": "The Hospital HMI / lane UI accepts the acknowledgement and the operation enters a retry state rather than remaining blocked by the same displayed fault.",
+        "healthy_condition": "The retry proceeds on the Hospital HMI / lane UI without the reported fault continuing to block the operation.",
+        "failure_condition": "The acknowledgement or retry does not take effect, or the same fault remains after the retry.",
+        "stop_or_escalate_if": [
+          "The fault remains after acknowledge-and-retry.",
+          "The Hospital HMI / lane UI does not accept the acknowledgement or retry."
+        ],
+        "actions": [
+          {
+            "label": "Acknowledge and retry",
+            "exact_action": "Select the HMI acknowledge control, then retry the operation.",
+            "role_entity_id": "entity:role:operator"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_218550:runbook_proc_hospital_hmi_lane_ui_fault_acknowledge_retry_check_v1"
+        ]
+      },
+      {
+        "step_number": 3,
+        "title": "Confirm tote 28 and the cleared Hospital HMI / lane UI state",
+        "instruction": "On the Hospital HMI / lane UI and with the site contact, confirm that the tote at the hospital station is tote 28 and verify that the site reports the condition as all good.",
+        "responsible_role_entity_id": "entity:role:operator",
+        "supporting_role_entity_id": "entity:role:l2_support",
+        "purpose": "Validate that the retry addressed the affected tote and that the site condition is clear.",
+        "expected_result": "The tote at the hospital station is confirmed as tote 28 and the site reports that everything is good.",
+        "healthy_condition": "The Hospital HMI / lane UI shows or supports confirmation of tote 28, and the site reports an all-good condition.",
+        "failure_condition": "Tote 28 cannot be confirmed, or the site cannot report an all-good condition after the retry.",
+        "stop_or_escalate_if": [
+          "Tote 28 cannot be confirmed.",
+          "The site cannot report an all-good state.",
+          "The fault remains after acknowledge-and-retry."
+        ],
+        "actions": [
+          {
+            "label": "Confirm tote ID and cleared state",
+            "exact_action": "Confirm that the tote at the hospital station is tote 28 and verify that the site reports the condition as all good.",
+            "role_entity_id": "entity:role:operator"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_218550:runbook_proc_hospital_hmi_lane_ui_fault_acknowledge_retry_check_v1"
+        ]
+      }
+    ]
+  }
+]

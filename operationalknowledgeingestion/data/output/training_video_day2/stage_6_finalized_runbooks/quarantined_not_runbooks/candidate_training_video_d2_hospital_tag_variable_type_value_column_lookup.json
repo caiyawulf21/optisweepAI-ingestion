@@ -1,0 +1,341 @@
+{
+  "procedure_id": "proc_use_hospital_tag_variable_type_lookup_v1",
+  "candidate_id": "candidate_training_video_d2_hospital_tag_variable_type_value_column_lookup",
+  "title": "Use hospital tag variable type to determine which value column to read/write (string vs boolean via lookup)",
+  "procedure_type": "diagnostic",
+  "summary": "When troubleshooting hospital-controller tag behavior, confirm that the hospital tag table’s “variable type” drives which value column the system should use. The source describes a modular design where each hospital tag row has zeros/ones across value columns, and a lookup table maps “value variable type” to the correct value column for that tag.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "wcs_api_responsiveness"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this when you need to determine which hospital tag value column (e.g., string vs boolean representation) should be active for a specific hospital station/tag row, based on the row’s “variable type” and the lookup table mapping described in the source.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Verify the hospital tag table row’s “variable type” and apply the lookup-table mapping to identify the expected value column for that tag."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Access to the hospital tag table configuration/view used for hospital controller communication",
+    "Access to the lookup table that maps “value variable type” to the value column"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Hospital tag table configuration/view access",
+      "Lookup table access for variable type to value-column mapping"
+    ],
+    "system_preconditions": [],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_hospital_tag_variable_type_lookup_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+      "description": "Training frame showing hospital tags model processing and the concept of “value variable type” and a lookup table that indicates which column to look at; also describes hospital tag table rows having zeros/ones with only one column having a ones.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the hospital tag table configuration/view used for hospital controller communication",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Locate the hospital tag table rows that represent hospital station IDs and contain the “variable type” field and value columns.",
+      "instruction": "Open the hospital tag table configuration/view that the system uses to communicate with the hospital controller (hospital tags model).",
+      "expected_result": "You can view hospital tag table rows where each hospital station ID has a row containing a “variable type” field and multiple value columns represented with zeros/ones.",
+      "healthy_condition": "For the row you plan to inspect, only one of the value columns is set to the active state (described as zeros/ones where only one column has a ones).",
+      "failure_condition": "The hospital tag table view does not expose the “variable type” field or does not show the value columns/zero-one representation needed to map the tag’s active value column.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open hospital tag table view",
+          "exact_action": "Open the hospital tag table configuration/view used for hospital controller communication.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop if the live system does not expose the “variable type” field in the hospital tag table view.",
+        "Stop if the live system does not expose the value columns/zero-one representation needed to identify the active value column."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "quote_or_summary": "In the database table itself hospital tag table, there will be a row for each hospital station ID... there will be zeros and ones for that only one column having a ones... Different tags are different data types; a variable type tells what type of string it is; a lookup table tells which column to look at for that specific one."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Locate the “variable type” field for the specific hospital station/tag row",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Identify the variable type value that determines which value column should contain the correct data type for that tag.",
+      "instruction": "In the hospital tag table, select the row for the specific hospital station ID/tag you are investigating, then locate the “value variable type” / “variable type” field in that row.",
+      "expected_result": "The selected row shows a “variable type” value (described as indicating what type of string/value the tag represents).",
+      "healthy_condition": "The row’s “variable type” is present and corresponds to the tag’s intended data type category (string vs boolean representation described in the source).",
+      "failure_condition": "The row does not contain a “variable type” value, or the field is not visible in the live view.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Find variable type in the row",
+          "exact_action": "For a specific hospital station ID/tag row, locate the “variable type” field.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop if the live system does not expose the “variable type” field for the hospital tag table row."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "quote_or_summary": "Different tags are different data types; a variable type tells what type of string it is; ... you can see where it says value variable type, and then it tells us which column to look at for that specific one."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "01:54:40.000",
+          "timestamp_end": "01:54:40.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+          "segment_id": "segment_training_video_0022",
+          "quote_or_summary": "Transcript discusses variable type and a lookup table that indicates which column to look at for that specific tag."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Use the lookup table to map variable type to the expected value column",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine which value column should contain the active value for the tag based on the row’s variable type.",
+      "instruction": "Open the lookup table referenced by the hospital tags model and use the row’s “value variable type” to determine which value column should be used for that specific tag.",
+      "expected_result": "You identify the specific value column that the lookup table indicates should be used for the tag’s variable type.",
+      "healthy_condition": "The lookup-table mapping is consistent with the hospital tag row’s zero/one pattern (only the mapped column is set to ones).",
+      "failure_condition": "The lookup-table mapping does not match the hospital tag row’s active (ones) value column, or the lookup table is inconsistent/unavailable.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Map variable type to value column via lookup",
+          "exact_action": "Use the described lookup table to determine which column should be used for that variable type.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If variable type does not map to the expected value column (or the lookup table is inconsistent), escalate for configuration/data model review.",
+        "Stop if the live system does not expose the lookup table needed to map variable type to value column."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "quote_or_summary": "The look up table for all of those... shows you, you can see where it says value variable type, and then it tells us which column to look at for that specific one."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "01:54:40.000",
+          "timestamp_end": "01:54:40.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+          "segment_id": "segment_training_video_0022",
+          "quote_or_summary": "Transcript discusses variable type and a lookup table that indicates which column to look at for that specific tag."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Confirm the hospital tag row’s zero/one pattern matches the mapped value column",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Validate that the hospital tag row is populated such that only the mapped value column is active (ones), consistent with the modular/scalable design described.",
+      "instruction": "In the same hospital tag table row, check the value columns and confirm that zeros/ones are present with only one column having a ones value—specifically the column identified by the lookup-table mapping.",
+      "expected_result": "The mapped value column is the one column set to ones for that hospital tag row; other value columns are zeros.",
+      "healthy_condition": "Exactly one value column is active (ones) and it matches the lookup-table mapping for the row’s variable type.",
+      "failure_condition": "More than one value column is set to ones, or the ones value is in a different column than the lookup-table mapping indicates.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify zero/one active column",
+          "exact_action": "Confirm that tags can be represented with zeros/ones across columns (only one column having a ones).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If variable type does not map to the expected value column (or the lookup table is inconsistent), escalate for configuration/data model review."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "quote_or_summary": "In the database table itself hospital tag table... there will be zeros and ones for that only one column having a ones, the other columns having zeros."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Record the expected active value column for the tag based on variable type",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Capture the diagnostic conclusion: which value column should be read/written for the tag given its variable type.",
+      "instruction": "Record which value column is expected to hold the active value for the tag based on the variable type and the lookup-table mapping you applied.",
+      "expected_result": "A clear mapping is documented for the investigated hospital station/tag row: variable type -> lookup mapping -> expected active value column.",
+      "healthy_condition": "The recorded expected value column matches the observed ones column in the hospital tag row.",
+      "failure_condition": "The recorded expected value column does not match the observed ones column in the hospital tag row.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Record expected value column",
+          "exact_action": "Record which value column is expected to hold the active value for the tag based on variable type.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the expected value column does not match the observed active column, escalate for configuration/data model review."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "quote_or_summary": "A variable type tells what type of string it is; a lookup table tells which column to look at for that specific one; hospital tag table rows have zeros and ones with only one column having a ones."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "For the investigated hospital tag row, the “variable type” value maps (via the lookup table) to a specific value column.",
+    "The hospital tag row’s zero/one pattern shows ones in the mapped value column and zeros in the other value columns."
+  ],
+  "healthy_conditions": [
+    "Hospital tag table row shows “variable type” and a zero/one pattern where only one value column is active (ones).",
+    "Lookup-table mapping for the row’s “value variable type” points to the same value column that is active (ones) in the row."
+  ],
+  "failure_conditions": [
+    "“variable type” field is not exposed in the hospital tag table view.",
+    "Lookup table needed to map “value variable type” to value column is not exposed or unavailable.",
+    "Lookup mapping does not match the row’s active (ones) value column.",
+    "Row has an unexpected zero/one pattern (e.g., multiple ones columns)."
+  ],
+  "escalation_guidance": [
+    "Escalate for configuration/data model review if variable type does not map to the expected value column or if the lookup table is inconsistent."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+      "what_to_look_at": "Hospital tags model discussion showing: (1) variable type / value variable type, (2) lookup table that indicates which column to look at, and (3) hospital tag table rows with zeros/ones where only one column has a ones."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 22,
+      "section_id": "training_video_day2_segment_0022",
+      "quote_or_summary": "Different tags are different data types; a variable type tells what type of string it is; a lookup table tells which column to look at for that specific one; hospital tag table rows have zeros and ones with only one column having a ones."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+      "what_to_look_at": "Training frame showing hospital tags model processing and the concept of “value variable type” and a lookup table that indicates which column to look at; also describes hospital tag table rows having zeros/ones with only one column having a ones."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_d2_hospital_tag_variable_type_value_column_lookup"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide the exact hospital tag table name, the exact “variable type” column name, or the exact value column names to read/write.",
+    "The source does not provide the exact lookup table name or the exact mapping keys/fields used to map “value variable type” to the value column.",
+    "The source does not specify the exact live UI/DB surface (e.g., SSMS table name/view) where the hospital tag table and lookup table are accessed."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

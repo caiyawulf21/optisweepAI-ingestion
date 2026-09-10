@@ -1,0 +1,413 @@
+{
+  "procedure_id": "proc_check_active_errors_robotics_systemactiveerrormodel_v1",
+  "candidate_id": "candidate_training_video_robotics_system_active_error_check",
+  "title": "Check Active Errors in the Robotics SystemActiveError Model",
+  "procedure_type": "diagnostic",
+  "summary": "Use the WCS / Helix DB (SSMS) read-only view of the Robotics Database SystemActiveErrorModel to determine whether system errors are currently active and capture the available identifying fields, including Name, Area, Error or area code, SystemErrorDescription, and Last Seen.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_active_errors"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this diagnostic when troubleshooting a reported system or AGV-related condition and a read-only confirmation of currently active system errors is needed in the WCS / Helix DB (SSMS).",
+  "not_for": [
+    "Do not use this procedure as a recovery or resolution procedure.",
+    "Do not use the presence of an active row as evidence that the documented resolution has been completed.",
+    "Do not use this procedure to interpret historical errors as currently active; resolved system errors are archived to the SystemErrorActivityModel."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Perform the read-only inspection in SSMS and capture the identifying fields for relevant active-error rows."
+    },
+    {
+      "role": "L3_support",
+      "responsibility": "Support interpretation or escalation when the active state cannot be confirmed, fields are incomplete, or the reported condition is not represented."
+    }
+  ],
+  "safety_notes": [
+    "This is a read-only diagnostic check in the WCS / Helix DB (SSMS).",
+    "Do not modify database rows or treat displayed resolution text as confirmation that corrective action has been performed."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "Robotics Database",
+    "SystemActiveErrorModel"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2_support or L3_support access to the WCS / Helix DB (SSMS)"
+    ],
+    "system_preconditions": [
+      "A reported system or AGV-related condition is available for comparison with the current active-error rows."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_system_active_error_model_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+      "description": "WCS / Helix DB (SSMS) database overview showing the Robotics database among the OptiSweep databases.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0020_yes_and_there_ll_be_a_primary_01_36_33_500",
+      "description": "WCS / Helix DB (SSMS) Robotics database table list showing dbo.SystemActiveErrorModel.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0017_so_moving_on_system_error_definition_primary_01_34_34_500",
+      "description": "WCS / Helix DB (SSMS) SystemActiveErrorModel view showing active rows and fields including Name, Area, Error, Last Seen, and SystemErrorDescription.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Robotics Database in SSMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Reach the Robotics database that contains the SystemActiveErrorModel.",
+      "instruction": "In the WCS / Helix DB (SSMS), select the Robotics Database. Use the database and table list to locate the Robotics database and its dbo.SystemActiveErrorModel table.",
+      "expected_result": "The Robotics database is available in SSMS and dbo.SystemActiveErrorModel can be located in its table list.",
+      "healthy_condition": "The Robotics database and SystemActiveErrorModel are visible and accessible for read-only inspection.",
+      "failure_condition": "The Robotics database or SystemActiveErrorModel cannot be located or accessed.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Select Robotics Database",
+          "exact_action": "Open SSMS and select the Robotics Database.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Locate active-error model",
+          "exact_action": "Locate the SystemActiveErrorModel in the Robotics database table list.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The Robotics database is unavailable.",
+        "The SystemActiveErrorModel cannot be located or accessed."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "section_id": "training_video_day2_segment_0008",
+          "page": 8,
+          "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+          "timestamp_start": "00:11:14.000",
+          "timestamp_end": "00:11:14.000",
+          "quote_or_summary": "The WCS creates several databases, including the Robotics database."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "section_id": "training_video_day2_segment_0020",
+          "page": 20,
+          "artifact_id": "artifact_training_video_training_video_day2_0020_yes_and_there_ll_be_a_primary_01_36_33_500",
+          "timestamp_start": "01:36:33.500",
+          "timestamp_end": "01:36:33.500",
+          "quote_or_summary": "The Robotics database table list includes dbo.SystemActiveErrorModel."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Inspect current SystemActiveErrorModel rows",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the reported condition is represented by a currently active system-error row.",
+      "instruction": "In the WCS / Helix DB (SSMS), open dbo.SystemActiveErrorModel and inspect the current rows. Review the Name, Area, Error or area code, Last Seen, and SystemErrorDescription fields.",
+      "expected_result": "The model displays zero or more current active-error rows with observable identifying fields and displayed Last Seen information.",
+      "healthy_condition": "The model can be inspected and each relevant row has sufficient identifying information to compare with the reported condition.",
+      "failure_condition": "The active state cannot be confirmed, a relevant row is missing identifying fields, or the model cannot be inspected.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open active-error model",
+          "exact_action": "Open the SystemActiveErrorModel and inspect the current rows.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Review identifying fields",
+          "exact_action": "Inspect Name, Area, Error or area code, SystemErrorDescription, and Last Seen.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The SystemActiveErrorModel cannot be opened.",
+        "The displayed active state cannot be confirmed.",
+        "A relevant row lacks Name, Area, Error or area code, SystemErrorDescription, or Last Seen information."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "section_id": "training_video_day2_segment_0017",
+          "page": 17,
+          "artifact_id": "artifact_training_video_training_video_day2_0017_so_moving_on_system_error_definition_primary_01_34_34_500",
+          "timestamp_start": "01:34:34.500",
+          "timestamp_end": "01:34:34.500",
+          "quote_or_summary": "The SystemActiveErrorModel shows active errors currently in the system and includes the name, area, area code, description, and Last Seen information."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Capture details for relevant active rows",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Create an identifiable record of the active error or confirm that no current active row is present.",
+      "instruction": "For each relevant row in the WCS / Helix DB (SSMS), capture the Name, Area, Error or area code, SystemErrorDescription, and Last Seen value. Compare examples such as AGV has not moved in 30 seconds or Communication Error with the reported condition.",
+      "expected_result": "Each relevant active row has a captured name, area, error or area code, description, and Last Seen value, or the model shows no current active row.",
+      "healthy_condition": "The captured row details clearly identify the error and its current displayed Last Seen information.",
+      "failure_condition": "No active row corresponds to the reported condition, the row fields are incomplete, or the displayed information is insufficient to confirm active state.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Capture active-error fields",
+          "exact_action": "Record the Name, Area, error or area code, SystemErrorDescription, and Last Seen value for each relevant row.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Compare reported condition",
+          "exact_action": "Compare the observed error row with the reported condition.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The reported fault is not represented in the active-error model.",
+        "No current active row is present when one is expected.",
+        "The displayed fields are incomplete.",
+        "The active state cannot be confirmed."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "section_id": "training_video_day2_segment_0017",
+          "page": 17,
+          "artifact_id": "artifact_training_video_training_video_day2_0017_so_moving_on_system_error_definition_primary_01_34_34_500",
+          "timestamp_start": "01:34:34.500",
+          "timestamp_end": "01:34:34.500",
+          "quote_or_summary": "Displayed examples include Communication Error and AGV has not moved in 30 seconds; the model includes Name, Area, Error, Last Seen, and SystemErrorDescription."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Stop when the active-error check is inconclusive",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Prevent an incomplete or missing database row from being treated as confirmation of the reported condition or its resolution.",
+      "instruction": "Stop the diagnostic and escalate to L3_support when no matching active row is present, a relevant row lacks identifying fields, or the active state cannot be confirmed. Do not treat an active row as evidence that the documented resolution has been completed.",
+      "expected_result": "The result is classified as either a confirmed observable active-error match, no current active row, or an inconclusive check requiring escalation.",
+      "healthy_condition": "The diagnostic outcome explicitly distinguishes current active-error evidence from the absence of a row or an inconclusive result.",
+      "failure_condition": "An incomplete, missing, or active row is incorrectly treated as proof of fault resolution or as a complete diagnosis.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Classify diagnostic result",
+          "exact_action": "Stop if no active row is present or the displayed fields are incomplete.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Escalate inconclusive result",
+          "exact_action": "Escalate when the reported fault is not represented in the active-error model or the active state cannot be confirmed.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "No active row is present for an expected fault.",
+        "The reported fault is not represented in the active-error model.",
+        "A row lacks the identifying fields needed for comparison.",
+        "The active state cannot be confirmed."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "section_id": "training_video_day2_segment_0017",
+          "page": 17,
+          "artifact_id": "artifact_training_video_training_video_day2_0017_so_moving_on_system_error_definition_primary_01_34_34_500",
+          "timestamp_start": "01:34:34.500",
+          "timestamp_end": "01:34:34.500",
+          "quote_or_summary": "Once an active system error is resolved, it is archived to the SystemErrorActivityModel."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The Robotics database and dbo.SystemActiveErrorModel are located in the WCS / Helix DB (SSMS).",
+    "The current active-error rows are inspected without modifying database data.",
+    "Each relevant row has Name, Area, Error or area code, SystemErrorDescription, and Last Seen captured, or the absence of a current row is explicitly recorded.",
+    "The result is classified as a current active-error match, no current active row, or an inconclusive check requiring escalation."
+  ],
+  "healthy_conditions": [
+    "The WCS / Helix DB (SSMS) exposes the Robotics database and dbo.SystemActiveErrorModel.",
+    "Relevant active rows have identifiable Name, Area, Error or area code, SystemErrorDescription, and Last Seen values.",
+    "The observed row can be compared directly with the reported condition."
+  ],
+  "failure_conditions": [
+    "The Robotics database or SystemActiveErrorModel cannot be accessed.",
+    "The reported condition is not represented by a current active row.",
+    "A relevant row has incomplete identifying fields.",
+    "The active state cannot be confirmed.",
+    "An active row is incorrectly interpreted as proof that resolution has been completed."
+  ],
+  "escalation_guidance": [
+    "Escalate to L3_support when the reported fault is not represented in the active-error model.",
+    "Escalate when a relevant row lacks Name, Area, Error or area code, SystemErrorDescription, or Last Seen information.",
+    "Escalate when the active state cannot be confirmed.",
+    "Do not proceed from this diagnostic to a recovery action based solely on the presence of an active row."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0017",
+      "page": 17,
+      "timestamp_start": "01:34:14.000",
+      "timestamp_end": "01:34:55.000",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "The SystemActiveErrorModel shows active errors currently in the system, including the name, area, area code, description, and Last Seen."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "section_id": "training_video_day2_segment_0008",
+      "page": 8,
+      "timestamp_start": "00:11:14.000",
+      "timestamp_end": "00:11:14.000",
+      "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+      "quote_or_summary": "The WCS creates several databases, including the Robotics database."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "section_id": "training_video_day2_segment_0020",
+      "page": 20,
+      "timestamp_start": "01:36:33.500",
+      "timestamp_end": "01:36:33.500",
+      "artifact_id": "artifact_training_video_training_video_day2_0020_yes_and_there_ll_be_a_primary_01_36_33_500",
+      "quote_or_summary": "The Robotics database table list includes dbo.SystemActiveErrorModel."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+      "what_to_look_at": "The WCS creates several databases, including the Robotics database."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0020_yes_and_there_ll_be_a_primary_01_36_33_500",
+      "what_to_look_at": "The Robotics database table list includes dbo.SystemActiveErrorModel."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0017_so_moving_on_system_error_definition_primary_01_34_34_500"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_robotics_system_active_error_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source identifies the Robotics database and SystemActiveErrorModel but does not provide a complete live SSMS navigation path.",
+    "The source does not provide a complete query or a defined destination or format for recording captured row details.",
+    "The source uses both area code and Error terminology; the exact production column label and mapping should be confirmed by an SME.",
+    "This runbook confirms active-error state only and does not define the corrective action for any displayed SystemErrorResolution."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+    "artifact_training_video_training_video_day2_0017_so_moving_on_system_error_definition_primary_01_34_34_500",
+    "artifact_training_video_training_video_day2_0020_yes_and_there_ll_be_a_primary_01_36_33_500"
+  ]
+}

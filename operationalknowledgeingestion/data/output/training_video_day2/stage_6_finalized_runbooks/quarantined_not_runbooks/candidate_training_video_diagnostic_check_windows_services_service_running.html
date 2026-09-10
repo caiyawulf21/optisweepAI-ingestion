@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Verify Service Presence/Running State in Windows Services When Service Appears Gone</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Verify Service Presence/Running State in Windows Services When Service Appears Gone</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_verify_service_presence_running_state_windows_services_v1</td></tr>
+<tr><th>Title</th><td>Verify Service Presence/Running State in Windows Services When Service Appears Gone</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>windows_service_or_event_log, gateway_health</td></tr>
+<tr><th>Access Surface</th><td>event_viewer</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>service_crash_or_restart</td></tr>
+<tr><th>Validation Status</th><td>needs_smeme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>When a crash/service stop is suspected and logs may be silent, verify whether the relevant service is actually running (or not present/running) by checking the Windows Services list on the Windows host where the gateway/service runs.</p>
+<h2>When To Use</h2>
+<p>Use when the service appears to be gone during a suspected crash/service stop window and log visibility is limited or silent, so you need an OS-level confirmation of whether the service is running.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/0f6cee71bf142dce.jpg" alt="artifact_training_video_training_video_day2_0044_probably_understand_this_so_if_the_primary_03_07_17_500" /><figcaption>Training frame showing the discussion: check Windows service services; there are ~10 services; service must stop; logs may be silent.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open Windows Services view on the host where the gateway/service runs</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the Windows host where the gateway/service runs, open the Windows Services view (the OS-level place to check service state).</p>
+<p><strong>Expected result:</strong></p>
+<p>You can view the list of Windows services (the source notes there are about 10 services) so you can determine whether the expected service is running vs not running.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you cannot access the Windows host or the Services list, stop and escalate for access/host guidance.</li>
+</ul>
+<hr>
+<h3>Step 2 — Review the service list and determine whether the expected service is running</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Windows Services list, review the entries (source notes there are ~10 services) and identify whether the expected service is running vs not running (i.e., effectively “gone” during the period).</p>
+<p><strong>Expected result:</strong></p>
+<p>You determine from the Windows Services list whether the expected service is running or not running, matching the source expectation that a crash/service stop can make logs silent and the service appear gone.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If it is unclear which of the ~10 services is the one in question, stop and escalate for guidance on the specific service name to check.</li>
+</ul>
+<hr>
+<h3>Step 3 — Use the Windows Services state as evidence to guide further investigation (diagnostic only)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the expected service is not running, treat that as evidence the service likely stopped during the silent period described in the source, and proceed with further investigation using the appropriate next diagnostic steps (outside the scope of this candidate). If the service is running, use that to narrow the hypothesis away from a stopped service.</p>
+<p><strong>Expected result:</strong></p>
+<p>Your conclusion about whether the service is running vs not running is consistent with the source’s scenario where logs may be silent and the service may appear gone.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Do not perform mutating changes as part of this diagnostic; if recovery is needed, use a separate recovery procedure.</li>
+</ul>
+<hr>
+</body>
+</html>

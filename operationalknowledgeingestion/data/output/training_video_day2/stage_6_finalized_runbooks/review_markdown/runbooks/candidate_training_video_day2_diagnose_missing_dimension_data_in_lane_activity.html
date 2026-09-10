@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Diagnose Missing Package Dimensions in the Ignition Lane Activity Model</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Diagnose Missing Package Dimensions in the Ignition Lane Activity Model</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_diagnose_missing_package_dimensions_ignition_lane_activity_model_v1</td></tr>
+<tr><th>Title</th><td>Diagnose Missing Package Dimensions in the Ignition Lane Activity Model</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>sorter_item_or_scan_state</td></tr>
+<tr><th>Access Surface</th><td>ignition_gateway</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>miss_scan_or_dimension_fallback</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the live Ignition gateway&#x27;s Lane Activity Model in the Sorter Sweeper Database view to determine whether incomplete package dimensions are associated with Scan Data 2, Induct, or SortConf records and whether the condition is concentrated on an auto-induct source. Inspect package identifiers, tracking numbers, dimensional fields, cube, package classification, and MissingDimensionData.</p>
+<h2>When To Use</h2>
+<p>Use this live Ignition gateway diagnostic when sorter totes are overfilling or package data appears incomplete and support needs to determine whether default dimensions were used, which dimensional attribute is missing, and whether the condition is associated with a particular auto-induct source.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/44d937dbe3eba2e0.jpg" alt="artifact_training_video_training_video_day2_0024_the_items_model_so_items_are_primary_02_10_19_000" /><figcaption>Ignition Lane Activity Model view showing message, package identifier, tracking number, dimensional fields, cube, package classification, and MissingDimensionData-related columns.</figcaption></figure>
+<figure><img src="assets/a359db66d5e12322.jpg" alt="artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000" /><figcaption>Lane activity records filtered to sort-confirmation data, illustrating repeated missing width, height, and weight values and correlation with an auto-induct source.</figcaption></figure>
+<figure><img src="assets/d3061ef3fe825a42.jpg" alt="artifact_training_video_training_video_day2_0060_they_they_had_a_power_flicker_primary_03_28_33_000" /><figcaption>Lane Activity Model records used to inspect missing dimension data during a reported dimensioner-data interruption.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the Ignition gateway Lane Activity Model</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Ignition gateway, open the Sorter Sweeper Database view and select the Ignition Lane Activity Model.</p>
+<p><strong>Expected result:</strong></p>
+<p>The live Lane Activity Model displays recent sorter records with package, message, dimensional, cube, and missing-data fields.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the Ignition gateway view cannot be loaded or the required Lane Activity Model fields are unavailable.</li>
+</ul>
+<hr>
+<h3>Step 2 — Review recent Message records in the Ignition gateway</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Ignition gateway Lane Activity Model, review recent rows and inspect the Message field. Distinguish Scan Data 2, Induct, and SortConf records.</p>
+<p><strong>Expected result:</strong></p>
+<p>Recent rows can be categorized by Message value, showing whether the affected package data appears on Scan Data 2, Induct, or SortConf records.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if affected records cannot be associated with a package ID, tracking number, or message type.</li>
+</ul>
+<hr>
+<h3>Step 3 — Inspect package and dimensional fields in the Ignition gateway</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>For the affected records in the Ignition gateway Lane Activity Model, inspect PackageLid or package ID, PackageUID where displayed, TrackingNumber, Length, Width, Height, Weight, Cube, PackageClassification, and MissingDimensionData.</p>
+<p><strong>Expected result:</strong></p>
+<p>The records show observable package identifiers and dimensional values, including any NULL or missing Length, Width, Height, or Weight values and the associated Cube value.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate when the table cannot associate affected records with a package ID or tracking number.</li>
+<li>Escalate when the displayed dimensional data does not explain the reported sorter behavior.</li>
+</ul>
+<hr>
+<h3>Step 4 — Interpret MissingDimensionData against the live dimensions</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Compare MissingDimensionData with Length, Width, Height, Weight, and Cube for each affected record in the Ignition gateway Lane Activity Model. Treat MissingDimensionData=true as an indication that default dimensional values were used, then identify which dimensional field is NULL or otherwise missing.</p>
+<p><strong>Expected result:</strong></p>
+<p>The comparison identifies whether defaults were used and shows the missing attribute, such as Weight, Width, or Height, while retaining the observed Cube value.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if MissingDimensionData is true across a substantial set of recent records, especially when the records coincide with tote overfilling.</li>
+<li>Do not assign a universal percentage threshold; the source does not define one.</li>
+</ul>
+<hr>
+<h3>Step 5 — Correlate missing dimensions with the auto-induct source</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Use the package ID or related induct identifier in the Ignition gateway Lane Activity Model to compare affected records from the same source, such as Auto Induct 1 or Auto Induct 2. Review the associated Message and dimensional fields for the grouped records.</p>
+<p><strong>Expected result:</strong></p>
+<p>The records show whether MissingDimensionData and the missing dimensional attribute are concentrated on one auto-induct source.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if affected records cluster on one auto-induct source.</li>
+<li>Escalate if the table cannot associate affected records with an induct source.</li>
+</ul>
+<hr>
+<h3>Step 6 — Summarize the observed missing-dimension pattern</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Count or estimate the observed proportion of recent records with MissingDimensionData=true, identify the dominant missing field, record the relevant Message values and auto-induct source, and relate the findings to the reported sorter behavior. Do not apply a threshold that is not defined by the source.</p>
+<p><strong>Expected result:</strong></p>
+<p>The diagnostic summary states the observed MissingDimensionData condition, missing dimensional attribute, affected message type, package or tracking examples, associated auto-induct source, and any relationship to tote overfilling.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L2 support or the site support contact if MissingDimensionData is true across a substantial set of recent records, especially when records cluster on one auto-induct source or coincide with tote overfilling.</li>
+<li>Escalate when the displayed dimensional data does not explain the reported sorter behavior.</li>
+</ul>
+<hr>
+</body>
+</html>

@@ -34,6 +34,8 @@ def main(
     top_k: int = typer.Option(10, "--top-k"),
     skip_embed: bool = typer.Option(False, "--skip-embed", help="Use deterministic mock vectors for structural tests."),
     use_mock_embedder: bool = typer.Option(False, "--use-mock-embedder"),
+    include_source_id: list[str] = typer.Option([], "--include-source-id"),
+    include_source_type: list[str] = typer.Option([], "--include-source-type"),
 ) -> None:
     config = PoolBuildConfig(
         min_merge_score=min_merge_score,
@@ -44,6 +46,8 @@ def main(
         top_k=top_k,
         skip_embed=skip_embed,
         use_mock_embedder=use_mock_embedder,
+        include_source_ids=frozenset(include_source_id),
+        include_source_types=frozenset(include_source_type),
     )
     result = build_runbook_pool(
         source_roots=source_root,

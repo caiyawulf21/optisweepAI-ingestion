@@ -16,8 +16,8 @@ STAGE_DIR_NAMES = {
     "7": "stage_7_canonical_runbooks",
     "8": "stage_8_relationship_linking",
     "9": "stage_9_validation_repair",
-    "10": "stage_10_final_outputs",
-    "11": "stage_11_embeddings",
+    "10": "stage_10_embeddings",
+    "11": "stage_11_cosmos_publish",
     "12": "stage_12_knowledge_graph",
 }
 

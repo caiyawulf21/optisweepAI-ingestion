@@ -1,0 +1,382 @@
+{
+  "procedure_id": "proc_diagnose_agv_robot_command_state_in_robotics_database_v1",
+  "candidate_id": "candidate_training_video_robot_command_database_lifecycle_diagnostic",
+  "title": "Diagnose AGV Robot Command State in WCS / Helix DB (SSMS)",
+  "procedure_type": "diagnostic",
+  "summary": "Use the WCS / Helix DB (SSMS) in read-only mode to trace an AGV command through the Robotics Database RobotCommandDatabaseModel active-command table and Robot Command Activity history. Review command identity, status, robot, container, station, location, parameters, and lifecycle timing fields to determine whether the command was sent, started, completed, errored, or cancelled.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "robot_command_or_task_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "robot_task_or_command_stuck"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this diagnostic on the live WCS / Helix DB (SSMS) when support needs to verify the lifecycle of an AGV command requested by the Robotics module, including whether an active command is Sent or InProgress, whether it has been archived, or whether it has an errored or cancelled status.",
+  "not_for": [
+    "Do not use this procedure to modify database records, resubmit commands, remove or recover an AGV, restart services, or issue other command changes.",
+    "Do not use this procedure as a replacement for physical AGV recovery or safety actions."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support performs the read-only WCS / Helix DB (SSMS) inspection.",
+    "L3_support may review the database interpretation and assist with escalation when the command is errored, cancelled, stuck, or missing."
+  ],
+  "safety_notes": [
+    "This is a read-only diagnostic. Do not modify database records or issue command changes.",
+    "An errored or cancelled command requires escalation to L2/L3 support rather than corrective database edits."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "OptiSweep WCS / Helix Robotics database",
+    "RobotCommandDatabaseModel table",
+    "Robot Command Activity historical records"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2/L3 access to the WCS / Helix DB (SSMS)"
+    ],
+    "system_preconditions": [
+      "The relevant AGV command can be identified by command name, RobotCode, container, station, or related parameters."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_robot_command_database_v1",
+    "ctx_training_video_robot_command_activity_history_v1",
+    "ctx_training_video_robot_location_capacity_reference_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+      "description": "WCS / Helix DB (SSMS) view of the Robotics Database RobotCommandDatabaseModel table, including command name, status, CommandGuid, RobotCode, parameters, Sent Time, InProgress Time, and Executed Time, with the active-versus-archived command relationship.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the active command table in WCS / Helix DB (SSMS)",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Establish whether the command is currently active and identify the lifecycle fields available for inspection.",
+      "instruction": "In the WCS / Helix DB (SSMS), open the OptiSweep Robotics database and locate the RobotCommandDatabaseModel table. Review the active command rows and the command/status columns.",
+      "expected_result": "The live WCS / Helix DB (SSMS) view shows active robot commands requested by the Robotics module, with fields including CommandGuid, CommandName, Status, RobotCode, Parameters, Sent Time, InProgress Time, and Executed Time.",
+      "healthy_condition": "The relevant command is present in RobotCommandDatabaseModel with identifiable command and robot information and lifecycle fields available for review.",
+      "failure_condition": "The Robotics database or RobotCommandDatabaseModel table cannot be accessed, or the active command table does not contain the expected command record.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open active command records",
+          "exact_action": "Open the OptiSweep WCS / Helix Robotics database and locate the RobotCommandDatabaseModel table.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L3_support if the WCS / Helix DB (SSMS) or Robotics database cannot be accessed.",
+        "Escalate if the relevant command cannot be located in the active table after checking the available command identifiers."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "page": 14,
+          "section_id": "training_video_day2_segment_0014",
+          "timestamp_start": "01:18:59.000",
+          "timestamp_end": "01:18:59.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "The Robot Command Database model table tracks the status of robot commands requested by the Robotics module for AGVs; the table shows command status, robot code, parameters, sent time, in-progress time, and executed time."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Identify the command in WCS / Helix DB (SSMS)",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Match the reported AGV activity to the correct active command record.",
+      "instruction": "In the WCS / Helix DB (SSMS) RobotCommandDatabaseModel table, find the relevant row using the command name, RobotCode, CommandGuid, container or station parameters. For a Move Tote command, compare the ContainerId and StationId values in Parameters with the reported movement.",
+      "expected_result": "One active RobotCommandDatabaseModel row is matched to the reported AGV command using command identity and parameter values.",
+      "healthy_condition": "The matched row has a consistent CommandName, RobotCode, and relevant container or station parameter values.",
+      "failure_condition": "Multiple records cannot be distinguished, the identifiers do not match the reported command, or no active record matches the command details.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Match command identifiers",
+          "exact_action": "Find the relevant command using the command name, RobotCode, container or station parameters.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the command cannot be uniquely matched using the available command name, RobotCode, CommandGuid, container, station, or parameter values."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0014",
+          "timestamp_start": "01:18:59.000",
+          "timestamp_end": "01:18:59.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "The command record includes the command name, robot code, parameters, and examples such as a Move Tote command with ContainerId and StationId values."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Interpret command status and lifecycle timing in WCS / Helix DB (SSMS)",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Determine whether the command was sent, progressed to execution, or remains active without expected progression.",
+      "instruction": "In the matched WCS / Helix DB (SSMS) row, review Status, Sent Time, InProgress Time, and Executed Time. A Sent command may have InProgress Time and Executed Time as NULL. An InProgress command has an InProgress Time while Executed Time remains NULL until the command is finalized.",
+      "expected_result": "The live row provides an observable lifecycle state through Status and the presence or absence of Sent Time, InProgress Time, and Executed Time.",
+      "healthy_condition": "A command in Sent state has a Sent Time and may have NULL InProgress Time and Executed Time; a command in InProgress state has an InProgress Time and may still have NULL Executed Time.",
+      "failure_condition": "The command has an errored or cancelled Status, or remains active with only Sent Time and no expected InProgress Time evidence for the operational situation.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review lifecycle fields",
+          "exact_action": "Check the Status value and timing fields.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop the database diagnostic and escalate to L2/L3 support if Status is errored or cancelled.",
+        "Escalate if the command remains active without the expected InProgress or Executed Time evidence."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0014",
+          "timestamp_start": "01:18:59.000",
+          "timestamp_end": "01:18:59.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "The table shows Sent and InProgress command states with Sent Time, InProgress Time, and Executed Time; completed commands are archived."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Check AGV location fields in WCS / Helix DB (SSMS)",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Correlate command progression with the AGV's current and destination location state when location or queue capacity is relevant.",
+      "instruction": "In the WCS / Helix DB (SSMS) Robotics data, review the matched command's related robot location information, including CurrentLocationId and DestinationLocationId when available. Compare the location state with the command's station or destination parameters.",
+      "expected_result": "The live WCS / Helix DB (SSMS) data shows the AGV's current location and destination location in relation to the command being diagnosed.",
+      "healthy_condition": "CurrentLocationId and DestinationLocationId are present and consistent with the command's station or destination; the observed location state does not contradict the command lifecycle.",
+      "failure_condition": "Location fields are missing, inconsistent with the command's station or destination, or indicate that the command remains associated with a queue or location without expected progression.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review robot locations",
+          "exact_action": "Check the command's current and destination location information in the robot database model when location state is relevant.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if current or destination location data conflicts with the command parameters or indicates a stuck command."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0014",
+          "timestamp_start": "01:18:59.000",
+          "timestamp_end": "01:18:59.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "The robot database model includes current location and destination location information; robot location capacity is relevant to queues and stations."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Review finalized command history in WCS / Helix DB (SSMS)",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Determine the final outcome and execution timing when the command is no longer present in the active table.",
+      "instruction": "If the command is no longer active in the WCS / Helix DB (SSMS) RobotCommandDatabaseModel table, locate the corresponding record in Robot Command Activity. Review the command name, status, robot name, container, station, parameters, Sent Time, InProgress Time, Executed Time, station circuit, and total time.",
+      "expected_result": "The live Robot Command Activity record provides the historical status and execution/timing information for the finalized command.",
+      "healthy_condition": "A completed command is absent from the active RobotCommandDatabaseModel table and is present in Robot Command Activity with a completed status and applicable execution and timing fields.",
+      "failure_condition": "The command is absent from both the active RobotCommandDatabaseModel table and Robot Command Activity, or its historical record has an errored or cancelled status.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review command history",
+          "exact_action": "If the command is no longer active, locate the corresponding record in Robot Command Activity and review the command name, status, robot name, container, station, parameters, Sent Time, InProgress Time, Executed Time, station circuit, and total time fields.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if the command cannot be located in either the active RobotCommandDatabaseModel table or Robot Command Activity history.",
+        "Escalate if the historical status is errored or cancelled."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0014",
+          "timestamp_start": "01:18:59.000",
+          "timestamp_end": "01:18:59.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "When commands are complete, they are archived to Robot Command Activity, which contains command name, status, robot name, container, station, parameters, Sent Time, InProgress Time, Executed Time, station circuit, and total time."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The relevant command is identified in the WCS / Helix DB (SSMS) by command name, CommandGuid, RobotCode, container, station, or parameters.",
+    "The command lifecycle is determined from Status, Sent Time, InProgress Time, and Executed Time.",
+    "Current and destination location information is reviewed when location state is relevant.",
+    "A finalized command is correlated to its Robot Command Activity history record, or the reason for escalation is documented from the missing or inconsistent database state."
+  ],
+  "healthy_conditions": [
+    "Active commands are present in RobotCommandDatabaseModel with an observable Sent or InProgress status and corresponding lifecycle timing fields.",
+    "A Sent command has a Sent Time; an InProgress command has an InProgress Time; Executed Time remains NULL until execution is finalized.",
+    "Completed commands are archived in Robot Command Activity rather than remaining in the active-command table.",
+    "Robot current and destination location fields are consistent with the command's station or destination parameters."
+  ],
+  "failure_conditions": [
+    "The command has an errored or cancelled status.",
+    "The command remains active without expected InProgress or Executed Time evidence.",
+    "The command cannot be located in either RobotCommandDatabaseModel or Robot Command Activity.",
+    "Current or destination location information conflicts with the command parameters or indicates a stuck command.",
+    "The WCS / Helix DB (SSMS) or Robotics database cannot be accessed."
+  ],
+  "escalation_guidance": [
+    "Escalate errored or cancelled commands to L2/L3 support.",
+    "Escalate commands that remain active without expected lifecycle timing evidence.",
+    "Escalate when the command is missing from both the active and historical tables.",
+    "Escalate inconsistent current or destination location data, including evidence of a stuck command.",
+    "Do not modify database records or issue command changes while performing this diagnostic."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+      "what_to_look_at": "Review the RobotCommandDatabaseModel table's CommandGuid, CommandName, Status, RobotCode, Parameters, Sent Time, InProgress Time, and Executed Time fields, along with the indication that completed commands move to Robot Command Activity."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 14,
+      "section_id": "training_video_day2_segment_0014",
+      "timestamp_start": "01:11:39.000",
+      "timestamp_end": "01:26:19.000",
+      "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+      "site_code": null,
+      "site_label": null,
+      "quote_or_summary": "The Robot Command Database model table tracks robot commands requested by the Robotics module for AGVs. It includes command status, robot code, parameters, sent time, in-progress time, and executed time; completed commands are archived to Robot Command Activity."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "section_id": "training_video_day2_segment_0014",
+      "timestamp_start": "01:18:59.000",
+      "timestamp_end": "01:18:59.000",
+      "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+      "segment_id": "segment_training_video_0014",
+      "site_code": null,
+      "site_label": null
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+      "what_to_look_at": "Review the RobotCommandDatabaseModel table's CommandGuid, CommandName, Status, RobotCode, Parameters, Sent Time, InProgress Time, and Executed Time fields, along with the indication that completed commands move to Robot Command Activity."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_robot_command_database_lifecycle_diagnostic"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide exact SSMS database and table navigation steps or a validated SQL query.",
+    "The packet does not provide a separate Robot Command Activity image artifact; the supplied RobotCommandDatabaseModel artifact is used as the available visual reference for the active/archive relationship.",
+    "The packet does not define an exact elapsed-time threshold for determining that an active command is stuck.",
+    "The packet does not provide a complete field-level schema for every Robot Command Activity column or the exact values used for completed status."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

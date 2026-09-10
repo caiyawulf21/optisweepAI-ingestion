@@ -1,1 +1,4 @@
-"""Future LangGraph orchestration package for ingestion stages."""
+"""LangGraph orchestration package pointer.
+
+Implementation lives in the repo-root `orchestration/` package.
+"""

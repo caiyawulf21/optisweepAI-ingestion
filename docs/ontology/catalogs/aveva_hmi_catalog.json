@@ -1,0 +1,586 @@
+{
+  "schema_version": "0.4",
+  "catalog_id": "aveva_hmi",
+  "access_surface": "aveva_hmi",
+  "title": "AVEVA site HMI",
+  "aliases": [
+    "aveva",
+    "Aveva",
+    "AVEVA",
+    "Viva",
+    "Overall System",
+    "Initialize Tote",
+    "AVEVA HMI",
+    "aveva_hmi"
+  ],
+  "purpose": "Site/customer HMI: Overall System, AGVs, Totes, metrics, Zone Config, Initialize Tote, Tote Tasks, Exchange Settings. Fed via Ignition calling OptiSweep APIs. FORTNA has no direct Aveva access in the locked matrix — coach operator.",
+  "when_to_use": [
+    "Operator overall system / bag-out views",
+    "Initialize Tote / Tote Tasks / Exchange Settings",
+    "Zone Config overview",
+    "Site-visible system blank/down"
+  ],
+  "not_for": [
+    "Tipper WebVisu MCP/alarms (tipper_hmi)",
+    "FORTNA direct Aveva login (No access)",
+    "SSMS deep dives"
+  ],
+  "architecture_notes": [
+    "Training sometimes says 'Viva' for UPS building HMIs — OptiSweep Aveva is distinct from tipper VISU.",
+    "Ignition exposes APIs so Aveva can request startup/shutdown/closeout/tote actions.",
+    "Operator-only access per role matrix."
+  ],
+  "audience_roles_typical": [
+    "operator"
+  ],
+  "role_paths": {
+    "operator": "Primary Aveva user.",
+    "L1_support": "Coach only; no Aveva access.",
+    "L2_support": "No Aveva access — use Apidog/SSMS/RMS instead.",
+    "L3_support": "No Aveva access."
+  },
+  "screens_or_views": [
+    {
+      "id": "aveva_overall",
+      "title": "Overall System",
+      "purpose": "System-wide status / bag-out related controls.",
+      "aliases": [
+        "Overall System"
+      ],
+      "key_points": [
+        "blank/down",
+        "bag-out"
+      ]
+    },
+    {
+      "id": "aveva_agvs",
+      "title": "AGVs page",
+      "purpose": "Site AGV visualizations.",
+      "aliases": [
+        "AGVs"
+      ],
+      "key_points": [
+        "site view only"
+      ]
+    },
+    {
+      "id": "aveva_totes",
+      "title": "Totes / Initialize / Tasks / Exchange",
+      "purpose": "Tote lifecycle and exchange settings.",
+      "aliases": [
+        "Initialize Tote",
+        "Tote Tasks",
+        "Exchange Settings"
+      ],
+      "key_points": [
+        "operator tote actions"
+      ]
+    },
+    {
+      "id": "aveva_zone_config",
+      "title": "Zone Config",
+      "purpose": "Zone configuration overview.",
+      "aliases": [
+        "Zone Config"
+      ],
+      "key_points": [
+        "read overview; mutate via API is L2 risk"
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "initialize_tote",
+      "label": "Initialize Tote",
+      "capability_hints": [
+        "tote_lifecycle_state"
+      ]
+    },
+    {
+      "id": "exchange_settings",
+      "label": "Exchange Settings",
+      "capability_hints": [
+        "tote_exchange_sequence"
+      ]
+    },
+    {
+      "id": "zone_config",
+      "label": "Zone Config",
+      "capability_hints": [
+        "zone_config_state"
+      ]
+    }
+  ],
+  "activities": [
+    {
+      "id": "aveva_overall_system",
+      "label": "Overall system / bag-out / related pages",
+      "observables": [
+        "system blank/down",
+        "bag-out controls"
+      ],
+      "capability_hints": [
+        "fleet_system_status",
+        "bag_out_or_closeout_state"
+      ],
+      "audience_roles": [
+        "operator"
+      ]
+    },
+    {
+      "id": "aveva_api_pages",
+      "label": "Aveva API-backed pages (system/AGV/tote)",
+      "observables": [
+        "startup/shutdown/closeout responses",
+        "tote init/tasks/exchange settings"
+      ],
+      "capability_hints": [
+        "sort_lifecycle_state",
+        "tote_lifecycle_state",
+        "tote_exchange_sequence"
+      ],
+      "audience_roles": [
+        "operator"
+      ]
+    }
+  ],
+  "related_capabilities": [
+    "fleet_system_status",
+    "sort_lifecycle_state",
+    "zone_pairing_state",
+    "zone_config_state",
+    "e_stop_or_safety_stop",
+    "sorter_item_or_scan_state",
+    "tote_exchange_sequence",
+    "lane_or_chute_state",
+    "tote_lifecycle_state"
+  ],
+  "related_failure_patterns": [
+    "site_stoppage",
+    "sort_lifecycle_stuck",
+    "pairing_failure",
+    "miss_scan_or_dimension_fallback",
+    "hot_bin_or_missort_exchange",
+    "chute_bypassed_or_stuck_closed",
+    "tote_error_noread_or_mismatch"
+  ],
+  "distinguish_from": {
+    "tipper_hmi": "Station WebVisu — not Aveva.",
+    "rms_ui": "Geek+ fleet UI for FORTNA remote.",
+    "apidog": "FORTNA API client equivalent to what Aveva triggers via Ignition."
+  },
+  "gaps": [
+    "Per-control field dictionary from Day1 OCR still partial."
+  ],
+  "evidence": [
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "So we kind of started this yesterday. This is kind of like the overview of the architecture. You've got, you know, UPSI don't know if that's kind of blurry. So you have, you know, the scanner. What? So yeah, I did too. So on the UPS side, of course you have the scanner, ASX, XLE printers, sort of PLCS. We kind of talke"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "And like I said, usually because they push each stats, there's a lot of paths. And as soon as the E stats release, then they'll just play around. I mean, do you see a ton of them for saying, hey, remove the E stats? Let's see that. Also another pretty important thing, they still do it. That means like when we add a whe"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "yeah, you know, it's it's a small box. All right. So the exchange, when a when a chute is closed, an active exchange is created in the active exchange model. When an empty tote replaces it, the exchange is closed and archived to the exchange activity. So just like previously with the archiving it, it keeps the active e"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "So we have open all shoots. This will open all closed shoots. This is helpful in the event they did a close out but did not cycle the sort and they want to start up again. Cancel close out will cancel all close out exchanges that are not in progress. Use when the customer does a manual bag out, get AGV fault stats. We'"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "For totes we have Exchange sorter side zone. This requires A sorter side name and a zone. This is used during testing to send multiple exchanges to the tippers. Remove to requires a tote ID and will remove the tote from the system. Note that the AGV must be removed before the tote can be removed. Get tote task shows th"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "a purge or close. So manual back out is basically we took too long to recover the system and they went through all the toads and manually bagged them and then printed labels at the hospital. And now that the system is back up and running, we can cancel all active unactive exchanges. So when you do a bag out, everything"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Yeah. Question about ignition. Are we going to move towards using the HMI side of the ignition or only the services and OPC connections and stuff? I mean, I like as the product progresses, like that's what I would, you know, I would like, but I'm not in charge of be able to collect stuff from Aviva and RMS. Then yeah, "
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "This is how Veva is mapped to the request, right? So they hit that it's A tag in OPC, they hit request, it generates, it gets a response and tags are created that AVEVA can read. So it's just this is how AVEVA request and and reads the data from the APIs. And then this is, you know, how the tipper, you know, the tipper"
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Zone Configuration Pop-Up Screen: This artifact is a system screen capture showing the Zone Configuration pop-up window, accessed by clicking the ZONE CONFIGURATION button on the System HMI. According to the nearby text, this screen lists the lane and zone assignment for each AGV in the fleet."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Exchange Settings Pop-Up Screen: This artifact is a screenshot of the Exchange Settings pop-up screen from the OptiSweep HMI. It displays the configurable parameters that govern automated tote exchanges, including cube-based and count-based thresholds for AGV pickup, prioritization, and chute closure."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tote API Controls Screen: This screen, detailed in Figure 4-14, includes controls for initializing, removing, and exchanging totes, as well as managing tote tasks and exchange settings. The Initialize Tote control can auto-populate a barcode if one is not passed."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tote Exchange Settings Pop-Up Screen: This screen, shown in Figures 4-15 and 4-16, is opened by pressing the GET EXCHANGE SETTINGS button. It allows configuration of the exchange method (Count, Cube, or Cube & Count) and various thresholds that control AGV pickup, exchange prioritization, and chute closure based on cube, item count, and weight."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tote Exchange Modes: The exchange method is configured on the Tote Exchange Settings screen. Count Mode bases exchanges on the number of items in a tote. Cube Mode bases exchanges on the total volume (cube) of all items. Cube & Count Mode uses both criteria for exchange decisions."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Geek Plus and Aveva are referenced as overview topics: In the transcript, the presenter says that Chrome will go through Geek Plus and that Jose, if present, will do Aveva; otherwise the presenter will cover it. This establishes Geek Plus and Aveva as named system-related components or subject areas associated with the OptiSweep training overview."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Aveva HMI as the HMI platform used by UPS buildings: The speaker says that UPS in all their buildings uses Aveva for HMIs. The overview slide includes Aveva HMI as a named element in the architecture, indicating it is part of the operator-facing interface environment associated with the system."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep software environment overview: The source describes OptiSweep software as the software that 'integrates everything.' The slide and transcript identify AVEVA as the HMI and Ignition as the OPC server."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Preferred customer-facing interfaces for removal actions: The speaker says users should always direct the customer to use 'AVEVA or the hospital' and explains that this keeps control with the intended interfaces. The segment also notes that when a box is removed in Geek, Geek does not send all the information, which is presented as a reason to prefer those other interfaces."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "AVEVA Walkthrough segment marker: The visible OCR text in the segment reads \"Aveva Walkthrough 32\" along with FORTNA confidentiality markings. The related artifact description states that the frame appears to be a training slide or section marker for an AVEVA walkthrough segment, not a live application screen."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "System control actions shown on the Viva overview: The presenter states that on the right-hand side of the overview screen you can see startup, shutdown, bag out, purge, resume, and pause all AGVs. OCR text also describes a controls and info area with Start/Stop system, Bag Out, Purge, view Metrics (Destinations), and AGV status."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Overall System AGV Status screen: The source indicates an 'Overall System AGV Status' screen or slide. The top section contains detailed information for all AGVs. The bottom section is focused on AGVs with errors. This appears to be a fleet monitoring or dashboard-style view."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Top section fields on Overall System AGV Status: According to the OCR text in the source artifact, the top section provides detailed information for all AGVs. The listed data elements include AGV ID, status, destination, and errors. The source supports these as displayed fields or columns on the screen."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Overall System AGV Status popup overview: The source states that another popup shows detailed information for all AGVs. The visible screen text indicates an 'Overall System AGV Status' view. The popup is described as containing AGV ID, status, destination, and errors."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "API page overview in Aveva: The speaker states that 'all this stuff is through APIs' and refers to the screen as the 'API page.' The slide artifact labels it as the 'Overall System Aveva API page.' The left side of this page shows system-level items including System State, System Startup, System Bag Out, System Shutdown, and System Purge."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Zone configuration page reference: The OCR text explicitly states 'Zone configuration' and describes it as 'Pops up the zone configuration page.' The speaker adds that 'nobody uses it,' which is a source-specific training comment rather than a functional description."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Zone configuration change capability described as legacy or unused: The transcript explains that zone configuration was originally set up a long time ago and that some configurations could be changed between sort areas. The speaker then states this cannot really be done anymore because they are equal zones, and that the capability is still in the interface but nobody uses it."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Initialize Tote input fields: The transcript states that the user adds a barcode or tote number, then the station, and then the tote ID. It further notes that for barcode and tote ID the same number may be used. The OCR text identifies the key information as BarcodeID, StationID, and ToteID."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Tote Task interface overview: The source describes a screen titled 'Tote Tasks Aveva API page' and states that the Tote Task interface offers insight into tote movements within the warehouse. The transcript and slide indicate that the interface shows the current task and related tote movement information."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Tote exchange threshold categories: The transcript explains that the exchange settings include thresholds previously discussed as queue, pickup, priority, and close, and refers to percentage thresholds such as sixty, seventy, and eighty percent."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Tote exchange weight-related parameters: The OCR text for the Tote Exchange Settings interface lists Maximum Weight and Weight Threshold among the key components shown on the page. The source does not provide additional explanation of how these values are used, but it clearly identifies them as configurable parameters on the interface."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Tote exchange settings update ownership and project finalization: The transcript notes that these settings can be updated by the customer. It also states that, for the most part, the settings are finalized with the project team and UPS at the end of UAT. This describes ownership and lifecycle context for the exchange settings rather than a procedural change process."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Aviva characterized primarily as an HMI interface: The speaker says Aviva is an HMI and mostly an interface. It is described as showing status of services and allowing certain startup actions through APIs, while also emphasizing that it does not manage the system in the same way as the underlying control components."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Using WCS or OptiSweep state visibility to compare against Aviva-issued actions: The speaker gives an example in which Aviva is said to have put the system into startup, and support should look in WCS or OptiSweep to see the actual state of the system."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Overall System Statistics overview: The source segment references an 'Overall System Statistics' slide. The OCR text states 'Main Statistics: Core system statistics,' indicating that this view groups high-level system statistics in one place. The transcript also refers to 'your main statistics,' reinforcing that this is a primary statistics view."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "AUV status pop-up screen: The transcript describes \"AUV status\" as \"just another pop up that shows you in details again.\" The related frame OCR shows the title \"Overall System AGV Status\" and indicates that the page shows the current status."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep architecture overview: The architecture includes an XLe chat communication module, Sorter Sweeper module, Robotics module, Geek+ comm module, XLe chat OBC communication, sorter and tipper PLCs, Ignition OPC server, Aveva HMI, SQL Server, scanners, ASX, and printers."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Displayed OptiSweep API endpoint categories: The displayed catalog includes System endpoints such as System State, System Startup, System Shutdown, CloseOut, Purge, ResetMetrics, SystemMetrics, and zone configuration operations. AGVS endpoints include status retrieval, fault-related data retrieval, and command-related operations."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Zone configuration APIs: The source distinguishes between retrieving the current zone configuration and updating it. It explicitly states that Update Zone Configuration is never used anymore. No configuration fields or zone definitions are provided."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Tote exchange and exchange settings: Exchange Tote requires a tote name and exchanges that specific tote. Exchange Lane requires a lane name and exchanges the specific destination. Get Exchange Settings shows the current exchange headings, and Update Exchange allows the customer to adjust those exchange settings."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "AVEVA, OPC, API, and Ignition tag mapping: The described data path uses tags in OPC for requests. A request generates a response, and resulting tags are made available for AVEVA to read. Ignition is used in the integration to provide tag mapping and communication between OptiSweep-related data and AVEVA."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "AGV API Controls: This artifact is a system screen capture showing the AGV API Controls interface, as referenced in section 4.1.1.5.2 of the OptiSweep Operation and Maintenance Manual. The screen provides operators with controls to manage individual AGVs and the entire fleet."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tote API Controls: This artifact is a screenshot of the Tote API Controls interface, as referenced in section 4.1.1.5.3 of the OptiSweep Operation and Maintenance Manual. It displays the controls available for managing tote movement within the system, including functions for inducting, removing, and exchanging totes, as well as viewing..."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "HMI Calculations Screen: This artifact is a screenshot of the 'HMI Calculations' screen from the OptiSweep system's Human-Machine Interface. According to the manual, this screen is accessed by pressing the 'HMI CALCULATIONS' button on the 'ACB System' screen, which then leads to a 'Tilt Tray' overview."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "HMI Calculations Screen Navigation: To reach the HMI Calculations screen, an operator must first be on the ACB System screen and then press the HMI CALCULATIONS button. This navigates to the Tilt Tray overview screen."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "AGV Control: The ACB API Screen provides an interface for controlling AGVs. The specific controls available are not detailed in this section."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tote Control: The ACB API Screen provides an interface for controlling totes. The specific controls available are not detailed in this section."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "System API Controls Screen: The System API Controls screen (Figure 4-9) is located in the System section of the API screen. It contains the following controls: Get System State (displays current state), System Startup (puts system in a running state), System Shutdown (shuts down system, AGVs go to shutdown queue; should only be done when a sort..."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "AGV API Controls Screen: The AGV API Controls screen is located within the API screen's AGVs section. It contains the following controls: Remove AGV (requires AGV ID; physically remove AGV and take any tote to the hospital for recovery), Recover AGV (adds an AGV back to the system by ID), Pause All AGVs (stops all AGV movement), Resume All..."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tote Exchange Thresholds: Configurable thresholds include: Cube Threshold Pickup (cube value for AGV pickup), Cube Threshold Priority (cube value for prioritized exchange), Cube Threshold Close (cube value for chute closure), Count Threshold Pickup (item count for AGV pickup), Count Threshold Priority (item count for prioritized exchange),..."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "HMI System API Screen: The 'system API screen' is a navigable screen on the OptiSweep system HMI. Its confirmed function is to provide the SYSTEM STARTUP control. It is a critical interface for system operation."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tote API Controls Reference: The manual references 'Tote API Controls' on page 26 as the mechanism to add an AGV to a zone or to remove and re-add AGVs during fault recovery. It is used in both the 'Add AGV to Zone with No Empty AGV' and 'AGVS Lost Tasks' procedures."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Tote racking overview: The speaker describes tote racks and notes that operators will see them later in the day. The tote sits on the cylinder, and the slide is labeled as tote racking. The artifact OCR also indicates the design was intended to securely position the tote for parcel impact."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Tote rack alignment features: According to the speaker, the tote rack has little feet so that when the tote drops, it is aligned to the center. The speaker emphasizes that the fit is pretty tight, indicating the alignment feature is intended to position the tote accurately within the rack."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Map overview provides a system-level view: The presenter states that clicking the map overview gives an overview of the system. The map is referenced as the basis for separating the sorter side, charger side, and tipper side. The source indicates this is a visual system layout view rather than a workflow or procedure."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Robot selection panel overview: In the Robot option, a selected robot is shown with a box around it. When a robot is selected, the interface displays robot details. If the detail section is hidden, a small arrow can be used to expand it and show the available detail information about the robot."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Robot ID as the identifier used in robot selection actions: In the add section, the source states \"Enter the corresponding robot ID.\" In the remove section, the source states \"Enter the corresponding robot Id or select the robot.\" This indicates that robot ID is a key identifier associated with robot selection actions in this interface."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Robot Selection tab supports adding and removing robots by robot ID or selection: The source describes a user interface area labeled for robot selection and add/remove actions. The slide text indicates an Add Robot area where the user enters the corresponding robot ID and clicks Add."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Each robot has right-of-way and occupied space on the map: The speaker explains that each robot has a right of way and space that it occupies on the map. This indicates that robot presence is represented spatially in the system map and is relevant to movement coordination."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "A physically present but logically removed robot may be treated as an obstacle by other robots: The speaker states that if a robot remains physically present after logical removal, any robot about to use that pathway may think the space is empty and free, but will see the physical robot as an obstacle. The speaker explicitly adds that it will not crash."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Robot identification entry behavior for add and remove actions: The transcript states that to add a robot, the operator types it into the field below Robot. It further explains that if the robot has already been introduced, a shortened entry such as the ending digits can be used to show matching robots, rather than requiring the full identifier."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Robot restart panel and selection inputs: The transcript states that to restart a robot, the operator either puts in the ID or selects the robot of interest and presses the restart button on the panel. The OCR slide reinforces this by showing a 'Restart Robot' screen with instructions to enter the corresponding robot ID or select the robot, then click..."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "AGV Go-to function for manual repositioning: The source explains that when an AGV is in a green state, it is ready to execute but may not currently have a task. In that condition, the operator can use the Go-to function to move the AGV from one point to another. The target can be selected by target code or by clicking a cell on the map and confirming."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Container and tote lookup by number or location: OCR text says a tote can be found by typing the location number in and selecting the rack or AGV it is located on if it is in the system. The same source also references tote number entry. This indicates the screen supports lookup of tote/container location information using entered identifiers."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Rack locations in the RMS/map view: Rack locations are shown on the map and can be inspected by using the container selection and physically clicking on the container/rack location. The instructor explains that this interaction is used to learn more about a rack and view information associated with that location."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Clicking a dark blue rack reveals the tote associated to that rack: When a rack is dark blue, clicking it will tell the operator what tote is on the rack itself. The instructor gives an example where a person reports seeing one tote number physically on the rack, but the clicked rack shows a different tote number in the system."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Container section supports tote lookup by tote number: If an operator has a tote number but does not know where the tote is in the system, the tote number can be typed into the container section. The system will take the user to the part of the map where that tote has been added or where it currently exists in the system."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Container Selection screen overview: The screen is referred to as a container or tote lookup view. The transcript explains that the green number such as 113 represents the container or tote identifier and that the tote label is also visible on the physical tote."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Map supports selection of operational objects rather than generic map clicks: The speaker states that the map contains selectable objects. The explanation says that if an operator clicks on the map, nothing happens because the map does not know whether the operator is trying to select an AGV or a cell."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Selected cell changes displayed rack information: In the transcript, the speaker says that if 'you change it' and select the same cell, it will show rack information. This indicates that the interface supports context-sensitive information display tied to the selected cell and the current display mode or filter."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Selected symbol conveys object meaning: The spoken exchange includes the statement that selecting the symbol 'means something,' followed by confirmation that the user can look back on the PowerPoint for that information."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Container Selection color coding for tote presence and empty rack state: OCR text states that dark blue indicates the presence of a tote, while light blue represents an empty rack. This is presented as part of the Container Selection screen guidance."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Selected item display includes box icon and tote number: OCR text indicates that if an item is selected, a box icon will appear along with the tote number. This describes how selected container information is represented on the screen."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Go-to function applies to AGVs not in a task: The OCR text says, 'An AGV not in a task can be sent to any square.' This establishes an operational constraint for the Go-to capability shown on the training slide. The source does not describe behavior for AGVs that are currently assigned to a task."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Execute AGV command as a recovery mechanism after missed RMS callback: The transcript explains that in the event of an RMS crash or a missed callback, a user can execute an AGV command to indicate that an AGV is done. The slide text states that this function enables users to specify an AGV ID that has completed its task when RMS fails to send a callback."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Manual tote exchange can be triggered by tote ID or lane number: The speaker says any tote on the system can be manually exchanged and notes that this is useful for testing. The OCR text lists Exchange Tote as manually triggering a tote exchange by tote ID and Exchange Lane as manually triggering a tote exchange by lane number."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Tote task API functions: The OCR-visible API list includes \"Get Tote Task\" with the description \"Retrieves the current tote task\" and \"Resend Tote Task\" with the description indicating it resends a command to a tote that encountered an error or failed to execute."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Tote exchange API functions: The OCR-visible list includes \"Exchange Tote\" described as manually triggering a tote exchange by tote ID, \"Exchange Lane\" described as manually triggering a tote exchange by lane number, and \"Get Exchange Settings\" described as retrieving settings and configurations for tote exchanges."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Tote add and remove API functions: The OCR-visible API list includes \"Add Tote\" with a description indicating it adds a specified tote to the system, and \"Remove Tote\" with a description indicating it removes a specified tote from the system."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Tote exchange method options: The transcript states that the software has the ability to do tote exchange based on counts, and that the method is either counts, cube, or a mixture of both. The screen OCR lists the Method field with options Count, Cube, and Cube and Count."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Missing dimension data indicator: The transcript explains that the indicator becomes true when dimension data is missing and default values are picked up. It is used to obtain counts of how much dimensional data was missing. Width and height are described as commonly arriving together, while length is usually present but not always."
+    }
+  ],
+  "source_refs": [
+    {
+      "source": "training_video_day2"
+    },
+    {
+      "source": "training_video_day1"
+    },
+    {
+      "source": "support_roles_components_and_adjacency.md"
+    },
+    {
+      "source": "docs/ontology/catalogs/capability_catalog.json"
+    }
+  ]
+}

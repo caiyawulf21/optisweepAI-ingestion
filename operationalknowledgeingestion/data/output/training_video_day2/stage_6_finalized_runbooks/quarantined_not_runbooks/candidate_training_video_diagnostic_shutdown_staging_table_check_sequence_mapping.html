@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Verify Shutdown Staging Mapping Using ShutDownStaging Table (with tote vs without tote) and Sequence</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Verify Shutdown Staging Mapping Using ShutDownStaging Table (with tote vs without tote) and Sequence</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_verify_shutdown_staging_mapping_shutdowntaging_sequence_v1</td></tr>
+<tr><th>Title</th><td>Verify Shutdown Staging Mapping Using ShutDownStaging Table (with tote vs without tote) and Sequence</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>agv_physical_recovery</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>mapping_abnormal</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the Robotics database model’s ShutDownStaging mapping to verify where AGVs should stage during shutdown, including the difference between AGVs with totes (off-the-end queue + center queue staging) versus AGVs without totes (mapped to sorter locations). Confirm how the ShutDownStaging Sequence value is used to match an AGV’s zone/sequence to the correct shutdown queue destination.</p>
+<h2>When To Use</h2>
+<p>When you need to diagnose/verify shutdown staging behavior by checking the ShutDownStaging table mapping logic (tote vs without tote) and confirming the Sequence-based mapping used to select the shutdown queue destination.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/566cf64c9e45d275.jpg" alt="artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500" /><figcaption>Frame showing ShutDownStaging table fields/columns including ShutDownOffTheEndid, ShutDownQueueId, Sequence, SorterSide, DatabaseModelid and the tote vs without-tote mapping description.</figcaption></figure>
+<figure><img src="assets/eedfe29104bb9440.jpg" alt="artifact_training_video_training_video_day2_0012_the_sense_to_me_yeah_if_primary_00_34_18_500" /><figcaption>Frame describing how an AGV in a zone uses Sequence to look up the shutdown queue mapping (e.g., zone 4 -&gt; sequence 4 -&gt; station mapping).</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the ShutDownStaging table in the Robotics database model</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Robotics database model (via SSMS/Helix/WCS DB access as applicable), open the ShutDownStaging table view that includes the mapping columns referenced in the source: ShutDownOffTheEndid, ShutDownQueueId, Sequence, SorterSide, and DatabaseModelid.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can view ShutDownStaging rows with the mapping columns ShutDownOffTheEndid, ShutDownQueueId, Sequence, SorterSide, and DatabaseModelid visible in the table.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If ShutDownStaging does not show the expected mapping columns (including Sequence), stop and escalate to deeper database/config troubleshooting.</li>
+</ul>
+<hr>
+<h3>Step 2 — Identify tote-carrying AGV staging entries (off-the-end queue + center queue staging)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the ShutDownStaging table, locate the rows/entries that correspond to AGVs with totes. Confirm that the mapping includes a ShutDownOffTheEndid (off-the-end queue) and a ShutDownQueueId (queue to stage at) for those tote-carrying entries.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can point to ShutDownStaging entries for tote-carrying AGVs where ShutDownOffTheEndid is present (off-the-end queue) and ShutDownQueueId indicates the queue destination to stage at (center queue staging).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the ShutDownStaging table does not show the expected tote vs without-tote mapping pattern, stop and escalate to deeper database/config troubleshooting.</li>
+</ul>
+<hr>
+<h3>Step 3 — Identify without-tote AGV staging entries (mapped to sorter locations)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the ShutDownStaging table, locate the rows/entries that correspond to AGVs without totes. Confirm that the mapping indicates AGVs are mapped to sorter locations (i.e., the destination is based on sorter locations rather than the off-the-end queue path).</p>
+<p><strong>Expected result:</strong></p>
+<p>You can identify ShutDownStaging entries for AGVs without totes where the mapping pattern aligns with &#x27;mapped to sorter locations&#x27; rather than the tote off-the-end queue staging path.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the ShutDownStaging table does not show the expected tote vs without-tote mapping pattern, stop and escalate to deeper database/config troubleshooting.</li>
+</ul>
+<hr>
+<h3>Step 4 — Locate and verify Sequence values used for shutdown queue selection</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the ShutDownStaging table, locate the Sequence field values for the relevant tote and without-tote entries. Verify the source rule: Sequence is used as the order to match an AGV’s zone/sequence to the shutdown queue sequence.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can identify Sequence values in ShutDownStaging entries and explain (from what is visible in the table) how those Sequence values correspond to the shutdown queue selection logic described by the source.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the Sequence field is missing/unreadable, stop and escalate to deeper database/config troubleshooting.</li>
+</ul>
+<hr>
+<h3>Step 5 — Cross-check the described zone/sequence -&gt; shutdown queue mapping behavior</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the source-described logic, cross-check the ShutDownStaging entries you identified by Sequence: when an AGV in a given zone triggers shutdown, it looks up the shutdown queue destination using the matching sequence number (e.g., zone 4 uses sequence 4). Confirm that the Sequence value you see in ShutDownStaging maps to the expected shutdown queue destination (via the table’s mapping fields).</p>
+<p><strong>Expected result:</strong></p>
+<p>The ShutDownStaging entries you identified show a consistent mapping where the Sequence value used for zone/sequence matching corresponds to the shutdown queue destination selection described by the source.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the ShutDownStaging table does not show the expected tote vs without-tote mapping pattern or the Sequence field is missing/unreadable, stop and escalate to deeper database/config troubleshooting.</li>
+<li>If the Sequence-based mapping does not align with the described zone/sequence lookup behavior, stop and escalate to deeper database/config troubleshooting.</li>
+</ul>
+<hr>
+</body>
+</html>

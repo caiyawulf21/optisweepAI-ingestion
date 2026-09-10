@@ -1,0 +1,431 @@
+{
+  "procedure_id": "proc_start_optisweep_agv_system_from_shutdown_reset_metrics_start_closeout_running_v1",
+  "candidate_id": "candidate_manual_optisweep_agv_system_startup_reset_metrics_start_closeout_running",
+  "title": "Start OptiSweep AGV System From Shut-down Mode (Reset Metrics → Start → Close out/Bag Out → Running)",
+  "procedure_type": "operation",
+  "summary": "Use the OptiSweep system screen to bring the AGV system from Shut-down Mode into the normal “Running” state by verifying the required number of empty AGVs, resetting metrics, starting the system, performing close out (Bag Out) until the system returns to “Running,” and then shutting down when finished.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "capability_tags": [
+    "fleet_system_status"
+  ],
+  "access_surface": [
+    "rms_ui",
+    "tipper_hmi"
+  ],
+  "audience_roles": [
+    "operator"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this procedure when the OptiSweep AGV system is in Shut-down Mode and you need to start it into normal “Running” operation using the documented start-up sequence (Reset metrics → Start → Close out/Bag Out → Running).",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "Operator: Execute the start-up sequence on the system screen and, if needed, coordinate moving an AGV into the missing empty-AGV zone and adding it to RMS."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "RMS / fleet status UI (for adding an AGV after moving it into the missing zone)",
+    "OptiSweep system screen showing “System in Shut-down Mode” (Figure 5-1) and the system controls (Reset metrics / Start / Close out / Shut down)"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "rms_ui",
+      "tipper_hmi"
+    ],
+    "system_preconditions": [
+      "Before starting the system, ensure there are nine (9) AGVs without totes in the system: five (5) under the north rack and four (4) under the south rack."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_manual_agv_startup_precondition_v1",
+    "ctx_manual_agv_startup_sequence_v1",
+    "ctx_manual_system_status_running_v1",
+    "ctx_manual_hmi_screen_shut_down_mode_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "description": "Figure 5-1: System in Shut-down Mode screen referenced for verifying Shut-down Mode and using the start-up controls (Reset metrics / Start / Close out/Bag Out / Shut down).",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_4_9_system_api_controls",
+      "description": "Figure 4-9: System API Controls screen showing System Startup, System Shutdown, System Close Out, Reset Metrics, and Get System State.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "description": "Figure 5-3: Add AGV to Zone with No Empty AGV Screen used when the system is started without nine empty AGVs and you must move an AGV into the missing zone and add it to RMS.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Verify nine (9) empty AGVs are present (5 north, 4 south)",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Ensure the required precondition for starting the system is met (enough AGVs without totes in the north/south rack zones).",
+      "instruction": "Confirm there are nine (9) AGVs without totes in the system: five (5) under the north rack and four (4) under the south rack. If not, move an AGV into the zone missing an empty AGV, then add that AGV to RMS after moving it.",
+      "expected_result": "You have five (5) empty AGVs under the north rack and four (4) empty AGVs under the south rack (total nine (9) empty AGVs).",
+      "healthy_condition": "The empty-AGV counts match the required distribution: 5 north and 4 south.",
+      "failure_condition": "The system does not have nine (9) empty AGVs total, or the distribution is not 5 north and 4 south.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check empty AGV counts",
+          "exact_action": "Confirm there are nine (9) AGVs without totes in the system: five (5) under the north rack and four (4) under the south rack.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "physical_action",
+          "label": "Move AGV into missing empty zone (if needed)",
+          "exact_action": "Move an AGV into the zone missing an empty AGV, then add that AGV to the RMS after moving the AGV.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "site_code": "",
+          "site_label": "",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "figure_id": "fig_5_1",
+          "quote_or_summary": "Before starting the system, make sure there are enough AGVs without totes in the system. There should be nine (9) AGVs without totes in the system: five (5) under the north rack and four (4) under the south rack. If the system is started without nine totes, an AGV without a tote will need to be moved into the zone that is missing an AGV. Make sure to add the AGV to the RMS after moving the AGV."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Open the System in Shut-down Mode screen and verify Shut-down Mode",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm you are starting from the correct system state (Shut-down Mode) before resetting metrics and starting.",
+      "instruction": "Open the system screen shown as “System in Shut-down Mode” (Figure 5-1) and verify the system mode indicates Shut-down.",
+      "expected_result": "The system mode indicator on the “System in Shut-down Mode” screen shows Shut-down.",
+      "healthy_condition": "System mode is displayed as Shut-down on the referenced system screen.",
+      "failure_condition": "The system mode is not Shut-down (e.g., already Running or in another state).",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Verify system mode",
+          "exact_action": "Open the system screen shown as \"System in Shut-down Mode\" (Figure 5-1) and verify the system mode indicates Shut-down.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "site_code": "",
+          "site_label": "",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "figure_id": "fig_5_1",
+          "quote_or_summary": "Figure 5-1: System in Shut-down Mode. To start the system: ..."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Reset metrics",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Prepare the system for the start-up sequence by resetting metrics (also noted as making pulling reports easier).",
+      "instruction": "On the “System in Shut-down Mode” screen (Figure 5-1), use the control option to Reset metrics.",
+      "expected_result": "Metrics are reset using the Reset metrics control on the system screen.",
+      "healthy_condition": "Reset metrics control is executed as part of the start-up sequence.",
+      "failure_condition": "Metrics are not reset before starting the system.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Reset metrics",
+          "exact_action": "Reset the metrics.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "site_code": "",
+          "site_label": "",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "figure_id": "fig_5_1",
+          "quote_or_summary": "To start the system: 1. Reset the metrics. This makes pulling reports easier."
+        },
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "site_code": "",
+          "site_label": "",
+          "page": 38,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_1_system_api_controls",
+          "figure_id": "fig_4_9",
+          "quote_or_summary": "Reset Metrics Reset the metrics. This should only be done between sorts."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Start the system",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Transition the system from Shut-down Mode into the start-up process.",
+      "instruction": "On the “System in Shut-down Mode” screen (Figure 5-1), use the control to Start the system.",
+      "expected_result": "The system start control is executed as part of the start-up sequence.",
+      "healthy_condition": "System Startup is initiated from the Shut-down Mode screen.",
+      "failure_condition": "System does not progress toward close out/Bag Out completion after starting.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Start system",
+          "exact_action": "Start the system.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "site_code": "",
+          "site_label": "",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "figure_id": "fig_5_1",
+          "quote_or_summary": "To start the system: 2. Start the system."
+        },
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "site_code": "",
+          "site_label": "",
+          "page": 38,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_1_system_api_controls",
+          "figure_id": "fig_4_9",
+          "quote_or_summary": "System Startup Allows the user to put the system in a running state."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Perform close out (Bag Out) until system returns to Running",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Complete the required close out (Bag Out) step so the system returns to normal “Running” operation.",
+      "instruction": "Perform close out (Bag Out) and continue until the system status returns to “Running.”",
+      "expected_result": "After close out (Bag Out) is completed, the system status returns to “Running.”",
+      "healthy_condition": "System status transitions back to “Running” after Bag Out completes.",
+      "failure_condition": "The system does not return to “Running” after Bag Out.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Close out (Bag Out)",
+          "exact_action": "Close out. After close out (Bag Out) is completed, the system goes back to \"Running\".",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop the procedure if the system does not return to \"Running\" after Bag Out; escalate to Fortna support for further troubleshooting."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "site_code": "",
+          "site_label": "",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "figure_id": "fig_5_1",
+          "quote_or_summary": "To start the system: 3. Close out. After close out (Bag Out) is completed, the system goes back to \"Running\"."
+        },
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "site_code": "",
+          "site_label": "",
+          "page": 38,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_1_system_api_controls",
+          "figure_id": "fig_4_9",
+          "quote_or_summary": "System Close Out All totes are sent to the tippers to close out the sorter. Close Out should only be done at the end of a sort."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Shut down when the start-up process is complete and you are done",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Return the system to Shut-down when the start-up process is complete and you are finished with the procedure.",
+      "instruction": "When the start-up process is complete and you are done with the procedure, shut down using the documented shut down step/control.",
+      "expected_result": "System shutdown is initiated using the documented shut down control/step.",
+      "healthy_condition": "System Shutdown is executed after the system has returned to Running and you are done with the procedure.",
+      "failure_condition": "Shutdown is not performed when the procedure is complete (leaving the system running when it should be shut down).",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Shut down system",
+          "exact_action": "4. Shut down.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "site_code": "",
+          "site_label": "",
+          "page": 88,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+          "figure_id": "fig_5_1",
+          "quote_or_summary": "To start the system: 4. Shut down."
+        },
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "site_code": "",
+          "site_label": "",
+          "page": 38,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_1_system_api_controls",
+          "figure_id": "fig_4_9",
+          "quote_or_summary": "System Shutdown Shuts down the system. The AGVs go to a shutdown queue. This should only be done when a sort does not begin when the current sort ends."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "After close out (Bag Out) is completed, the system status returns to “Running”."
+  ],
+  "healthy_conditions": [
+    "System mode shows Shut-down before starting the sequence (Step 2).",
+    "System returns to “Running” after close out (Bag Out) completes (Step 5)."
+  ],
+  "failure_conditions": [
+    "System does not return to “Running” after Bag Out (Step 5).",
+    "Precondition not met: fewer than nine (9) empty AGVs (5 north, 4 south) before starting (Step 1)."
+  ],
+  "escalation_guidance": [
+    "If the system does not return to “Running” after Bag Out, stop the procedure and escalate to Fortna support for further troubleshooting."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "what_to_look_at": "System mode indicator showing Shut-down and the start/stop controls referenced by the start-up procedure."
+    },
+    {
+      "artifact_id": "artifact_fig_4_9_system_api_controls",
+      "what_to_look_at": "System section of the API screen: Get System State, System Startup, System Shutdown, System Close Out, Reset Metrics."
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "what_to_look_at": "Controls for adding an AGV to a zone when no empty AGV is present (used after moving an AGV into the missing empty-AGV zone)."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "site_code": "",
+      "site_label": "",
+      "page": 88,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_1_agv_system_start_up",
+      "figure_id": "fig_5_1",
+      "quote_or_summary": "Precondition: nine (9) AGVs without totes (five north rack, four south rack). If started without nine totes, move an AGV into missing zone and add to RMS. Steps: reset metrics, start system, close out (Bag Out) until system returns to \"Running\", then shut down."
+    },
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "site_code": "",
+      "site_label": "",
+      "page": 38,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_1_system_api_controls",
+      "figure_id": "fig_4_9",
+      "quote_or_summary": "System API Controls: Get System State, System Startup, System Shutdown (AGVs to shutdown queue), System Close Out (end of sort), System Purge, Reset Metrics (between sorts)."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_fig_5_1_system_in_shut_down_mode",
+      "what_to_look_at": "System mode indicator showing Shut-down and the start/stop controls referenced by the start-up procedure."
+    },
+    {
+      "artifact_id": "artifact_fig_4_9_system_api_controls",
+      "what_to_look_at": "System section of the API screen: Get System State, System Startup, System Shutdown, System Close Out, Reset Metrics."
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "what_to_look_at": "Controls for adding an AGV to a zone when no empty AGV is present (used after moving an AGV into the missing empty-AGV zone)."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_manual_optisweep_agv_system_startup_reset_metrics_start_closeout_running"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The packet requests image support for Figure 5-1 controls (exact labels for Reset metrics / Start / Close out/Bag Out / Shut down) but does not provide OCR text for those controls; the runbook relies on the referenced Figure 5-1 and Figure 4-9 artifacts for operator guidance."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

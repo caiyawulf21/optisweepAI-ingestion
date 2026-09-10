@@ -1,0 +1,425 @@
+{
+  "procedure_id": "proc_verify_sorter_queue_routing_entrance_to_shutdown_v1",
+  "candidate_id": "candidate_training_video_sorter_queue_layout_entrance_to_shutdown",
+  "title": "Verify Sorter Queue Routing: Entrance Queue → Queue Locations → Sorter Queue Locations → Exit Queue → Shutdown Queues",
+  "procedure_type": "diagnostic",
+  "summary": "Use the live sorter layout view (via RMS / fleet status UI when available, or site visual confirmation) to verify that AGVs/totes follow the documented sorter queue routing sequence: entrance queue first, then exchange staging (queue locations), then sorter queue locations for tote pickup/aisle entry, then exit queue after exchange, and finally shutdown queue positioning based on tote presence (including the 'off the end' path when entering shutdown from the entrance with a tote).",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [
+    "operator"
+  ],
+  "capability_tags": [
+    "robot_dwell_or_shutdown_staging"
+  ],
+  "access_surface": [
+    "rms_ui",
+    "site_interview"
+  ],
+  "audience_roles": [
+    "L1_support",
+    "operator"
+  ],
+  "failure_pattern_tags": [
+    "sort_lifecycle_stuck",
+    "zone_agv_mismatch"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to confirm that sorter queue routing is behaving correctly during normal sorter flow and during shutdown entry, specifically validating the expected queue-to-queue transitions and tote-dependent shutdown positioning.",
+  "not_for": [
+    "Do not use this procedure as a deep-dive into AGV charging behavior (charging-related issues are not the focus of this queue-routing check)."
+  ],
+  "roles_and_responsibilities": [
+    "L1_support: Perform the live routing verification by observing AGV/tote movement through the sorter queue areas and comparing observed transitions to the documented sequence.",
+    "operator: Provide site visual confirmation / mapping of live layout labels to the documented queue-area names when the live layout view does not clearly label them."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "RMS / fleet status UI (to observe AGV movement/state if the live layout is available there)",
+    "Site interview / visual confirm (to map live labels to entrance queue / exit queue / shutdown queue areas if needed)"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "RMS / fleet status UI access (as available for the site)"
+    ],
+    "system_preconditions": [
+      "Sorter activity is occurring (entrance queue → exchange staging → sorter queue locations → exit queue).",
+      "System can enter shutdown so that shutdown queue positioning can be observed."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_sorter_queue_layout_v1",
+    "ctx_training_video_shutdown_queue_locations_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000",
+      "description": "Training segment frame used as the evidence for the named sorter queue areas and the documented routing behavior (entrance queue, queue locations for exchange staging, sorter queue locations for tote pickup/aisle entry, exit queue, shutdown queues under the rack vs tote-dependent shutdown location, and 'off the end' when entering shutdown from entrance with a tote).",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Identify the sorter queue areas in the live layout view",
+      "responsible_role": "L1_support",
+      "supporting_role": "operator",
+      "purpose": "Establish the exact queue-area names/locations to compare against observed AGV/tote routing.",
+      "instruction": "In the live sorter layout view available to support (RMS / fleet status UI when available), identify the following queue areas: entrance queue; queue locations (exchange staging); sorter queue locations (tote pickup / aisle entry); exit queue; shutdown queues (including under-rack shutdown locations for AGVs without totes and the shutdown location for AGVs with totes). If the live layout does not clearly label these areas, use site interview / visual confirmation to map the live labels to these documented queue-area names.",
+      "expected_result": "You can point to (or otherwise map) each of the named queue areas in the live view: entrance queue, queue locations for exchange staging, sorter queue locations for tote pickup/aisle entry, exit queue, and shutdown queues with tote-dependent positioning.",
+      "healthy_condition": "All required queue areas are identifiable/mappable in the live view so you can track an AGV/tote through the full sequence.",
+      "failure_condition": "One or more queue areas cannot be mapped clearly in the live view, preventing reliable verification of routing transitions.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Map queue-area labels",
+          "exact_action": "Use site interview / visual confirm (to map live labels to entrance queue / exit queue / shutdown queue areas if needed)",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the live layout view does not clearly label these queue areas, stop and use the site interview/visual confirmation to map the live labels to the documented queue names."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "page": 19,
+          "section_id": "training_video_day1_segment_0019",
+          "segment_id": "segment_training_video_0019",
+          "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000",
+          "quote_or_summary": "Entrance queue first; queue locations for AGVs stage behind for an exchange; sorter queue locations where you pick up the tote and leave into the aisle; exit queue after exchange; shutdown queues under the rack for AGVs without totes vs a location for AGVs with totes; off the end when entering shutdown from entrance with a tote."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Confirm AGV/tote enters via the entrance queue first",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Validate the first routing constraint: anything entering the sorter area must go to the entrance queue first.",
+      "instruction": "Observe an AGV/tote that is entering the sorter area in the live view and confirm it first appears in the entrance queue.",
+      "expected_result": "The observed AGV/tote appears first in the entrance queue (no bypass to later queue areas).",
+      "healthy_condition": "AGVs/totes entering the sorter area start in the entrance queue.",
+      "failure_condition": "An AGV/tote appears to bypass the entrance queue and appears directly in queue locations, sorter queue locations, exit queue, or shutdown queues.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Track entering item",
+          "exact_action": "Observe an AGV/tote that is entering the sorter area and confirm it first appears in the entrance queue",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if an AGV/tote appears to bypass the entrance queue."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "page": 19,
+          "section_id": "training_video_day1_segment_0019",
+          "segment_id": "segment_training_video_0019",
+          "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000",
+          "quote_or_summary": "“So anything that wants to go into this area must go to the entrance queue first.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Confirm transition from entrance queue to exchange staging (queue locations)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Validate the second routing constraint: after entrance queue, items stage behind for an exchange at queue locations.",
+      "instruction": "After the entrance queue, confirm the same AGV/tote transitions to the queue locations area where AGVs stage behind for an exchange.",
+      "expected_result": "The observed AGV/tote moves from the entrance queue into the queue locations (exchange staging) area.",
+      "healthy_condition": "A clear entrance queue → queue locations transition occurs for the observed item.",
+      "failure_condition": "The observed AGV/tote does not stage in the exchange queue locations before reaching sorter queue locations.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify staging transition",
+          "exact_action": "After the entrance queue, confirm the AGV/tote transitions to the queue locations area where AGVs stage behind for an exchange",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the AGV/tote does not stage in the exchange queue locations before sorter pickup."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "page": 19,
+          "section_id": "training_video_day1_segment_0019",
+          "segment_id": "segment_training_video_0019",
+          "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000",
+          "quote_or_summary": "“Then we have queue locations. This is where Agvs stage behind for an exchange.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Confirm tote pickup at sorter queue locations (aisle entry)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Validate the third routing constraint: after exchange staging, the tote is picked up at sorter queue locations and the AGV leaves into the aisle.",
+      "instruction": "Confirm that after exchange staging, the tote is picked up at the sorter queue locations (the area described as where you pick up the tote and leave into the aisle).",
+      "expected_result": "The observed item reaches the sorter queue locations area where tote pickup/aisle entry occurs.",
+      "healthy_condition": "A queue locations (exchange staging) → sorter queue locations (tote pickup/aisle entry) transition is observed for the same item.",
+      "failure_condition": "The tote pickup/aisle entry does not occur at sorter queue locations after exchange staging.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify tote pickup location",
+          "exact_action": "Confirm that after exchange staging, the tote is picked up at the sorter queue locations (described as where you pick up the tote and leave into the aisle)",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the AGV/tote does not reach the sorter queue locations for tote pickup/aisle entry after exchange staging."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "page": 19,
+          "section_id": "training_video_day1_segment_0019",
+          "segment_id": "segment_training_video_0019",
+          "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000",
+          "quote_or_summary": "“And then you have your sorter queue locations. This is where you pick up the tote and leaved into the aisle”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Confirm post-exchange routing to exit queue",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Validate the fourth routing constraint: after an exchange, the item must go to the exit queue.",
+      "instruction": "After an exchange, confirm the AGV/tote goes to the exit queue (described as where it goes as it leaves before it could go to anywhere else for shutdown).",
+      "expected_result": "The observed item transitions to the exit queue after exchange.",
+      "healthy_condition": "A sorter queue locations / exchange completion → exit queue transition is observed.",
+      "failure_condition": "The AGV/tote does not go to the exit queue after exchange.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify exit queue transition",
+          "exact_action": "After an exchange, confirm the AGV/tote goes to the exit queue",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the AGV/tote does not go to the exit queue after exchange."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "page": 19,
+          "section_id": "training_video_day1_segment_0019",
+          "segment_id": "segment_training_video_0019",
+          "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000",
+          "quote_or_summary": "“We also once you do an exchange, it must go to the exit queue… which is at as it leaves before it could go to anywhere else it wants to go for shutdown.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Confirm shutdown queue positioning based on tote presence",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Validate the shutdown routing rule: AGVs without totes go to under-rack shutdown locations; AGVs with totes go to the tote-specific shutdown location.",
+      "instruction": "When the system is in shutdown, confirm shutdown queue positioning based on tote presence: observe AGVs without totes moving to shutdown locations under the rack, and observe AGVs with totes moving to the shutdown location described as “for AGVs with Tots.”",
+      "expected_result": "In shutdown, the observed AGV/tote ends up in the correct shutdown location corresponding to whether a tote is present.",
+      "healthy_condition": "AGVs without totes are positioned at the under-rack shutdown locations; AGVs with totes are positioned at the tote-specific shutdown location.",
+      "failure_condition": "AGVs with totes appear in the under-rack shutdown locations for AGVs without totes, or AGVs without totes appear in the tote-specific shutdown location.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify tote-dependent shutdown placement",
+          "exact_action": "When the system is in shutdown, confirm shutdown queue positioning based on tote presence",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the AGV/tote ends up in the wrong shutdown location for tote presence."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "page": 19,
+          "section_id": "training_video_day1_segment_0019",
+          "segment_id": "segment_training_video_0019",
+          "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000",
+          "quote_or_summary": "“We have shutdown queues… these locations are under the rack… When you shut down, they move to shut down locations. So these locations are Agvs without Tots. This location is for Agvs with Tots.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Confirm 'off the end' behavior when entering shutdown from the entrance with a tote",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Validate the special shutdown-entry routing behavior for tote-present items.",
+      "instruction": "If entering shutdown from the entrance while a tote is present, confirm the documented 'off the end' path occurs before the shutdown location (entrance → off the end → shutdown).",
+      "expected_result": "For a tote-present item entering shutdown from the entrance, the item is observed at the 'off the end' location before it reaches the shutdown location.",
+      "healthy_condition": "Entrance (shutdown state with tote) → off the end → shutdown sequence is observed.",
+      "failure_condition": "The item goes directly to the shutdown location without visiting the 'off the end' location when entering shutdown from the entrance with a tote.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify off-the-end step",
+          "exact_action": "If you come into the entrance and we're in a shutdown state and you have a tote, you go to off the end and then you go to the shutdown",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the 'off the end' path does not occur when entering shutdown from the entrance with a tote."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "page": 19,
+          "section_id": "training_video_day1_segment_0019",
+          "segment_id": "segment_training_video_0019",
+          "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000",
+          "quote_or_summary": "“Also in a shutdown… we have a off the end. So if you come into the entrance and we're in a shutdown state and you have a tote, you go to off the end and then you go to the shutdown.”"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "An observed AGV/tote entering the sorter area appears first in the entrance queue.",
+    "The same AGV/tote transitions from entrance queue to queue locations for exchange staging.",
+    "After exchange staging, the tote is picked up at sorter queue locations (aisle entry).",
+    "After exchange, the AGV/tote goes to the exit queue.",
+    "During shutdown, AGVs without totes are positioned at under-rack shutdown locations and AGVs with totes are positioned at the tote-specific shutdown location.",
+    "When entering shutdown from the entrance with a tote, the item follows entrance → off the end → shutdown."
+  ],
+  "healthy_conditions": [
+    "Entrance queue → queue locations (exchange staging) → sorter queue locations (tote pickup/aisle entry) → exit queue sequence is observed for live activity.",
+    "Shutdown queue placement matches tote presence: under-rack locations for AGVs without totes; tote-specific shutdown location for AGVs with totes.",
+    "Shutdown entry from entrance with tote includes an 'off the end' step before reaching shutdown."
+  ],
+  "failure_conditions": [
+    "AGV/tote bypasses the entrance queue.",
+    "AGV/tote does not stage in queue locations for exchange before sorter queue pickup.",
+    "Tote pickup/aisle entry does not occur at sorter queue locations after exchange staging.",
+    "AGV/tote does not go to exit queue after exchange.",
+    "Shutdown placement does not match tote presence (tote-present in under-rack locations or tote-absent in tote-specific location).",
+    "Entering shutdown from entrance with tote skips the 'off the end' step."
+  ],
+  "escalation_guidance": [
+    "Escalate if any observed routing transition deviates from the documented sequence (entrance queue bypass, missing exchange staging, missing exit queue after exchange, incorrect shutdown placement by tote presence, or missing 'off the end' step when entering shutdown from entrance with a tote).",
+    "If the live layout view does not clearly label queue areas, stop and use site interview / visual confirmation to map live labels to the documented queue names before continuing verification."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000",
+      "what_to_look_at": "Use this frame as the evidence for the named queue areas and the documented routing rules (entrance queue, queue locations for exchange staging, sorter queue locations for tote pickup/aisle entry, exit queue, shutdown queues under the rack vs tote-specific location, and off-the-end behavior)."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "page": 19,
+      "section_id": "training_video_day1_segment_0019",
+      "segment_id": "segment_training_video_0019",
+      "timestamp_start": "00:36:01.000",
+      "timestamp_end": "00:42:35.000",
+      "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000",
+      "quote_or_summary": "Entrance queue first; queue locations for AGV exchange staging; sorter queue locations for tote pickup/aisle entry; after exchange must go to exit queue; shutdown queues under the rack for AGVs without totes vs tote-specific shutdown location; if entering shutdown from entrance with tote, go to off the end then shutdown."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000",
+      "what_to_look_at": "Use this frame as the evidence for the named queue areas and the documented routing rules (entrance queue, queue locations for exchange staging, sorter queue locations for tote pickup/aisle entry, exit queue, shutdown queues under the rack vs tote-specific location, and off-the-end behavior)."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_sorter_queue_layout_entrance_to_shutdown"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The packet does not explicitly name the exact live RMS screen/widget where the queue-area labels (entrance queue, queue locations, sorter queue locations, exit queue, shutdown queues, and 'off the end') appear. The procedure therefore relies on RMS / fleet status UI availability and site interview / visual confirmation to map live labels to the documented queue names."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000"
+  ]
+}

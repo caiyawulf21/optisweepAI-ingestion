@@ -1,0 +1,366 @@
+{
+  "procedure_id": "proc_validate_optsweep_back_up_after_backup_migration_planned_restart_v1",
+  "candidate_id": "candidate_training_video_day2_restart_validation_checks_backup_migration",
+  "title": "Validate OptiSweep is back up after backup migration / planned restart (database, heartbeats, RMS visibility)",
+  "procedure_type": "diagnostic",
+  "summary": "After a primary failure with migration to a backup or during a planned restart, validate OptiSweep recovery by confirming the database is up, verifying heartbeats are present, restarting OptiSweep if heartbeats are missing, and confirming RMS is visible.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "fleet_system_status",
+    "gateway_health"
+  ],
+  "access_surface": [
+    "wcs_sql",
+    "rms_ui"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive",
+    "gateway_unhealthy",
+    "shutdown_or_dwell_abnormal"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use after migrating to a backup (primary failed) or during planned restarts to confirm the system is back and operational by checking database availability, heartbeat presence, and RMS visibility.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the post-restart validation sequence (database up check, heartbeat check, restart OptiSweep if heartbeats are missing, then confirm RMS visibility)."
+  ],
+  "safety_notes": [
+    "If RMS was shut down, it may come up with an E-stop; release the E-stop or have site release the E-stop."
+  ],
+  "access_or_tools_needed": [
+    "OptiSweep restart capability (as described in the source)",
+    "Access to the interface that shows database-up status",
+    "Access to the interface that shows heartbeats",
+    "Access to the interface that shows RMS visibility"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the OptiSweep restart capability",
+      "Access to the database status view",
+      "Access to the heartbeat indicator/status view",
+      "Access to RMS visibility/status view"
+    ],
+    "system_preconditions": [
+      "A backup migration or planned restart has occurred (primary failed or planned restart scenario)."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_restart_validation_checks_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0049_check_to_make_sure_that_tippers_primary_03_13_10_000",
+      "description": "Frame showing the guidance: check that tippers are getting heartbeats; if heartbeats are flat lines, restart OptiSweep.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500",
+      "description": "Frame showing the guidance: if heartbeats are flat lined, restart OptiSweep (includes mention of checking connections and the OptiSweep service).",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Confirm the database is up after backup migration / planned restart",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish that the recovered system has database availability before validating operational health indicators.",
+      "instruction": "On the live system, check the interface that indicates database availability and confirm the database is up following the backup migration or planned restart.",
+      "expected_result": "Database is up (database availability indicator shows up/healthy).",
+      "healthy_condition": "Database-up status is present/indicates the database is running and reachable.",
+      "failure_condition": "Database is not up (database-up status is missing or indicates failure/unavailable).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check database-up status",
+          "exact_action": "Check, make sure the database is up.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the database is not up, escalate for deeper troubleshooting."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "source_document_id": "training_video_day2_video",
+          "page": 55,
+          "section_id": "training_video_day2_segment_0055",
+          "quote_or_summary": "For backup migration or planned restarts... check, make sure the database is up..."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "03:17:43.500",
+          "timestamp_end": "03:17:43.500",
+          "segment_id": "segment_training_video_0055",
+          "artifact_id": "artifact_training_video_training_video_day2_0055_so_questions_comments_concerns_lunch_yeah_primary_03_17_43_500",
+          "quote_or_summary": "Frame transcript includes the described sequence: check database up, check heartbeats, restart OptiSweep if heartbeats aren’t there, then check RMS visibility."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Check for heartbeats (tippers heartbeats)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Use heartbeats as an operational health indicator after restart/migration.",
+      "instruction": "On the live system, check the heartbeat indicator/status for tippers and confirm heartbeats are present (not flat lined).",
+      "expected_result": "Heartbeats are present (not flat lined).",
+      "healthy_condition": "Heartbeat indicator shows active/received heartbeats for tippers.",
+      "failure_condition": "Heartbeats are flat lined / not being received for tippers.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check tippers heartbeats",
+          "exact_action": "Check to make sure that tippers are getting heartbeats.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If heartbeats are flat lined (missing), proceed to restart OptiSweep in the next step."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 55,
+          "section_id": "training_video_day2_segment_0055",
+          "quote_or_summary": "check the heartbeats. If the heartbeats aren't there... restart Opti sweep..."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "03:13:10.000",
+          "timestamp_end": "03:13:10.000",
+          "segment_id": "segment_training_video_0049",
+          "artifact_id": "artifact_training_video_training_video_day2_0049_check_to_make_sure_that_tippers_primary_03_13_10_000",
+          "quote_or_summary": "Check to make sure that tippers are getting heartbeats. If the heartbeats are flat lines... If you're not getting heartbeats, you have to restart Opti Sweep..."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Restart OptiSweep if heartbeats are missing / flat lined",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Restore the service when heartbeats are not being received after restart/migration.",
+      "instruction": "If heartbeats are flat lined/missing, restart OptiSweep using the restart capability available to you, then re-check heartbeats as needed before proceeding to RMS visibility.",
+      "expected_result": "After restart, heartbeats are no longer flat lined (heartbeats become present).",
+      "healthy_condition": "Heartbeat indicator returns to active/received state after OptiSweep restart.",
+      "failure_condition": "Heartbeats remain missing/flat lined after restarting OptiSweep.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Restart OptiSweep service",
+          "exact_action": "restart Opti sweep",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If heartbeats remain missing after restarting OptiSweep, escalate for deeper troubleshooting."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 55,
+          "section_id": "training_video_day2_segment_0055",
+          "quote_or_summary": "If the heartbeats aren't there... restart Opti sweep..."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "03:13:45.500",
+          "timestamp_end": "03:13:45.500",
+          "segment_id": "segment_training_video_0051",
+          "artifact_id": "artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500",
+          "quote_or_summary": "Unplanned restart If the heartbeat is flat lined... OptiSweep needs to be restarted..."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "03:17:43.500",
+          "timestamp_end": "03:17:43.500",
+          "segment_id": "segment_training_video_0055",
+          "artifact_id": "artifact_training_video_training_video_day2_0055_so_questions_comments_concerns_lunch_yeah_primary_03_17_43_500",
+          "quote_or_summary": "Frame transcript includes the described sequence: check database up, check heartbeats, restart OptiSweep if heartbeats aren’t there, then check RMS visibility."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Confirm RMS is visible after restart / if heartbeats were already present",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Verify end-to-end operational visibility in RMS after recovery actions.",
+      "instruction": "After restart (or if heartbeats were already present), check RMS visibility in the RMS interface and confirm RMS can be seen.",
+      "expected_result": "RMS is visible (RMS visibility/status indicates it is present).",
+      "healthy_condition": "RMS interface shows the expected RMS view/visibility after recovery.",
+      "failure_condition": "RMS cannot be seen after the checks.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check RMS visibility",
+          "exact_action": "check to make sure you can see RMS.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If RMS cannot be seen after the checks, escalate for further investigation."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 55,
+          "section_id": "training_video_day2_segment_0055",
+          "quote_or_summary": "then check to make sure you can see RMS."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 55,
+          "section_id": "training_video_day2_segment_0055",
+          "quote_or_summary": "If you shut down RMS it comes up with an E stop. So you have to release the E stop or have site released the E stop."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "03:17:43.500",
+          "timestamp_end": "03:17:43.500",
+          "segment_id": "segment_training_video_0055",
+          "artifact_id": "artifact_training_video_training_video_day2_0055_so_questions_comments_concerns_lunch_yeah_primary_03_17_43_500",
+          "quote_or_summary": "Frame transcript includes the described sequence: check database up, check heartbeats, restart OptiSweep if heartbeats aren’t there, then check RMS visibility."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Database is up after the backup migration / planned restart.",
+    "Heartbeats are present (not flat lined).",
+    "RMS is visible after restart/migration sequence."
+  ],
+  "healthy_conditions": [
+    "Database-up status indicates the database is available.",
+    "Heartbeat indicator shows active heartbeats for tippers.",
+    "RMS interface shows RMS visibility."
+  ],
+  "failure_conditions": [
+    "Database is not up.",
+    "Heartbeats are flat lined/missing.",
+    "Heartbeats remain missing after restarting OptiSweep.",
+    "RMS cannot be seen after the checks."
+  ],
+  "escalation_guidance": [
+    "If the database is not up, or heartbeats remain missing after restarting OptiSweep, escalate for deeper troubleshooting.",
+    "If RMS cannot be seen after the checks, escalate for further investigation."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 55,
+      "section_id": "training_video_day2_segment_0055",
+      "start_timecode": "03:14:45.000",
+      "end_timecode": "03:20:42.000",
+      "quote_or_summary": "Speaker lists post-migration/planned restart checks: make sure the database is up, check heartbeats, restart OptiSweep if heartbeats aren’t there, then check you can see RMS."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0049_check_to_make_sure_that_tippers_primary_03_13_10_000",
+      "what_to_look_at": "Frame showing the guidance: check that tippers are getting heartbeats; if heartbeats are flat lines, restart OptiSweep."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500",
+      "what_to_look_at": "Frame showing the guidance: if heartbeats are flat lined, restart OptiSweep (includes mention of checking connections and the OptiSweep service)."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_restart_validation_checks_backup_migration"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source segment does not name specific live UI screens/controls for the database-up status, heartbeat indicator, or RMS visibility; only the validation sequence is described."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

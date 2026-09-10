@@ -1,0 +1,420 @@
+{
+  "procedure_id": "proc_validate_sorter_location_records_and_lane_status_in_ssms_v1",
+  "candidate_id": "candidate_training_video_validate_sorter_location_status_in_ssms",
+  "title": "Validate Sorter Location Records and Lane Status in SSMS",
+  "procedure_type": "diagnostic",
+  "summary": "Use the WCS / Helix DB (SSMS) in read-only mode to inspect the SorterSweeper Location Model, verify station and location mappings, and interpret LaneStatus for a selected sorter, tipper, hospital, or induction location.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "lane_or_chute_state",
+    "zone_config_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "mapping_abnormal",
+    "chute_bypassed_or_stuck_closed"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this read-only WCS / Helix DB (SSMS) diagnostic when support must validate a SorterSweeper location record, station or cell-code mapping, location category, lane status, or related KeepClose and TipperSelect configuration.",
+  "not_for": [
+    "Do not use this procedure to modify database rows or configuration values.",
+    "Do not use this procedure as a physical sorter, AGV, hospital, or tipper recovery procedure.",
+    "Do not treat a nullable LoadCategory or AGV-related field as a fault solely because its value is NULL.",
+    "Do not use this procedure to infer an undocumented LaneStatus value or an unverified station mapping."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Perform the read-only inspection in WCS / Helix DB (SSMS), compare the selected location fields, and document the observed mapping and LaneStatus."
+    },
+    {
+      "role": "L3_support",
+      "responsibility": "Review or investigate missing rows, mapping mismatches, undocumented statuses, or locations that remain Not tracking when expected to participate in sorter operation."
+    }
+  ],
+  "safety_notes": [
+    "This is a read-only diagnostic. Do not update database or configuration values as part of this procedure.",
+    "LaneStatus interpretation is observational: Active is open for use, Bypassed is closed, and Not tracking is excluded from use until it becomes Active or Bypassed."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "Read-only access to the WCS / Helix SorterSweeper database",
+    "SorterSweeper Location Model or corresponding location records"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2_support or L3_support access to WCS / Helix DB (SSMS)",
+      "Read-only access to the SorterSweeper database and location records"
+    ],
+    "system_preconditions": [
+      "A location, station, cell code, lane, or status requiring validation has been identified."
+    ],
+    "external_references": [
+      "SorterSweeper Location Model",
+      "The associated station mapping, when validating LocationCellCode"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_training_video_sorter_database_model_v1",
+    "ctx_training_video_sorter_location_types_v1",
+    "ctx_training_video_sorter_location_attributes_status_v1",
+    "ctx_training_video_agv_location_presence_notifications_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+      "description": "WCS / Helix DB (SSMS) Sorter Sweeper Database Location Model view showing Location, Station, SorterName, LocationCellCode, Zone, Sequence, Lane, LoadCategory, LaneDelay, LaneStatus, LocationType, KeepClose, TipperSelect, and sample rows.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the SorterSweeper database in SSMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Access the live WCS / Helix DB surface that stores the SorterSweeper location records.",
+      "instruction": "In WCS / Helix DB (SSMS), select the WCS / Helix SorterSweeper database and open the Location Model or its corresponding location records using read-only access.",
+      "expected_result": "The SorterSweeper location records are available for inspection in SSMS.",
+      "healthy_condition": "The expected SorterSweeper database and location records are accessible without making changes.",
+      "failure_condition": "The database or location records are unavailable, access is not read-only, or the expected Location Model cannot be identified.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Select SorterSweeper database",
+          "exact_action": "Open SSMS and select the WCS / Helix SorterSweeper database.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Open location records",
+          "exact_action": "Open the Location Model or its corresponding location records.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the expected SorterSweeper database or Location Model is missing.",
+        "Stop if the available access does not provide a read-only inspection path."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0021",
+          "timestamp_start": "01:42:21.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+          "quote_or_summary": "The Sorter Sweeper Database contains the Location Model and related location records."
+        },
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0008",
+          "timestamp_start": "00:11:14.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+          "quote_or_summary": "Sorter Sweeper is identified as one of the OptiSweep databases accessed in the WCS database environment."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Inspect the location record fields",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Confirm that the selected location record contains the fields needed to validate its station, lane, and control mapping.",
+      "instruction": "In the WCS / Helix DB (SSMS) Location Model records, inspect Location, Station, SorterName, LocationCellCode, Zone, Sequence, Lane, LoadCategory, LaneDelay, LaneStatus, LocationType, KeepClose, and TipperSelect.",
+      "expected_result": "The selected location row is present and its available fields can be read, including its station, cell code, lane, location type, and lane status.",
+      "healthy_condition": "The row contains the expected location identity and the relevant fields are populated or explicitly NULL where the source indicates a nullable value.",
+      "failure_condition": "The expected row is missing, required mapping fields do not identify the location, or a value is present that cannot be interpreted from the documented fields.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review location attributes",
+          "exact_action": "Inspect Location, Station, SorterName, LocationCellCode, Zone, Sequence, Lane, LoadCategory, LaneDelay, LaneStatus, LocationType, KeepClose, and TipperSelect.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the expected location row is missing.",
+        "Do not change a value because it appears NULL; verify whether the field is documented as nullable."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0021",
+          "timestamp_start": "01:42:21.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+          "quote_or_summary": "The Location Model includes Station, SorterName, LocationCellCode, Zone, Sequence, Lane, LoadCategory, LaneDelay, LaneStatus, LocationType, KeepClose, and TipperSelect."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Validate the location type",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Determine which documented station category the selected location represents.",
+      "instruction": "In the WCS / Helix DB (SSMS) location record, inspect LocationType and compare it with the documented categories: Sorter, Tipper, Hospital, or Induction.",
+      "expected_result": "LocationType identifies the selected location as Sorter, Tipper, Hospital, or Induction.",
+      "healthy_condition": "The LocationType value matches the intended station category; an Induction location represents the specified tote induction location at the hospital, and a Hospital location represents the specified tote drop-off location.",
+      "failure_condition": "LocationType is missing, contains an undocumented value, or does not match the intended station category.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check LocationType",
+          "exact_action": "Confirm that LocationType identifies Sorter, Tipper, Hospital, or Induction.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if LocationType is undocumented or does not match the station mapping."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0021",
+          "timestamp_start": "01:42:21.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+          "quote_or_summary": "Locations represent stations in the map and have four types: Sorter, Tipper, Hospital, and Induction."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Compare LocationCellCode with the station mapping",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Verify that the location's cell-code identity corresponds to the intended station and supports the documented presence-notification behavior.",
+      "instruction": "In the WCS / Helix DB (SSMS), compare the selected location's LocationCellCode and Station with the associated station mapping. For an Induction or Hospital location, verify whether the AGV-reported cell code is the same cell code as the location used for the hospital-controller presence notification.",
+      "expected_result": "The selected LocationCellCode corresponds to the intended Station; for an Induction or Hospital location, the mapping identifies the cell code used for the documented hospital-controller notification behavior.",
+      "healthy_condition": "LocationCellCode and Station agree with the associated mapping and the location category.",
+      "failure_condition": "LocationCellCode does not match the station mapping, the mapping is missing, or the location category is inconsistent with the expected notification relationship.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Compare cell code and station",
+          "exact_action": "Compare LocationCellCode with the associated station mapping.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if LocationCellCode does not match the station mapping.",
+        "Escalate if an Induction or Hospital location cannot be associated with the expected cell-code relationship."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0021",
+          "timestamp_start": "01:42:21.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+          "quote_or_summary": "LocationCellCode identifies the station cell; when an AGV reports the same cell code as an Induction or Hospital location, the hospital controller is notified of the AGV presence."
+        },
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0009",
+          "timestamp_start": "00:17:15.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+          "quote_or_summary": "Cell codes correspond to RMS node-code terminology and are used as location identifiers."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Interpret LaneStatus",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Determine whether the selected lane or location is open, closed, or excluded from use according to the live database state.",
+      "instruction": "In the WCS / Helix DB (SSMS) location record, inspect LaneStatus and record whether it is Active, Bypassed, or Not tracking.",
+      "expected_result": "LaneStatus displays one of the documented values and support records the corresponding operational interpretation.",
+      "healthy_condition": "Active indicates the lane is open for use; Bypassed indicates the lane is closed; Not tracking indicates the location is excluded from use until it becomes Active or Bypassed.",
+      "failure_condition": "LaneStatus contains an undocumented value, or the location remains Not tracking when it is expected to participate in sorter operation.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Read lane status",
+          "exact_action": "Inspect LaneStatus and record whether the location is Active, Bypassed, or Not tracking.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if LaneStatus contains an undocumented value.",
+        "Escalate if the location remains Not tracking when it is expected to participate in sorter operation.",
+        "Do not change LaneStatus or other database values as part of this diagnostic."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0021",
+          "timestamp_start": "01:42:21.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+          "quote_or_summary": "LaneStatus values are Active, Bypassed, and Not tracking; Active is open, Bypassed is closed, and Not tracking is excluded from use."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Review KeepClose and TipperSelect when applicable",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Check location-specific closeout and tipper-selection configuration without misclassifying supported NULL values.",
+      "instruction": "In the WCS / Helix DB (SSMS) location record, inspect KeepClose and TipperSelect when those configuration values are relevant to the location. Preserve source-supported NULL values for nullable fields, including applicable load-category or AGV-related values, rather than treating every NULL as an error.",
+      "expected_result": "KeepClose and TipperSelect are recorded when applicable, and nullable fields are distinguished from mapping or status faults.",
+      "healthy_condition": "The observed KeepClose and TipperSelect values are consistent with the location's documented use, while supported NULL values remain unchanged and are not automatically classified as faults.",
+      "failure_condition": "A relevant KeepClose or TipperSelect value conflicts with the expected location use, or a value is treated as an error solely because it is NULL.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check location configuration",
+          "exact_action": "Check KeepClose and TipperSelect for the location when those configuration values are relevant.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if a relevant KeepClose or TipperSelect value conflicts with the expected location mapping.",
+        "Do not modify configuration values.",
+        "Do not escalate a nullable field solely because its value is NULL."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0021",
+          "timestamp_start": "01:42:21.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+          "quote_or_summary": "KeepClose indicates whether a chute should remain closed after an exchange; TipperSelect identifies a specified tipper when applicable. The segment also states that some LoadCategory and AGV-related values are expected to be nullable."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The selected location row is present in the SorterSweeper Location Model.",
+    "LocationType is one of Sorter, Tipper, Hospital, or Induction and matches the intended station category.",
+    "LocationCellCode corresponds to the associated Station mapping.",
+    "LaneStatus is Active, Bypassed, or Not tracking and its operational meaning is recorded.",
+    "KeepClose and TipperSelect are reviewed when relevant without treating supported NULL values as faults.",
+    "No database or configuration values are changed."
+  ],
+  "healthy_conditions": [
+    "The location row is available in WCS / Helix DB (SSMS).",
+    "Station, LocationType, and LocationCellCode identify a consistent mapping.",
+    "LaneStatus is a documented value: Active, Bypassed, or Not tracking.",
+    "Active is interpreted as open for use, Bypassed as closed, and Not tracking as excluded from use.",
+    "Nullable LoadCategory or AGV-related fields are not treated as faults solely because they are NULL."
+  ],
+  "failure_conditions": [
+    "The expected location row is missing.",
+    "LocationType or LocationCellCode does not match the station mapping.",
+    "LaneStatus contains an undocumented value.",
+    "The location remains Not tracking when it is expected to participate in sorter operation.",
+    "A relevant KeepClose or TipperSelect value conflicts with the expected location use."
+  ],
+  "escalation_guidance": [
+    "Escalate missing rows, station or cell-code mapping mismatches, and undocumented LaneStatus values to L3_support or the owning engineering team.",
+    "Escalate a location that remains Not tracking when it is expected to participate in sorter operation.",
+    "Include the observed location identity, Station, LocationCellCode, LocationType, LaneStatus, and relevant KeepClose or TipperSelect values in the escalation.",
+    "Do not make database or configuration changes during this read-only diagnostic."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+      "what_to_look_at": "Sorter Sweeper Database Location Model fields and sample rows: Station, SorterName, LocationCellCode, Zone, Sequence, Lane, LoadCategory, LaneDelay, LaneStatus, LocationType, KeepClose, and TipperSelect."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0021",
+      "page": 21,
+      "timestamp_start": "01:36:41.000",
+      "timestamp_end": "01:48:01.000",
+      "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+      "quote_or_summary": "The segment describes the Sorter Sweeper Database Location Model, location types, LocationCellCode, lane attributes, LaneStatus values including active, bypassed, and not tracking, and location-related tipper and hospital behavior."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+      "what_to_look_at": "Sorter Sweeper Database Location Model fields and sample rows: Station, SorterName, LocationCellCode, Zone, Sequence, Lane, LoadCategory, LaneDelay, LaneStatus, LocationType, KeepClose, and TipperSelect."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_validate_sorter_location_status_in_ssms"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide exact SSMS navigation steps, database-instance details, or a validated SQL query.",
+    "The source does not define the complete station-mapping lookup procedure or identify a specific live location to validate.",
+    "The source does not provide escalation contact names or an engineering-team routing path.",
+    "The source does not establish a time estimate for completing the diagnostic."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

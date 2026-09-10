@@ -1,0 +1,317 @@
+{
+  "procedure_id": "proc_confirm_chute_closure_destination_unavailable_v1",
+  "candidate_id": "candidate_training_video_day1_chute_close_on_full_and_destination_unavailable",
+  "title": "Confirm chute closure and destination unavailable when tote reaches full threshold",
+  "procedure_type": "diagnostic",
+  "summary": "Verify that when a tote reaches the system’s “full” threshold (~80%), the system closes the chute and communicates to Chat that the chute/destination is unavailable so no additional packages come down during the tote exchange.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "sort_lifecycle_state"
+  ],
+  "access_surface": [
+    "stunnel"
+  ],
+  "audience_roles": [
+    "L1_support"
+  ],
+  "failure_pattern_tags": [
+    "chute_bypassed_or_stuck_closed",
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this procedure when you need to confirm the expected behavior that occurs at the tote “full” threshold: the chute is closed (highest priority) and Chat is told the chute is unavailable so packages do not continue coming down during the exchange.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L1_support: Perform the diagnostic checks by correlating tote fullness threshold behavior with the chute-closure/unavailable communication described by the source."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Chat interface/logs where the chute unavailable directive is communicated (as referenced by the source)"
+  ],
+  "prerequisites": {
+    "access_required": [],
+    "system_preconditions": [],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_chute_close_on_full_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+      "description": "Training segment evidence for: two thresholds (pretty full ~60%, full ~80%); at full the chute is closed; when a tote is full the system tells Chat the chute is unavailable so no packages come down during exchange.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Identify the tote fullness state using the source thresholds (~80% full)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the tote is at the “full” threshold where the chute closure and destination unavailability behavior should occur.",
+      "instruction": "Using the tote fullness thresholds described by the source, confirm the tote is at the “full” threshold (~80%).",
+      "expected_result": "The tote is at the “full” threshold (~80%), which is the point where the source states the chute is closed (highest priority).",
+      "healthy_condition": "Tote fullness is at/over the “full” threshold (~80%) rather than only “pretty full” (~60%).",
+      "failure_condition": "The tote is not at the “full” threshold (~80%) (e.g., it is only in the “pretty full” range ~60%), so chute closure/unavailable behavior should not be expected yet.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm tote fullness is at full (~80%)",
+          "exact_action": "Confirm the tote is at the “full” threshold (~80%)",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0014",
+          "page": 14,
+          "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+          "quote_or_summary": "Source describes two thresholds: “pretty full” ~60% and “full” ~80%, and states that at 80% “we have closed the chute… That means our time… KPI…”."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Check that Chat is told the chute is unavailable so no packages come down during exchange",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Validate the mechanism that prevents additional packages from coming down during the tote exchange when the tote is full.",
+      "instruction": "When the tote is at the “full” threshold, check Chat communications/logs for the directive that the chute is unavailable so that no packages come down while doing an exchange.",
+      "expected_result": "At the full threshold (~80%), Chat receives/reflects the message that the chute is unavailable, preventing additional packages from coming down during the exchange.",
+      "healthy_condition": "Chat indicates the chute is unavailable specifically tied to the tote being full, aligning with the source’s stated behavior.",
+      "failure_condition": "Chat does not show the chute-unavailable indication while the tote is at the full threshold, meaning the source-described mechanism to stop additional packages during exchange is not present.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify chute-unavailable directive to Chat at full",
+          "exact_action": "Check Chat for the chute-unavailable directive when the tote is full",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the chute-unavailable indication is not present when the tote is at the full threshold, escalate (source states this should prevent additional packages from coming down during exchange)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0014",
+          "page": 14,
+          "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+          "quote_or_summary": "Source states: “When a tote is full, we tell Chat that the chute is unavailable so that no packages come down while doing an exchange.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Confirm the chute is closed at the full threshold (highest priority)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Confirm the physical/operational state that the source describes as the highest-priority behavior at the full threshold.",
+      "instruction": "At the time the tote reaches the “full” threshold (~80%), confirm the chute is closed.",
+      "expected_result": "At the full threshold (~80%), the chute is closed.",
+      "healthy_condition": "Chute closure is observed/confirmed at the full threshold, consistent with the source’s statement that at 80% the chute is closed (highest priority).",
+      "failure_condition": "The chute is not closed when the tote is at the full threshold (~80%).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm chute closure at full (~80%)",
+          "exact_action": "Confirm the chute is closed at the full threshold (~80%)",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the chute is not closed at the full threshold, note this as a failure of the source-described highest-priority behavior and escalate."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0014",
+          "page": 14,
+          "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+          "quote_or_summary": "Source states: “80% we have closed the chute… The chute’s already closed.” and also: “at full threshold the chute is closed.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "If chute closure/unavailable behavior is missing at full, record and escalate",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Ensure the diagnostic outcome is captured and escalated when the system does not perform the source-described stop mechanism during exchange.",
+      "instruction": "If either (a) Chat does not indicate the chute is unavailable at full, or (b) the chute is not closed at full, document the discrepancy and escalate per your support process.",
+      "expected_result": "A discrepancy is recorded when the source-described behavior is not present at the full threshold, and escalation is initiated.",
+      "healthy_condition": "No discrepancy: both Chat indicates chute unavailable and the chute is closed at full.",
+      "failure_condition": "Discrepancy exists: chute not closed and/or Chat does not indicate chute unavailable while tote is at full.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Escalate discrepancy",
+          "exact_action": "Escalate if chute closure/unavailable indication is not present when tote is at the full threshold",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the chute closure/unavailable indication is not present when the tote is at the full threshold."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0014",
+          "page": 14,
+          "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+          "quote_or_summary": "Source ties full threshold to: “chute is unavailable so that no packages come down while doing an exchange” and “at full threshold the chute is closed.”"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "When tote fullness reaches the “full” threshold (~80%), the chute is closed.",
+    "At the same full threshold, Chat indicates the chute is unavailable so no packages come down during the exchange."
+  ],
+  "healthy_conditions": [
+    "Tote is at “full” (~80%) rather than only “pretty full” (~60%).",
+    "Chat shows/reflects chute-unavailable messaging during exchange at full.",
+    "Chute closure is observed at full."
+  ],
+  "failure_conditions": [
+    "Tote is at full (~80%) but Chat does not indicate chute is unavailable.",
+    "Tote is at full (~80%) but the chute is not closed."
+  ],
+  "escalation_guidance": [
+    "Escalate if chute closure/unavailable indication is not present when the tote is at the full threshold, since the source describes this as the mechanism to stop packages during exchange."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+      "description": "Evidence for thresholds (~60% pretty full, ~80% full), chute closure at 80%, and Chat message: chute unavailable so no packages come down during exchange.",
+      "required_level": "required"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1",
+      "site_code": "",
+      "site_label": "",
+      "section_id": "training_video_day1_segment_0014",
+      "page": 14,
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+      "start_time_seconds": 0,
+      "end_time_seconds": 0,
+      "quote_or_summary": "Two thresholds exist: “pretty full” (~60%) and “full” (~80%). At full: “we have closed the chute… The chute’s already closed.” Also: “When a tote is full, we tell Chat that the chute is unavailable so that no packages come down while doing an exchange.”"
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+      "what_to_look_at": "Two thresholds exist: “pretty full” (~60%) and “full” (~80%). At full: “we have closed the chute… The chute’s already closed.” Also: “When a tote is full, we tell Chat that the chute is unavailable so that no packages come down while doing an exchange.”"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0012_one_question_previous_like_the_two_primary_00_19_06_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0004_so_right_so_i_don_t_primary_00_04_19_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0015_so_the_exchange_so_like_i_primary_00_27_50_500"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day1_chute_close_on_full_and_destination_unavailable"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The source does not specify the exact live UI element/log field name that shows the “chute unavailable” message beyond “tell Chat”."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day1_0004_so_right_so_i_don_t_primary_00_04_19_500",
+    "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500",
+    "artifact_training_video_training_video_day1_0012_one_question_previous_like_the_two_primary_00_19_06_000",
+    "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+    "artifact_training_video_training_video_day1_0015_so_the_exchange_so_like_i_primary_00_27_50_500",
+    "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+    "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000",
+    "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000"
+  ]
+}

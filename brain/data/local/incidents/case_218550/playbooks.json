@@ -1,0 +1,572 @@
+[
+  {
+    "id": "playbook:one_per_incident:218550:bagout_agv_sequence",
+    "type": "playbook",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_218550:event_002",
+      "evidence:case_218550:event_003",
+      "evidence:case_218550:event_005",
+      "evidence:case_218550:event_009",
+      "evidence:case_218550:event_010",
+      "evidence:case_218550:event_016",
+      "evidence:case_218550:event_017",
+      "evidence:case_218550:event_019",
+      "evidence:case_218550:event_020",
+      "evidence:case_218550:event_021",
+      "evidence:case_218550:event_022",
+      "evidence:case_218550:event_023",
+      "evidence:case_218550:event_024",
+      "evidence:case_218550:event_025",
+      "evidence:case_218550:event_026",
+      "evidence:case_218550:event_028",
+      "evidence:case_218550:stage8_playbook_one_per_incident_playbook_incident_218550_bagout_agv_sequence"
+    ],
+    "constraints": {
+      "sites": [
+        "ups_haslet"
+      ],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T17:02:12.814327Z",
+    "updated_at": "2026-09-08T17:02:12.814327Z",
+    "title": "[one_per_incident] Bag-out stoppage with unresponsive or out-of-sequence AGVs",
+    "playbook_goal": "Determine whether the bag-out stoppage is associated with an abnormal AGV, pairing or sequence state, or an HMI-visible task or tote condition; apply only source-supported authorized recovery direction; and confirm that AGVs and bag-out remain functional.",
+    "entry_symptom_entity_ids": [
+      "entity:symptom:bag_out_stuck",
+      "entity:symptom:agv_tracking_or_path_lost",
+      "entity:state:zone_pairing_health_state"
+    ],
+    "affected_entity_ids": [],
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm automated bag-out stoppage and affected operating scope",
+        "capability_id": "capability:confirm_agv_active_error_state",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:symptom:bag_out_stuck",
+        "intent": "Confirm that automated bag-out is stopped or only partially progressing and determine whether the condition is site-wide, localized to a zone or pair, or limited to a tote or task.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Automated bag-out is stopped or only partially progressing and affected operating scope is identified.",
+            "next_node_id": "node_2",
+            "source_refs": [
+              "evidence:case_218550:event_002",
+              "evidence:case_218550:event_016",
+              "evidence:case_218550:event_019"
+            ]
+          },
+          {
+            "outcome": "healthy",
+            "condition": "Automated bag-out progressing normally OR reported stoppage cannot be reproduced as an active condition.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_218550:event_002",
+              "evidence:case_218550:event_016",
+              "evidence:case_218550:event_019"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_218550:event_002",
+          "evidence:case_218550:event_016",
+          "evidence:case_218550:event_019"
+        ]
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "diagnostic_decision",
+        "title": "Check for AGV inactivity or active fault evidence",
+        "capability_id": "capability:confirm_agv_active_error_state",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:symptom:agv_tracking_or_path_lost",
+        "intent": "Determine whether one or more AGVs show abnormal inactivity, active error, or a related sequence or pairing indication that correlates with the bag-out stoppage.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "AGV inactivity, active fault evidence, or sequence/pairing abnormality is indicated and correlates with bag-out stoppage.",
+            "next_node_id": "node_4",
+            "source_refs": [
+              "evidence:case_218550:event_023",
+              "evidence:case_218550:event_022",
+              "evidence:case_218550:event_003"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "AGV evidence is normal or inconclusive; investigate HMI-visible task/tote/hospital workflow condition next.",
+            "next_node_id": "node_3",
+            "source_refs": [
+              "evidence:case_218550:event_023",
+              "evidence:case_218550:event_022",
+              "evidence:case_218550:event_003"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_218550:event_023",
+          "evidence:case_218550:event_022",
+          "evidence:case_218550:event_003"
+        ]
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "diagnostic_decision",
+        "title": "Check HMI-visible task, tote, or lane fault",
+        "capability_id": null,
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Determine whether an HMI-visible fault, stuck task, tote association, or hospital-area workflow condition is preventing bag-out from progressing.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Hospital HMI shows a fault/stuck task/tote mismatch or workflow request does not progress after acknowledge/retry rubric.",
+            "next_node_id": "node_4",
+            "source_refs": [
+              "evidence:case_218550:event_017",
+              "evidence:case_218550:event_024",
+              "evidence:case_218550:event_025",
+              "evidence:case_218550:event_028"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_218550:event_017",
+          "evidence:case_218550:event_024",
+          "evidence:case_218550:event_025",
+          "evidence:case_218550:event_028"
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "procedure_reference",
+        "title": "Restore the affected AGV sequence or pairing state through an authorized recovery path",
+        "capability_id": null,
+        "procedure_id": "procedure:recover_agv_physically:manual_optisweep_om_v3_proc_recover_from_agv_fault_during_exchange_recovery_v1",
+        "symptom_entity_id": null,
+        "intent": "Use an approved, role-authorized recovery procedure to restore the affected AGV or pair to a valid operating sequence when the diagnostic evidence supports that direction.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Do not proceed with physical or state-changing recovery unless the role, safety conditions, and approved procedure are established.",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "Authorized recovery of the affected sequence/pairing state is completed and supports bag-out progress.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_218550:event_009",
+              "evidence:case_218550:event_019",
+              "evidence:case_218550:event_020",
+              "evidence:case_218550:event_010"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "Recovery cannot be completed safely or the affected state remains unresolved.",
+            "next_node_id": "node_6",
+            "source_refs": [
+              "evidence:case_218550:event_009",
+              "evidence:case_218550:event_019",
+              "evidence:case_218550:event_020",
+              "evidence:case_218550:event_010"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_218550:event_009",
+          "evidence:case_218550:event_019",
+          "evidence:case_218550:event_020",
+          "evidence:case_218550:event_010"
+        ]
+      },
+      {
+        "node_id": "node_5",
+        "node_order": 5,
+        "node_type": "validation_gate",
+        "title": "Validate stable AGV operation and automated bag-out",
+        "capability_id": "capability:confirm_agv_active_error_state",
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Confirm that the recovery restored the affected workflow and that AGVs remain functional rather than merely showing a temporary improvement.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Do not declare recovery from a temporary improvement alone; use the escalation path if stable operation cannot be demonstrated.",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "AGVs remain functional and automated bag-out continues/completes without recurrence.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_218550:event_010",
+              "evidence:case_218550:event_023",
+              "evidence:case_218550:event_026"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "AGV inactivity, repeated bag-out stoppage, or recurring HMI fault/task is observed.",
+            "next_node_id": "node_6",
+            "source_refs": [
+              "evidence:case_218550:event_010",
+              "evidence:case_218550:event_023",
+              "evidence:case_218550:event_026"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_218550:event_010",
+          "evidence:case_218550:event_023",
+          "evidence:case_218550:event_026"
+        ]
+      },
+      {
+        "node_id": "node_6",
+        "node_order": 6,
+        "node_type": "escalation_gate",
+        "title": "Stop and escalate when the supported path cannot establish stable recovery",
+        "capability_id": null,
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Hand off when the available evidence does not identify a supported recovery path, authorized recovery cannot be completed safely, or validation fails after recovery.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Stop the playbook path when the authorized recovery and validation evidence are insufficient; do not represent historical collaboration or case escalation as the reason for handoff.",
+        "branches": [
+          {
+            "outcome": "escalate",
+            "condition": "Authorized recovery cannot be completed safely, or validation fails after recovery.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_218550:event_005",
+              "evidence:case_218550:event_021",
+              "evidence:case_218550:event_023",
+              "evidence:case_218550:event_024"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_218550:event_005",
+          "evidence:case_218550:event_021",
+          "evidence:case_218550:event_023",
+          "evidence:case_218550:event_024"
+        ]
+      }
+    ],
+    "entry_node_id": "node_1",
+    "confidence": "medium"
+  },
+  {
+    "id": "playbook:multi_flow:218550:bagout_agv_sequence",
+    "type": "playbook",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_218550:event_002",
+      "evidence:case_218550:event_003",
+      "evidence:case_218550:event_006",
+      "evidence:case_218550:event_008",
+      "evidence:case_218550:event_010",
+      "evidence:case_218550:event_016",
+      "evidence:case_218550:event_017",
+      "evidence:case_218550:event_019",
+      "evidence:case_218550:event_021",
+      "evidence:case_218550:event_022",
+      "evidence:case_218550:event_023",
+      "evidence:case_218550:event_024",
+      "evidence:case_218550:event_025",
+      "evidence:case_218550:event_026",
+      "evidence:case_218550:event_027",
+      "evidence:case_218550:event_028",
+      "evidence:case_218550:event_029",
+      "evidence:case_218550:event_030",
+      "evidence:case_218550:event_031",
+      "evidence:case_218550:stage8_playbook_multi_flow_playbook_incident_218550_bagout_agv_sequence"
+    ],
+    "constraints": {
+      "sites": [
+        "ups_haslet"
+      ],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T17:02:12.871305Z",
+    "updated_at": "2026-09-08T17:02:12.871305Z",
+    "title": "[multi_flow] Troubleshoot bag-out stoppage with abnormal AGV or task sequencing",
+    "playbook_goal": "Determine whether an observable AGV, pairing, sequence, tote, or task condition is preventing bag-out from progressing; guide authorized recovery; and confirm that robots and bag-out operation return to a stable state.",
+    "entry_symptom_entity_ids": [
+      "entity:symptom:bag_out_stuck",
+      "entity:symptom:agv_tracking_or_path_lost",
+      "entity:state:zone_pairing_health_state"
+    ],
+    "affected_entity_ids": [],
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm bag-out stoppage and affected operational pattern",
+        "capability_id": "capability:confirm_agv_active_error_state",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:symptom:bag_out_stuck",
+        "intent": "Confirm whether bag-out is stalled or only partially progressing and whether the observable pattern includes AGV inactivity, sequence or pairing concerns, or a related HMI fault.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Dominant evidence supports an operational stoppage pattern (stalled movement, manual bagging, or out-of-sequence/pairing/tote/HMI fault symptoms).",
+            "next_node_id": "node_2",
+            "source_refs": [
+              "evidence:case_218550:event_002",
+              "evidence:case_218550:event_003",
+              "evidence:case_218550:event_016",
+              "evidence:case_218550:event_023"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "The issue cannot be observed or correlated; RMS evidence is unavailable or unreadable; site cannot confirm the current bag-out state.",
+            "next_node_id": "node_6",
+            "source_refs": [
+              "evidence:case_218550:event_002",
+              "evidence:case_218550:event_003",
+              "evidence:case_218550:event_016",
+              "evidence:case_218550:event_023"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_218550:event_002",
+          "evidence:case_218550:event_003",
+          "evidence:case_218550:event_016",
+          "evidence:case_218550:event_023"
+        ]
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "diagnostic_decision",
+        "title": "Determine whether an AGV active error or abnormal fleet state is present",
+        "capability_id": "capability:confirm_agv_active_error_state",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:symptom:agv_tracking_or_path_lost",
+        "intent": "Determine whether an AGV, robot, or system active-error condition correlates with the bag-out stoppage.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Backend and/or RMS evidence indicates active AGV/system error, prolonged inactivity, or abnormal robot availability/state consistent with stoppage timing.",
+            "next_node_id": "node_3",
+            "source_refs": [
+              "evidence:case_218550:event_022",
+              "evidence:case_218550:event_023"
+            ]
+          },
+          {
+            "outcome": "healthy",
+            "condition": "No correlating active AGV/system error is present, but reported sequence/pair/tote/HMI symptoms may still be relevant (alternate hypothesis).",
+            "next_node_id": "node_3",
+            "source_refs": [
+              "evidence:case_218550:event_022",
+              "evidence:case_218550:event_023"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "Aveva/system error screen cannot be viewed/read and RMS evidence cannot identify/correlate the active errors to the bag-out symptom.",
+            "next_node_id": "node_6",
+            "source_refs": [
+              "evidence:case_218550:event_022",
+              "evidence:case_218550:event_023"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_218550:event_022",
+          "evidence:case_218550:event_023"
+        ]
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "diagnostic_decision",
+        "title": "Check for sequence, pair, tote, or task-state evidence",
+        "capability_id": "capability:confirm_agv_active_error_state",
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Distinguish an AGV sequence or pairing concern from a tote or task condition visible through the hospital-area HMI.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Hospital HMI fault/stuck-task indication or tote-location mismatch is visible and correlates with bag-out stoppage evidence.",
+            "next_node_id": "node_4",
+            "source_refs": [
+              "evidence:case_218550:event_003",
+              "evidence:case_218550:event_017",
+              "evidence:case_218550:event_024",
+              "evidence:case_218550:event_028",
+              "evidence:case_218550:event_029"
+            ]
+          },
+          {
+            "outcome": "healthy",
+            "condition": "Hospital HMI shows no relevant fault/stuck task and tote/task evidence does not show mismatch.",
+            "next_node_id": "node_6",
+            "source_refs": [
+              "evidence:case_218550:event_003",
+              "evidence:case_218550:event_017",
+              "evidence:case_218550:event_024",
+              "evidence:case_218550:event_028",
+              "evidence:case_218550:event_029"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "HMI crop unreadable/unviewable or tote identity/location cannot be confirmed and cannot be tied to bag-out evidence.",
+            "next_node_id": "node_6",
+            "source_refs": [
+              "evidence:case_218550:event_003",
+              "evidence:case_218550:event_017",
+              "evidence:case_218550:event_024",
+              "evidence:case_218550:event_028",
+              "evidence:case_218550:event_029"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_218550:event_003",
+          "evidence:case_218550:event_017",
+          "evidence:case_218550:event_024",
+          "evidence:case_218550:event_028",
+          "evidence:case_218550:event_029"
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "procedure_reference",
+        "title": "Apply authorized recovery for the identified AGV or sequence condition",
+        "capability_id": null,
+        "procedure_id": "procedure:confirm_hospital_diversion_path:case_218550_proc_hospital_hmi_lane_ui_fault_acknowledge_retry_check_v1",
+        "symptom_entity_id": null,
+        "intent": "Use the approved recovery path appropriate to the confirmed condition, such as restoring robot availability, correcting an AGV pair or sequence state, or handling a confirmed task or HMI condition.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Do not perform physical removal, pair changes, or other state-changing actions without the applicable approved procedure and role authorization.",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "Affected robots/pair/sequence and/or HMI/task condition improves in an observable way.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_218550:event_006",
+              "evidence:case_218550:event_008",
+              "evidence:case_218550:event_019",
+              "evidence:case_218550:event_025",
+              "evidence:case_218550:event_031"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "No recovery progress is observable or action is outside authorization.",
+            "next_node_id": "node_6",
+            "source_refs": [
+              "evidence:case_218550:event_006",
+              "evidence:case_218550:event_008",
+              "evidence:case_218550:event_019",
+              "evidence:case_218550:event_025",
+              "evidence:case_218550:event_031"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_218550:event_006",
+          "evidence:case_218550:event_008",
+          "evidence:case_218550:event_019",
+          "evidence:case_218550:event_025",
+          "evidence:case_218550:event_031"
+        ]
+      },
+      {
+        "node_id": "node_5",
+        "node_order": 5,
+        "node_type": "validation_gate",
+        "title": "Validate restored sequence and sustained bag-out operation",
+        "capability_id": "capability:confirm_agv_active_error_state",
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Confirm that robots are functional, the relevant sequence is stable, and bag-out completes or continues normally without immediate recurrence.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "Robots functional in proper sequence; bag-out continues normally; site confirms stable operation.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_218550:event_010",
+              "evidence:case_218550:event_026"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "Bag-out stops again, inactivity returns, or HMI/task condition persists; validation cannot be declared successful.",
+            "next_node_id": "node_6",
+            "source_refs": [
+              "evidence:case_218550:event_010",
+              "evidence:case_218550:event_026"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_218550:event_010",
+          "evidence:case_218550:event_026"
+        ]
+      },
+      {
+        "node_id": "node_6",
+        "node_order": 6,
+        "node_type": "escalation_gate",
+        "title": "Stop and escalate when the supported path does not restore stable operation",
+        "capability_id": null,
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Hand off when the abnormal state cannot be identified, authorized recovery is unavailable or unsuccessful, or validation fails after the supported troubleshooting path.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Escalate for unresolved or unauthorized technical continuation, not merely because the historical incident involved collaboration or a prior case escalation.",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Unidentified root cause, repeated recurrence, unresolved HMI/task state, or authorization/evidence prevents further safe continuation.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_218550:event_021",
+              "evidence:case_218550:event_027",
+              "evidence:case_218550:event_030"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_218550:event_021",
+          "evidence:case_218550:event_027",
+          "evidence:case_218550:event_030"
+        ]
+      }
+    ],
+    "entry_node_id": "node_1",
+    "confidence": "medium"
+  }
+]

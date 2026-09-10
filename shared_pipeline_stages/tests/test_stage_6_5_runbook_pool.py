@@ -79,6 +79,62 @@ def test_build_runbook_pool_writes_stage6_outputs(tmp_path: Path) -> None:
     assert report["combined_distribution"]["count"] >= 1
 
 
+def test_retrieval_card_carries_capability_tags() -> None:
+    card = build_retrieval_card(
+        _runbook_dict(
+            procedure_id="proc_query_active_agv_errors_v1",
+            candidate_id="candidate_manual_query_active_agv_errors",
+            title="Query Active AGV Errors From the WCS Database",
+            summary="Retrieve active AGV errors via SSMS.",
+            source_type="manual",
+            source_id="active_agv_error_query_1",
+            capability_tags=["agv_active_errors", "wcs_service_health"],
+            access_surface=["wcs_sql"],
+            audience_roles=["L2_support"],
+            failure_pattern_tags=["pairing_failure"],
+        )
+    )
+    assert card.capability_tags == ["agv_active_errors", "wcs_service_health"]
+    assert card.access_surface == ["wcs_sql"]
+    assert card.audience_roles == ["L2_support"]
+    assert card.failure_pattern_tags == ["pairing_failure"]
+    assert "agv_active_errors" in card.retrieval_text
+    assert "wcs_sql" in card.retrieval_text
+    assert "L2_support" in card.retrieval_text
+
+
+def test_build_runbook_pool_writes_tags_on_cards(tmp_path: Path) -> None:
+    source_root = tmp_path / "active_agv_error_query_1"
+    finalized_dir = source_root / "stage_6_finalized_runbooks" / "finalized_runbooks"
+    finalized_dir.mkdir(parents=True)
+    (finalized_dir / "candidate_manual_query_active_agv_errors.json").write_text(
+        _runbook_json(
+            procedure_id="proc_query_active_agv_errors_v1",
+            candidate_id="candidate_manual_query_active_agv_errors",
+            title="Query Active AGV Errors From the WCS Database",
+            summary="Retrieve active AGV errors via SSMS.",
+            source_type="manual",
+            source_id="active_agv_error_query_1",
+            capability_tags=["agv_active_errors"],
+            access_surface=["wcs_sql"],
+            audience_roles=["L2_support"],
+        ),
+        encoding="utf-8",
+    )
+
+    build_runbook_pool(
+        source_roots=[source_root],
+        output_dir=tmp_path / "shared",
+        config=PoolBuildConfig(min_merge_score=0.9),
+        embedder=MockRunbookEmbedder(dimensions=8),
+    )
+    cards = read_json(tmp_path / "shared" / "stage_6_5_runbook_pool" / "retrieval_cards.json")
+    assert cards[0]["capability_tags"] == ["agv_active_errors"]
+    assert cards[0]["access_surface"] == ["wcs_sql"]
+    assert cards[0]["audience_roles"] == ["L2_support"]
+    assert "agv_active_errors" in cards[0]["retrieval_text"]
+
+
 def test_opposing_actions_apply_penalty_not_hard_reject() -> None:
     start = build_retrieval_card(
         _runbook_dict(
@@ -143,6 +199,10 @@ def _runbook_json(
     summary: str,
     source_type: str,
     source_id: str,
+    capability_tags: list[str] | None = None,
+    access_surface: list[str] | None = None,
+    audience_roles: list[str] | None = None,
+    failure_pattern_tags: list[str] | None = None,
 ) -> str:
     import json
 
@@ -154,6 +214,10 @@ def _runbook_json(
             summary=summary,
             source_type=source_type,
             source_id=source_id,
+            capability_tags=capability_tags,
+            access_surface=access_surface,
+            audience_roles=audience_roles,
+            failure_pattern_tags=failure_pattern_tags,
         )
     )
 
@@ -166,6 +230,10 @@ def _runbook_dict(
     summary: str,
     source_type: str,
     source_id: str,
+    capability_tags: list[str] | None = None,
+    access_surface: list[str] | None = None,
+    audience_roles: list[str] | None = None,
+    failure_pattern_tags: list[str] | None = None,
 ) -> dict:
     return {
         "procedure_id": procedure_id,
@@ -175,6 +243,10 @@ def _runbook_dict(
         "procedure_type": "diagnostic",
         "role_required": "operator",
         "when_to_use": summary,
+        "capability_tags": list(capability_tags or []),
+        "access_surface": list(access_surface or []),
+        "audience_roles": list(audience_roles or []),
+        "failure_pattern_tags": list(failure_pattern_tags or []),
         "steps": [
             {
                 "step_number": 1,

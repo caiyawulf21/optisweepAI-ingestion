@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Validate Sorter Location Records and Lane Status in SSMS</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Validate Sorter Location Records and Lane Status in SSMS</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_validate_sorter_location_records_and_lane_status_in_ssms_v1</td></tr>
+<tr><th>Title</th><td>Validate Sorter Location Records and Lane Status in SSMS</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>lane_or_chute_state, zone_config_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>mapping_abnormal, chute_bypassed_or_stuck_closed</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the WCS / Helix DB (SSMS) in read-only mode to inspect the SorterSweeper Location Model, verify station and location mappings, and interpret LaneStatus for a selected sorter, tipper, hospital, or induction location.</p>
+<h2>When To Use</h2>
+<p>Use this read-only WCS / Helix DB (SSMS) diagnostic when support must validate a SorterSweeper location record, station or cell-code mapping, location category, lane status, or related KeepClose and TipperSelect configuration.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/b5edd9932a6a736d.jpg" alt="artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000" /><figcaption>WCS / Helix DB (SSMS) Sorter Sweeper Database Location Model view showing Location, Station, SorterName, LocationCellCode, Zone, Sequence, Lane, LoadCategory, LaneDelay, LaneStatus, LocationType, KeepClose, TipperSelect, and sample rows.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the SorterSweeper database in SSMS</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In WCS / Helix DB (SSMS), select the WCS / Helix SorterSweeper database and open the Location Model or its corresponding location records using read-only access.</p>
+<p><strong>Expected result:</strong></p>
+<p>The SorterSweeper location records are available for inspection in SSMS.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the expected SorterSweeper database or Location Model is missing.</li>
+<li>Stop if the available access does not provide a read-only inspection path.</li>
+</ul>
+<hr>
+<h3>Step 2 — Inspect the location record fields</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS) Location Model records, inspect Location, Station, SorterName, LocationCellCode, Zone, Sequence, Lane, LoadCategory, LaneDelay, LaneStatus, LocationType, KeepClose, and TipperSelect.</p>
+<p><strong>Expected result:</strong></p>
+<p>The selected location row is present and its available fields can be read, including its station, cell code, lane, location type, and lane status.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the expected location row is missing.</li>
+<li>Do not change a value because it appears NULL; verify whether the field is documented as nullable.</li>
+</ul>
+<hr>
+<h3>Step 3 — Validate the location type</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS) location record, inspect LocationType and compare it with the documented categories: Sorter, Tipper, Hospital, or Induction.</p>
+<p><strong>Expected result:</strong></p>
+<p>LocationType identifies the selected location as Sorter, Tipper, Hospital, or Induction.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if LocationType is undocumented or does not match the station mapping.</li>
+</ul>
+<hr>
+<h3>Step 4 — Compare LocationCellCode with the station mapping</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS), compare the selected location&#x27;s LocationCellCode and Station with the associated station mapping. For an Induction or Hospital location, verify whether the AGV-reported cell code is the same cell code as the location used for the hospital-controller presence notification.</p>
+<p><strong>Expected result:</strong></p>
+<p>The selected LocationCellCode corresponds to the intended Station; for an Induction or Hospital location, the mapping identifies the cell code used for the documented hospital-controller notification behavior.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if LocationCellCode does not match the station mapping.</li>
+<li>Escalate if an Induction or Hospital location cannot be associated with the expected cell-code relationship.</li>
+</ul>
+<hr>
+<h3>Step 5 — Interpret LaneStatus</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS) location record, inspect LaneStatus and record whether it is Active, Bypassed, or Not tracking.</p>
+<p><strong>Expected result:</strong></p>
+<p>LaneStatus displays one of the documented values and support records the corresponding operational interpretation.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if LaneStatus contains an undocumented value.</li>
+<li>Escalate if the location remains Not tracking when it is expected to participate in sorter operation.</li>
+<li>Do not change LaneStatus or other database values as part of this diagnostic.</li>
+</ul>
+<hr>
+<h3>Step 6 — Review KeepClose and TipperSelect when applicable</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS) location record, inspect KeepClose and TipperSelect when those configuration values are relevant to the location. Preserve source-supported NULL values for nullable fields, including applicable load-category or AGV-related values, rather than treating every NULL as an error.</p>
+<p><strong>Expected result:</strong></p>
+<p>KeepClose and TipperSelect are recorded when applicable, and nullable fields are distinguished from mapping or status faults.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if a relevant KeepClose or TipperSelect value conflicts with the expected location mapping.</li>
+<li>Do not modify configuration values.</li>
+<li>Do not escalate a nullable field solely because its value is NULL.</li>
+</ul>
+<hr>
+</body>
+</html>

@@ -1,0 +1,263 @@
+{
+  "procedure_id": "proc_explain_verify_otnet_to_ups_chatxle_via_s_tunnel_v1",
+  "candidate_id": "candidate_training_video_day1_network_boundary_wcs_to_ups_chatxle_via_s_tunnel",
+  "title": "Explain and verify the OTNet → UPS network boundary path: WCS/OptiSweep talks to UPS Chat XLE through S-Tunnel (secure channel)",
+  "procedure_type": "diagnostic",
+  "summary": "Use the source-described network boundary and secure channel components to determine where WCS/OptiSweep obtains UPS order/destination information across the OTNet and UPS network “islands.” The source states that OTNet is separate from the UPS network, and WCS must talk from the OT island to the UPS island by connecting to UPS Chat XLE through S-Tunnel as a secure channel.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "wcs_api_responsiveness"
+  ],
+  "access_surface": [
+    "wcs_api"
+  ],
+  "audience_roles": [
+    "L1_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive",
+    "gateway_unhealthy"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to explain or troubleshoot which network boundary component is responsible for missing/incorrect UPS order/destination information that WCS/OptiSweep uses to determine the next sortable destination for packages.",
+  "not_for": [
+    "Do not use this procedure as a live connectivity test plan for RMS/SSMS/Helix DB, because the source packet provides only conceptual mapping of OTNet/UPS islands and the S-Tunnel secure channel (no live UI/API/DB verification steps are provided)."
+  ],
+  "roles_and_responsibilities": [
+    "L1_support: Use the source-described boundary mapping (OTNet island → UPS island) and the named components (WCS/OptiSweep, UPS Chat XLE, S-Tunnel) to guide where to focus investigation when order/destination information is missing or incorrect."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Source evidence that names the OTNet vs UPS network boundary, WCS/OptiSweep, UPS Chat XLE, and S-Tunnel as the secure channel."
+  ],
+  "prerequisites": {
+    "access_required": [],
+    "system_preconditions": [],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_chatxle_stunnel_network_boundary_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0009_software_we_have_of_course_our_primary_00_12_23_000",
+      "description": "Training video frame showing the OT net separate from the UPS network (“island”), WCS talking to UPS Chat XLE, and S-Tunnel described as the secure channel/encryption from OTNet to UPS Corp.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Review the source-described network boundary: treat OTNet and the UPS network as separate “islands”",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Establish the correct boundary model so you can attribute missing/incorrect destination/order information to the correct side of the network boundary.",
+      "instruction": "Use the source evidence to identify that OptiSweep operates on OT net (customer OT net) separate from the UPS network, and that OT net is described as an island separate from the UPS island.",
+      "expected_result": "You can state the boundary model as: OTNet is separate from the UPS network, and OTNet is an island.",
+      "healthy_condition": "The boundary explanation you use matches the source wording: OT net is separate from the UPS network and is described as an island.",
+      "failure_condition": "You assume a single flat network path (no islands) or you cannot map the boundary as OTNet vs UPS network as described.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm OTNet vs UPS network island model",
+          "exact_action": "Review the training frame evidence that states: “We operate up to suite on the OT net, which is a network separate from the UPS network… OT net is an island…”.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Identify the cross-boundary communication target: WCS/OptiSweep must talk from the OT island to the UPS island to determine the next sortable destination",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Pinpoint which UPS-side endpoint is needed for destination/order information so you can focus investigation on the correct boundary leg.",
+      "instruction": "Use the source evidence to identify that WCS needs to talk from the OT island to the UPS island to determine “what the next sortable destination is” for packages.",
+      "expected_result": "You can state that WCS/OptiSweep must communicate from the OT island to the UPS island to determine the next sortable destination.",
+      "healthy_condition": "Your mapping includes the phrase intent from the source: “WCS needs to talk from this island to the UPS chat…”.",
+      "failure_condition": "You attribute destination/order information to a component that is not described as the UPS-side chat endpoint in the source mapping.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm WCS destination information dependency on UPS chat",
+          "exact_action": "Review the training frame evidence that states: “WCS needs to talk from this island to the UPS chat…”.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Confirm the secure channel mechanism: WCS/OptiSweep talks to UPS through S-Tunnel as a secure channel",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Determine which boundary component is responsible for secure cross-network communication to the UPS endpoint.",
+      "instruction": "Use the source evidence to confirm that WCS/OptiSweep talks to UPS through S-Tunnel, described as a secure channel, to reach UPS Chat XLE.",
+      "expected_result": "You can state the secure channel path as: WCS/OptiSweep → S-Tunnel (secure channel/encryption from OTNet to UPS Corp) → UPS Chat XLE.",
+      "healthy_condition": "Your mapping includes the source-described secure channel/encryption terms: “guest tunnel… secure channel” and “S-Tunnel - Encryption from OTNet to UPS Corp.”",
+      "failure_condition": "You conclude that the cross-boundary communication does not use S-Tunnel (or you cannot connect S-Tunnel to the UPS Chat XLE endpoint as described).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm S-Tunnel secure channel to UPS Chat XLE",
+          "exact_action": "Review the training frame evidence that states: “S tunnel is what UPS requires for us to securely connect… talk to the chat…” and “S-Tunnel - Encryption from OTNet to UPS Corp”.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "If order/destination information is missing or incorrect, map the implicated boundary component (S-Tunnel vs UPS Chat XLE vs WCS-side destination need)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Provide a source-grounded triage mapping so you can decide which boundary leg to investigate first.",
+      "instruction": "Use the source mapping to decide whether the issue is more likely on the secure channel mechanism (S-Tunnel), the UPS communications endpoint (Chat XLE), or the WCS-side need for destination data across the OTNet/UPS islands.",
+      "expected_result": "You can articulate a triage hypothesis using the three named elements from the source mapping: S-Tunnel (secure channel), Chat XLE (UPS communications chat endpoint), and WCS/OptiSweep (OT island side needing destination/order info).",
+      "healthy_condition": "Your triage hypothesis aligns with the source’s boundary model: OTNet island → S-Tunnel secure channel → UPS Chat XLE endpoint for destination/order information.",
+      "failure_condition": "You cannot map the problem to one of the named boundary components (S-Tunnel vs Chat XLE vs WCS-side destination need) based on the source evidence.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Select implicated boundary component for investigation",
+          "exact_action": "Use the source mapping to choose between: (1) secure channel mechanism (S-Tunnel), (2) UPS communications endpoint (Chat XLE), or (3) WCS-side destination/order information dependency across the islands.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If live evidence indicates communication is not using S-Tunnel or not reaching Chat XLE as described, stop and escalate for deeper system-specific investigation."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You can describe the boundary path as OTNet island → S-Tunnel secure channel → UPS Chat XLE, and that WCS/OptiSweep uses this to determine the next sortable destination.",
+    "When destination/order information is missing or incorrect, you can name which boundary component (S-Tunnel vs Chat XLE vs WCS-side destination need) is implicated using the source mapping."
+  ],
+  "healthy_conditions": [
+    "OTNet is treated as separate from the UPS network (“island”).",
+    "WCS/OptiSweep is mapped to UPS Chat XLE via S-Tunnel as the secure channel/encryption mechanism."
+  ],
+  "failure_conditions": [
+    "You cannot map destination/order information dependency to UPS Chat XLE via S-Tunnel across the OTNet/UPS islands.",
+    "Live evidence contradicts the source-described path (not using S-Tunnel or not reaching Chat XLE), requiring escalation."
+  ],
+  "escalation_guidance": [
+    "Stop and escalate for deeper system-specific investigation if live evidence indicates communication is not using S-Tunnel or not reaching Chat XLE as described."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0009_software_we_have_of_course_our_primary_00_12_23_000",
+      "what_to_look_at": "OT net separate from UPS network (“island”), WCS talking from OT island to UPS chat, and S-Tunnel described as secure channel/encryption from OTNet to UPS Corp; also the labels “Chat xLE - UPS communications chat” and “S-Tunnel - Encryption from OTNet to UPS Corp”."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "timestamp_start": "00:10:58.000",
+      "timestamp_end": "00:13:48.000",
+      "section_id": "training_video_day1_segment_0009",
+      "page": 9,
+      "segment_id": "segment_training_video_0009",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0009_software_we_have_of_course_our_primary_00_12_23_000",
+      "what_to_look_at": "OT net separate from UPS network (“island”), WCS talking from OT island to UPS chat, and S-Tunnel described as secure channel/encryption from OTNet to UPS Corp; also the labels “Chat xLE - UPS communications chat” and “S-Tunnel - Encryption from OTNet to UPS Corp”."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0013_so_why_is_this_potential_and_primary_00_20_02_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0005_so_we_talked_to_ups_chat_primary_00_05_38_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0011_so_before_a_parcel_reaches_our_primary_00_17_45_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0037_what_are_these_these_are_rack_primary_01_29_18_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day1_network_boundary_wcs_to_ups_chatxle_via_s_tunnel"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "No live verification steps are provided in the packet (no RMS/SSMS/Helix DB/API Dog request/response checks, no specific endpoints, and no observable fields/statuses to confirm S-Tunnel vs Chat XLE connectivity). This runbook is therefore limited to source-grounded diagnostic mapping."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

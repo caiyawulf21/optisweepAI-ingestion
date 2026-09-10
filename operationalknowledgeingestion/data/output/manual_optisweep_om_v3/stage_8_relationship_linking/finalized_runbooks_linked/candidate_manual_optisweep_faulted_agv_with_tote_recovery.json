@@ -1,0 +1,431 @@
+{
+  "procedure_id": "proc_recover_faulted_agv_carrying_tote_rms_hospital_resume_v1",
+  "candidate_id": "candidate_manual_optisweep_faulted_agv_with_tote_recovery",
+  "title": "Recover a Faulted AGV Carrying a Tote (RMS stop → Hospital HMI remove → re-add → resume RMS)",
+  "procedure_type": "recovery",
+  "summary": "When an AGV is faulted while carrying a tote, stop RMS, remove the faulted AGV from RMS, remove the AGV via the Hospital HMI, add the AGV back into RMS, press E-stop again, and resume RMS.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_physical_recovery"
+  ],
+  "access_surface": [
+    "rms_ui",
+    "hospital_hmi"
+  ],
+  "audience_roles": [
+    "operator"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this recovery procedure when an AGV is faulted while carrying a tote and you need to restore normal RMS operation by removing the faulted AGV from RMS, removing it at the Hospital HMI, re-adding it to RMS, and resuming RMS.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "Operator: Executes the RMS stop/E-stop, performs AGV removal and re-add actions in the RMS AGV API Controls area, removes the AGV at the Hospital HMI, then resumes RMS."
+  ],
+  "safety_notes": [
+    "This procedure includes pressing E-stop on RMS (twice: before removal and after re-adding)."
+  ],
+  "access_or_tools_needed": [
+    "RMS / fleet status UI (rms_ui)",
+    "Hospital HMI / lane UI (hospital_hmi)",
+    "Access to the “AGV API Controls” controls referenced by the manual",
+    "Access to the “Starting the System” controls referenced by the manual"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "rms_ui access to perform RMS E-stop and use AGV API Controls",
+      "hospital_hmi access to use the Hospital HMI Add/Remove AGV screen"
+    ],
+    "system_preconditions": [
+      "An AGV is faulted while carrying a tote (Faulted AGV with Tote scenario)."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_manual_faulted_agv_with_tote_recovery_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+      "description": "Figure 5-4: Faulted AGV with Tote Screen (fault recovery sequence reference).",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_4_37_hospital_hmi_add_remove_agv_screen",
+      "description": "Figure 4-37: Hospital HMI Add/Remove AGV Screen (used to remove/add an AGV via Hospital HMI).",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "description": "Figure 4-12: AGV API Controls (Remove AGV / Recover AGV / Pause All AGVs / Resume All AGVs controls).",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "E-stop RMS",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Stop RMS movement before removing the faulted AGV and tote handling at the Hospital.",
+      "instruction": "On the RMS / fleet status UI, perform an E-stop for RMS.",
+      "expected_result": "RMS is in an E-stopped state (E-stop RMS action is applied on the RMS UI).",
+      "healthy_condition": "RMS is stopped (E-stop RMS state active) so you can safely remove the faulted AGV from RMS.",
+      "failure_condition": "RMS is not stopped (E-stop RMS action does not take effect), preventing safe removal/recovery actions.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "E-stop RMS",
+          "exact_action": "E-stop RMS.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot place RMS into the E-stop state, stop and escalate."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_4_faulted_agv_with_tote",
+          "quote_or_summary": "5.8.2.4: FAULTED AGV WITH TOTE: 1. E-stop RMS."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Remove the faulted AGV from RMS",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Remove the faulted AGV from RMS so it can be handled at the Hospital.",
+      "instruction": "On the RMS / fleet status UI, use the “AGV API Controls” controls to remove the faulted AGV from RMS (enter the AGV ID and use the Remove AGV action).",
+      "expected_result": "The faulted AGV is removed from the system via the AGV API Controls Remove AGV action.",
+      "healthy_condition": "The AGV is no longer present/active in RMS after the Remove AGV action (as reflected by the RMS AGV management view).",
+      "failure_condition": "The AGV cannot be removed from RMS using AGV API Controls (removal action does not succeed).",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Remove AGV (AGV API Controls)",
+          "exact_action": "Remove AGV An AGV can be removed from the system by entering the AGV ID.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the faulted AGV cannot be removed from RMS."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_4_faulted_agv_with_tote",
+          "quote_or_summary": "5.8.2.4: FAULTED AGV WITH TOTE: 2. Remove AGV from RMS. (See \"AGV API Controls\" on page 24.)"
+        },
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 40,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_2_agv_api_controls",
+          "quote_or_summary": "Figure 4-12: AGV API CONTROLS — Remove AGV: An AGV can be removed from the system by entering the AGV ID."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Remove the AGV at the Hospital HMI",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Physically take the tote to the Hospital and remove the AGV via the Hospital HMI.",
+      "instruction": "Take the tote to the Hospital and remove the AGV via the Hospital HMI using the “Add/Remove AGV” screen.",
+      "expected_result": "The AGV is removed from the system at the Hospital via the Hospital HMI Add/Remove AGV screen.",
+      "healthy_condition": "Hospital HMI Add/Remove AGV workflow completes for the AGV being removed (AGV removal action executed on the screen).",
+      "failure_condition": "Hospital HMI does not successfully remove the AGV.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Remove AGV (Hospital HMI Add/Remove AGV)",
+          "exact_action": "The \"Add/Remove AGV Screen\" is used to add a removed AGV to the system or remove an AGV from the system.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the Hospital HMI does not successfully remove the AGV."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_4_faulted_agv_with_tote",
+          "quote_or_summary": "5.8.2.4: FAULTED AGV WITH TOTE: 3. Take the tote to the Hospital and remove the AGV via the Hospital HMI. (See \"1.7 Add/Re- move AGV\" on page 52.)"
+        },
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 68,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_2_7_1_6_sent_from_bagging_station",
+          "quote_or_summary": "Figure 4-37: Hospital HMI Add/Remove AGV Screen — used to add a removed AGV to the system or remove an AGV from the system."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Add the AGV back into RMS",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Reintroduce the recovered AGV into RMS so fleet operation can resume.",
+      "instruction": "On the RMS / fleet status UI, use the “AGV API Controls” controls to add the AGV back into RMS (enter the AGV ID and use the Recover AGV action).",
+      "expected_result": "The AGV is added back into the system via the AGV API Controls Recover AGV action.",
+      "healthy_condition": "The AGV is present/active in RMS after the Recover AGV action (as reflected by the RMS AGV management view).",
+      "failure_condition": "The AGV cannot be added back into RMS using AGV API Controls.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Recover AGV (AGV API Controls)",
+          "exact_action": "Recover AGV Enter an AGV ID to add it to the system.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if RMS cannot be resumed after re-adding the AGV."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_4_faulted_agv_with_tote",
+          "quote_or_summary": "5.8.2.4: FAULTED AGV WITH TOTE: 4. Add AGV into RMS. (See \"AGV API Controls\" on page 24.)"
+        },
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 40,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_2_agv_api_controls",
+          "quote_or_summary": "Figure 4-12: AGV API CONTROLS — Recover AGV: Enter an AGV ID to add it to the system."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Press E-stop again on RMS",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Apply the E-stop again after re-adding the AGV, per the fault recovery sequence.",
+      "instruction": "On the RMS / fleet status UI, press E-stop again on RMS.",
+      "expected_result": "RMS E-stop is pressed again (E-stop RMS action applied a second time).",
+      "healthy_condition": "RMS remains in the E-stopped state after the second E-stop press, consistent with the recovery sequence.",
+      "failure_condition": "Second E-stop press does not take effect.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "E-stop RMS (second press)",
+          "exact_action": "Press the E-Stop again.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot apply the second E-stop, stop and escalate."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_4_faulted_agv_with_tote",
+          "quote_or_summary": "5.8.2.4: FAULTED AGV WITH TOTE: 5. Press the E-Stop again."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Resume RMS",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Resume normal RMS operation after the faulted AGV has been removed, handled at the Hospital, and re-added.",
+      "instruction": "On the RMS / fleet status UI, resume RMS using the “Starting the System” procedure controls.",
+      "expected_result": "RMS resumes after the faulted AGV has been removed from RMS, removed at the Hospital HMI, and re-added into RMS.",
+      "healthy_condition": "RMS is running again (system resumes operation) following the recovery sequence.",
+      "failure_condition": "RMS cannot be resumed after re-adding the AGV.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Resume RMS",
+          "exact_action": "Resume RMS. (See \"Starting the System\" on page 65.)",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if RMS cannot be resumed after re-adding the AGV."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_4_faulted_agv_with_tote",
+          "quote_or_summary": "5.8.2.4: FAULTED AGV WITH TOTE: 6. Resume RMS. (See \"Starting the System\" on page 65.)"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "RMS is resumed after the faulted AGV has been removed from RMS, removed via the Hospital HMI, and re-added into RMS."
+  ],
+  "healthy_conditions": [
+    "RMS is running again after the recovery sequence completes.",
+    "The faulted AGV has been removed from RMS, removed at the Hospital HMI, and re-added into RMS."
+  ],
+  "failure_conditions": [
+    "RMS cannot be resumed after re-adding the AGV.",
+    "The Hospital HMI does not successfully remove the AGV."
+  ],
+  "escalation_guidance": [
+    "Escalate if RMS cannot be resumed after re-adding the AGV, or if the Hospital HMI does not successfully remove the AGV."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+      "page": 91,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_4_faulted_agv_with_tote",
+      "quote_or_summary": "5.8.2.4: FAULTED AGV WITH TOTE: 1. E-stop RMS. 2. Remove AGV from RMS. 3. Take the tote to the Hospital and remove the AGV via the Hospital HMI. 4. Add AGV into RMS. 5. Press the E-Stop again. 6. Resume RMS."
+    },
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+      "page": 40,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_2_agv_api_controls",
+      "quote_or_summary": "Figure 4-12: AGV API CONTROLS — Remove AGV (enter AGV ID; physical removal required if issue; if tote, take to hospital where tote is removed) and Recover AGV (enter AGV ID to add it to the system)."
+    },
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+      "page": 68,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_3_2_7_1_6_sent_from_bagging_station",
+      "quote_or_summary": "Figure 4-37: Hospital HMI Add/Remove AGV Screen — used to add a removed AGV to the system or remove an AGV from the system."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen"
+    },
+    {
+      "artifact_id": "artifact_fig_4_37_hospital_hmi_add_remove_agv_screen"
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_manual_optisweep_faulted_agv_with_tote_recovery"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The candidate references specific RMS UI control/button names for “E-stop RMS” and “Resume RMS” and specific AGV API Controls UI areas, but the packet does not provide the exact UI labels/fields for those controls beyond the general “AGV API Controls” screen description and the recovery step list. Add exact UI control names/labels if available in the source pages for “Starting the System” (page 65) and the RMS E-stop control within the RMS UI."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_fig_4_12_agv_api_controls",
+    "artifact_fig_4_37_hospital_hmi_add_remove_agv_screen",
+    "artifact_fig_5_4_faulted_agv_with_tote_screen"
+  ]
+}

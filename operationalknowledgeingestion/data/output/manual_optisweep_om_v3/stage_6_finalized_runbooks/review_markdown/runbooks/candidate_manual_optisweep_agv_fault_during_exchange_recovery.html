@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Recover From AGV Fault During Exchange (RMS E-stop, remove faulted AGV, backfill, introduce new tote + empty AGV)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Recover From AGV Fault During Exchange (RMS E-stop, remove faulted AGV, backfill, introduce new tote + empty AGV)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_recover_from_agv_fault_during_exchange_recovery_v1</td></tr>
+<tr><th>Title</th><td>Recover From AGV Fault During Exchange (RMS E-stop, remove faulted AGV, backfill, introduce new tote + empty AGV)</td></tr>
+<tr><th>Procedure Type</th><td>recovery</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>None</td></tr>
+<tr><th>Access Surface</th><td>rms_ui, wcs_api</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>None</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Restore exchange flow after an AGV faults while leaving by stopping RMS, removing the faulted AGV from the RMS, optionally removing the trailing AGV if it does not backfill, then introducing a new tote and placing an empty AGV in the affected zone.</p>
+<h2>When To Use</h2>
+<p>Use when an AGV faults during exchange while leaving and you need to restore exchange flow by removing the faulted AGV from RMS, handling backfill behavior, and reintroducing the correct tote + empty-AGV state in the affected zone.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/d87070d22301b81d.jpeg" alt="artifact_fig_5_4_faulted_agv_with_tote_screen" /><figcaption>HMI screenshot showing the faulted AGV with tote state (used as visual context for the faulted condition during exchange recovery).</figcaption></figure>
+<figure><img src="assets/ec83d895fff08cd8.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen" /><figcaption>RMS screen for adding an AGV to a zone when no empty AGV is present (visual support for re-establishing empty AGV state in the affected zone).</figcaption></figure>
+<figure><img src="assets/87f1d32e67350071.jpeg" alt="artifact_fig_5_2_agv_bump_fault_screen" /><figcaption>RMS screen showing an AGV fault example (visual context for RMS fault screens; not specific to this exact exchange-fault step).</figcaption></figure>
+<figure><img src="assets/4f58f8bb3f0f6aea.jpeg" alt="artifact_fig_4_12_agv_api_controls" /><figcaption>AGV API Controls screen showing controls such as Remove AGV / Recover AGV / Pause All AGVs / Resume All AGVs (used for the AGV removal action referenced by the recovery procedure).</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — E-stop RMS</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS / fleet status UI (rms_ui), perform an E-stop of the RMS.</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS is in an E-stopped state (fleet movement is stopped) on the RMS / fleet status UI.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>RMS does not stop as expected (movement continues) — stop recovery actions and escalate.</li>
+</ul>
+<hr>
+<h3>Step 2 — Remove the faulted AGV that is lifted and faulted out while leaving</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS / fleet status UI (rms_ui), identify the AGV that is lifted and has faulted out while leaving, then remove that AGV from the RMS using the AGV API Controls flow referenced by the manual.</p>
+<p><strong>Expected result:</strong></p>
+<p>The faulted AGV is removed from the RMS (it no longer appears as an active AGV in the RMS fleet context for the affected zone).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the faulted AGV cannot be removed from RMS using the AGV API Controls flow — escalate.</li>
+</ul>
+<hr>
+<h3>Step 3 — Check backfill; remove trailing AGV if it does not backfill</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS / fleet status UI (rms_ui), check whether the AGV behind the faulted AGV backfills into the expected position. If it does not backfill, remove that trailing AGV as well using the same AGV API Controls flow referenced by the manual.</p>
+<p><strong>Expected result:</strong></p>
+<p>Either (a) the AGV behind backfills into the expected position, or (b) the trailing AGV is removed from RMS when it does not backfill.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Trailing AGV does not backfill and cannot be removed/cleared as described — escalate.</li>
+</ul>
+<hr>
+<h3>Step 4 — Introduce new tote and place an empty AGV in the affected zone</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Introduce a new tote at the faulted location and place an empty AGV in that zone using the RMS UI actions referenced by the manual.</p>
+<p><strong>Expected result:</strong></p>
+<p>A newly introduced tote is present at the affected location, and an empty AGV is placed in that zone so exchange can proceed.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>New tote/empty AGV cannot be introduced into the correct zone — escalate.</li>
+</ul>
+<hr>
+</body>
+</html>

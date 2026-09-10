@@ -1,0 +1,347 @@
+{
+  "procedure_id": "proc_load_tipper_firmware_via_hmi_usb_v1",
+  "candidate_id": "tipper_load_firmware_via_hmi_usb",
+  "title": "Load tipper firmware via HMI USB dongle",
+  "procedure_type": "recovery",
+  "summary": "Update the tipper controller firmware using a USB drive and then reboot the controller to boot normally and reach the expected HMI screens (Visu_Default, then Visu_MCP_Dual).",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "capability_tags": [
+    "tipper_station_fault"
+  ],
+  "access_surface": [
+    "tipper_hmi",
+    "physical_floor"
+  ],
+  "audience_roles": [
+    "operator"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when you need to load new firmware onto the tipper controller via the HMI USB dongle and then reboot so the HMI returns to the normal commissioning/operator screens.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "Operator: performs the power-off/power-on sequence using the tipper disconnect and uses the tipper HMI to load firmware from the USB dongle."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Tipper disconnect to turn off power",
+    "HMI with top three buttons",
+    "USB drive containing the new version of firmware",
+    "USB dongle on the HMI",
+    "INSTALL FROM FILE button on the HMI",
+    "HMI function key F3"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "tipper_hmi",
+      "physical_floor"
+    ],
+    "system_preconditions": [
+      "Tipper controller is accessible for power control via the disconnect.",
+      "USB drive with the intended firmware version is available and can be plugged into the USB dongle on the HMI."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_4_19_operator_station_control_panel",
+      "description": "Photograph of the Tipper Machine Control Panel (\"Visu_MCP_Dual\" screen) showing the primary operator interface buttons (AUTO, JOG, REF, CYCLE START, CYCLE STOP).",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_page_200_image_2",
+      "description": "HMI screenshot showing the \"Visu_Default\" screen displaying IP and subnet mask settings after controller reboot.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_page_197_image_2",
+      "description": "HMI screenshot showing the gray screen appearance during the step where you hold the top buttons while powering on.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Turn off power to the tipper using the disconnect",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Ensure the controller is fully powered down before entering the firmware-load mode.",
+      "instruction": "Turn off power to the tipper with the disconnect.",
+      "expected_result": "Tipper controller power is off (HMI is not in normal operation).",
+      "healthy_condition": "Controller is fully powered down and ready for the power-on sequence.",
+      "failure_condition": "Power is not fully removed (HMI remains active/normal).",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Power off via disconnect",
+          "exact_action": "Turn off power to the tipper with the disconnect.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Enter firmware-load mode by holding the top three HMI buttons during power-on",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Trigger the HMI gray screen mode required to load firmware from USB.",
+      "instruction": "Press and hold the top three buttons on the HMI, then continue holding them while powering on the tipper.",
+      "expected_result": "A gray screen appears on the HMI while the top three buttons are still held.",
+      "healthy_condition": "Gray screen appears after power-on while holding the top three buttons.",
+      "failure_condition": "Gray screen does not appear while holding the top three buttons during power-on.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Hold top three HMI buttons",
+          "exact_action": "Press and hold the top three buttons on the HMI.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "physical_action",
+          "label": "Power on while holding buttons",
+          "exact_action": "Continue to hold the buttons and power on the tipper.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the gray screen does not appear while holding the top three HMI buttons during power-on, repeat the button-hold/power-on sequence as described."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Plug USB drive into the HMI USB dongle",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Provide the firmware file to the controller for installation.",
+      "instruction": "Plug the USB drive containing the new version of firmware into the USB dongle on the HMI.",
+      "expected_result": "USB drive is physically connected to the HMI USB dongle while the gray screen mode is active.",
+      "healthy_condition": "USB drive is seated in the USB dongle and the HMI remains in the firmware-load mode.",
+      "failure_condition": "USB drive is not connected correctly (firmware installation cannot proceed).",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Insert USB drive",
+          "exact_action": "Plug the USB drive containing the new version of firmware into the USB dongle on the HMI.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Start firmware installation from file",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Initiate the firmware load process from the USB drive.",
+      "instruction": "Press the INSTALL FROM FILE button, then load the firmware from the USB.",
+      "expected_result": "Firmware installation process begins and completes loading from the USB.",
+      "healthy_condition": "Firmware load proceeds successfully from the USB source.",
+      "failure_condition": "Firmware does not load from the USB (installation cannot proceed or fails).",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Press INSTALL FROM FILE",
+          "exact_action": "Press the INSTALL FROM FILE button.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "hmi_action",
+          "label": "Load firmware from USB",
+          "exact_action": "Load the firmware from the USB.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Power-cycle controller and allow normal boot without pressing buttons",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Reboot the controller so it boots normally using the newly loaded firmware.",
+      "instruction": "Power the controller off and back on. Allow the controller to boot normally: do not press any buttons.",
+      "expected_result": "Controller reboots normally without any button presses during boot.",
+      "healthy_condition": "Controller completes boot and transitions to the expected HMI screen (Visu_Default).",
+      "failure_condition": "Controller does not boot normally, or buttons are pressed during boot.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Power off and back on",
+          "exact_action": "Power the controller off and back on.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the controller does not boot normally after power off/on (or if buttons are pressed during boot), repeat the power off/on step and ensure no buttons are pressed during boot."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Verify Visu_Default screen appears with IP and subnet mask settings",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm the controller is running correctly and the HMI is in the expected post-boot state.",
+      "instruction": "Verify the \"Visu_Default\" screen appears on the HMI displaying the IP and subnet mask settings.",
+      "expected_result": "HMI shows the \"Visu_Default\" screen with IP and subnet mask settings.",
+      "healthy_condition": "Visu_Default screen is visible and displays IP and subnet mask values.",
+      "failure_condition": "Visu_Default screen does not appear, or IP/subnet mask settings are not displayed as expected.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check Visu_Default screen",
+          "exact_action": "The \"Visu_Default\" screen will appear on the HMI displaying the IP and subnet mask settings.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Navigate to Visu_MCP_Dual using F3",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Reach the primary tipper operator control screen after firmware load.",
+      "instruction": "Press F3 to go to the \"Visu_MCP_Dual\" screen.",
+      "expected_result": "The HMI displays the \"Visu_MCP_Dual\" screen.",
+      "healthy_condition": "Visu_MCP_Dual screen is active (operator control panel visible).",
+      "failure_condition": "Pressing F3 does not bring up Visu_MCP_Dual.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Press F3",
+          "exact_action": "Press F3 to go to the \"Visu_MCP_Dual\" screen.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "After firmware load and controller reboot, the HMI displays the \"Visu_Default\" screen showing IP and subnet mask settings.",
+    "Pressing F3 brings up the \"Visu_MCP_Dual\" screen."
+  ],
+  "healthy_conditions": [
+    "HMI shows \"Visu_Default\" with IP and subnet mask settings.",
+    "HMI successfully navigates to \"Visu_MCP_Dual\" using F3."
+  ],
+  "failure_conditions": [
+    "Gray screen does not appear while holding the top three HMI buttons during power-on.",
+    "Controller does not boot normally after power off/on, or buttons are pressed during boot.",
+    "Visu_Default screen does not appear or does not show IP and subnet mask settings.",
+    "F3 does not navigate to the \"Visu_MCP_Dual\" screen."
+  ],
+  "escalation_guidance": [
+    "If the gray screen does not appear, repeat the button-hold/power-on sequence as described.",
+    "If the controller does not boot normally after power off/on (or if buttons are pressed during boot), repeat the power off/on step and ensure no buttons are pressed during boot."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_23_12_load_firmware",
+      "page_start": 209,
+      "page_end": 209,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_23_12_load_firmware",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_fig_4_19_operator_station_control_panel"
+    },
+    {
+      "artifact_id": "artifact_page_200_image_2"
+    },
+    {
+      "artifact_id": "artifact_page_197_image_2"
+    }
+  ],
+  "source_candidate_ids": [
+    "tipper_load_firmware_via_hmi_usb"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_fig_4_19_operator_station_control_panel",
+    "artifact_page_197_image_2",
+    "artifact_page_200_image_2"
+  ]
+}

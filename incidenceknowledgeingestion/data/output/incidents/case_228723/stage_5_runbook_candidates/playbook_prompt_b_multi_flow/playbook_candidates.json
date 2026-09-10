@@ -1,411 +1,1090 @@
 [
   {
-    "playbook_candidate_id": "playbook_candidate_incident_228723_zone5_pairing_hospital_diversion_after_robot_change",
-    "title": "Zone cannot get a pair and AMRs divert to hospital after recent robot replacement or remove/add activity",
-    "user_facing_summary": "Use this candidate when a site reports a zone cannot get a pair and AMRs begin going to the hospital after a recent AMR replacement, add, or remove/add attempt. The incident suggests checking whether recent fleet changes left one or more robots in an abnormal RMS roster or mapping state, then using an approved robot-isolation or removal procedure and validating that pairing and fleet behavior return to normal.",
-    "playbook_goal": "Restore normal pairing and fleet movement when a zone-level pairing complaint is accompanied by hospital diversion behavior after recent robot handling changes, without assuming the exact root cause in advance.",
+    "playbook_candidate_id": "playbook_candidate_incident_228723_zone_pairing_roster_anomaly",
+    "title": "Zone pairing failure with abnormal AMR routing or roster state",
+    "user_facing_summary": "Use when a site reports that a zone cannot obtain a pair, AMRs are not behaving as expected, or replacement AMRs are routing to the hospital instead of supporting the affected workflow.",
+    "playbook_goal": "Confirm the observable pairing and fleet symptoms, determine whether the affected AMR roster or mapping state is abnormal, guide an authorized site-side isolation or removal decision when supported, and validate that normal operation returns.",
     "observed_entry_symptoms": [
-      "Site reports the ACB system is down",
-      "A specific zone, especially zone 5 in this incident, is unable to get a pair",
-      "After an AMR with low battery or an AMR replacement attempt, AMRs begin going to the hospital lane",
-      "The issue appears after the site attempted to add, remove, or replace one or more AGVs or AMRs"
+      "A zone is unable to get a pair.",
+      "The ACB workflow is reported as down or unable to operate.",
+      "Replacement AMRs route to the hospital lane instead of supporting the affected zone.",
+      "An AMR is reported with low battery or is physically under a rack.",
+      "The site reports that AMR behavior remains abnormal after an attempted replacement."
     ],
     "negative_or_absent_signals": [
-      "The low-battery condition was discussed as the event that started the problem, but source discussion explicitly suggested it was not the current issue",
-      "No direct source evidence confirms a service crash, gateway outage, or API failure",
-      "RMS screenshots are not legible enough to confirm exact table values or alarms from the images alone"
+      "The source does not provide a confirmed service crash, API failure, or database error.",
+      "The source does not independently confirm that low battery was the current cause; one support message described it as a possible initiating condition rather than the current cause.",
+      "The RMS screenshot details are not sufficiently legible to establish exact status fields or error codes.",
+      "Recovery was reported by site communication and short monitoring, not independently confirmed by readable live telemetry."
     ],
     "support_user_language_examples": [
-      "Zone 5 is unable to get a pair",
-      "Every AMR goes to the hospital",
-      "They had a low battery AMR under the rack and replaced it",
-      "They may not have removed and added it properly",
-      "Robot 158 was shown as not mapped"
+      "Zone can't get a pair",
+      "Nothing is pairing in the zone",
+      "ACB is down",
+      "AMRs are going to the hospital",
+      "The replacement robots keep going to hospital",
+      "We have a low-battery robot under the rack",
+      "The robots were removed and added but it still isn't working",
+      "The fleet is not taking tasks"
     ],
     "tentative_internal_patterns": [
-      "Recent AMR remove/add or replacement activity may correlate with abnormal fleet roster or mapping state in RMS",
-      "A single robot in an abnormal state may block or disrupt broader zone behavior until isolated from the active system",
-      "Improper remove/add handling through the hospital flow was discussed as a possible contributing pattern",
-      "Unmapped or improperly added robots were discussed as a recurring prior-call pattern"
+      "Possible abnormal robot roster or mapping state after remove/add activity",
+      "Possible unassigned or unmapped AMR affecting pairing or task assignment",
+      "Possible residual physical or location state involving an AMR unable to reach charging",
+      "Possible routing or workflow diversion toward the hospital lane"
     ],
-    "internal_pattern_notes": "These are tentative interpretations from support discussion and resolution notes, not confirmed root cause. They should not be used as mandatory runtime entry criteria.",
+    "internal_pattern_notes": "These are tentative patterns from support discussion and case resolution text. The source does not establish a confirmed root cause. The low-battery condition may have initiated the issue, while the later suspected pattern involved robot removal, addition, or mapping state.",
     "affected_systems_or_components": [
       "ACB system",
-      "AMR/robot fleet",
+      "AMRs / AGVs",
       "RMS",
-      "Zone 5 pairing behavior",
-      "Hospital lane / hospital workflow"
+      "Hospital lane"
     ],
-    "separability_reason": "Single dominant troubleshooting flow from observable pairing failure and hospital diversion toward checking recent robot changes, identifying abnormal robot state in RMS, isolating the suspect robot, and validating recovery.",
+    "separability_reason": "The reported low battery, hospital routing, RMS roster concern, robot removal, and monitoring all address the same goal: restore zone pairing and normal AMR task behavior. They are not sufficiently independent to justify multiple candidates.",
     "confidence": "medium",
-    "confidence_reason": "The incident provides a coherent troubleshooting shape and a reported recovery action tied to robot 158 being removed after being shown as not mapped. Confidence is reduced because several details are speculative, screenshots are partially unreadable, and the evidence does not provide a fully explicit reusable decision rubric.",
+    "confidence_reason": "The packet contains a clear observable symptom pattern, a named RMS surface, repeated discussion of remove/add and mapping state, a source-supported site-side recovery action, and reported post-action stability. Confidence is limited because the RMS details are partly unreadable, the recovery was narrative rather than independently verified, and the source uses inconsistent ACB/ECB naming.",
     "nodes": [
       {
         "node_id": "node_1",
         "node_order": 1,
         "node_type": "diagnostic_decision",
-        "title": "Confirm the pairing-failure and hospital-diversion symptom pattern",
-        "intent": "Determine whether the current incident matches the observable pattern of a zone unable to get a pair after recent robot handling changes, with AMRs diverting to the hospital.",
-        "goal": "Determine whether the current incident matches the observable pattern of a zone unable to get a pair after recent robot handling changes, with AMRs diverting to the hospital.",
-        "runbook_placeholder": "Procedure needed to confirm with the site which specific zone cannot get a pair, whether AMRs are actively going to the hospital lane, whether a low-battery robot was recently found under the rack, and whether the site recently replaced, added, or removed any AMRs. In RMS, inspect the fleet or zone-related views that can corroborate abnormal hospital-diversion behavior and recent robot roster changes.",
+        "title": "Confirm zone pairing failure and abnormal AMR behavior",
+        "intent": "Determine whether the reported issue is an active zone pairing failure accompanied by abnormal AMR routing or inability to support the affected workflow.",
+        "goal": "Determine whether the reported issue is an active zone pairing failure accompanied by abnormal AMR routing or inability to support the affected workflow.",
+        "runbook_placeholder": "Procedure needed to confirm with the site whether the affected zone is currently unable to get a pair, whether AMRs are routing to the hospital lane instead of the expected workflow, whether a low-battery or physically obstructed AMR is involved, and whether RMS shows the same abnormal fleet or pairing presentation; use generic affected-zone and reported-robot references rather than incident-specific identifiers.",
         "allowed_roles": [
-          "L1_support",
-          "L2_support",
-          "L3_support"
+          "operator",
+          "L1_support"
         ],
-        "source_supported_description": "The site reported zone 5 was unable to get a pair; earlier issues involved a low-battery AMR under the rack; after replacement attempts, AMRs were going to the hospital.",
-        "needed_runbook_capability": "Procedure needed to confirm with the site which specific zone cannot get a pair, whether AMRs are actively going to the hospital lane, whether a low-battery robot was recently found under the rack, and whether the site recently replaced, added, or removed any AMRs. In RMS, inspect the fleet or zone-related views that can corroborate abnormal hospital-diversion behavior and recent robot roster changes.",
-        "expected_or_observed_result": "In this incident, the site reported zone 5 could not get a pair, earlier low-battery AMR trouble occurred under the rack, a replacement was attempted, and AMRs were going to the hospital lane.",
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "The site reported inability to get a pair, AMRs going to the hospital, and an earlier low-battery AMR condition. RMS artifacts show status tables with abnormal-looking red entries, but exact values are unreadable.",
+        "needed_runbook_capability": "Procedure needed to confirm with the site whether the affected zone is currently unable to get a pair, whether AMRs are routing to the hospital lane instead of the expected workflow, whether a low-battery or physically obstructed AMR is involved, and whether RMS shows the same abnormal fleet or pairing presentation; use generic affected-zone and reported-robot references rather than incident-specific identifiers.",
+        "expected_or_observed_result": "The site or L1 support observes the affected zone behavior through site interview and, when available, the RMS fleet or status view. Healthy or alternate signal: the zone can obtain a pair and AMRs route to the expected workflow. Unhealthy signal: the zone cannot obtain a pair, AMRs consistently route to the hospital, or the site reports an AMR unable to support the workflow. Inconclusive: the report is intermittent, the affected workflow cannot be reproduced, or the RMS view is unavailable or unreadable.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "Support messages record direct phone discussion with the site about inability to get a pair, low battery, replacement AMRs, and hospital routing; source refs case_228723:page_1 and case_228723:page_2."
+          },
+          {
+            "surface": "rms_ui",
+            "provenance": "source_artifact_visible",
+            "source_evidence": "The page 6 artifact is visibly an RMS web UI with robot or system status tables and red-highlighted entries; source ref case_228723:page_6."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "rms_ui"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [
+          {
+            "id": "capability:device_roster_state",
+            "support_contract": "{\"diagnostic_surfaces\":[\"wcs_sql\",\"wcs_api\",\"rms_ui\"]}",
+            "relevant_evidence": [
+              "The source discusses AMR add/remove handling, possible roster problems, and abnormal RMS status."
+            ]
+          }
+        ],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology snippet does not establish a specific backend mapping for zone pairing state or hospital-lane routing for this node."
+        ],
+        "ontology_contract_status": "complete",
+        "healthy_indicators": [
+          "Site reports that the affected zone can obtain a pair.",
+          "AMRs are observed supporting the expected workflow rather than uniformly routing to the hospital.",
+          "RMS presents a consistent normal fleet state without the reported abnormal entries."
+        ],
+        "unhealthy_indicators": [
+          "Site reports that the affected zone cannot obtain a pair.",
+          "Multiple or replacement AMRs route to the hospital lane.",
+          "A low-battery or physically constrained AMR is reported in the affected area.",
+          "RMS shows exception-style or red-highlighted robot status entries."
+        ],
+        "inconclusive_indicators": [
+          "The site cannot reproduce the pairing failure.",
+          "Only one ambiguous AMR symptom is reported without confirming zone impact.",
+          "RMS is unavailable or the relevant table details cannot be read."
+        ],
         "stop_or_escalation_note": "",
         "related_artifact_ids": [
-          "artifact_incident_228723_page_012_embedded_image_01",
-          "artifact_incident_228723_page_012_full_page_01"
+          "artifact_incident_228723_page_006_embedded_image_01"
         ],
         "related_event_ids": [
           "incident_228723_event_002",
           "incident_228723_event_003",
-          "incident_228723_event_023"
+          "incident_228723_event_008",
+          "incident_228723_event_020"
         ],
-        "source_refs": []
+        "source_refs": [
+          {
+            "page_ref": "case_228723:page_1",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Site reports under zone 5, they're unable to get a pair."
+          },
+          {
+            "page_ref": "case_228723:page_2",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Earlier low-battery AMR issues and replacement AMRs going to the hospital lane."
+          },
+          {
+            "page_ref": "case_228723:page_6",
+            "artifact_id": "artifact_incident_228723_page_006_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "RMS web UI with robot or system status tables and multiple red-highlighted entries; exact values are unreadable."
+          }
+        ]
       },
       {
         "node_id": "node_2",
         "node_order": 2,
-        "node_type": "branching_condition",
-        "title": "Check whether recent remove/add or replacement activity is part of the incident context",
-        "intent": "Choose the next troubleshooting direction based on whether the symptom pattern follows recent robot replacement, add, or remove/add handling.",
-        "goal": "Choose the next troubleshooting direction based on whether the symptom pattern follows recent robot replacement, add, or remove/add handling.",
-        "runbook_placeholder": "Procedure needed to review recent site-reported robot handling history and any RMS evidence of recent add, remove, replacement, or hospital-flow activity for specific robot IDs, including how to distinguish a fresh fleet-change issue from an unrelated zone fault.",
-        "allowed_roles": [
-          "L1_support",
-          "L2_support",
-          "L3_support"
-        ],
-        "source_supported_description": "Support discussion suggested the issue sounded related to attempted replacement AMRs and that the site had tried adding two AGVs.",
-        "needed_runbook_capability": "Procedure needed to review recent site-reported robot handling history and any RMS evidence of recent add, remove, replacement, or hospital-flow activity for specific robot IDs, including how to distinguish a fresh fleet-change issue from an unrelated zone fault.",
-        "expected_or_observed_result": "In this incident, support discussion repeatedly tied the issue to attempted replacement AMRs and recent add/remove activity involving multiple AGVs.",
-        "stop_or_escalation_note": "",
-        "related_artifact_ids": [
-          "artifact_incident_228723_page_012_embedded_image_01"
-        ],
-        "related_event_ids": [
-          "incident_228723_event_003",
-          "incident_228723_event_004",
-          "incident_228723_event_007",
-          "incident_228723_event_010"
-        ],
-        "source_refs": []
-      },
-      {
-        "node_id": "node_3",
-        "node_order": 3,
         "node_type": "diagnostic_decision",
-        "title": "Inspect RMS for abnormal robot roster or mapping state tied to the incident",
-        "intent": "Determine whether one or more robots involved in the recent change appear abnormal in RMS, such as not mapped, improperly rostered, or otherwise inconsistent with normal tasking behavior.",
-        "goal": "Determine whether one or more robots involved in the recent change appear abnormal in RMS, such as not mapped, improperly rostered, or otherwise inconsistent with normal tasking behavior.",
-        "runbook_placeholder": "Procedure needed to inspect RMS fleet, roster, and mapping-related views for the specific robots involved in the recent change, including how to identify signs such as not mapped, abnormal roster state, inability to receive tasks, or other exception indicators for named robot IDs.",
+        "title": "Determine whether AMR roster or mapping state is abnormal",
+        "intent": "Determine whether recent AMR replacement or remove/add activity left an AMR missing, unmapped, incorrectly rostered, or otherwise unable to receive the expected task.",
+        "goal": "Determine whether recent AMR replacement or remove/add activity left an AMR missing, unmapped, incorrectly rostered, or otherwise unable to receive the expected task.",
+        "runbook_placeholder": "Procedure needed to inspect the RMS fleet or robot status view for the affected AMR's roster membership, mapped or unmapped indication, location, and assignment-related abnormal state, and to compare the displayed state with the site's reported remove/add history without relying on incident-specific robot identifiers.",
         "allowed_roles": [
-          "L2_support",
-          "L3_support"
+          "operator",
+          "L1_support"
         ],
-        "source_supported_description": "Support discussion suggested robots may not have been removed and added properly and later resolution notes stated robot 158 was shown as not mapped.",
-        "needed_runbook_capability": "Procedure needed to inspect RMS fleet, roster, and mapping-related views for the specific robots involved in the recent change, including how to identify signs such as not mapped, abnormal roster state, inability to receive tasks, or other exception indicators for named robot IDs.",
-        "expected_or_observed_result": "In this incident, robot 158 was later reported as shown not mapped, and support discussion referenced prior calls where AGVs were not added correctly.",
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "Support discussion proposed improper remove/add or RMS rostering as a possible explanation. Resolution text states that a robot was shown as not mapped, but the source does not prove that this was the confirmed root cause.",
+        "needed_runbook_capability": "Procedure needed to inspect the RMS fleet or robot status view for the affected AMR's roster membership, mapped or unmapped indication, location, and assignment-related abnormal state, and to compare the displayed state with the site's reported remove/add history without relying on incident-specific robot identifiers.",
+        "expected_or_observed_result": "The site or L1 support observes the RMS roster or robot status view. Healthy signal: affected AMRs appear as expected members of the fleet with consistent mapped or assigned state and no relevant exception indication. Unhealthy signal: an AMR is absent, shown as not mapped, has an abnormal roster state, or does not receive the expected task after replacement or remove/add activity. Inconclusive: the RMS view is too unclear to identify the relevant state, or the site history does not establish which AMR was replaced or added.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "rms_ui",
+            "provenance": "explicit_source",
+            "source_evidence": "Support discussion explicitly refers to robots being properly rostered in RMS, and the artifact shows RMS status tables; source refs case_228723:page_2, case_228723:page_5, and case_228723:page_6."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "rms_ui"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [
+          {
+            "id": "capability:device_roster_state",
+            "support_contract": "{\"diagnostic_surfaces\":[\"wcs_sql\",\"wcs_api\",\"rms_ui\"]}",
+            "relevant_evidence": [
+              "The source explicitly raises improper remove/add handling, RMS rostering, and a robot shown as not mapped."
+            ]
+          }
+        ],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology snippet does not provide a specific backend field mapping for task assignment eligibility or zone pairing correlation."
+        ],
+        "ontology_contract_status": "complete",
+        "healthy_indicators": [
+          "The relevant AMR is present in the expected RMS roster.",
+          "The AMR is shown with a normal mapped or assigned state.",
+          "The AMR's displayed location and assignment state are consistent with the site's reported physical state."
+        ],
+        "unhealthy_indicators": [
+          "The AMR is shown as not mapped or otherwise absent from the expected roster.",
+          "The displayed roster or mapping state conflicts with the physical or site-reported state.",
+          "The AMR remains unable to receive the expected task after replacement or add activity."
+        ],
+        "inconclusive_indicators": [
+          "The RMS screenshot does not expose readable identifiers or status meanings.",
+          "The site cannot identify the affected AMR or the sequence of replacement activity.",
+          "The displayed state is abnormal but cannot be linked to the pairing symptom."
+        ],
         "stop_or_escalation_note": "",
         "related_artifact_ids": [
           "artifact_incident_228723_page_006_embedded_image_01",
-          "artifact_incident_228723_page_010_embedded_image_01",
-          "artifact_incident_228723_page_012_embedded_image_01",
-          "artifact_incident_228723_page_012_full_page_01"
+          "artifact_incident_228723_page_012_embedded_image_01"
         ],
         "related_event_ids": [
           "incident_228723_event_004",
           "incident_228723_event_005",
-          "incident_228723_event_024"
+          "incident_228723_event_008",
+          "incident_228723_event_022",
+          "incident_228723_event_023"
         ],
-        "source_refs": []
+        "source_refs": [
+          {
+            "page_ref": "case_228723:page_2",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Support suggested robots may not have been removed and added properly and referred to RMS rostering."
+          },
+          {
+            "page_ref": "case_228723:page_6",
+            "artifact_id": "artifact_incident_228723_page_006_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "RMS status tables with red-highlighted entries; exact status values are not readable."
+          },
+          {
+            "page_ref": "case_228723:page_12",
+            "artifact_id": "artifact_incident_228723_page_012_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "case_summary",
+            "quote_or_summary": "Resolution details state that a removed robot was shown as not mapped."
+          }
+        ]
       },
       {
-        "node_id": "node_4",
-        "node_order": 4,
-        "node_type": "procedure_reference",
-        "title": "Perform approved isolation or removal of the suspect robot from the active system",
-        "intent": "If RMS and incident context support a suspect robot as the likely blocker, perform the authorized robot-isolation or removal action rather than continuing to operate it in the active fleet.",
-        "goal": "If RMS and incident context support a suspect robot as the likely blocker, perform the authorized robot-isolation or removal action rather than continuing to operate it in the active fleet.",
-        "runbook_placeholder": "Procedure needed for authorized isolation or removal of a specific robot from the active RMS-managed fleet, including any required hospital-flow handling, charging-state considerations, safety preconditions, and role limits for leaving the unit out of service for the remainder of operations if appropriate.",
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "branching_condition",
+        "title": "Choose supported fleet-state recovery path",
+        "intent": "Choose whether the affected AMR should remain isolated from the active fleet under an authorized site procedure, or whether the evidence does not support that path.",
+        "goal": "Choose whether the affected AMR should remain isolated from the active fleet under an authorized site procedure, or whether the evidence does not support that path.",
+        "runbook_placeholder": "Procedure needed to apply the decision rubric for an AMR shown as unmapped or incorrectly rostered, including comparison of RMS state with site physical confirmation and the safety and authorization criteria for any site-side isolation or remove-from-system action; do not encode exact remove/add steps here.",
         "allowed_roles": [
-          "L2_support",
-          "L3_support"
+          "operator",
+          "L2_support"
         ],
-        "source_supported_description": "Support discussion suggested there might be an easier workaround and to leave the unit out for the rest of the sort; the reported recovery action was removal of robot 158 from the system.",
-        "needed_runbook_capability": "Procedure needed for authorized isolation or removal of a specific robot from the active RMS-managed fleet, including any required hospital-flow handling, charging-state considerations, safety preconditions, and role limits for leaving the unit out of service for the remainder of operations if appropriate.",
-        "expected_or_observed_result": "In this incident, the site removed robot 158 from the system and placed it on charger; after that, the system reportedly began functioning again.",
-        "stop_or_escalation_note": "",
+        "preferred_audience": [
+          "operator",
+          "L2_support"
+        ],
+        "source_supported_description": "The source records site-side removal of a robot from the system and placement on charger after discussion of roster and mapping concerns. It does not provide a complete or repeatable removal/add procedure.",
+        "needed_runbook_capability": "Procedure needed to apply the decision rubric for an AMR shown as unmapped or incorrectly rostered, including comparison of RMS state with site physical confirmation and the safety and authorization criteria for any site-side isolation or remove-from-system action; do not encode exact remove/add steps here.",
+        "expected_or_observed_result": "The site or L1 support compares the RMS roster or mapping indication with the physical and reported AMR state. Recovery-path signal: a specific AMR is shown or reported as unmapped, incorrectly rostered, or otherwise associated with the pairing failure, and an authorized site role can safely isolate it. Alternate signal: the roster or mapping state appears normal, the issue is not linked to one AMR, or the site cannot safely perform the supported action. Inconclusive: the evidence is contradictory or the relevant RMS state cannot be established.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "rms_ui",
+            "provenance": "explicit_source",
+            "source_evidence": "RMS screenshots and support discussion were used to consider roster and mapping state; source refs case_228723:page_2 and case_228723:page_6."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "rms_ui",
+          "physical_floor"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [
+          {
+            "id": "capability:device_roster_state",
+            "support_contract": "{\"diagnostic_surfaces\":[\"wcs_sql\",\"wcs_api\",\"rms_ui\"]}",
+            "relevant_evidence": [
+              "The source describes a suspected roster or mapping problem and a site-side robot removal action."
+            ]
+          },
+          {
+            "id": "capability:agv_physical_recovery",
+            "support_contract": "{\"diagnostic_surfaces\":[\"physical_floor\",\"site_interview\"]}",
+            "relevant_evidence": [
+              "The source reports an AMR under a rack, an AMR placed on charger, and removal from the system."
+            ]
+          }
+        ],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology does not define a specific authorization or safety rubric for this remove-from-system decision.",
+          "The source does not establish whether a system-side remove/add operation or only physical isolation was performed."
+        ],
+        "ontology_contract_status": "complete",
+        "healthy_indicators": [
+          "RMS and site confirmation show normal roster or mapping state.",
+          "No specific AMR can be linked to the pairing failure.",
+          "The site cannot safely or permissibly perform the potential isolation action."
+        ],
+        "unhealthy_indicators": [
+          "RMS indicates an unmapped or abnormal roster state associated with the affected workflow.",
+          "The site confirms the same AMR is physically constrained, unavailable, or placed out of service.",
+          "The remove-from-system path is authorized and supported by the available evidence."
+        ],
+        "inconclusive_indicators": [
+          "RMS and physical observations disagree.",
+          "The source does not identify whether the displayed abnormal state is current.",
+          "Safety, authorization, or physical access prerequisites are not confirmed."
+        ],
+        "stop_or_escalation_note": "Do not direct an unauthorized role to perform fleet-control or physical recovery actions. If the evidence does not establish a safe supported path, use the escalation gate.",
         "related_artifact_ids": [
+          "artifact_incident_228723_page_006_embedded_image_01",
           "artifact_incident_228723_page_010_embedded_image_01",
           "artifact_incident_228723_page_012_embedded_image_01"
         ],
         "related_event_ids": [
           "incident_228723_event_006",
-          "incident_228723_event_011",
-          "incident_228723_event_018",
-          "incident_228723_event_019",
-          "incident_228723_event_024"
+          "incident_228723_event_007",
+          "incident_228723_event_009",
+          "incident_228723_event_022"
         ],
-        "source_refs": []
+        "source_refs": [
+          {
+            "page_ref": "case_228723:page_6",
+            "artifact_id": "artifact_incident_228723_page_006_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "RMS artifact includes a note that the site removed a robot from the system."
+          },
+          {
+            "page_ref": "case_228723:page_10",
+            "artifact_id": "artifact_incident_228723_page_010_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Site removed a robot from the system, placed it on charger, and reported subsequent recovery."
+          },
+          {
+            "page_ref": "case_228723:page_12",
+            "artifact_id": "artifact_incident_228723_page_012_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "case_summary",
+            "quote_or_summary": "Resolution details state that a robot shown as not mapped was removed."
+          }
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "procedure_reference",
+        "title": "Perform authorized AMR isolation or removal action",
+        "intent": "Carry out the source-supported high-level recovery action when the affected AMR is linked to the abnormal roster or mapping state and the authorized site procedure permits it.",
+        "goal": "Carry out the source-supported high-level recovery action when the affected AMR is linked to the abnormal roster or mapping state and the authorized site procedure permits it.",
+        "runbook_placeholder": "Procedure needed for authorized site-side AMR isolation or removal from active system participation, including physical safety prerequisites, charging or holding-state requirements, RMS state confirmation, and role limits; the procedure must define the approved remove/add handling without embedding exact operational steps here.",
+        "allowed_roles": [
+          "operator",
+          "L2_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L2_support"
+        ],
+        "source_supported_description": "The source-supported recovery was site removal of an AMR from the system followed by placement on charger. The source does not document exact steps and does not establish that this action is universally appropriate.",
+        "needed_runbook_capability": "Procedure needed for authorized site-side AMR isolation or removal from active system participation, including physical safety prerequisites, charging or holding-state requirements, RMS state confirmation, and role limits; the procedure must define the approved remove/add handling without embedding exact operational steps here.",
+        "expected_or_observed_result": "The authorized site role observes that the affected AMR has been removed from active system participation and placed in a safe charging or holding state, consistent with the source-reported recovery action. Progress signal: the AMR is no longer contributing to the abnormal pairing behavior. Unsuccessful signal: the AMR remains active in the problematic state or the site cannot complete the authorized action. Inconclusive: the action is reported but the resulting RMS or operational state cannot be confirmed.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "rms_ui",
+            "provenance": "explicit_source",
+            "source_evidence": "The source reports removal from the system and includes RMS screenshots showing robot status tables; source refs case_228723:page_6 and case_228723:page_10."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "rms_ui",
+          "physical_floor"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology does not provide a complete cataloged procedure for the specific remove-from-system action described in the incident."
+        ],
+        "ontology_contract_status": "not_required",
+        "healthy_indicators": [
+          "The authorized site role confirms the affected AMR is isolated from active operation.",
+          "The AMR is confirmed in the intended charging or holding state.",
+          "RMS no longer presents the AMR as contributing to the abnormal pairing condition."
+        ],
+        "unhealthy_indicators": [
+          "The AMR remains active in the problematic fleet state.",
+          "The site cannot place the AMR in a safe holding or charging state.",
+          "The pairing symptom continues immediately after the authorized action."
+        ],
+        "inconclusive_indicators": [
+          "Only the physical action is reported without a corresponding system-state confirmation.",
+          "The site cannot confirm which AMR was isolated.",
+          "RMS status remains unreadable or contradictory."
+        ],
+        "stop_or_escalation_note": "Stop if physical safety, authorization, or approved remove/add prerequisites are not satisfied. Do not substitute this node for the exact site procedure.",
+        "related_artifact_ids": [
+          "artifact_incident_228723_page_010_embedded_image_01"
+        ],
+        "related_event_ids": [
+          "incident_228723_event_009",
+          "incident_228723_event_016",
+          "incident_228723_event_022"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_228723:page_10",
+            "artifact_id": "artifact_incident_228723_page_010_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Site removed a robot from the system, placed it on charger, and reported that the system began functioning again."
+          },
+          {
+            "page_ref": "case_228723:page_12",
+            "artifact_id": "artifact_incident_228723_page_012_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "case_summary",
+            "quote_or_summary": "Resolution details report removal of a robot shown as not mapped."
+          }
+        ]
       },
       {
         "node_id": "node_5",
         "node_order": 5,
         "node_type": "validation_gate",
-        "title": "Validate that pairing and fleet behavior have returned to normal",
-        "intent": "Confirm that the zone can pair again and that AMRs are no longer broadly diverting to the hospital after the suspect robot is isolated.",
-        "goal": "Confirm that the zone can pair again and that AMRs are no longer broadly diverting to the hospital after the suspect robot is isolated.",
-        "runbook_placeholder": "Procedure needed to validate recovery in RMS and with the site by checking that the affected zone can obtain pairs again, that AMRs are no longer broadly routing to the hospital lane, that the suspect robot remains isolated as intended, and that operations remain stable during a defined monitoring period.",
+        "title": "Validate restored pairing and stable AMR operation",
+        "intent": "Confirm that the affected workflow has recovered after the authorized fleet-state action and remains operational during observation.",
+        "goal": "Confirm that the affected workflow has recovered after the authorized fleet-state action and remains operational during observation.",
+        "runbook_placeholder": "Procedure needed to validate the affected zone's pairing behavior through site observation, confirm expected AMR routing and fleet state in RMS, and define a short stability-monitoring period before declaring recovery; include criteria for failed validation and evidence capture without prescribing exact screen navigation.",
         "allowed_roles": [
-          "L1_support",
-          "L2_support",
-          "L3_support"
+          "operator",
+          "L1_support"
         ],
-        "source_supported_description": "The site believed removing robot 158 may have fixed the issue; later update said the system began functioning again and remained operational during monitoring.",
-        "needed_runbook_capability": "Procedure needed to validate recovery in RMS and with the site by checking that the affected zone can obtain pairs again, that AMRs are no longer broadly routing to the hospital lane, that the suspect robot remains isolated as intended, and that operations remain stable during a defined monitoring period.",
-        "expected_or_observed_result": "In this incident, after robot 158 was removed, the system reportedly began functioning again and remained operational during about 10 minutes of monitoring.",
-        "stop_or_escalation_note": "",
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "The source reports that operation resumed after robot removal and remained operational during approximately 10 minutes of monitoring, while acknowledging that the recovery was reported rather than independently confirmed by readable live RMS details.",
+        "needed_runbook_capability": "Procedure needed to validate the affected zone's pairing behavior through site observation, confirm expected AMR routing and fleet state in RMS, and define a short stability-monitoring period before declaring recovery; include criteria for failed validation and evidence capture without prescribing exact screen navigation.",
+        "expected_or_observed_result": "The site observes the affected workflow and, when available, checks RMS status. Healthy signal: the zone can obtain a pair, AMRs resume expected operation rather than uniformly routing to the hospital, and the system remains operational during a short monitoring period. Unhealthy signal: pairing remains unavailable, AMRs continue abnormal hospital routing, or the same roster or mapping symptom returns. Inconclusive: recovery is reported but no direct operational observation or readable RMS confirmation is available.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "The source reports that the site believed the system had begun working and that support remained on the call to monitor operation; source refs case_228723:page_7 and case_228723:page_10."
+          },
+          {
+            "surface": "rms_ui",
+            "provenance": "source_artifact_visible",
+            "source_evidence": "The page 10 artifact contains embedded RMS screenshots associated with the reported recovery, although detailed status values are not readable; source ref case_228723:page_10."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "rms_ui"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [
+          {
+            "id": "capability:device_roster_state",
+            "support_contract": "{\"diagnostic_surfaces\":[\"wcs_sql\",\"wcs_api\",\"rms_ui\"]}",
+            "relevant_evidence": [
+              "The source uses RMS screenshots and reports continued operation after removal of the affected AMR."
+            ]
+          }
+        ],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology snippet does not establish a specific backend validation mapping for pair acquisition or hospital-lane routing."
+        ],
+        "ontology_contract_status": "complete",
+        "healthy_indicators": [
+          "The site confirms that the affected zone can obtain a pair.",
+          "AMRs resume the expected workflow instead of consistently routing to the hospital.",
+          "The system remains operational during the reported short monitoring period.",
+          "RMS no longer shows the relevant abnormal roster or mapping indication."
+        ],
+        "unhealthy_indicators": [
+          "The zone remains unable to get a pair.",
+          "AMRs continue routing abnormally to the hospital.",
+          "The same or another fleet-state anomaly reappears during monitoring.",
+          "The reported recovery cannot be reproduced by the site."
+        ],
+        "inconclusive_indicators": [
+          "Recovery is based only on a case note or message without direct site observation.",
+          "The monitoring period is too short to assess stability.",
+          "RMS screenshots or status views are unavailable or unreadable."
+        ],
+        "stop_or_escalation_note": "If pairing or normal AMR routing does not recover, or if the abnormal state returns during monitoring, stop this path and use the escalation gate.",
         "related_artifact_ids": [
-          "artifact_incident_228723_page_010_embedded_image_01"
+          "artifact_incident_228723_page_010_embedded_image_01",
+          "artifact_incident_228723_page_012_embedded_image_01"
         ],
         "related_event_ids": [
-          "incident_228723_event_018",
-          "incident_228723_event_019"
+          "incident_228723_event_011",
+          "incident_228723_event_016",
+          "incident_228723_event_024"
         ],
-        "source_refs": []
+        "source_refs": [
+          {
+            "page_ref": "case_228723:page_7",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Site believed removing the robot may have fixed the issue and reported that the system had begun working."
+          },
+          {
+            "page_ref": "case_228723:page_10",
+            "artifact_id": "artifact_incident_228723_page_010_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "System reportedly began functioning again and remained operational during approximately 10 minutes of monitoring."
+          },
+          {
+            "page_ref": "case_228723:page_12",
+            "artifact_id": "artifact_incident_228723_page_012_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "case_summary",
+            "quote_or_summary": "After removal, the system was reported to be functional again."
+          }
+        ]
       },
       {
         "node_id": "node_6",
         "node_order": 6,
         "node_type": "escalation_gate",
-        "title": "Stop and escalate if supported fleet-state checks do not identify a safe recovery path or validation fails",
-        "intent": "Hand off when the observable symptom pattern persists but the available RMS checks do not clearly identify a supported robot-isolation path, or when the issue remains after the approved action.",
-        "goal": "Hand off when the observable symptom pattern persists but the available RMS checks do not clearly identify a supported robot-isolation path, or when the issue remains after the approved action.",
-        "runbook_placeholder": "Procedure needed to prepare escalation evidence for higher-tier fleet or engineering review, including the site symptom summary, affected zone, robot IDs recently added or removed, RMS fleet and mapping screenshots or exports for the suspect robots, notes on hospital-diversion behavior, and results of any approved isolation or validation steps already attempted.",
+        "title": "Stop if the supported fleet-state path does not restore operation",
+        "intent": "Stop and hand off when the roster or mapping evidence is inconclusive, the authorized recovery action cannot be performed safely, or validation fails after the supported path.",
+        "goal": "Stop and hand off when the roster or mapping evidence is inconclusive, the authorized recovery action cannot be performed safely, or validation fails after the supported path.",
+        "runbook_placeholder": "Procedure needed to prepare a technical escalation handoff with the site symptom description, RMS roster or mapping evidence, physical AMR state, remove/add or isolation actions attempted, pairing and hospital-routing observations, monitoring results, and explicit stop or safety conditions.",
         "allowed_roles": [
           "L1_support",
-          "L2_support"
+          "L2_support",
+          "L3_support"
         ],
-        "source_supported_description": "Support discussion suggested limited options if robots were not properly rostered in RMS, and the case status was escalated during the incident before recovery was confirmed.",
-        "needed_runbook_capability": "Procedure needed to prepare escalation evidence for higher-tier fleet or engineering review, including the site symptom summary, affected zone, robot IDs recently added or removed, RMS fleet and mapping screenshots or exports for the suspect robots, notes on hospital-diversion behavior, and results of any approved isolation or validation steps already attempted.",
-        "expected_or_observed_result": "In this incident, support discussion indicated that if the root issue was improper rostering in RMS, available options might be limited; the case was also historically escalated before final recovery.",
-        "stop_or_escalation_note": "Use this gate only if authorized checks and approved recovery do not restore stable operation or if the required RMS correction is outside current role authority.",
+        "preferred_audience": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "The incident contains ambiguous RMS evidence, unresolved symptoms after an earlier remove/add attempt, and reported recovery that required monitoring. These support a stop condition when the lightweight path cannot establish or restore the expected state.",
+        "needed_runbook_capability": "Procedure needed to prepare a technical escalation handoff with the site symptom description, RMS roster or mapping evidence, physical AMR state, remove/add or isolation actions attempted, pairing and hospital-routing observations, monitoring results, and explicit stop or safety conditions.",
+        "expected_or_observed_result": "L1 or L2 support observes one of the following: the affected AMR state cannot be established in RMS, site safety or authorization prerequisites are absent, the AMR cannot be isolated under the approved procedure, pairing remains unavailable, or abnormal hospital routing continues after recovery. Healthy exit for this gate is not applicable; the gate is entered only when the troubleshooting path cannot continue safely or has not restored operation.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "rms_ui",
+            "provenance": "explicit_source",
+            "source_evidence": "The incident includes RMS status screenshots and discussion of RMS roster state; source refs case_228723:page_2 and case_228723:page_6."
+          },
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "The historical troubleshooting relied on site phone reports and monitoring of operational recovery; source refs case_228723:page_1, case_228723:page_7, and case_228723:page_10."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "rms_ui"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The packet does not provide a specific escalation evidence package standard beyond the historical RMS and site-observation material."
+        ],
+        "ontology_contract_status": "not_required",
+        "healthy_indicators": [],
+        "unhealthy_indicators": [
+          "The affected zone still cannot obtain a pair after the supported recovery path.",
+          "AMRs continue to route abnormally to the hospital.",
+          "RMS mapping or roster state remains unexplained.",
+          "The site cannot safely or authoritatively perform the required action."
+        ],
+        "inconclusive_indicators": [
+          "RMS details remain unreadable.",
+          "The site cannot confirm current AMR location or operational state.",
+          "Recovery is reported but cannot be reproduced or monitored."
+        ],
+        "stop_or_escalation_note": "This gate represents an unsafe, unsupported, or unresolved technical path, not historical unfamiliarity or routine support coordination.",
         "related_artifact_ids": [
-          "artifact_incident_228723_page_009_embedded_image_01"
+          "artifact_incident_228723_page_006_embedded_image_01",
+          "artifact_incident_228723_page_010_embedded_image_01"
         ],
         "related_event_ids": [
-          "incident_228723_event_005",
+          "incident_228723_event_007",
+          "incident_228723_event_008",
+          "incident_228723_event_010",
           "incident_228723_event_016"
         ],
-        "source_refs": []
+        "source_refs": [
+          {
+            "page_ref": "case_228723:page_6",
+            "artifact_id": "artifact_incident_228723_page_006_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "RMS screenshot details are garbled and exact table state is uncertain."
+          },
+          {
+            "page_ref": "case_228723:page_7",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "The issue was still present at one point after robot removal, before later recovery was reported."
+          },
+          {
+            "page_ref": "case_228723:page_10",
+            "artifact_id": "artifact_incident_228723_page_010_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Recovery was reported after removal and short monitoring, but detailed live RMS confirmation was not readable."
+          }
+        ]
       }
     ],
     "branch_hints": [
       {
         "from_node_id": "node_1",
-        "condition_or_signal": "Zone cannot get a pair and AMRs are going to the hospital after recent robot replacement or add/remove activity",
+        "condition_or_signal": "Zone pairing failure and abnormal AMR routing or physical condition are confirmed",
         "suggested_next_node_id": "node_2",
-        "reason": "The incident repeatedly connected the observable symptom pattern to recent AMR handling changes.",
+        "reason": "The source-supported pattern warrants checking roster or mapping state.",
         "source_refs": [
-          "case_228723:page_2",
-          "case_228723:page_3",
-          "case_228723:page_12"
+          {
+            "page_ref": "case_228723:page_1",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Zone unable to get a pair."
+          },
+          {
+            "page_ref": "case_228723:page_2",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Low-battery AMR and replacement AMRs going to hospital."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_1",
+        "condition_or_signal": "Pairing and AMR behavior are normal, localized, or not reproducible",
+        "suggested_next_node_id": "node_6",
+        "reason": "The entry pattern is not confirmed; exit this path for retriage rather than assuming a roster or mapping fault.",
+        "source_refs": [
+          {
+            "page_ref": "case_228723:page_1",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Source describes the pairing symptom as a reported site condition."
+          }
         ]
       },
       {
         "from_node_id": "node_2",
-        "condition_or_signal": "Recent robot handling changes are confirmed",
+        "condition_or_signal": "RMS or site evidence indicates an unmapped, incorrectly rostered, or assignment-ineligible AMR associated with the symptom",
         "suggested_next_node_id": "node_3",
-        "reason": "The next useful direction is to inspect RMS for abnormal roster or mapping state on the involved robots.",
+        "reason": "The incident discussion and resolution text support this as a tentative next troubleshooting direction.",
         "source_refs": [
-          "case_228723:page_2",
-          "case_228723:page_12"
+          {
+            "page_ref": "case_228723:page_2",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Possible improper remove/add and RMS rostering issue."
+          },
+          {
+            "page_ref": "case_228723:page_12",
+            "artifact_id": "artifact_incident_228723_page_012_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "case_summary",
+            "quote_or_summary": "A removed robot was reported as not mapped."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_2",
+        "condition_or_signal": "Roster or mapping state appears normal, is not linked to the symptom, or cannot be interpreted",
+        "suggested_next_node_id": "node_6",
+        "reason": "Do not proceed to a fleet-state recovery action without source-supported evidence of an abnormal roster or mapping state.",
+        "source_refs": [
+          {
+            "page_ref": "case_228723:page_6",
+            "artifact_id": "artifact_incident_228723_page_006_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "Exact RMS table values and status meanings are not readable."
+          }
         ]
       },
       {
         "from_node_id": "node_3",
-        "condition_or_signal": "A specific robot appears abnormal in RMS, such as not mapped or otherwise inconsistent with normal tasking",
+        "condition_or_signal": "An authorized site role confirms safe isolation or removal is supported by the evidence",
         "suggested_next_node_id": "node_4",
-        "reason": "The incident's reported recovery followed removal of the suspect robot from the active system.",
+        "reason": "The source reports site-side removal from the system and placement on charger as the recovery action.",
         "source_refs": [
-          "case_228723:page_10",
-          "case_228723:page_12"
+          {
+            "page_ref": "case_228723:page_10",
+            "artifact_id": "artifact_incident_228723_page_010_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Robot removed from the system and placed on charger."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_3",
+        "condition_or_signal": "Safe authorization, physical access, or sufficient roster evidence is absent",
+        "suggested_next_node_id": "node_6",
+        "reason": "The path must stop rather than infer or direct an unsupported remove/add action.",
+        "source_refs": [
+          {
+            "page_ref": "case_228723:page_3",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Remove/add handling was discussed but the source does not document a complete procedure."
+          }
         ]
       },
       {
         "from_node_id": "node_4",
-        "condition_or_signal": "Approved isolation or removal has been completed",
+        "condition_or_signal": "Authorized isolation or removal is completed",
         "suggested_next_node_id": "node_5",
-        "reason": "Recovery must be confirmed through pairing behavior, hospital-diversion behavior, and short-term monitoring.",
+        "reason": "Post-recovery validation follows the source-reported removal action.",
         "source_refs": [
-          "case_228723:page_10"
+          {
+            "page_ref": "case_228723:page_10",
+            "artifact_id": "artifact_incident_228723_page_010_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "System reportedly began functioning after robot removal."
+          }
         ]
       },
       {
-        "from_node_id": "node_3",
-        "condition_or_signal": "No supported abnormal robot state is identified, or the needed correction is outside role authority",
+        "from_node_id": "node_4",
+        "condition_or_signal": "Isolation or removal cannot be completed or leaves the AMR active in the abnormal state",
         "suggested_next_node_id": "node_6",
-        "reason": "The incident evidence does not support further generic action beyond supported RMS checks and approved isolation.",
+        "reason": "The supported recovery path cannot continue safely or effectively.",
         "source_refs": [
-          "case_228723:page_5",
-          "case_228723:page_9"
+          {
+            "page_ref": "case_228723:page_7",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "The issue was still present at one point after an earlier removal attempt."
+          }
         ]
       },
       {
         "from_node_id": "node_5",
-        "condition_or_signal": "Pairing failure or hospital-diversion behavior persists after the approved action",
-        "suggested_next_node_id": "node_6",
-        "reason": "Failed validation indicates the supported path did not restore stable operation.",
+        "condition_or_signal": "Pairing returns and AMR operation remains normal during monitoring",
+        "suggested_next_node_id": "",
+        "reason": "This is the healthy exit from the playbook path.",
         "source_refs": [
-          "case_228723:page_7",
-          "case_228723:page_10"
+          {
+            "page_ref": "case_228723:page_10",
+            "artifact_id": "artifact_incident_228723_page_010_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "System reportedly remained operational during approximately 10 minutes of monitoring."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_5",
+        "condition_or_signal": "Pairing remains unavailable, abnormal hospital routing continues, or the fleet symptom returns",
+        "suggested_next_node_id": "node_6",
+        "reason": "Validation failure means the reported recovery is not sufficient to close the troubleshooting path.",
+        "source_refs": [
+          {
+            "page_ref": "case_228723:page_7",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "The source distinguishes an earlier unresolved state from later reported recovery."
+          }
         ]
       }
     ],
     "escalation_gates": [
       {
-        "condition_or_signal": "RMS checks do not reveal a supported abnormal robot state, or required correction exceeds current role authority",
+        "condition_or_signal": "The roster or mapping state cannot be established, or the RMS evidence is too ambiguous to support a recovery decision.",
         "required_role": "L2_support",
-        "reason": "The incident discussion suggests some roster-related corrections may require higher-tier handling and should not be improvised.",
+        "reason": "Do not infer a fleet-state fault or direct a remove/add action from unreadable or contradictory evidence.",
         "source_refs": [
-          "case_228723:page_2",
-          "case_228723:page_5"
+          {
+            "page_ref": "case_228723:page_6",
+            "artifact_id": "artifact_incident_228723_page_006_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "RMS table details are garbled and exact status values are unclear."
+          }
         ]
       },
       {
-        "condition_or_signal": "The zone still cannot get a pair or AMRs continue broad hospital diversion after approved robot isolation/removal and monitoring",
+        "condition_or_signal": "The authorized recovery action cannot be performed safely or the affected AMR cannot be placed in an appropriate holding or charging state.",
         "required_role": "L2_support",
-        "reason": "Validation failure means the supported recovery path did not restore stable operation.",
+        "reason": "Physical and fleet-control actions require approved procedures, safety prerequisites, and appropriate authorization.",
         "source_refs": [
-          "case_228723:page_7",
-          "case_228723:page_10"
+          {
+            "page_ref": "case_228723:page_10",
+            "artifact_id": "artifact_incident_228723_page_010_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Source reports site-side removal and placement on charger but provides no complete procedure."
+          }
+        ]
+      },
+      {
+        "condition_or_signal": "Pairing or expected AMR routing does not recover after the supported isolation or removal path, or the abnormal state returns during monitoring.",
+        "required_role": "L2_support",
+        "reason": "The source supports only a tentative fleet-state pattern and a reported short-term recovery; persistent failure requires further technical investigation.",
+        "source_refs": [
+          {
+            "page_ref": "case_228723:page_10",
+            "artifact_id": "artifact_incident_228723_page_010_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Recovery was reported after removal and monitoring, but detailed independent validation was limited."
+          }
         ]
       }
     ],
     "validation_gates": [
       {
-        "validation_goal": "Confirm that the affected zone can pair again",
-        "expected_recovery_signal": "The site no longer reports inability to get a pair in the affected zone",
-        "failure_outcome": "Continue troubleshooting only through supported higher-tier review or escalation",
+        "validation_goal": "Confirm that the affected zone can obtain a pair after the authorized fleet-state action.",
+        "expected_recovery_signal": "Site reports and observes successful pairing in the affected workflow.",
+        "failure_outcome": "Continue no further recovery action in this candidate and use the escalation gate if pairing remains unavailable.",
         "source_refs": [
-          "case_228723:page_1",
-          "case_228723:page_10"
+          {
+            "page_ref": "case_228723:page_1",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Initial symptom was inability to get a pair."
+          }
         ]
       },
       {
-        "validation_goal": "Confirm that fleet behavior is no longer broadly diverting to the hospital",
-        "expected_recovery_signal": "AMRs stop broadly going to the hospital lane and resume expected operation",
-        "failure_outcome": "Treat as unresolved and escalate with fleet-state evidence",
+        "validation_goal": "Confirm that AMRs resume expected operation rather than consistently routing to the hospital.",
+        "expected_recovery_signal": "Site observes normal AMR workflow behavior and no continued fleet-wide diversion to the hospital lane.",
+        "failure_outcome": "Treat the recovery as unsuccessful or incomplete and use the escalation gate.",
         "source_refs": [
-          "case_228723:page_2",
-          "case_228723:page_12"
+          {
+            "page_ref": "case_228723:page_2",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Replacement AMRs were reported as going to the hospital lane."
+          }
         ]
       },
       {
-        "validation_goal": "Confirm short-term operational stability after the suspect robot is isolated",
-        "expected_recovery_signal": "System remains operational during a monitoring period similar to the approximately 10 minutes described in the incident",
-        "failure_outcome": "Do not declare recovery; escalate with evidence of post-action instability",
+        "validation_goal": "Confirm short-term stability after recovery.",
+        "expected_recovery_signal": "The site reports that the system remains operational during a short monitoring period; the source reported approximately 10 minutes.",
+        "failure_outcome": "Do not declare recovery; investigate recurrence or escalate with the observed evidence.",
         "source_refs": [
-          "case_228723:page_10"
+          {
+            "page_ref": "case_228723:page_10",
+            "artifact_id": "artifact_incident_228723_page_010_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "System reportedly remained operational during approximately 10 minutes of monitoring."
+          }
         ]
       }
     ],
     "runbook_placeholders": [
       {
-        "needed_procedure": "Procedure to confirm zone pairing failure, hospital-diversion behavior, and recent robot replacement or remove/add history with the site and in RMS",
-        "why_needed": "The first decision depends on confirming a specific observable symptom pattern rather than assuming a root cause",
+        "needed_procedure": "Site symptom and operational-state confirmation for zone pairing failure, abnormal AMR routing, and recent AMR replacement or remove/add history.",
+        "why_needed": "The entry symptom is reported in site language and must be distinguished from a localized, intermittent, or unrelated condition before fleet-state investigation.",
+        "suggested_role": "operator",
+        "risk_note": "Do not convert low battery or hospital routing into a confirmed root cause.",
+        "source_refs": [
+          {
+            "page_ref": "case_228723:page_1",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Site reported inability to get a pair."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "RMS fleet and robot-status inspection for roster membership, mapping state, location, and abnormal entries associated with the affected workflow.",
+        "why_needed": "Support discussion and resolution text identify possible roster or mapping inconsistency, while the source artifact visibly shows RMS status tables.",
         "suggested_role": "L1_support",
-        "risk_note": "Misidentifying the entry pattern could send responders into the wrong troubleshooting path",
+        "risk_note": "The incident RMS screenshots are not sufficiently legible to define exact status interpretations.",
         "source_refs": [
-          "case_228723:page_1",
-          "case_228723:page_2",
-          "case_228723:page_12"
+          {
+            "page_ref": "case_228723:page_2",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Possible improper remove/add and RMS rostering issue."
+          },
+          {
+            "page_ref": "case_228723:page_6",
+            "artifact_id": "artifact_incident_228723_page_006_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "artifact_visual",
+            "quote_or_summary": "RMS robot-status tables with red-highlighted entries."
+          }
         ]
       },
       {
-        "needed_procedure": "Procedure to inspect RMS fleet, roster, and mapping state for recently changed robot IDs",
-        "why_needed": "The incident's strongest technical pattern is a suspect robot appearing abnormal in RMS, including not mapped",
-        "suggested_role": "L2_support",
-        "risk_note": "RMS interpretation errors could lead to isolating the wrong robot or missing the actual abnormal state",
+        "needed_procedure": "Authorized site AMR isolation or remove-from-system procedure with physical safety, charging or holding-state, and RMS confirmation requirements.",
+        "why_needed": "The source reports removal of an AMR from the system and placement on charger as the recovery action, but does not provide exact procedural steps.",
+        "suggested_role": "operator",
+        "risk_note": "Use only when the site role, safety conditions, and approved remove/add procedure authorize the action.",
         "source_refs": [
-          "case_228723:page_2",
-          "case_228723:page_6",
-          "case_228723:page_12"
+          {
+            "page_ref": "case_228723:page_10",
+            "artifact_id": "artifact_incident_228723_page_010_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "Robot removed from the system and placed on charger."
+          }
         ]
       },
       {
-        "needed_procedure": "Procedure for authorized robot isolation or removal from the active system, including hospital-flow handling and charging considerations",
-        "why_needed": "The reported recovery action was removal of robot 158 from the system and placement on charger",
-        "suggested_role": "L2_support",
-        "risk_note": "Removing an active robot without approved safeguards or authority could create additional operational or safety issues",
-        "source_refs": [
-          "case_228723:page_3",
-          "case_228723:page_10",
-          "case_228723:page_12"
-        ]
-      },
-      {
-        "needed_procedure": "Procedure to validate recovery in RMS and with the site after robot isolation",
-        "why_needed": "The incident only treated recovery as credible after the system resumed operation and remained stable during monitoring",
+        "needed_procedure": "Post-action validation and short stability-monitoring procedure using site observation and RMS fleet status.",
+        "why_needed": "The source reports restored operation and approximately 10 minutes of monitoring, but does not show a complete reusable validation method.",
         "suggested_role": "L1_support",
-        "risk_note": "Premature closure without validation may miss recurring pairing or hospital-diversion behavior",
+        "risk_note": "Case closure or a reported recovery message is not equivalent to independent technical validation.",
         "source_refs": [
-          "case_228723:page_7",
-          "case_228723:page_10"
-        ]
-      },
-      {
-        "needed_procedure": "Procedure to assemble escalation evidence for unresolved RMS roster or mapping-related fleet issues",
-        "why_needed": "If supported checks do not identify a safe path, higher-tier review needs a complete evidence package",
-        "suggested_role": "L2_support",
-        "risk_note": "Escalation without the right robot IDs, RMS evidence, and attempted-action summary can delay recovery",
-        "source_refs": [
-          "case_228723:page_5",
-          "case_228723:page_9"
+          {
+            "page_ref": "case_228723:page_10",
+            "artifact_id": "artifact_incident_228723_page_010_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "support_type": "teams_message",
+            "quote_or_summary": "System reportedly began functioning again and remained operational during monitoring."
+          }
         ]
       }
     ],
     "ignored_non_playbook_content": [
       {
-        "content_type": "support_coordination",
-        "example_from_incident": "Requests to contact Shane, voicemail attempts, and moving to a Teams meeting",
-        "reason_ignored": "These are collaboration details, not reusable troubleshooting orchestration steps"
-      },
-      {
-        "content_type": "communication",
-        "example_from_incident": "Case status changes in Salesforce and closure notifications",
-        "reason_ignored": "Administrative case workflow does not define technical troubleshooting logic"
+        "content_type": "intake",
+        "example_from_incident": "Case creation with subject ACB System Down and high production-impact priority.",
+        "reason_ignored": "Case intake metadata does not describe reusable troubleshooting orchestration."
       },
       {
         "content_type": "routing",
-        "example_from_incident": "Waiting on CBRE work-order verification and later dispatched maintenance work-order evidence",
-        "reason_ignored": "Vendor/work-order handling is external coordination context, not a technical playbook node for this troubleshooting flow"
+        "example_from_incident": "Requests to engage specific support people and references to transferring to a Teams meeting.",
+        "reason_ignored": "Personnel engagement and routing are support-coordination content, not troubleshooting nodes."
+      },
+      {
+        "content_type": "communication",
+        "example_from_incident": "Teams messages, phone coordination, and monitoring updates.",
+        "reason_ignored": "Only the technical observations and recovery evidence were retained; communication mechanics were excluded."
+      },
+      {
+        "content_type": "support_coordination",
+        "example_from_incident": "Waiting for a CBRE work order and discussion of who could be contacted.",
+        "reason_ignored": "Work-order coordination and contact selection are outside the playbook boundary."
+      },
+      {
+        "content_type": "exact_procedure",
+        "example_from_incident": "Statements about swinging robots through the hospital during remove/add handling.",
+        "reason_ignored": "The source does not provide a complete safe procedure; the candidate retains only a high-level procedure placeholder."
       },
       {
         "content_type": "reference_background",
-        "example_from_incident": "Speculation that robot 153 may have lost its QR code or may be stuck in zone 5",
-        "reason_ignored": "This is tentative side speculation with insufficient evidence to become a reusable node"
+        "example_from_incident": "Later work-order details describing an emergency mechanical breakdown and dispatched vendor.",
+        "reason_ignored": "The work-order artifact is follow-up maintenance context and does not establish a reusable technical troubleshooting flow for the pairing symptom."
+      },
+      {
+        "content_type": "other",
+        "example_from_incident": "Salesforce status transitions from New to In Progress, Escalated, Resolved, and Closed.",
+        "reason_ignored": "Administrative case state does not prove technical state or create a playbook direction."
       }
     ],
-    "source_refs": [],
-    "evidence_source_refs": [],
-    "extraction_notes": [
-      "The candidate is entered from observable symptoms rather than the internal label of 'not mapped' or 'improper remove/add'.",
-      "Robot 158 removal is represented as a procedure reference, not as a guaranteed fix.",
-      "The incident suggests but does not prove that improper remove/add handling caused the outage.",
-      "RMS is named because the incident explicitly references RMS and shows RMS screenshots, even though screenshot detail is partially unreadable."
+    "source_refs": [
+      {
+        "page_ref": "case_228723:page_1",
+        "artifact_id": null,
+        "chunk_id": "stage4_page_chunk_001",
+        "support_type": "teams_message",
+        "quote_or_summary": "Site reported that the affected zone was unable to get a pair."
+      },
+      {
+        "page_ref": "case_228723:page_2",
+        "artifact_id": null,
+        "chunk_id": "stage4_page_chunk_001",
+        "support_type": "teams_message",
+        "quote_or_summary": "Earlier low-battery AMR issue, replacement AMRs going to hospital, and possible improper remove/add or RMS rostering."
+      },
+      {
+        "page_ref": "case_228723:page_6",
+        "artifact_id": "artifact_incident_228723_page_006_embedded_image_01",
+        "chunk_id": "stage4_artifact_chunk_001",
+        "support_type": "artifact_visual",
+        "quote_or_summary": "RMS status tables with red-highlighted entries; detailed values are unreadable."
+      },
+      {
+        "page_ref": "case_228723:page_10",
+        "artifact_id": "artifact_incident_228723_page_010_embedded_image_01",
+        "chunk_id": "stage4_artifact_chunk_001",
+        "support_type": "teams_message",
+        "quote_or_summary": "Site removed an AMR from the system, placed it on charger, and reported stable operation during monitoring."
+      },
+      {
+        "page_ref": "case_228723:page_12",
+        "artifact_id": "artifact_incident_228723_page_012_embedded_image_01",
+        "chunk_id": "stage4_artifact_chunk_001",
+        "support_type": "case_summary",
+        "quote_or_summary": "Resolution text reports that a robot shown as not mapped was removed and that the system was reported functional again."
+      }
     ],
-    "summary": "Use this candidate when a site reports a zone cannot get a pair and AMRs begin going to the hospital after a recent AMR replacement, add, or remove/add attempt. The incident suggests checking whether recent fleet changes left one or more robots in an abnormal RMS roster or mapping state, then using an approved robot-isolation or removal procedure and validating that pairing and fleet behavior return to normal.",
+    "evidence_source_refs": [
+      {
+        "source_id": "source_case_228723",
+        "source_type": "incident_evidence_pdf",
+        "source_title": "Case 228723 - OptiSweep Incident Evidence",
+        "source_case_id": "228723",
+        "ingestion_batch_id": "batch_20260629T223537Z",
+        "page_ref": "case_228723:page_1",
+        "quote_or_summary": "Zone pairing failure reported by site."
+      },
+      {
+        "source_id": "source_case_228723",
+        "source_type": "incident_evidence_pdf",
+        "source_title": "Case 228723 - OptiSweep Incident Evidence",
+        "source_case_id": "228723",
+        "ingestion_batch_id": "batch_20260629T223537Z",
+        "page_ref": "case_228723:page_2",
+        "quote_or_summary": "Low-battery AMR, hospital routing, and suspected roster or remove/add issue."
+      },
+      {
+        "source_id": "source_case_228723",
+        "source_type": "incident_evidence_pdf",
+        "source_title": "Case 228723 - OptiSweep Incident Evidence",
+        "source_case_id": "228723",
+        "ingestion_batch_id": "batch_20260629T223537Z",
+        "page_ref": "case_228723:page_6",
+        "artifact_id": "artifact_incident_228723_page_006_embedded_image_01",
+        "quote_or_summary": "RMS artifact with abnormal-looking status entries and removal note."
+      },
+      {
+        "source_id": "source_case_228723",
+        "source_type": "incident_evidence_pdf",
+        "source_title": "Case 228723 - OptiSweep Incident Evidence",
+        "source_case_id": "228723",
+        "ingestion_batch_id": "batch_20260629T223537Z",
+        "page_ref": "case_228723:page_10",
+        "artifact_id": "artifact_incident_228723_page_010_embedded_image_01",
+        "quote_or_summary": "Reported recovery after AMR removal and short monitoring period."
+      }
+    ],
+    "extraction_notes": [
+      "source_package.site_location is empty, so no authoritative ingestion site, site code, or site location metadata was available to populate.",
+      "The canonical incident record identifies the site as UPS Fort Worth, TX (Haslet), but this is treated as source incident context rather than authoritative source_package.site_location metadata.",
+      "The source alternates between ACB and ECB system naming in different sections; the candidate uses the source's more frequent ACB wording and records the inconsistency rather than resolving it.",
+      "The RMS artifact is visibly relevant but has garbled OCR and unreadable detailed status values.",
+      "The reported recovery is based on site and support messages plus short monitoring, not independent live telemetry.",
+      "The source supports a tentative roster or mapping pattern, not a confirmed root cause."
+    ],
+    "summary": "Use when a site reports that a zone cannot obtain a pair, AMRs are not behaving as expected, or replacement AMRs are routing to the hospital instead of supporting the affected workflow.",
     "likely_roles": [
       "L1_support",
       "L2_support",
-      "L3_support"
+      "L3_support",
+      "operator"
     ],
     "related_artifact_ids": [],
     "related_event_ids": [],
@@ -418,9 +1097,11 @@
     "incident_context": {
       "case_id": "228723",
       "site": "UPS Fort Worth, TX (Haslet)",
+      "site_code": "",
+      "site_location": {},
       "incident_start_time": "2026-03-13T19:36:00",
       "incident_resolved_time": "2026-03-13T21:20:00",
-      "time_to_resolve": 104,
+      "time_to_resolve": "1h 44m",
       "resolution_confirmed": true
     }
   }

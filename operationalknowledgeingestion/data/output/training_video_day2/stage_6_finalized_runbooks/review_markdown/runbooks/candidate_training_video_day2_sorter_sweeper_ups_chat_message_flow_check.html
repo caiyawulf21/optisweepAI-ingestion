@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Verify UPS chat message flow for sorter induction, destination enable/close, and label print triggers</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Verify UPS chat message flow for sorter induction, destination enable/close, and label print triggers</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_verify_ups_chat_message_flow_sorter_sweeper_induction_v1</td></tr>
+<tr><th>Title</th><td>Verify UPS chat message flow for sorter induction, destination enable/close, and label print triggers</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>tote_exchange_sequence, wcs_api_responsiveness</td></tr>
+<tr><th>Access Surface</th><td>wcs_api, apidog, ignition_gateway</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>None</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Verify that the live Sorter Sweeper ↔ UPS chat message sequence is occurring for a tote/parcel: tote inducted + destination enabled, scan-derived dimensions/load category collection, sort confirmation, optional hot bin/hop-in closeout triggering exchange, destination close before exchange, and print label message to the printer at the tipper stage.</p>
+<h2>When To Use</h2>
+<p>Use when you need to confirm that the UPS-facing chat message sequence described for the Sorter Sweeper module is present and progressing for totes/parcels (induction → destination enable → scan data → sort confirmation → hot bin/hop-in exchange → destination close → print label).</p>
+<h2>Visual References</h2>
+<figure><img src="assets/ad817609844d3adb.jpg" alt="artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500" /><figcaption>Frame showing the UPS chat message sequence: tote inducted + destination enabled; scan data (dimensions/load category); sort sent and sort confirmation; hot bin/hop-in closeout triggers exchange; destination close before exchange; print label message to printer.</figcaption></figure>
+<figure><img src="assets/a359db66d5e12322.jpg" alt="artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000" /><figcaption>Example evidence view showing dimension fields (Length/Width/Height/Weight) alongside sort confirmation filtering; used to visually confirm that dimension fields should be populated when sort confirmation exists.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the live OptiSweep/WCS API client surface (Apidog / WCS API)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the live OptiSweep/WCS API client surface (Apidog / WCS API) to begin querying for message evidence tied to the tote/parcel in process.</p>
+<p><strong>Expected result:</strong></p>
+<p>You are able to run live API queries against the OptiSweep/WCS API from the Apidog client.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the API cannot be queried reliably, escalate for deeper API responsiveness investigation (wcs_api_responsiveness).</li>
+</ul>
+<hr>
+<h3>Step 2 — Identify the live API requests/endpoints that correspond to each UPS chat message type in the sequence</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the live OptiSweep/WCS API client, identify the API requests/endpoints that provide evidence for: tote inducted message, destination enabled message, scan-derived dimensions/load category, sort confirmation, hot bin/hop-in message (if applicable), destination close message, and print label message to the printer.</p>
+<p><strong>Expected result:</strong></p>
+<p>You have a set of live API queries that can return evidence records for each message type listed above.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the API evidence mapping cannot be established for required message types, stop and escalate for SME mapping of message types to live API fields/endpoints.</li>
+</ul>
+<hr>
+<h3>Step 3 — Verify tote inducted + destination enabled evidence for the same tote/parcel</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>For a tote/parcel currently in process, query the live OptiSweep/WCS API evidence for both: (1) tote inducted message and (2) destination enabled message. Correlate both evidence records to the same tote/parcel identifier.</p>
+<p><strong>Expected result:</strong></p>
+<p>Both tote inducted and destination enabled evidence records are present for the same tote/parcel identifier.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if tote inducted is present but destination enabled is missing for the same tote/parcel.</li>
+</ul>
+<hr>
+<h3>Step 4 — Verify scan-derived dimensions and load category evidence</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>For the same tote/parcel context, query the live OptiSweep/WCS API evidence for scan-derived parcel dimensions and load category fields that are described as coming from the scan tunnel onto the chat.</p>
+<p><strong>Expected result:</strong></p>
+<p>Dimensions and load category fields are populated for the parcel/tote context.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If scan-derived dimensions/load category are missing while induction evidence exists, escalate for deeper module-level investigation (Sorter Sweeper vs XLE COM vs OPC COM).</li>
+</ul>
+<hr>
+<h3>Step 5 — Verify sort confirmation evidence includes final destination</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>For the same tote/parcel, query the live OptiSweep/WCS API evidence for sort confirmation records. Confirm that a sort confirmation record exists and includes a final destination for the parcel.</p>
+<p><strong>Expected result:</strong></p>
+<p>A sort confirmation evidence record exists for the tote/parcel and includes a final destination.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if sort confirmation evidence is missing for the tote/parcel.</li>
+</ul>
+<hr>
+<h3>Step 6 — Verify hot bin closeout / hop-in exchange evidence (when expected)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the tote(s) are expected to be hop-in/hot-bin, query the live OptiSweep/WCS API evidence for hot bin message/hop-in message records for those totes. Confirm that the exchange-related state advances immediately after the hot bin/hop-in evidence.</p>
+<p><strong>Expected result:</strong></p>
+<p>Hot bin/hop-in evidence exists for the tote(s) and exchange-related state advances immediately after.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if hot bin/hop-in evidence is missing for totes that are expected to be hop-in.</li>
+</ul>
+<hr>
+<h3>Step 7 — Verify destination close message exists before exchange advancement</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Before the exchange-related state advances for the tote/parcel, query the live OptiSweep/WCS API evidence for a destination close message being sent onto the chat. Correlate it to the destination tied to the tote.</p>
+<p><strong>Expected result:</strong></p>
+<p>A destination close message evidence record exists for the destination tied to the tote before exchange-related state advances.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if destination close message is missing before the exchange-related state advances.</li>
+</ul>
+<hr>
+<h3>Step 8 — Verify print label message is sent at the tipper stage</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>At the tipper stage for the tote/parcel, query the live OptiSweep/WCS API evidence for a print label message being sent to the printer. Confirm it is associated with the label provided by XLE (e.g., label payload/identifier present).</p>
+<p><strong>Expected result:</strong></p>
+<p>A print label message evidence record exists and is associated with the label provided by XLE (label payload/identifier present).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if print label message evidence is missing at the tipper stage.</li>
+</ul>
+<hr>
+<h3>Step 9 — Stop and escalate on missing/out-of-order message evidence</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If any required message evidence is missing or out of order for the same tote/parcel (tote inducted present but destination enabled missing; sort confirmation missing; destination close missing before exchange; print label missing at tipper), stop further checks and escalate for deeper module-level investigation.</p>
+<p><strong>Expected result:</strong></p>
+<p>A clear escalation decision is made based on which message evidence is missing/out of order.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>tote inducted present but destination enabled missing</li>
+<li>sort confirmation missing</li>
+<li>destination close missing before exchange</li>
+<li>print label message missing at tipper</li>
+<li>only one side present (e.g., scan data present but sort confirmation missing)</li>
+</ul>
+<hr>
+</body>
+</html>

@@ -14,16 +14,15 @@ import json
 import os
 import re
 import urllib.error
-import urllib.parse
 import urllib.request
 
 from dotenv import load_dotenv
 
+from shared_pipeline_stages.llm_pacing import azure_chat_candidate_requests, default_azure_api_version
+from optisweep_incidence_ingestion.services.site_location import apply_ingestion_site_to_canonical_record
 from optisweep_incidence_ingestion.utils.json_utils import read_json, write_json
 from optisweep_incidence_ingestion.utils.markdown_review import write_stage4_review_markdown
 
-FOUNDRY_API_VERSION = "2025-04-01-preview"
-CLASSIC_AZURE_OPENAI_API_VERSION = "2024-10-21"
 DEFAULT_PAGE_CHUNK_TARGET_CHARS = 7000
 DEFAULT_ARTIFACT_CHUNK_SIZE = 8
 MAX_PAGE_OCR_CHARS = 2200
@@ -53,7 +52,7 @@ class AzureOpenAIStage4Client:
         self.api_key = _clean_env_value(api_key or os.getenv("AZURE_OPENAI_API_KEY"))
         self.deployment = _clean_env_value(deployment or os.getenv("AZURE_OPENAI_DEPLOYMENT"))
         env_api_version = _clean_env_value(os.getenv("AZURE_OPENAI_API_VERSION"))
-        self.api_version = _clean_env_value(api_version) or self._default_api_version(env_api_version)
+        self.api_version = _clean_env_value(api_version) or default_azure_api_version(self.endpoint, env_api_version)
         prompt_dir = Path(__file__).resolve().parent / "prompts"
         self.canonical_prompt = Path(
             canonical_prompt_path or prompt_dir / "stage4_canonical_incident_record_prompt.md"
@@ -81,17 +80,16 @@ class AzureOpenAIStage4Client:
         return self._request(self.timeline_prompt, {"stage4_packet_context": packet, "evidence_chunk": chunk})
 
     def _request(self, prompt: str, packet: dict[str, Any]) -> dict[str, Any]:
-        body = {
-            "messages": [
-                {"role": "system", "content": prompt},
-                {"role": "user", "content": json.dumps(packet, ensure_ascii=False)},
-            ],
-            "temperature": 0.1,
-            "response_format": {"type": "json_object"},
-        }
         errors: list[str] = []
-        for url, headers, include_model in self._candidate_requests(self.api_version):
-            request_body = body | ({"model": self.deployment} if include_model else {})
+        candidates = azure_chat_candidate_requests(
+            endpoint=self.endpoint,
+            api_key=self.api_key,
+            deployment=self.deployment,
+            api_version=self.api_version,
+            system_prompt=prompt,
+            user_content=json.dumps(packet, ensure_ascii=False),
+        )
+        for url, headers, request_body, response_parser in candidates:
             request = urllib.request.Request(
                 url,
                 data=json.dumps(request_body).encode("utf-8"),
@@ -101,7 +99,7 @@ class AzureOpenAIStage4Client:
             try:
                 with _urlopen_no_proxy(request, timeout=180) as response:
                     payload = json.loads(response.read().decode("utf-8"))
-                return parse_llm_response(payload["choices"][0]["message"]["content"])
+                return parse_llm_response(response_parser(payload))
             except urllib.error.HTTPError as exc:
                 details = exc.read().decode("utf-8", errors="replace")
                 errors.append(f"HTTP {exc.code}: {details}")
@@ -110,26 +108,6 @@ class AzureOpenAIStage4Client:
             except urllib.error.URLError as exc:
                 raise RuntimeError(f"Azure OpenAI request failed: {exc.reason}") from exc
         raise RuntimeError("Azure OpenAI request failed for endpoint patterns tried: " + " | ".join(errors))
-
-    def _candidate_requests(self, api_version: str) -> list[tuple[str, dict[str, str], bool]]:
-        encoded_deployment = urllib.parse.quote(self.deployment, safe="")
-        query = urllib.parse.urlencode({"api-version": api_version})
-        headers = {"Content-Type": "application/json", "api-key": self.api_key}
-        parsed = urllib.parse.urlparse(self.endpoint)
-        if self._is_foundry_project_endpoint():
-            foundry_base = urllib.parse.urlunparse((parsed.scheme, parsed.netloc, "", "", "", "")).rstrip("/")
-            return [(f"{foundry_base}/models/chat/completions?{query}", headers, True)]
-        return [(f"{self.endpoint}/openai/deployments/{encoded_deployment}/chat/completions?{query}", headers, False)]
-
-    def _is_foundry_project_endpoint(self) -> bool:
-        parsed = urllib.parse.urlparse(self.endpoint)
-        return parsed.netloc.endswith(".services.ai.azure.com") and "/api/projects/" in parsed.path
-
-    def _default_api_version(self, env_api_version: str = "") -> str:
-        parsed = urllib.parse.urlparse(self.endpoint)
-        if parsed.netloc.endswith(".services.ai.azure.com") and "/api/projects/" in parsed.path:
-            return FOUNDRY_API_VERSION
-        return env_api_version or CLASSIC_AZURE_OPENAI_API_VERSION
 
 
 def create_stage4_canonical_incident_record_and_timeline(
@@ -155,6 +133,9 @@ def create_stage4_canonical_incident_record_and_timeline(
     if not isinstance(enriched_artifacts, list):
         raise ValueError("source_artifacts_enriched.json must contain a list of enriched artifact records.")
 
+    known_page_refs = {page.get("page_ref") for page in page_inventory if page.get("page_ref")}
+    known_artifact_ids = {artifact.get("artifact_id") for artifact in enriched_artifacts if artifact.get("artifact_id")}
+
     packet = build_stage4_extraction_packet(
         package=package,
         page_inventory=page_inventory,
@@ -171,15 +152,24 @@ def create_stage4_canonical_incident_record_and_timeline(
 
     canonical_response = llm_client.create_canonical_incident_record(_canonical_llm_packet(packet))
     canonical_record, canonical_report = normalize_canonical_response(canonical_response, packet)
+    canonical_record = apply_ingestion_site_to_canonical_record(
+        canonical_record,
+        site_location=(packet.get("source_package") or {}).get("site_location"),
+    )
     canonical_record, canonical_report = apply_review_evidence_to_canonical_record(canonical_record, canonical_report, review_evidence)
     timeline_events, timeline_report = extract_timeline_events_from_chunks(
         llm_client=llm_client,
         packet=packet,
         canonical_record=canonical_record,
     )
+    canonical_record, canonical_report = finalize_canonical_incident_record(
+        canonical_record,
+        canonical_report,
+        timeline_events,
+        known_artifact_ids=known_artifact_ids,
+    )
 
     known_page_refs = {page.get("page_ref") for page in page_inventory if page.get("page_ref")}
-    known_artifact_ids = {artifact.get("artifact_id") for artifact in enriched_artifacts if artifact.get("artifact_id")}
     canonical_report = merge_report_validation(
         canonical_report,
         validate_canonical_record(canonical_record, known_page_refs, known_artifact_ids),
@@ -201,7 +191,43 @@ def create_stage4_canonical_incident_record_and_timeline(
         timeline_report,
     )
     write_json(output_path / "incident_source_package.json", _package_with_stage4_refs(package, output_path, canonical_report, timeline_report))
+
+    _ingest_timeline_events_into_brain(timeline_events, package)
+
     return canonical_record, canonical_report, timeline_events, timeline_report
+
+
+def _ingest_timeline_events_into_brain(timeline_events: dict[str, Any], package: dict[str, Any]) -> None:
+    """Fires the in-tandem Brain hook (plan §5: the hook lives inside each
+    stage module's own function, not the CLI) on this stage's own new
+    timeline events. Gated by BRAIN_INGESTION_ENABLED (default on) --
+    every caller of create_stage4_canonical_incident_record_and_timeline
+    now incurs Brain's network/LLM dependency unless it explicitly opts
+    out with BRAIN_INGESTION_ENABLED=0/false/no (see brain_service.pipeline_hook.brain_enabled)."""
+    from brain_service.pipeline_hook import brain_enabled
+
+    if not brain_enabled():
+        return
+
+    from brain_service.adapters.incidence_stage4 import timeline_events_to_records
+    from brain_service.pipeline_hook import ingest_stage_output
+    from providers.azure_openai_llm import AzureOpenAILLMProvider
+    from providers.local_storage import LocalStorageProvider
+
+    case_id = str(package.get("source_case_id") or "").strip()
+    if not case_id:
+        return
+
+    ingest_stage_output(
+        llm=AzureOpenAILLMProvider(),
+        storage=LocalStorageProvider(),
+        pipeline="incidence",
+        stage_name="stage4_canonical_incident_record",
+        source_id=f"case:{case_id}",
+        scope=f"incidents/case_{case_id}",
+        records=timeline_events_to_records(timeline_events),
+        record_kind="incident_timeline_event",
+    )
 
 
 def build_stage4_extraction_packet(
@@ -234,6 +260,7 @@ def build_stage4_extraction_packet(
             "source_type": package.get("source_type"),
             "ingestion_batch_id": package.get("ingestion_batch_id"),
             "page_count": package.get("page_count"),
+            "site_location": package.get("site_location") or {},
             "source_metadata": package.get("source_metadata") or {},
         },
         "source_bundle_summary": {
@@ -249,6 +276,7 @@ def build_stage4_extraction_packet(
             "Use evidence_handoff.page_text_chunks as the primary source for incident facts and timeline sequence.",
             "Use evidence_handoff.artifact_evidence_chunks as supporting evidence for screenshots, logs, commands, and validation.",
             "Preserve page refs, artifact refs, and chunk ids on claims and events.",
+            "Use source_package.site_location as authoritative ingestion metadata for site citation and filtering.",
             "Do not infer unsupported root cause, exact downtime, hostnames, URLs, commands, service names, or people.",
             "Canonical incident records must not include people lists. Named actors belong in timeline actor fields or source refs only.",
         ],
@@ -262,7 +290,12 @@ def build_stage4_evidence_handoff(
     page_chunk_target_chars: int,
     artifact_chunk_size: int,
 ) -> dict[str, Any]:
-    page_chunks = _build_page_text_chunks(pages, max(1000, page_chunk_target_chars))
+    artifacts_by_page_ref = _artifacts_by_page_ref(artifact_cards)
+    page_chunks = _build_page_text_chunks(
+        pages,
+        max(1000, page_chunk_target_chars),
+        artifacts_by_page_ref=artifacts_by_page_ref,
+    )
     artifact_chunks = _build_artifact_evidence_chunks(artifact_cards, max(1, artifact_chunk_size))
     return {
         "record_type": "stage4_evidence_handoff",
@@ -278,6 +311,11 @@ def build_stage4_evidence_handoff(
         "chunk_index": _build_chunk_index(page_chunks, artifact_chunks),
         "page_text_chunks": page_chunks,
         "artifact_evidence_chunks": artifact_chunks,
+        "pages_with_omitted_ocr": sorted(
+            page.get("page_ref")
+            for page in pages
+            if page.get("page_ref") and page.get("ocr_note")
+        ),
         "downstream_usage": {
             "canonical_incident_record": "Use all chunk_index entries plus selected page/artifact chunks for concise incident facts.",
             "timeline_events": "Extract timeline events chunk by chunk from page_text_chunks, linking artifact cards when referenced.",
@@ -296,47 +334,78 @@ def extract_timeline_events_from_chunks(
     timeline_context = _timeline_llm_context(packet, canonical_record)
     chunk_reports: list[dict[str, Any]] = []
     all_events: list[dict[str, Any]] = []
+    raw_event_count = 0
     for chunk in packet["evidence_handoff"]["page_text_chunks"]:
         response = llm_client.create_timeline_events(timeline_context, chunk)
         chunk_timeline, chunk_report = normalize_timeline_response(response, packet)
+        chunk_events = chunk_timeline.get("events") or []
+        raw_event_count += len(chunk_events)
         chunk_reports.append(
             {
                 "chunk_id": chunk.get("chunk_id"),
+                "chunk_kind": "page_ocr_sequence",
                 "page_refs": chunk.get("page_refs") or [],
-                "event_count": len(chunk_timeline.get("events") or []),
+                "event_count": len(chunk_events),
                 "validation_errors": chunk_report.get("validation_errors") or [],
                 "warnings": chunk_report.get("warnings") or [],
             }
         )
-        for event in chunk_timeline.get("events") or []:
-            merged = dict(event)
-            chunk_refs = list(merged.get("evidence_chunk_refs") or [])
-            if chunk.get("chunk_id") not in chunk_refs:
-                chunk_refs.append(chunk.get("chunk_id"))
-            merged["evidence_chunk_refs"] = chunk_refs
-            all_events.append(merged)
+        all_events.extend(_attach_chunk_refs(chunk_events, chunk.get("chunk_id")))
+
+    omitted_ocr_pages = set(packet["evidence_handoff"].get("pages_with_omitted_ocr") or [])
+    for chunk in _artifact_chunks_for_omitted_ocr_pages(
+        packet["evidence_handoff"].get("artifact_evidence_chunks") or [],
+        omitted_ocr_pages,
+    ):
+        response = llm_client.create_timeline_events(timeline_context, chunk)
+        chunk_timeline, chunk_report = normalize_timeline_response(response, packet)
+        chunk_events = chunk_timeline.get("events") or []
+        raw_event_count += len(chunk_events)
+        chunk_reports.append(
+            {
+                "chunk_id": chunk.get("chunk_id"),
+                "chunk_kind": "artifact_evidence_cards",
+                "page_refs": _artifact_chunk_page_refs(chunk),
+                "event_count": len(chunk_events),
+                "validation_errors": chunk_report.get("validation_errors") or [],
+                "warnings": chunk_report.get("warnings") or [],
+            }
+        )
+        all_events.extend(_attach_chunk_refs(chunk_events, chunk.get("chunk_id")))
+
+    filtered_events = filter_timeline_events(all_events)
+    deduped_events, deduped_count = deduplicate_timeline_events(filtered_events)
+    sorted_events = sort_timeline_events(deduped_events)
+    chronology_warnings = check_timeline_chronology(sorted_events)
+    case_id = str(packet.get("source_package", {}).get("source_case_id") or "")
     timeline = {
         "record_type": "incident_timeline_events",
         "schema_version": "0.1",
         "stage": "stage_4_timeline_events",
-        "incident_id": canonical_record.get("incident_id") or f"incident_{packet.get('source_package', {}).get('source_case_id')}",
+        "incident_id": canonical_record.get("incident_id") or f"incident_{case_id}",
         "source_case_id": packet.get("source_package", {}).get("source_case_id"),
         "timestamp_timezone": "unknown",
-        "ordering_basis": "source_timestamp_then_source_order_chunked",
-        "events": _renumber_events(filter_timeline_events(all_events), str(packet.get("source_package", {}).get("source_case_id") or "")),
+        "ordering_basis": "source_page_order_then_timestamp",
+        "events": _renumber_events(sorted_events, case_id),
     }
     report = {
         "stage": "stage_4_timeline_events",
         "llm_used": True,
         "prompt": "stage4_timeline_events_prompt.md",
         "chunked": True,
-        "chunk_count": len(packet["evidence_handoff"]["page_text_chunks"]),
+        "chunk_count": len(chunk_reports),
+        "page_chunk_count": len(packet["evidence_handoff"]["page_text_chunks"]),
+        "artifact_supplemental_chunk_count": len(chunk_reports) - len(packet["evidence_handoff"]["page_text_chunks"]),
+        "raw_event_count": raw_event_count,
         "event_count": len(timeline["events"]),
-        "filtered_event_count": len(all_events) - len(timeline["events"]),
+        "filtered_event_count": raw_event_count - len(filtered_events),
+        "deduplicated_event_count": deduped_count,
         "chunk_reports": chunk_reports,
         "validation_errors": [],
-        "warnings": _timeline_chunk_warnings(chunk_reports),
-        "notes": ["Timeline events were extracted page-chunk by page-chunk to control prompt size, then filtered to action/report/status/system events."],
+        "warnings": _timeline_chunk_warnings(chunk_reports) + chronology_warnings,
+        "notes": [
+            "Timeline events were extracted page-chunk by page-chunk, supplemented from artifact evidence when page OCR was omitted, filtered, deduplicated, and sorted by source page order with timestamp tie-breakers.",
+        ],
         "built_at": datetime.now(timezone.utc).isoformat(),
     }
     return timeline, report
@@ -419,10 +488,217 @@ def filter_timeline_events(events: list[dict[str, Any]]) -> list[dict[str, Any]]
             ]
             if not any(term in summary for term in incident_state_terms):
                 continue
-        sanitized = dict(event)
-        sanitized["actor_name"] = "unknown"
-        kept.append(sanitized)
+        kept.append(dict(event))
     return kept
+
+
+def deduplicate_timeline_events(events: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], int]:
+    kept: list[dict[str, Any]] = []
+    removed = 0
+    for event in events:
+        duplicate_index = _find_duplicate_event_index(event, kept)
+        if duplicate_index is None:
+            kept.append(dict(event))
+            continue
+        kept[duplicate_index] = _merge_timeline_events(kept[duplicate_index], event)
+        removed += 1
+    return kept, removed
+
+
+def sort_timeline_events(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    indexed = list(enumerate(events))
+    indexed.sort(key=lambda item: (_timeline_sort_key(item[1]), item[0]))
+    return [event for _, event in indexed]
+
+
+def check_timeline_chronology(events: list[dict[str, Any]]) -> list[str]:
+    warnings: list[str] = []
+    previous: datetime | None = None
+    previous_event_id: str | None = None
+    for event in events:
+        event_id = str(event.get("event_id") or "")
+        timestamp = _parse_iso_like_datetime(event.get("timestamp"))
+        status = str(event.get("timestamp_status") or "missing")
+        if not timestamp or status not in {"visible", "inferred_from_source_context"}:
+            continue
+        if previous and timestamp < previous:
+            warnings.append(
+                f"Timeline event {event_id} timestamp {event.get('timestamp')} appears before earlier event {previous_event_id} ({previous.isoformat(sep='T', timespec='seconds')}); verify OCR or source order."
+            )
+        previous = timestamp
+        previous_event_id = event_id
+    return warnings
+
+
+def _attach_chunk_refs(events: list[dict[str, Any]], chunk_id: str | None) -> list[dict[str, Any]]:
+    attached: list[dict[str, Any]] = []
+    for event in events:
+        merged = dict(event)
+        chunk_refs = list(merged.get("evidence_chunk_refs") or [])
+        if chunk_id and chunk_id not in chunk_refs:
+            chunk_refs.append(chunk_id)
+        merged["evidence_chunk_refs"] = chunk_refs
+        attached.append(merged)
+    return attached
+
+
+def _artifact_chunks_for_omitted_ocr_pages(
+    artifact_chunks: list[dict[str, Any]],
+    omitted_ocr_pages: set[str],
+) -> list[dict[str, Any]]:
+    if not omitted_ocr_pages:
+        return []
+    selected: list[dict[str, Any]] = []
+    for chunk in artifact_chunks:
+        page_refs = _artifact_chunk_page_refs(chunk)
+        if any(page_ref in omitted_ocr_pages for page_ref in page_refs):
+            selected.append(chunk)
+    return selected
+
+
+def _artifact_chunk_page_refs(chunk: dict[str, Any]) -> list[str]:
+    page_refs: list[str] = []
+    for card in chunk.get("cards") or []:
+        page_ref = card.get("page_ref")
+        if page_ref:
+            page_refs.append(page_ref)
+    return _unique_list(page_refs)
+
+
+def _find_duplicate_event_index(event: dict[str, Any], kept: list[dict[str, Any]]) -> int | None:
+    for index, existing in enumerate(kept):
+        if _timeline_events_are_duplicates(existing, event):
+            return index
+    return None
+
+
+def _timeline_events_are_duplicates(left: dict[str, Any], right: dict[str, Any]) -> bool:
+    if left.get("event_type") != right.get("event_type"):
+        return False
+    left_summary = _normalize_summary_text(left.get("summary") or "")
+    right_summary = _normalize_summary_text(right.get("summary") or "")
+    if not left_summary or not right_summary:
+        return False
+    if left_summary == right_summary:
+        return True
+    overlap = _summary_overlap_ratio(left_summary, right_summary)
+    if overlap >= 0.75:
+        return True
+    left_systems = {str(system).lower() for system in left.get("systems") or []}
+    right_systems = {str(system).lower() for system in right.get("systems") or []}
+    if overlap >= 0.6 and left_systems & right_systems:
+        return True
+    left_pages = _event_page_refs(left)
+    right_pages = _event_page_refs(right)
+    if left_pages and right_pages and left_pages == right_pages and overlap >= 0.72:
+        return True
+    left_artifacts = set(left.get("artifact_refs") or [])
+    right_artifacts = set(right.get("artifact_refs") or [])
+    if left_artifacts and right_artifacts and left_artifacts & right_artifacts:
+        return overlap >= 0.55
+    return False
+
+
+def _merge_timeline_events(primary: dict[str, Any], duplicate: dict[str, Any]) -> dict[str, Any]:
+    merged = dict(primary)
+    merged["source_refs"] = _merge_source_refs(primary.get("source_refs") or [], duplicate.get("source_refs") or [])
+    merged["artifact_refs"] = _unique_list(list(primary.get("artifact_refs") or []) + list(duplicate.get("artifact_refs") or []))
+    merged["evidence_chunk_refs"] = _unique_list(
+        list(primary.get("evidence_chunk_refs") or []) + list(duplicate.get("evidence_chunk_refs") or [])
+    )
+    merged["evidence_support_type"] = _unique_list(
+        list(primary.get("evidence_support_type") or []) + list(duplicate.get("evidence_support_type") or [])
+    )
+    merged["systems"] = _unique_list(list(primary.get("systems") or []) + list(duplicate.get("systems") or []))
+    merged["uncertainties"] = _unique_list(list(primary.get("uncertainties") or []) + list(duplicate.get("uncertainties") or []))
+    if duplicate.get("details") and duplicate.get("details") not in (merged.get("details") or ""):
+        merged["details"] = " ".join(part for part in [merged.get("details"), duplicate.get("details")] if part).strip()
+    if merged.get("confidence") == "high":
+        return merged
+    if duplicate.get("confidence") == "high":
+        merged["confidence"] = "high"
+    elif duplicate.get("confidence") == "medium" and merged.get("confidence") == "low":
+        merged["confidence"] = "medium"
+    return merged
+
+
+def _merge_source_refs(left: list[Any], right: list[Any]) -> list[Any]:
+    merged: list[Any] = []
+    seen: set[str] = set()
+    for ref in left + right:
+        key = json.dumps(ref, sort_keys=True, ensure_ascii=False) if isinstance(ref, dict) else str(ref)
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(ref)
+    return merged
+
+
+def _event_page_refs(event: dict[str, Any]) -> tuple[str, ...]:
+    page_refs: list[str] = []
+    for ref in event.get("source_refs") or []:
+        if isinstance(ref, dict) and ref.get("page_ref"):
+            page_refs.append(ref["page_ref"])
+        elif isinstance(ref, str) and ref.startswith("case_"):
+            page_refs.append(ref)
+    return tuple(sorted(set(page_refs)))
+
+
+def _normalize_summary_text(value: str) -> str:
+    return re.sub(r"\s+", " ", value.strip().lower())
+
+
+def _summary_overlap_ratio(left: str, right: str) -> float:
+    left_words = set(re.findall(r"[a-z0-9]+", left))
+    right_words = set(re.findall(r"[a-z0-9]+", right))
+    if not left_words or not right_words:
+        return 0.0
+    return len(left_words & right_words) / min(len(left_words), len(right_words))
+
+
+def _timeline_sort_key(event: dict[str, Any]) -> tuple[Any, ...]:
+    source_order = event.get("source_order") if isinstance(event.get("source_order"), dict) else {}
+    page_number = _int_or_default(source_order.get("page_number"), 9999)
+    within_page_order = _int_or_default(source_order.get("within_page_order"), 9999)
+    timestamp = _parse_iso_like_datetime(event.get("timestamp"))
+    timestamp_rank = timestamp or datetime(9999, 12, 31, 23, 59, 59)
+    status_rank = {"visible": 0, "inferred_from_source_context": 1, "partial": 2, "missing": 3}.get(
+        str(event.get("timestamp_status") or "missing"),
+        4,
+    )
+    return (page_number, within_page_order, status_rank, timestamp_rank)
+
+
+def _artifacts_by_page_ref(artifact_cards: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for card in artifact_cards:
+        page_ref = card.get("page_ref")
+        if not page_ref:
+            continue
+        grouped.setdefault(page_ref, []).append(card)
+    return grouped
+
+
+def _format_artifact_evidence_for_page(cards: list[dict[str, Any]]) -> str:
+    blocks: list[str] = []
+    for card in cards:
+        claims = "; ".join(
+            _truncate(str(claim.get("claim") or ""), 240)
+            for claim in card.get("source_supported_claims") or []
+            if isinstance(claim, dict) and claim.get("claim")
+        )
+        blocks.append(
+            "\n".join(
+                [
+                    f"ARTIFACT {card.get('artifact_id')}",
+                    f"role={card.get('evidence_role')} image_type={card.get('image_type')}",
+                    f"short_description={card.get('short_description') or ''}",
+                    f"retrieval_text={card.get('retrieval_text') or ''}",
+                    f"source_supported_claims={claims or 'none'}",
+                ]
+            )
+        )
+    return "\n\n".join(blocks)
 
 
 def _timeline_llm_context(packet: dict[str, Any], canonical_record: dict[str, Any]) -> dict[str, Any]:
@@ -449,15 +725,25 @@ def _timeline_llm_context(packet: dict[str, Any], canonical_record: dict[str, An
     }
 
 
-def _build_page_text_chunks(pages: list[dict[str, Any]], target_chars: int) -> list[dict[str, Any]]:
+def _build_page_text_chunks(
+    pages: list[dict[str, Any]],
+    target_chars: int,
+    *,
+    artifacts_by_page_ref: dict[str, list[dict[str, Any]]] | None = None,
+) -> list[dict[str, Any]]:
+    artifacts_by_page_ref = artifacts_by_page_ref or {}
     chunks: list[dict[str, Any]] = []
     current: list[dict[str, Any]] = []
     current_chars = 0
     for page in sorted(pages, key=lambda item: item.get("page_number") or 0):
         text = _truncate(page.get("ocr_text") or "", MAX_PAGE_OCR_CHARS)
+        page_ref = page.get("page_ref")
+        artifact_block = ""
+        if page_ref and (not text or page.get("ocr_note")):
+            artifact_block = _format_artifact_evidence_for_page(artifacts_by_page_ref.get(page_ref) or [])
         page_card = {
             "page_number": page.get("page_number"),
-            "page_ref": page.get("page_ref"),
+            "page_ref": page_ref,
             "detected_page_type": page.get("detected_page_type"),
             "ocr_confidence": page.get("ocr_confidence"),
             "ocr_quality": page.get("ocr_quality"),
@@ -465,14 +751,15 @@ def _build_page_text_chunks(pages: list[dict[str, Any]], target_chars: int) -> l
             "ocr_word_count": page.get("ocr_word_count"),
             "artifact_ids": page.get("artifact_ids") or [],
             "ocr_text": text,
+            "artifact_evidence_text": artifact_block,
         }
-        projected_chars = current_chars + len(text)
+        projected_chars = current_chars + len(text) + len(artifact_block)
         if current and projected_chars > target_chars:
             chunks.append(_page_chunk_from_cards(len(chunks) + 1, current))
             current = []
             current_chars = 0
         current.append(page_card)
-        current_chars += len(text)
+        current_chars += len(text) + len(artifact_block)
     if current:
         chunks.append(_page_chunk_from_cards(len(chunks) + 1, current))
     return chunks
@@ -496,6 +783,7 @@ def _page_chunk_from_cards(index: int, page_cards: list[dict[str, Any]]) -> dict
                     f"artifact_ids={', '.join(card.get('artifact_ids') or []) or 'none'}",
                     card.get("ocr_note") or "",
                     card.get("ocr_text") or "",
+                    card.get("artifact_evidence_text") or "",
                 ]
             )
         )
@@ -613,6 +901,7 @@ def normalize_canonical_response(response: dict[str, Any], packet: dict[str, Any
     if not isinstance(record.get("site"), dict):
         record["site"] = {
             "primary_label": record.get("site") or "",
+            "ingestion_site": (packet.get("source_package") or {}).get("site_location") or {},
             "observed_location_text": [],
             "location_confidence": "unknown",
             "notes": "",
@@ -631,6 +920,192 @@ def normalize_canonical_response(response: dict[str, Any], packet: dict[str, Any
     report["prompt"] = "stage4_canonical_incident_record_prompt.md"
     report["built_at"] = datetime.now(timezone.utc).isoformat()
     return record, report
+
+
+def finalize_canonical_incident_record(
+    record: dict[str, Any],
+    report: dict[str, Any],
+    timeline: dict[str, Any],
+    *,
+    known_artifact_ids: set[str] | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    updated = dict(record)
+    updated_report = dict(report)
+    events = timeline.get("events") or []
+    updated["symptoms"] = deduplicate_symptoms(updated.get("symptoms") or [])
+    updated = sync_kpi_tracking_fields(updated)
+    updated["supporting_artifact_ids"] = _filter_known_ids(updated.get("supporting_artifact_ids") or [], known_artifact_ids or set())
+    updated["early_failure_signals"] = extract_early_failure_signals(updated, events)
+    updated["supporting_timeline_event_ids"] = link_supporting_timeline_event_ids(updated, events)
+    updated, quality_warnings = enrich_canonical_evidence_summary(updated, events)
+    for warning in quality_warnings:
+        if warning not in (updated_report.get("warnings") or []):
+            updated_report.setdefault("warnings", []).append(warning)
+    updated_report.setdefault("notes", []).append(
+        "Finalized canonical record with symptom deduplication, KPI sync, early-failure signals, and supporting timeline links."
+    )
+    return updated, updated_report
+
+
+def deduplicate_symptoms(symptoms: list[Any]) -> list[str]:
+    kept: list[str] = []
+    for symptom in symptoms:
+        text = str(symptom or "").strip()
+        if not text:
+            continue
+        normalized = _normalize_summary_text(text)
+        if any(_summary_overlap_ratio(normalized, _normalize_summary_text(existing)) >= 0.72 for existing in kept):
+            continue
+        kept.append(text)
+    return kept
+
+
+def sync_kpi_tracking_fields(record: dict[str, Any]) -> dict[str, Any]:
+    updated = dict(record)
+    kpi = dict(updated.get("kpi_tracking") or {})
+    start_at = updated.get("reported_at") or kpi.get("tracking_start_at")
+    end_at = updated.get("resolved_at") or kpi.get("tracking_end_at")
+    minutes = _duration_minutes(start_at, end_at)
+    if start_at:
+        updated["reported_at"] = start_at
+        kpi["tracking_start_at"] = start_at
+    if end_at:
+        updated["resolved_at"] = end_at
+        kpi["tracking_end_at"] = end_at
+    if minutes is not None:
+        updated["downtime_minutes"] = minutes
+        updated["resolution_time"] = _format_duration(minutes)
+        kpi["elapsed_minutes"] = minutes
+    updated["kpi_tracking"] = kpi
+    if minutes is not None and not updated.get("kpi_confidence"):
+        updated["kpi_confidence"] = kpi.get("confidence") or "medium"
+    return updated
+
+
+def extract_early_failure_signals(record: dict[str, Any], events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    tracking_start = _parse_iso_like_datetime(record.get("reported_at") or (record.get("kpi_tracking") or {}).get("tracking_start_at"))
+    if not tracking_start:
+        return []
+    signals: list[dict[str, Any]] = []
+    for event in events:
+        timestamp = _parse_iso_like_datetime(event.get("timestamp"))
+        if not timestamp or timestamp >= tracking_start:
+            continue
+        if event.get("event_type") not in {
+            "system_event",
+            "symptom_reported",
+            "diagnostic_evidence_shared",
+            "case_status_change",
+            "status_update",
+        }:
+            continue
+        signals.append(
+            {
+                "timestamp": event.get("timestamp"),
+                "event_id": event.get("event_id"),
+                "event_type": event.get("event_type"),
+                "summary": event.get("summary"),
+                "confidence": event.get("confidence"),
+                "note": "Observed before KPI tracking start; may reflect physical failure earlier than case open or work-order entry.",
+            }
+        )
+    return signals[:8]
+
+
+def link_supporting_timeline_event_ids(record: dict[str, Any], events: list[dict[str, Any]], *, limit: int = 12) -> list[str]:
+    narrative_terms = _canonical_search_terms(record)
+    scored: list[tuple[int, str]] = []
+    for event in events:
+        event_id = str(event.get("event_id") or "").strip()
+        if not event_id:
+            continue
+        score = _timeline_link_score(record, event, narrative_terms)
+        if score > 0:
+            scored.append((score, event_id))
+    scored.sort(key=lambda item: (-item[0], item[1]))
+    linked: list[str] = []
+    for _, event_id in scored:
+        if event_id in linked:
+            continue
+        linked.append(event_id)
+        if len(linked) >= limit:
+            break
+    return linked
+
+
+def enrich_canonical_evidence_summary(
+    record: dict[str, Any],
+    events: list[dict[str, Any]],
+) -> tuple[dict[str, Any], list[str]]:
+    updated = dict(record)
+    warnings: list[str] = []
+    evidence_summary = dict(updated.get("evidence_summary") or {})
+    conflicts = list(evidence_summary.get("conflicts_or_ambiguities") or [])
+    unsupported = list(evidence_summary.get("unsupported_or_missing_details") or [])
+    early_signals = updated.get("early_failure_signals") or []
+    if early_signals:
+        gap_note = (
+            "Timeline evidence includes source-supported events before KPI tracking start; "
+            "distinguish physical failure timing from case/work-order tracking duration."
+        )
+        if gap_note not in conflicts:
+            conflicts.append(gap_note)
+        if not updated.get("kpi_tracking", {}).get("notes"):
+            updated.setdefault("kpi_tracking", {})["notes"] = []
+        kpi_notes = list(updated["kpi_tracking"].get("notes") or [])
+        gap_kpi_note = (
+            f"KPI tracking start ({updated.get('reported_at')}) is later than {len(early_signals)} earlier timeline signal(s)."
+        )
+        if gap_kpi_note not in kpi_notes:
+            kpi_notes.append(gap_kpi_note)
+            updated["kpi_tracking"]["notes"] = kpi_notes
+    if updated.get("downtime_minutes") is not None and not early_signals:
+        basis = str((updated.get("kpi_tracking") or {}).get("basis") or "").lower()
+        if "case creation" in basis or "case status" in basis:
+            warning = "KPI duration reflects case-tracking elapsed time; physical outage duration may differ."
+            if warning not in warnings:
+                warnings.append(warning)
+    if not updated.get("supporting_timeline_event_ids") and events:
+        unsupported.append("No supporting timeline events were linked automatically; review timeline coverage manually.")
+    evidence_summary["conflicts_or_ambiguities"] = conflicts
+    evidence_summary["unsupported_or_missing_details"] = unsupported
+    updated["evidence_summary"] = evidence_summary
+    return updated, warnings
+
+
+def _canonical_search_terms(record: dict[str, Any]) -> set[str]:
+    terms: set[str] = set()
+    for field in ("title", "incident_description", "what_resolved_it", "customer_operational_impact", "retrieval_text"):
+        terms.update(re.findall(r"[a-z0-9]{4,}", _normalize_summary_text(str(record.get(field) or ""))))
+    for symptom in record.get("symptoms") or []:
+        terms.update(re.findall(r"[a-z0-9]{4,}", _normalize_summary_text(str(symptom))))
+    for system in record.get("systems_involved") or []:
+        terms.update(re.findall(r"[a-z0-9]{3,}", _normalize_summary_text(str(system))))
+    return terms
+
+
+def _timeline_link_score(record: dict[str, Any], event: dict[str, Any], narrative_terms: set[str]) -> int:
+    score = 0
+    event_type = str(event.get("event_type") or "")
+    if event_type in {"action_taken", "validation_result", "system_event", "case_status_change", "status_update"}:
+        score += 2
+    if event_type in {"symptom_reported", "diagnostic_evidence_shared"}:
+        score += 1
+    summary_terms = set(re.findall(r"[a-z0-9]{4,}", _normalize_summary_text(f"{event.get('summary') or ''} {event.get('details') or ''}")))
+    overlap = len(summary_terms & narrative_terms)
+    score += min(overlap, 4)
+    if str(event.get("confidence") or "") == "high":
+        score += 1
+    resolution_terms = set(re.findall(r"[a-z0-9]{4,}", _normalize_summary_text(str(record.get("what_resolved_it") or ""))))
+    if resolution_terms & summary_terms:
+        score += 2
+    return score
+
+
+def _filter_known_ids(values: list[Any], known_ids: set[str]) -> list[str]:
+    if not known_ids:
+        return [str(value) for value in values if value]
+    return [str(value) for value in values if value and str(value) in known_ids]
 
 
 def apply_review_evidence_to_canonical_record(

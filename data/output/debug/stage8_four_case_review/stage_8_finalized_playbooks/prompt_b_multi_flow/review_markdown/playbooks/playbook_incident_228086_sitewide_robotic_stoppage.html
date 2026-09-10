@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Robotic system not responding with AGVs stopped or out of sync</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+.warn { color: #8a4b00; }
+details.linked-runbook { border: 1px solid #ddd; border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0; }
+details.linked-runbook > summary { cursor: pointer; font-size: 1.05rem; margin-bottom: 0.5rem; }
+details.linked-runbook-group { border: 1px solid #e0e0e0; border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0; background: #fafafa; }
+details.linked-runbook-group > summary { cursor: pointer; font-weight: 600; margin-bottom: 0.5rem; }
+details.linked-runbook-operator { border-left: 4px solid #2f6f4e; }
+details.linked-runbook-support { border-left: 4px solid #2f4f7f; }
+.missing-image { border: 1px dashed #bbb; padding: 1rem; background: #fafafa; }
+.missing-image-label { font-family: monospace; font-weight: 600; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Robotic system not responding with AGVs stopped or out of sync</h1>
+<h2>Playbook Header</h2>
+<table>
+<tr><th>Playbook ID</th><td>playbook_incident_228086_sitewide_robotic_stoppage</td></tr>
+<tr><th>Case ID</th><td>228086</td></tr>
+<tr><th>Extraction Mode</th><td>one_or_more_playbook_candidates_when_separable</td></tr>
+<tr><th>Confidence</th><td>high</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+</table>
+<h2>Entry Symptoms</h2>
+<ul>
+<li>Nothing is moving across the site or bots are stopped in multiple areas.</li>
+<li>The robotic system is reported as not responding.</li>
+<li>Small sort operation is not running.</li>
+<li>AGVs are reported out of sync or several AGVs stop after a heartbeat issue.</li>
+<li>Totes cannot be removed from the hospital workflow.</li>
+<li>RMS or HMI is mostly blank or displays an apparent &quot;.NET Control not created.&quot; message.</li>
+<li>The site reports no obvious failed AGV even though automated movement has stopped.</li>
+</ul>
+<h2>Nodes</h2>
+<h3>1 — Confirm the stoppage pattern and abnormal control-system presentation (diagnostic_decision)</h3>
+<p><strong>Objective:</strong> Determine whether the report represents a broad robotic-operation stoppage with an abnormal RMS or HMI presentation rather than an isolated AGV issue.</p>
+<p><strong>Why this check is next:</strong> The source reports a site-wide or multi-area motion stoppage, no obvious failed AGV, stopped small sort, hospital tote-removal difficulty, and abnormal RMS/HMI presentation.</p>
+<p><strong>Action:</strong> Confirm whether the stoppage is broad (multi-area) and whether RMS/HMI presentation is blank or shows an abnormal/control-not-created message; otherwise switch to localized/alternate symptom triage.</p>
+<p><strong>Healthy:</strong> Site confirms movement continues normally or impact is limited to a single asset/local area, and RMS/HMI shows a populated normal status view for the overall fleet (localized impact only).</p>
+<p><strong>Unhealthy:</strong> Nothing is moving across multiple areas; small sort is stopped and/or hospital totes cannot be removed; RMS/HMI is mostly blank or displays an abnormal/control-not-created style presentation that matches a system-level stoppage pattern.</p>
+<p><strong>Inconclusive:</strong> Only one robot/local area appears affected, or the RMS message cannot be read/its meaning is uncertain, or the site cannot reliably confirm whether the issue is still active.</p>
+<p><strong>Suggested database check:</strong></p>
+<ul>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> AgvActiveErrorDatabaseModel</li>
+<li><strong>Inspect:</strong> Name</li>
+<li><strong>Inspect:</strong> Error code</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> SystemActiveErrorModel</li>
+<li><strong>Inspect:</strong> Id</li>
+<li><strong>Inspect:</strong> EntityInserted</li>
+<li><strong>Inspect:</strong> EntityLastUpdate</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> SystemDatabaseModel</li>
+<li><strong>Inspect:</strong> Id</li>
+<li><strong>Inspect:</strong> EntityInserted</li>
+<li><strong>Inspect:</strong> EntityLastUpdate</li>
+</ul></li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L1_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>Reports state that 4-6 bots were not moving, totes could not be removed from hospital, and the site reported nothing was moving.</li>
+<li>RMS page appears mostly blank and shows &#x27;.NET Control not created.&#x27;</li>
+<li>Work order states that the robotic system was not responding and the small sort was not running.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_2</code> when Broad stoppage with abnormal/blank RMS/HMI presentation confirmed</li>
+<li><code>healthy</code> → <code></code> when Impact localized or abnormal RMS/HMI pattern not confirmed</li>
+<li><code>inconclusive</code> → <code>node_8</code> when Inconclusive scope or RMS message meaning</li>
+</ul>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h3>2 — Determine whether a named service or application failure correlates with the stoppage (diagnostic_decision)</h3>
+<p><strong>Objective:</strong> Use the available Windows log evidence to determine whether OptiSweep or WCSWebApplication entered an abnormal state near the onset of the operational stoppage.</p>
+<p><strong>Why this check is next:</strong> The source contains Event Viewer evidence of OptiSweep termination, clustered WCSWebApplication errors, a failed database command, and a later OptiSweep Running state.</p>
+<p><strong>Action:</strong> Inspect Windows Event Viewer and Windows Services evidence to determine whether OptiSweep termination or clustered WCSWebApplication/Application Error events correlate with the stoppage onset.</p>
+<p><strong>Healthy:</strong> No relevant OptiSweep termination or correlated clustered WCSWebApplication/Application Error evidence near symptom onset; or only current Running state without abnormal correlation (prompt alternate investigation).</p>
+<p><strong>Unhealthy:</strong> OptiSweep unexpectedly terminated/restarted and/or WCSWebApplication clustered errors/failures are present near the stoppage onset timestamps, supporting a correlated service/application investigation path.</p>
+<p><strong>Inconclusive:</strong> Logs unavailable, timestamps cannot be correlated, or event details are incomplete/unreadable; only a current Running state is available without historical timing.</p>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> L1_support, L2_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li class="warn"><code>proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1</code> (low, support, score=0.8936) — Windows Event Viewer and Services diagnostic for OptiSweep and WCSWebApplication failures</li>
+</ul>
+<p><strong>Evidence Collection Procedures:</strong></p>
+<ul>
+<li><code>proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1</code> — Windows Event Viewer and Services diagnostic for OptiSweep and WCSWebApplication failures (L2_support): Use Windows Event Viewer / services to inspect the live Windows Application and System logs, then verify the current OptiSweep service state. Correlate WCSWebApplication database-command errors around 6:35-6:36 AM with OptiSweep Service Control Manager Event 7031 and the current Windows Services status before further recovery.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>Event 7031 states that the OptiSweep service terminated unexpectedly and that Windows planned a restart.</li>
+<li>WCSWebApplication Event 20102 reports a failed database command.</li>
+<li>Application log shows clustered WCSWebApplication and Application Error entries around 6:36 AM.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_3</code> when OptiSweep termination or correlated WCSWebApplication/Application Error evidence is present</li>
+<li><code>healthy</code> → <code>node_8</code> when No relevant correlated service/application failure found</li>
+</ul>
+<details class="linked-runbook-group linked-runbook-support" open><summary><strong>Support runbooks</strong> (1)</summary>
+<details class="linked-runbook linked-runbook-support" open><summary><strong>Support runbook:</strong> Windows Event Viewer and Services diagnostic for OptiSweep and WCSWebApplication failures (<code>proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> L2_support</li>
+<li><strong>Audience:</strong> support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use Windows Event Viewer / services to inspect the live Windows Application and System logs, then verify the current OptiSweep service state. Correlate WCSWebApplication database-command errors around 6:35-6:36 AM with OptiSweep Service Control Manager Event 7031 and the current Windows Services status before further recovery.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use Windows Event Viewer / services when the live OptiSweep or WCS-backed system is unresponsive, when clustered WCSWebApplication errors are suspected, or when a service crash or restart must be correlated with the incident. Inspect the live Windows Application and System logs and current Windows Services state before performing further recovery.</p>
+<p><strong>Safety Notes:</strong></p><ul>
+<li>This is an inspection and diagnostic procedure; do not infer root cause from clustered errors.</li>
+<li>Automatic restart configuration records an intended Windows action, not confirmed service recovery.</li>
+<li>Do not perform further recovery based only on the historical service-state screenshot.</li>
+</ul>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>unhealthy</code></td><td>OptiSweep termination and/or correlated WCSWebApplication/Application Error evidence is present near onset.</td><td><code>node_3</code></td></tr>
+<tr><td><code>healthy</code></td><td>No relevant correlated service/application failure evidence found.</td><td><code>node_5</code></td></tr>
+<tr><td><code>inconclusive</code></td><td>Service/application evidence cannot be correlated or is unavailable.</td><td><code>node_5</code></td></tr>
+<tr><td><code>escalate</code></td><td>Unable to safely proceed due to missing evidence or role constraints.</td><td><code>node_8</code></td></tr>
+</table>
+<p><strong>Source:</strong> incident_case / source_case_228086</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Inspect the Windows Event Viewer Application log</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In Windows Event Viewer / services, open Windows Logs &gt; Application and inspect entries around 2/20/2026 6:35:24-6:36:07 AM. Open the WCSWebApplication error details, including Event ID 20102, and check nearby Application Error or Windows Error Reporting entries.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>No new or repeated WCSWebApplication or related application errors appear in the current inspection window.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Application log shows whether WCSWebApplication Event ID 20102 with &#x27;Failed executing DbCommand (1,840ms)&#x27; and nearby clustered application errors are present in the inspected time window.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/abd43e133aa30f1d.jpeg" alt="artifact_incident_228086_page_027_embedded_image_01"><figcaption>Windows Event Viewer Application log showing Windows Error Reporting Event 1001 and clustered WCSWebApplication and Application Error entries around 6:36 AM.</figcaption></figure>
+<figure><img src="assets/d4f3abbd8bd09df2.jpeg" alt="artifact_incident_228086_page_028_embedded_image_01"><figcaption>Windows Event Viewer Application log showing WCSWebApplication Event ID 20102 and the &#x27;Failed executing DbCommand (1,840ms)&#x27; message.</figcaption></figure>
+<hr>
+<h5>Step 2 — Inspect the OptiSweep termination event</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In Windows Event Viewer / services, select Windows Logs &gt; System and open the Service Control Manager event for OptiSweep. Check for Event ID 7031, Level Error, and inspect whether the message states that OptiSweep terminated unexpectedly and Windows planned to restart it after 60000 milliseconds.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>No new or repeated OptiSweep Event ID 7031 termination is present in the current System log inspection.</p>
+<p><strong>Expected result:</strong></p>
+<p>The System log identifies whether an OptiSweep Event ID 7031 termination is present and whether the event contains the 60000-millisecond restart message.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/dabb6bbd62f07c7c.png" alt="artifact_incident_228086_page_029_embedded_image_01"><figcaption>Windows Event Viewer System log showing OptiSweep Service Control Manager Event 7031, unexpected termination, and the planned 60000-millisecond restart.</figcaption></figure>
+<hr>
+<h5>Step 3 — Verify the current OptiSweep service state</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In Windows Event Viewer / services, open Windows Services, select OptiSweep, and inspect the current Status and Startup Type.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>OptiSweep is currently shown as Running and its Startup Type is shown as Automatic.</p>
+<p><strong>Expected result:</strong></p>
+<p>Windows Services displays the current OptiSweep Status and Startup Type, allowing the live service state to be compared with the Event Viewer evidence.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/3832c5ce44b05a86.png" alt="artifact_incident_228086_page_019_embedded_image_01"><figcaption>Windows Services showing OptiSweep selected with Status Running and Startup Type Automatic.</figcaption></figure>
+<hr>
+<h5>Step 4 — Correlate Windows Event Viewer / services evidence with the live incident state</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Compare the timestamps and live entries in Windows Event Viewer / services with the current incident state and the current OptiSweep status in Windows Services. Do not treat the configured automatic restart as proof that recovery completed.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The current Windows Services state is Running and the current Event Viewer inspection shows no new or repeated relevant errors.</p>
+<p><strong>Expected result:</strong></p>
+<p>The diagnostic conclusion separately identifies the observed WCSWebApplication errors, any OptiSweep Event 7031 termination, and the current OptiSweep service state.</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>Windows Event Viewer / services inspection identifies whether current Application log evidence includes WCSWebApplication Event ID 20102 or clustered related errors.</li>
+<li>Windows Event Viewer / services inspection identifies whether an OptiSweep Event ID 7031 termination is present and whether a 60000-millisecond restart was configured.</li>
+<li>Windows Services shows the current OptiSweep Status and Startup Type.</li>
+<li>The diagnostic conclusion does not claim recovery or root cause without live supporting evidence.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>WCSWebApplication Event ID 20102 or clustered application errors are present or repeating in the current inspection.</li>
+<li>OptiSweep Event ID 7031 is present or repeating in the current System log inspection.</li>
+<li>OptiSweep is not shown as Running in Windows Services.</li>
+<li>The available evidence only shows a configured restart and does not establish that recovery completed.</li>
+<li>The evidence is insufficient to establish a definitive root cause.</li>
+</ul>
+</details>
+</details>
+<hr>
+<h3>3 — Check whether Ignition gateway health is abnormal or merely a related observation (diagnostic_decision)</h3>
+<p><strong>Objective:</strong> Determine whether the Ignition gateway shows a current responsiveness problem or whether the memory observation is only follow-up context.</p>
+<p><strong>Why this check is next:</strong> The source includes requests to determine whether Ignition crashed, memory trend charts, an Ignition Systems Overview showing 11 ms response and no recent slow-response events, and a note that memory did not indicate it caused a crash.</p>
+<p><strong>Action:</strong> Check whether the Ignition gateway shows current responsiveness/health abnormalities versus treating the memory observation as follow-up context.</p>
+<p><strong>Healthy:</strong> Ignition Systems Overview responds with current response time; no recent slow-response events displayed; resource trend not visibly abnormal or described as improving below reference.</p>
+<p><strong>Unhealthy:</strong> Ignition gateway cannot be reached or does not respond; recent slow-response activity/health indicators are clearly abnormal and correlated with stoppage timing.</p>
+<p><strong>Inconclusive:</strong> Memory/trend changes are sharp but unlabeled thresholds/causal rules absent; snapshot is stale/unclear; or gateway state cannot be verified (e.g., after recovery it appears normal but historical evidence is missing).</p>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> L1_support, L2_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li><code>proc_check_ignition_gateway_sys_perf_localhost_v1</code> (medium, support, score=0.6487) — Check Ignition Gateway system performance status via localhost sys.perf page</li>
+</ul>
+<p><strong>Evidence Collection Procedures:</strong></p>
+<ul>
+<li><code>proc_check_ignition_gateway_sys_perf_localhost_v1</code> — Check Ignition Gateway system performance status via localhost sys.perf page (L2_support): Use the Ignition Gateway web UI on the host to open the system performance status page at http://localhost:8088/web/status/sys.perf. Confirm the page loads and that system performance/health indicators are visible (not a connection/refused/unreachable error).</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>Support stated that the memory trend did not indicate that memory caused a crash and suggested checking CPU trend.</li>
+<li>Ignition Systems Overview shows current response time 11 ms and no recent slow-response events.</li>
+<li>Memory trend remains below a higher visible reference line without an obvious threshold crossing.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_4</code> when Ignition is unavailable or shows correlated abnormal gateway state</li>
+<li><code>healthy</code> → <code>node_4</code> when Ignition responds and no correlated gateway failure indicated</li>
+</ul>
+<details class="linked-runbook-group linked-runbook-support" open><summary><strong>Support runbooks</strong> (1)</summary>
+<details class="linked-runbook linked-runbook-support" open><summary><strong>Support runbook:</strong> Check Ignition Gateway system performance status via localhost sys.perf page (<code>proc_check_ignition_gateway_sys_perf_localhost_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> L2_support</li>
+<li><strong>Audience:</strong> support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use the Ignition Gateway web UI on the host to open the system performance status page at http://localhost:8088/web/status/sys.perf. Confirm the page loads and that system performance/health indicators are visible (not a connection/refused/unreachable error).</p>
+<p><strong>When To Use:</strong></p>
+<p>When Ignition Gateway reachability or performance is suspected on the Ignition Gateway host, and you need a quick local check that the /web/status/sys.perf page is reachable and shows performance/health indicators.</p>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>unhealthy</code></td><td>Ignition is unavailable/unresponsive or gateway health indicators are clearly abnormal.</td><td><code>node_4</code></td></tr>
+<tr><td><code>healthy</code></td><td>Ignition responds normally with no correlated abnormal gateway state.</td><td><code>node_4</code></td></tr>
+<tr><td><code>inconclusive</code></td><td>Snapshot/trend interpretation is ambiguous.</td><td><code>node_4</code></td></tr>
+<tr><td><code>escalate</code></td><td>Cannot proceed safely due to lack of evidence/access.</td><td><code>node_8</code></td></tr>
+</table>
+<p><strong>Source:</strong> training_video / training_video_day2</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Open the Ignition Gateway sys.perf status page on localhost</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the Ignition Gateway host, open a web browser and navigate to http://localhost:8088/web/status/sys.perf.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The sys.perf page loads with visible page content rather than an unreachable/error state.</p>
+<p><strong>Expected result:</strong></p>
+<p>The browser successfully loads the Ignition Gateway system performance status page at /web/status/sys.perf (page content visible; not a connection/refused/unreachable error).</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/120f5e2da0503667.jpg" alt="artifact_training_video_training_video_day2_0045_that_we_could_have_running_locally_primary_03_09_39_500"><figcaption>Frame showing Ignition Gateway UI accessed via browser at http://localhost:8088/web/status/sys.perf (sys.perf path visible).</figcaption></figure>
+<hr>
+<h5>Step 2 — Verify sys.perf performance/health indicators are visible</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the loaded /web/status/sys.perf page, observe the system performance status indicators/readouts shown on the page.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Performance/health indicators/readouts are visible on the sys.perf page.</p>
+<p><strong>Expected result:</strong></p>
+<p>System performance/health information is displayed on the sys.perf page (not blank and not replaced by an error/unavailable state).</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>http://localhost:8088/web/status/sys.perf loads successfully in a browser</li>
+<li>The sys.perf page displays system performance/health indicators (no connection/refused/unreachable error)</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>sys.perf page does not load due to unreachable/error state (e.g., connection refused/unreachable)</li>
+<li>sys.perf page loads but performance indicators show degraded/unacceptable status</li>
+</ul>
+</details>
+</details>
+<hr>
+<h3>4 — Perform authorized recovery of the affected gateway or OptiSweep service (procedure_reference)</h3>
+<p><strong>Objective:</strong> Use the approved role-specific recovery procedure for the service or gateway identified by the diagnostic evidence.</p>
+<p><strong>Why this check is next:</strong> The source shows an Ignition gateway restart in progress, reports that OptiSweep was reset, and later shows OptiSweep Running. Exact commands and procedures are intentionally not reproduced.</p>
+<p><strong>Action:</strong> Execute authorized recovery for the affected gateway or OptiSweep service identified by the diagnostic evidence.</p>
+<p><strong>Healthy:</strong> Authorized recovery completes without immediate repeat failure; gateway/service becomes available for subsequent validation.</p>
+<p><strong>Unhealthy:</strong> Recovery cannot be completed; OptiSweep terminates again or gateway remains unavailable; safety/role preconditions not met.</p>
+<p><strong>Inconclusive:</strong> Evidence shows restart/recovery in progress only; or service appears Running but timing relative to recovery completion cannot be confirmed.</p>
+<p><strong>Procedure Reference:</strong></p>
+<ul>
+<li><strong>Trigger condition:</strong> An authorized L1/L2/L3 support role records that the selected recovery action has completed or is still in progress. Progress is indicated by the gateway returning from restart or the OptiSweep service becoming available; failure is indicated by an unsuccessful restart, repeated termination, or continued lack of response; inconclusive means completion cannot be verified.</li>
+<li><strong>Selected procedure:</strong> Ignition gateway restart and OptiSweep / WCS API response validation (`proc_ignition_gateway_restart_and_optisweep_response_validation_v1`)</li>
+<li><strong>Selection rationale:</strong> Retrieval realigned to fleet/status-check runbook; prior link penalized for intent mismatch.</li>
+<li><strong>Success confirmation:</strong> The Ignition gateway Systems Overview responds after the restart.</li>
+<li><strong>Failure boundary:</strong> Ignition gateway Systems Overview does not respond after the restart.</li>
+</ul>
+<p><strong>Prerequisites:</strong></p>
+<ul>
+<li>The site is in the physical E-stop state before the restart sequence begins.</li>
+<li>The physical E-stop remains active until API responsiveness is confirmed.</li>
+<li>L2 support access to the Ignition gateway, Windows Event Viewer / services, and Apidog / WCS API.</li>
+<li>A site operator available at the physical floor / grid to place and release the physical E-stop.</li>
+</ul>
+<p><strong>Safety checks:</strong></p>
+<ul>
+<li>The site operator must place the system in the physical E-stop state before the restart sequence.</li>
+<li>Keep the physical E-stop active during recovery.</li>
+<li>Do not release the physical E-stop until the OptiSweep / WCS API response is confirmed.</li>
+<li>Support must not perform or remotely release the physical E-stop.</li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> L2_support, L3_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li><code>proc_ignition_gateway_restart_and_optisweep_response_validation_v1</code> (medium, support, score=0.5738) — Ignition gateway restart and OptiSweep / WCS API response validation</li>
+</ul>
+<p><strong>Evidence Collection Procedures:</strong></p>
+<ul>
+<li><code>proc_ignition_gateway_restart_and_optisweep_response_validation_v1</code> — Ignition gateway restart and OptiSweep / WCS API response validation (L2_support): Use the Ignition gateway, Windows Event Viewer / services, and Apidog / WCS API surfaces to restart the Ignition gateway, verify the GetAgvStatuses response, and restart OptiSweep only if the API does not respond. The site operator must place and release the physical E-stop; support must not release it until the API response is confirmed.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>Ignition gateway restart was initiated and the console showed waiting for gateway restart.</li>
+<li>Case comments state that OptiSweep was reset before RMS follow-up.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Decision Outcomes:</strong></p>
+<ul>
+<li><code>healthy</code> (observer=remote; tool=Gateway/Service availability indicators (procedure-defined) + service state confirmation): Authorized recovery completed; gateway/service available for follow-up checks.</li>
+<li><code>unhealthy</code> (observer=remote; tool=Gateway/Service availability indicators (procedure-defined) + service state confirmation): Recovery fails or repeats termination/unavailability.</li>
+<li><code>inconclusive</code> (observer=remote; tool=Gateway/Service availability indicators (procedure-defined) + service state confirmation): Recovery completion cannot be verified yet.</li>
+<li><code>escalate</code> (observer=remote; tool=procedure evidence + access control): Do not proceed if unauthorized or safety preconditions not met.</li>
+</ul>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>healthy</code> → <code>node_5</code> when Authorized service or gateway recovery completed</li>
+<li><code>unhealthy</code> → <code>node_8</code> when Recovery fails/repeats/cannot be performed within role and safety limits</li>
+</ul>
+<details class="linked-runbook-group linked-runbook-support" open><summary><strong>Support runbooks</strong> (1)</summary>
+<details class="linked-runbook linked-runbook-support" open><summary><strong>Support runbook:</strong> Ignition gateway restart and OptiSweep / WCS API response validation (<code>proc_ignition_gateway_restart_and_optisweep_response_validation_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> recovery</li>
+<li><strong>Role:</strong> L2_support</li>
+<li><strong>Audience:</strong> support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use the Ignition gateway, Windows Event Viewer / services, and Apidog / WCS API surfaces to restart the Ignition gateway, verify the GetAgvStatuses response, and restart OptiSweep only if the API does not respond. The site operator must place and release the physical E-stop; support must not release it until the API response is confirmed.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use when the Ignition gateway or OptiSweep / WCS API is not responding and the site is held in the physical E-stop state pending recovery validation. Perform the Ignition gateway restart, verify the Ignition gateway, then validate OptiSweep through the GetAgvStatuses request before returning the system to operation.</p>
+<p><strong>Safety Notes:</strong></p><ul>
+<li>The site operator must place the system in the physical E-stop state before the restart sequence.</li>
+<li>Keep the physical E-stop active during recovery.</li>
+<li>Do not release the physical E-stop until the OptiSweep / WCS API response is confirmed.</li>
+<li>Support must not perform or remotely release the physical E-stop.</li>
+</ul>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>Authorized recovery completed; gateway/service available for follow-up checks.</td><td><code>node_5</code></td></tr>
+<tr><td><code>unhealthy</code></td><td>Recovery fails or repeats termination/unavailability.</td><td><code>node_8</code></td></tr>
+<tr><td><code>inconclusive</code></td><td>Recovery completion cannot be verified yet.</td><td><code>node_5</code></td></tr>
+<tr><td><code>escalate</code></td><td>Do not proceed if unauthorized or safety preconditions not met.</td><td><code>node_8</code></td></tr>
+</table>
+<p><strong>Source:</strong> incident_case / source_case_228086</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Place the system in the physical E-stop state</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the physical floor / grid, have the site operator place the system in the physical E-stop state and keep it active throughout recovery.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The site confirms that the physical E-stop is engaged before L2 support begins the restart sequence.</p>
+<p><strong>Expected result:</strong></p>
+<p>The physical E-stop is active and remains active while the Ignition gateway and OptiSweep / WCS API are restarted or checked.</p>
+<hr>
+<h5>Step 2 — Restart the Ignition gateway</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the Windows Event Viewer / services surface, open a Windows Administrator Command Prompt, navigate to the Inductive Automation Ignition installation directory, run `gwcmd -r`, and wait for the console to show `Waiting for Gateway restart...`.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The restart command is accepted and the console enters the gateway-restart waiting state.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Windows Administrator Command Prompt shows `gwcmd -r` executed from the Ignition directory and displays `Waiting for Gateway restart...`.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/30dd5b0a07803c56.png" alt="artifact_incident_228086_page_015_embedded_image_01"><figcaption>Windows Administrator Command Prompt showing the Ignition directory, `gwcmd -r`, and `Waiting for Gateway restart...`.</figcaption></figure>
+<hr>
+<h5>Step 3 — Verify the Ignition gateway Systems Overview</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the Ignition gateway, open Status &gt; Systems &gt; Overview and check that the page responds, including Current Response Time and Recent Slow Response Events.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The Systems Overview page loads with a current response-time value and no recent slow response events displayed.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Ignition gateway Systems Overview responds and displays a Current Response Time; the incident evidence showed 11 ms and `No events to display` under Recent Slow Response Events.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/6e057be40744620d.png" alt="artifact_incident_228086_page_016_embedded_image_01"><figcaption>Ignition gateway Status &gt; Systems &gt; Overview showing Current Response Time and Recent Slow Response Events.</figcaption></figure>
+<hr>
+<h5>Step 4 — Validate OptiSweep / WCS API responsiveness</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the Apidog / WCS API surface, send the `GetAgvStatuses` request and inspect the response for HTTP Success / Status 200 and returned AGV records, including visible status values such as `NORMAL`.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The API client displays a successful 200 response containing AGV status records.</p>
+<p><strong>Expected result:</strong></p>
+<p>The GetAgvStatuses request returns HTTP 200 with AGV records; the incident response showed visible `NORMAL` status values.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/8625154eb02b186c.png" alt="artifact_incident_228086_page_017_embedded_image_01"><figcaption>Apidog / WCS API GetAgvStatuses response showing HTTP 200, AGV records, visible NORMAL values, and the response-schema warning.</figcaption></figure>
+<hr>
+<h5>Step 5 — Restart OptiSweep only if GetAgvStatuses does not respond</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If GetAgvStatuses does not respond, open Windows Event Viewer / services, select OptiSweep, use the visible `Restart the service` control, then return to Apidog / WCS API and send GetAgvStatuses again.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The API responds after the conditional service restart and OptiSweep is shown as Running in Windows Event Viewer / services.</p>
+<p><strong>Expected result:</strong></p>
+<p>After the documented OptiSweep service restart, GetAgvStatuses returns a response with AGV records; Windows Event Viewer / services shows OptiSweep in a Running state when inspected.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/3832c5ce44b05a86.png" alt="artifact_incident_228086_page_019_embedded_image_01"><figcaption>Windows Event Viewer / services surface showing OptiSweep selected with status Running and the Restart the service control visible.</figcaption></figure>
+<hr>
+<h5>Step 6 — Release the physical E-stop and confirm auto bag-out</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>After the GetAgvStatuses response is confirmed, have the site operator release the physical E-stop on the physical floor / grid and confirm that the site can resume the auto bag-out operation.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The physical E-stop is released by the site operator after API confirmation and the site resumes auto bag-out.</p>
+<p><strong>Expected result:</strong></p>
+<p>The site operator releases the physical E-stop and confirms that auto bag-out can resume.</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>The Ignition gateway Systems Overview responds after the restart.</li>
+<li>The Systems Overview displays a current response-time value; the incident evidence showed 11 ms and no recent slow response events.</li>
+<li>GetAgvStatuses returns HTTP 200 with AGV records and visible status values such as NORMAL.</li>
+<li>If the initial API check is nonresponsive, OptiSweep is restarted through Windows Event Viewer / services and the repeated GetAgvStatuses request responds.</li>
+<li>The site operator releases the physical E-stop only after API confirmation and confirms that auto bag-out can resume.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>Ignition gateway Systems Overview does not respond after the restart.</li>
+<li>GetAgvStatuses does not return a response.</li>
+<li>OptiSweep does not show Running after the documented restart attempt.</li>
+<li>The API returns a response-schema warning: `Response data differs from endpoint spec` and `$ should be object`.</li>
+<li>The physical E-stop cannot be safely released or the site cannot resume auto bag-out.</li>
+</ul>
+</details>
+</details>
+<hr>
+<h3>5 — Determine whether residual AGV state requires correction after service recovery (diagnostic_decision)</h3>
+<p><strong>Objective:</strong> Identify whether AGVs remain out of sync, unmapped, or otherwise abnormal after the service or gateway recovery.</p>
+<p><strong>Why this check is next:</strong> After the OptiSweep reset, the source says RMS was used to locate and fix out-of-sync AGVs one by one. The packet also includes RMS map and SSMS state evidence.</p>
+<p><strong>Action:</strong> Determine whether residual AGV synchronization/state issues remain after service/gateway recovery.</p>
+<p><strong>Healthy:</strong> RMS shows expected fleet state; no residual out-of-sync indicators; AGV state/locations consistent with restored operation.</p>
+<p><strong>Unhealthy:</strong> One or more AGVs remain out of sync or in an abnormal state after recovery; RMS roster/map/state inconsistent with expected operation; assets still appear stopped due to residual sync issues.</p>
+<p><strong>Inconclusive:</strong> RMS is unavailable/blank, displayed state is readable but operational meaning is not established, or only a single AGV snapshot without fleet-wide confirmation.</p>
+<p><strong>Suggested database check:</strong></p>
+<ul>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> AgvActiveErrorDatabaseModel</li>
+<li><strong>Inspect:</strong> Name</li>
+<li><strong>Inspect:</strong> Error code</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> SystemActiveErrorModel</li>
+<li><strong>Inspect:</strong> Id</li>
+<li><strong>Inspect:</strong> EntityInserted</li>
+<li><strong>Inspect:</strong> EntityLastUpdate</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> RobotDatabaseModel</li>
+<li><strong>Inspect:</strong> State</li>
+<li><strong>Inspect:</strong> CurrentLocationId</li>
+<li><strong>Inspect:</strong> DestinationLocationId</li>
+</ul></li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L2_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li class="warn"><code>proc_query_active_agv_errors_from_the_wcs_database_v1</code> (low, support, score=0.8245) — Query Active AGV Errors From the WCS Database</li>
+<li class="warn"><code>proc_check_geek_rms_overall_system_faults_vs_agv_faults_v1</code> (low, support, score=0.6797) — Check Geek+ RMS overall page for system faults vs AGV system faults (and handle blank RMS due to firewall)</li>
+</ul>
+<p><strong>Evidence Collection Procedures:</strong></p>
+<ul>
+<li><code>proc_query_active_agv_errors_from_the_wcs_database_v1</code> — Query Active AGV Errors From the WCS Database (L2_support): Retrieve current active AGV error records from the WCS database by logging into the WCS primary server, opening the WCS database, creating a new query tab, entering the documented SQL query against [Helix2x_1Prod_Robotics].[dbo].[SystemActiveErrorModel], executing it, and reviewing the returned results.</li>
+<li><code>proc_check_geek_rms_overall_system_faults_vs_agv_faults_v1</code> — Check Geek+ RMS overall page for system faults vs AGV system faults (and handle blank RMS due to firewall) (L1_support): Use the Geek+ RMS / fleet status web UI to confirm the overall page is reachable and that it correctly separates fault categories: “system faults” on the left and “AGV system faults” on the right. If the RMS page is blank, treat it as a reachability/firewall symptom. Use the left/right placement to interpret whether the issue is communication loss vs an AGV that was commanded to move but is not in progress.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>After resetting OptiSweep, RMS was used to locate and fix AGVs that were out of sync.</li>
+<li>RMS Map Monitor shows a selected robot with displayed path and confirmation state.</li>
+<li>SSMS artifact shows multiple robotics-related AGV state values.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_6</code> when Residual AGV synchronization or state abnormality is indicated</li>
+<li><code>healthy</code> → <code>node_7</code> when Fleet state appears normal or no residual synchronization issue is indicated</li>
+</ul>
+<details class="linked-runbook-group linked-runbook-support" open><summary><strong>Support runbooks</strong> (2)</summary>
+<details class="linked-runbook linked-runbook-support" open><summary><strong>Support runbook:</strong> Query Active AGV Errors From the WCS Database (<code>proc_query_active_agv_errors_from_the_wcs_database_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> L2_support</li>
+<li><strong>Audience:</strong> support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Retrieve current active AGV error records from the WCS database by logging into the WCS primary server, opening the WCS database, creating a new query tab, entering the documented SQL query against [Helix2x_1Prod_Robotics].[dbo].[SystemActiveErrorModel], executing it, and reviewing the returned results.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use this procedure when active AGV error records need to be retrieved from the WCS database for investigation or visibility.</p>
+<p><strong>Safety Notes:</strong></p><ul>
+<li>This is a source-backed diagnostic retrieval procedure.</li>
+<li>The source does not provide corrective actions for returned errors; use the output for investigation only.</li>
+</ul>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>unhealthy</code></td><td>Residual AGV synchronization/state abnormality is indicated.</td><td><code>node_6</code></td></tr>
+<tr><td><code>healthy</code></td><td>Fleet state appears normal; no residual synchronization issue indicated.</td><td><code>node_7</code></td></tr>
+<tr><td><code>inconclusive</code></td><td>RMS unreadable or meaning cannot be established.</td><td><code>node_8</code></td></tr>
+<tr><td><code>escalate</code></td><td>Cannot safely continue without reliable fleet evidence.</td><td><code>node_8</code></td></tr>
+</table>
+<p><strong>Source:</strong> manual / active_agv_error_query_1</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Log into the WCS primary server</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Log into the WCS primary server.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The WCS primary server is accessible and the session is opened successfully.</p>
+<p><strong>Expected result:</strong></p>
+<p>You are logged into the WCS primary server and can continue to the database access step.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/dd374953acdb3906.png" alt="artifact_manual_active_agv_error_query_1_page_1_image_1"><figcaption>Initial server access or login entry point associated with the first procedure step.</figcaption></figure>
+<figure><img src="assets/14ea52d1bb1ce1b4.jpeg" alt="artifact_manual_active_agv_error_query_1_page_1_image_2"><figcaption>Initial server access or login entry point associated with the first procedure step.</figcaption></figure>
+<hr>
+<h5>Step 2 — Open the WCS database</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the WCS database.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The WCS database opens successfully and the query interface can be accessed.</p>
+<p><strong>Expected result:</strong></p>
+<p>The WCS database is open and ready for query entry.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/dd374953acdb3906.png" alt="artifact_manual_active_agv_error_query_1_page_1_image_1"><figcaption>Database access point or initial database selection area after server login.</figcaption></figure>
+<figure><img src="assets/14ea52d1bb1ce1b4.jpeg" alt="artifact_manual_active_agv_error_query_1_page_1_image_2"><figcaption>Database access point or initial database selection area after server login.</figcaption></figure>
+<hr>
+<h5>Step 3 — Open a new query tab</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open a new query tab by clicking the indicated control.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The new query tab appears in the database interface.</p>
+<p><strong>Expected result:</strong></p>
+<p>A new query tab opens and is ready for SQL entry.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/d1aaf4391764bc2d.jpeg" alt="artifact_manual_active_agv_error_query_1_page_2_image_1"><figcaption>UI control used to open a new query tab and where the new tab appears.</figcaption></figure>
+<figure><img src="assets/a3cb4c312665a8da.png" alt="artifact_manual_active_agv_error_query_1_page_2_image_2"><figcaption>UI control used to open a new query tab and where the new tab appears.</figcaption></figure>
+<hr>
+<h5>Step 4 — Paste the documented SQL query into the new tab</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Copy and paste the provided SQL query into the newly opened query tab.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The full SQL query is visible in the new query tab.</p>
+<p><strong>Expected result:</strong></p>
+<p>The query editor contains the documented SQL statement.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/d1aaf4391764bc2d.jpeg" alt="artifact_manual_active_agv_error_query_1_page_2_image_1"><figcaption>Query editor area where the SQL statement should be entered.</figcaption></figure>
+<figure><img src="assets/a3cb4c312665a8da.png" alt="artifact_manual_active_agv_error_query_1_page_2_image_2"><figcaption>Query editor area where the SQL statement should be entered.</figcaption></figure>
+<hr>
+<h5>Step 5 — Use the documented active AGV error query text</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Use the provided query text exactly as documented: SELECT TOP (1000) [Id], [EntityInserted], [EntityLastUpdate], [Name], [Area], [Error], [LastSeen], [SystemErrorDescription], [SystemErrorResolution] FROM [Helix2x_1Prod_Robotics].[dbo].[SystemActiveErrorModel].</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The query includes Id, EntityInserted, EntityLastUpdate, Name, Area, Error, LastSeen, SystemErrorDescription, and SystemErrorResolution from [Helix2x_1Prod_Robotics].[dbo].[SystemActiveErrorModel].</p>
+<p><strong>Expected result:</strong></p>
+<p>The query text references the documented fields and the [Helix2x_1Prod_Robotics].[dbo].[SystemActiveErrorModel] table.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/d1aaf4391764bc2d.jpeg" alt="artifact_manual_active_agv_error_query_1_page_2_image_1"><figcaption>Query editor area containing the pasted SQL statement.</figcaption></figure>
+<figure><img src="assets/a3cb4c312665a8da.png" alt="artifact_manual_active_agv_error_query_1_page_2_image_2"><figcaption>Query editor area containing the pasted SQL statement.</figcaption></figure>
+<hr>
+<h5>Step 6 — Execute the query</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Right click on the query and click execute.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The query executes without blocking the results display.</p>
+<p><strong>Expected result:</strong></p>
+<p>The query runs and the interface proceeds to display returned results.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/d1aaf4391764bc2d.jpeg" alt="artifact_manual_active_agv_error_query_1_page_2_image_1"><figcaption>Query area where the execute action is initiated.</figcaption></figure>
+<figure><img src="assets/a3cb4c312665a8da.png" alt="artifact_manual_active_agv_error_query_1_page_2_image_2"><figcaption>Query area where the execute action is initiated.</figcaption></figure>
+<hr>
+<h5>Step 7 — Review the results area</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Review the results area where the active errors appear.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The results panel or table is visible and populated with active error records.</p>
+<p><strong>Expected result:</strong></p>
+<p>A results area displays the active AGV errors returned by the query.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/bd0e5496db114110.jpeg" alt="artifact_manual_active_agv_error_query_1_page_4_image_1"><figcaption>Results panel or table where active AGV errors are shown after execution.</figcaption></figure>
+<figure><img src="assets/8770cb52c8e0fa23.png" alt="artifact_manual_active_agv_error_query_1_page_4_image_2"><figcaption>Results panel or table where active AGV errors are shown after execution.</figcaption></figure>
+<hr>
+<h5>Step 8 — Check the returned fields in the results</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Check the returned fields in the results, including Id, EntityInserted, EntityLastUpdate, Name, Area, Error, LastSeen, SystemErrorDescription, and SystemErrorResolution.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Returned records show Id, EntityInserted, EntityLastUpdate, Name, Area, Error, LastSeen, SystemErrorDescription, and SystemErrorResolution.</p>
+<p><strong>Expected result:</strong></p>
+<p>The results include the documented identifier, timestamp, area, error, description, and resolution fields.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/bd0e5496db114110.jpeg" alt="artifact_manual_active_agv_error_query_1_page_4_image_1"><figcaption>Returned results table and the displayed columns for active AGV errors.</figcaption></figure>
+<figure><img src="assets/8770cb52c8e0fa23.png" alt="artifact_manual_active_agv_error_query_1_page_4_image_2"><figcaption>Returned results table and the displayed columns for active AGV errors.</figcaption></figure>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>The WCS primary server is accessed successfully.</li>
+<li>The WCS database is opened successfully.</li>
+<li>A new query tab is opened.</li>
+<li>The documented SQL query against [Helix2x_1Prod_Robotics].[dbo].[SystemActiveErrorModel] is entered.</li>
+<li>The query executes successfully.</li>
+<li>The results area displays active AGV error records.</li>
+<li>Returned results include Id, EntityInserted, EntityLastUpdate, Name, Area, Error, LastSeen, SystemErrorDescription, and SystemErrorResolution.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>Access to the WCS primary server is not available.</li>
+<li>Access to the WCS database is not available.</li>
+<li>A new query tab cannot be opened.</li>
+<li>The query cannot be executed.</li>
+<li>The results area does not display returned active errors.</li>
+<li>Expected fields are missing from the returned results.</li>
+</ul>
+</details>
+<details class="linked-runbook linked-runbook-support"><summary><strong>Support runbook:</strong> Check Geek+ RMS overall page for system faults vs AGV system faults (and handle blank RMS due to firewall) (<code>proc_check_geek_rms_overall_system_faults_vs_agv_faults_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> L1_support</li>
+<li><strong>Audience:</strong> support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use the Geek+ RMS / fleet status web UI to confirm the overall page is reachable and that it correctly separates fault categories: “system faults” on the left and “AGV system faults” on the right. If the RMS page is blank, treat it as a reachability/firewall symptom. Use the left/right placement to interpret whether the issue is communication loss vs an AGV that was commanded to move but is not in progress.</p>
+<p><strong>When To Use:</strong></p>
+<p>When you need to verify that the Geek+ RMS overall/fleet status page is reachable and that it is showing the expected fault panels (left system faults vs right AGV system faults), including the specific symptom where the page appears blank due to firewall not being open.</p>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>unhealthy</code></td><td>Residual AGV synchronization/state abnormality is indicated.</td><td><code>node_6</code></td></tr>
+<tr><td><code>healthy</code></td><td>Fleet state appears normal; no residual synchronization issue indicated.</td><td><code>node_7</code></td></tr>
+<tr><td><code>inconclusive</code></td><td>RMS unreadable or meaning cannot be established.</td><td><code>node_8</code></td></tr>
+<tr><td><code>escalate</code></td><td>Cannot safely continue without reliable fleet evidence.</td><td><code>node_8</code></td></tr>
+</table>
+<p><strong>Source:</strong> training_video / training_video_day1</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Open the Geek+ RMS / fleet status web UI (RMS overall page)</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the Geek+ RMS / fleet status web UI (RMS / fleet status UI).</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The RMS overall page is visible and fault panels can be observed.</p>
+<p><strong>Expected result:</strong></p>
+<p>The RMS overall page loads (or you observe that it is blank).</p>
+<hr>
+<h5>Step 2 — Confirm the RMS page is not blank; if blank, treat as firewall/reachability symptom</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Check whether the RMS overall page shows content/fault panels. If it is blank, treat it as the firewall-not-open symptom described by the source.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Fault panels are visible (not blank).</p>
+<p><strong>Expected result:</strong></p>
+<p>Either (a) fault panels are visible, or (b) the page is blank consistent with firewall not being open.</p>
+<hr>
+<h5>Step 3 — Check left-side “system faults” panel</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS overall page, check the left side labeled area for “system faults”.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The left “system faults” panel is visible (fault rows/entries can be observed if present).</p>
+<p><strong>Expected result:</strong></p>
+<p>The left-side “system faults” area is visible and can be reviewed for any listed faults.</p>
+<hr>
+<h5>Step 4 — Check right-side “AGV system faults” panel</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS overall page, check the right side labeled area for “AGV system faults” (active AGV faults).</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The right “AGV system faults” panel is visible (fault rows/entries can be observed if present).</p>
+<p><strong>Expected result:</strong></p>
+<p>The right-side “AGV system faults” area is visible and can be reviewed for any listed faults.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/1edf4bf1b0b38c00.jpg" alt="artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000"><figcaption>Overall System RMS page frame showing the expected layout: system faults on the left and active AGV system faults on the right; also includes the blank-page symptom when firewall is not open.</figcaption></figure>
+<hr>
+<h5>Step 5 — Interpret left/right fault placement for communication loss vs commanded-but-not-in-progress movement</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Use the source mapping: if you lose communication with a chat, expect it on the left “system faults”; if you told an AGV to move but it hasn’t moved, expect it on the right “AGV system faults”.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Observed faults align with the expected left/right meaning (left = communication loss; right = commanded move not in progress).</p>
+<p><strong>Expected result:</strong></p>
+<p>You can map the observed fault placement to either communication-loss (left) or commanded-but-not-in-progress movement (right).</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>RMS overall page is reachable and not blank (fault panels visible).</li>
+<li>Left “system faults” and right “AGV system faults” areas are observable on the RMS overall page.</li>
+<li>Observed fault placement can be interpreted as communication loss (left) vs commanded-but-not-in-progress movement (right) using the source mapping.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>RMS remains blank (no visible system/AGV fault panels).</li>
+<li>Left/right fault separation is not observable or does not align with the expected meaning (left = communication loss; right = commanded move not in progress).</li>
+</ul>
+</details>
+</details>
+<hr>
+<h3>6 — Apply authorized correction for residual AGV synchronization or state issues (procedure_reference)</h3>
+<p><strong>Objective:</strong> Perform the approved correction for AGVs identified as out of sync or otherwise abnormal, without treating the historical correction as a universal procedure.</p>
+<p><strong>Why this check is next:</strong> The source reports that RMS was used to locate and fix out-of-sync AGVs after the OptiSweep reset, but it does not provide a complete reusable procedure.</p>
+<p><strong>Action:</strong> Apply authorized correction for residual AGV synchronization or state issues identified on RMS (without substituting physical recovery or unsafe actions).</p>
+<p><strong>Healthy:</strong> Corrected AGV presents expected state after authorized correction; fleet operation can proceed without immediate recurrence.</p>
+<p><strong>Unhealthy:</strong> AGV remains out of sync or returns to abnormal state; correction would require unsupported/unsafe action; multiple assets remain affected beyond supported correction scope.</p>
+<p><strong>Inconclusive:</strong> RMS does not refresh; resulting state cannot be observed; affected asset not clearly identified in the correction path.</p>
+<p><strong>Procedure Reference:</strong></p>
+<ul>
+<li><strong>Trigger condition:</strong> An authorized role records that the identified AGV state correction has completed. Progress is indicated by the affected AGV returning to an expected state and no longer blocking fleet operation; failure is indicated by persistent abnormal state or repeated loss of synchronization; inconclusive means the correction outcome cannot be observed.</li>
+<li><strong>Selected procedure:</strong> Remove/Recover a specific AGV by robot ID using OptiSweep→Geek API requests (`proc_remove_recover_agv_by_robot_id_optisweep_geek_api_v1`)</li>
+<li><strong>Selection rationale:</strong> Retrieval match (0.5659, boosted 0.7659).</li>
+<li><strong>Success confirmation:</strong> RemoveAgv request is accepted/executed for the specified robot ID (observable success/acceptance in the API client response).</li>
+<li><strong>Failure boundary:</strong> API client response indicates RemoveAgv failed/error.</li>
+</ul>
+<p><strong>Prerequisites:</strong></p>
+<ul>
+<li>You have the target AGV&#x27;s robot ID to use in the API request.</li>
+<li>Apidog / WCS API client access</li>
+</ul>
+<p><strong>Safety checks:</strong></p>
+<ul>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> L2_support, L3_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li><code>proc_remove_recover_agv_by_robot_id_optisweep_geek_api_v1</code> (medium, support, score=0.5659) — Remove/Recover a specific AGV by robot ID using OptiSweep→Geek API requests</li>
+<li><code>proc_wcs_helix_db_ssms_agv_state_inspection_v1</code> (medium, support, score=0.7436) — WCS / Helix DB (SSMS) AGV state inspection</li>
+</ul>
+<p><strong>Evidence Collection Procedures:</strong></p>
+<ul>
+<li><code>proc_remove_recover_agv_by_robot_id_optisweep_geek_api_v1</code> — Remove/Recover a specific AGV by robot ID using OptiSweep→Geek API requests (L2_support): Use the OptiSweep / WCS API client to send a Geek request to remove a specified AGV from the system (RemoveAgv) or re-add it (RecoverAGV). Both API actions require the target robot ID.</li>
+<li><code>proc_wcs_helix_db_ssms_agv_state_inspection_v1</code> — WCS / Helix DB (SSMS) AGV state inspection (L2_support): Use the WCS / Helix DB (SSMS) live read-only database surface to inspect robotics-related AGV state records when the RMS / fleet status UI reports AGVs out of sync or the robotic system is stopped. Compare the populated SSMS State results with the live RMS / fleet status UI; the listed state values do not independently establish a fault.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>RMS was used to locate and fix out-of-sync AGVs after the service reset.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Decision Outcomes:</strong></p>
+<ul>
+<li><code>healthy</code> (observer=site_or_remote; tool=RMS fleet/map UI): Authorized AGV state correction completed; RMS indicates expected state.</li>
+<li><code>unhealthy</code> (observer=site_or_remote; tool=RMS fleet/map UI): Residual abnormal state persists or correction would be unsafe/unsupported.</li>
+<li><code>inconclusive</code> (observer=site_or_remote; tool=RMS fleet/map UI): Correction outcome cannot be observed or asset identification unclear.</li>
+<li><code>escalate</code> (observer=remote; tool=RMS fleet/map UI + role/access constraints): Stop because required correction mechanism cannot be supported safely.</li>
+</ul>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>healthy</code> → <code>node_7</code> when Authorized AGV state correction completed</li>
+<li><code>unhealthy</code> → <code>node_8</code> when AGV state remains abnormal or correction cannot be completed safely</li>
+</ul>
+<details class="linked-runbook-group linked-runbook-support" open><summary><strong>Support runbooks</strong> (2)</summary>
+<details class="linked-runbook linked-runbook-support" open><summary><strong>Support runbook:</strong> Remove/Recover a specific AGV by robot ID using OptiSweep→Geek API requests (<code>proc_remove_recover_agv_by_robot_id_optisweep_geek_api_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> operation</li>
+<li><strong>Role:</strong> L2_support</li>
+<li><strong>Audience:</strong> support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use the OptiSweep / WCS API client to send a Geek request to remove a specified AGV from the system (RemoveAgv) or re-add it (RecoverAGV). Both API actions require the target robot ID.</p>
+<p><strong>When To Use:</strong></p>
+<p>When you need to remove a specific AGV from the system roster (RemoveAgv) or re-add it (RecoverAGV) by sending the correct OptiSweep→Geek API request using the required robot ID.</p>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>Authorized AGV state correction completed; RMS indicates expected state.</td><td><code>node_7</code></td></tr>
+<tr><td><code>unhealthy</code></td><td>Residual abnormal state persists or correction would be unsafe/unsupported.</td><td><code>node_8</code></td></tr>
+<tr><td><code>inconclusive</code></td><td>Correction outcome cannot be observed or asset identification unclear.</td><td><code>node_8</code></td></tr>
+<tr><td><code>escalate</code></td><td>Stop because required correction mechanism cannot be supported safely.</td><td><code>node_8</code></td></tr>
+</table>
+<p><strong>Source:</strong> training_video / training_video_day2</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Identify the target AGV robot ID for the API request</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Obtain the target AGV&#x27;s robot ID that you will enter into the OptiSweep / WCS API request.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The robot ID you plan to use corresponds to the intended AGV you are trying to remove/recover.</p>
+<p><strong>Expected result:</strong></p>
+<p>You have a specific robot ID value ready to use for the RemoveAgv and RecoverAGV requests.</p>
+<hr>
+<h5>Step 2 — Select RemoveAgv in the OptiSweep / WCS API client and confirm it targets Geek removal by robot ID</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Apidog / WCS API client, select the API action named RemoveAgv and confirm it is described as requiring the robot ID and sending a request to Geek to remove the specified AGV from the system.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>RemoveAgv is the selected action and its description matches: requires robot ID; sends request to Geek to remove the specified AGV from the system.</p>
+<p><strong>Expected result:</strong></p>
+<p>The RemoveAgv action is selected in the API client and is associated with the robot ID input requirement.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/eb66b08e3471dd95.jpg" alt="artifact_training_video_training_video_day2_0029_remove_agv_this_requires_the_robot_primary_02_42_03_000"><figcaption>API action definitions: RemoveAgv requires robot ID and sends a request to Geek to remove the specified AGV; RecoverAGV requires robot ID and sends a request to Geek to add the specified AGV.</figcaption></figure>
+<hr>
+<h5>Step 3 — Submit RemoveAgv request with the target robot ID</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Submit the RemoveAgv request in the Apidog / WCS API client using the target robot ID you identified.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The API client response indicates the request was accepted/executed for RemoveAgv.</p>
+<p><strong>Expected result:</strong></p>
+<p>The RemoveAgv request is submitted and you receive an observable API client response indicating acceptance/execution (success or error).</p>
+<hr>
+<h5>Step 4 — Verify RemoveAgv request corresponds to intended action and response indicates acceptance/success</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Review the RemoveAgv request/response in the Apidog / WCS API client and verify the response indicates acceptance/execution (success vs error).</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Response indicates the request was accepted/executed for RemoveAgv.</p>
+<p><strong>Expected result:</strong></p>
+<p>The API client response for RemoveAgv shows an observable success/acceptance indicator (or an error indicator if it failed).</p>
+<hr>
+<h5>Step 5 — Select RecoverAGV in the OptiSweep / WCS API client and confirm it targets Geek add by robot ID</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Apidog / WCS API client, select the API action named RecoverAGV and confirm it is described as requiring the robot ID and sending a request to Geek to add the specified AGV to the system.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>RecoverAGV is the selected action and its description matches: requires robot ID; sends request to Geek to add the specified AGV to the system.</p>
+<p><strong>Expected result:</strong></p>
+<p>The RecoverAGV action is selected in the API client and is associated with the robot ID input requirement.</p>
+<hr>
+<h5>Step 6 — Submit RecoverAGV request with the same target robot ID</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Submit the RecoverAGV request in the Apidog / WCS API client using the same robot ID used for RemoveAgv.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The API client response indicates the request was accepted/executed for RecoverAGV.</p>
+<p><strong>Expected result:</strong></p>
+<p>The RecoverAGV request is submitted and you receive an observable API client response indicating acceptance/success (or error).</p>
+<hr>
+<h5>Step 7 — Verify RecoverAGV request corresponds to intended action and response indicates acceptance/success</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Review the RecoverAGV request/response in the Apidog / WCS API client and verify the response indicates acceptance/execution (success vs error).</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Response indicates the request was accepted/executed for RecoverAGV.</p>
+<p><strong>Expected result:</strong></p>
+<p>The API client response for RecoverAGV shows an observable success/acceptance indicator (or an error indicator if it failed).</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>RemoveAgv request is accepted/executed for the specified robot ID (observable success/acceptance in the API client response).</li>
+<li>RecoverAGV request is accepted/executed for the same robot ID (observable success/acceptance in the API client response).</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>API client response indicates RemoveAgv failed/error.</li>
+<li>API client response indicates RecoverAGV failed/error.</li>
+<li>Robot ID is incorrect or missing (request cannot target intended AGV).</li>
+</ul>
+</details>
+<details class="linked-runbook linked-runbook-support"><summary><strong>Support runbook:</strong> WCS / Helix DB (SSMS) AGV state inspection (<code>proc_wcs_helix_db_ssms_agv_state_inspection_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> L2_support</li>
+<li><strong>Audience:</strong> support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use the WCS / Helix DB (SSMS) live read-only database surface to inspect robotics-related AGV state records when the RMS / fleet status UI reports AGVs out of sync or the robotic system is stopped. Compare the populated SSMS State results with the live RMS / fleet status UI; the listed state values do not independently establish a fault.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use the live WCS / Helix DB (SSMS) surface to inspect AGV state records when the RMS / fleet status UI reports AGVs out of sync or the robotic system is stopped.</p>
+<p><strong>Safety Notes:</strong></p><ul>
+<li>This procedure is supported as a read-only diagnostic; do not modify database values.</li>
+<li>Do not treat the displayed AGV State values as proof of a fault by themselves.</li>
+<li>Escalate if the WCS / Helix DB (SSMS) connection or query execution fails, or if expected AGV results are unavailable.</li>
+</ul>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>Authorized AGV state correction completed; RMS indicates expected state.</td><td><code>node_7</code></td></tr>
+<tr><td><code>unhealthy</code></td><td>Residual abnormal state persists or correction would be unsafe/unsupported.</td><td><code>node_8</code></td></tr>
+<tr><td><code>inconclusive</code></td><td>Correction outcome cannot be observed or asset identification unclear.</td><td><code>node_8</code></td></tr>
+<tr><td><code>escalate</code></td><td>Stop because required correction mechanism cannot be supported safely.</td><td><code>node_8</code></td></tr>
+</table>
+<p><strong>Source:</strong> incident_case / source_case_228086</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Open WCS / Helix DB (SSMS) and connect to the robotics-related database context</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open WCS / Helix DB (SSMS) and connect to the robotics-related database context shown in the incident evidence. Do not substitute an undocumented database name or context.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The WCS / Helix DB (SSMS) connection is active and the robotics-related database context is available for the diagnostic query.</p>
+<p><strong>Expected result:</strong></p>
+<p>WCS / Helix DB (SSMS) shows an active connection to the robotics-related database context and is ready to execute the source-provided AGV state check.</p>
+<hr>
+<h5>Step 2 — Run the source-provided AGV state check in WCS / Helix DB (SSMS)</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In WCS / Helix DB (SSMS), run the source-provided robotics AGV state check without adding undocumented query text. Wait for the SSMS status bar to show that the query executed successfully.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The source-provided check completes successfully and the SSMS results grid contains AGV records.</p>
+<p><strong>Expected result:</strong></p>
+<p>WCS / Helix DB (SSMS) shows a populated query results grid and a successful execution indication in the SSMS status bar.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/8528eee5a206938a.jpeg" alt="artifact_incident_228086_page_024_embedded_image_01"><figcaption>Incident screenshot showing WCS / Helix DB (SSMS) with a robotics-related query results grid, an AGV State column, and successful query execution status.</figcaption></figure>
+<hr>
+<h5>Step 3 — Inspect the AGV State column in WCS / Helix DB (SSMS)</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Inspect the returned State column in the WCS / Helix DB (SSMS) results grid and record the visible values. Incident examples include LeavingCharger, MovingToChargerExitQueue, MovingToSorterExitQueue, MovingToTipperQueue, SQExchanging, SQStagingExchange, SWaitingForExchange, and SWaitingInzone. Do not assign fault meaning to a value without live context.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>AGV records and their State values are visible in the WCS / Helix DB (SSMS) results grid.</p>
+<p><strong>Expected result:</strong></p>
+<p>The WCS / Helix DB (SSMS) results grid visibly contains AGV records with State values that can be recorded for comparison.</p>
+<hr>
+<h5>Step 4 — Compare WCS / Helix DB (SSMS) states with the RMS / fleet status UI</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Compare the recorded AGV State values from WCS / Helix DB (SSMS) with the corresponding live AGV information in the RMS / fleet status UI. Keep this diagnostic read-only and do not change database values.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The returned WCS / Helix DB (SSMS) records can be correlated with visible AGV information in the RMS / fleet status UI.</p>
+<p><strong>Expected result:</strong></p>
+<p>The WCS / Helix DB (SSMS) AGV records and the corresponding RMS / fleet status UI information are available for side-by-side diagnostic comparison.</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>WCS / Helix DB (SSMS) connects to the available robotics-related database context.</li>
+<li>The source-provided AGV state check executes successfully and produces a populated results grid.</li>
+<li>Visible State values are recorded and compared with the live RMS / fleet status UI without modifying database records.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>WCS / Helix DB (SSMS) cannot connect to the robotics-related database context.</li>
+<li>The source-provided check fails to execute or produces no usable results.</li>
+<li>The State column or expected AGV records are unavailable.</li>
+<li>SSMS records cannot be correlated with the RMS / fleet status UI.</li>
+<li>The diagnostic would require modifying database values.</li>
+</ul>
+</details>
+</details>
+<hr>
+<h3>7 — Validate service responsiveness, AGV status, and resumed operation (validation_gate)</h3>
+<p><strong>Objective:</strong> Confirm that the recovered service and fleet state support stable automated operation before declaring the troubleshooting path complete.</p>
+<p><strong>Why this check is next:</strong> The source provides Windows Services, GetAgvStatuses API, RMS follow-up, and site resumption evidence, while explicitly leaving the API schema warning and complete restoration scope uncertain.</p>
+<p><strong>Validate:</strong> Validate OptiSweep responsiveness and fleet state, then confirm stable resumed robotic operation with the site.</p>
+<p><strong>Success:</strong> OptiSweep is Running; GetAgvStatuses returns usable HTTP 200 with returned AGV records; returned records are interpretable as normal/expected; RMS is normal; site confirms resumed stable operation.</p>
+<p><strong>Failure:</strong> GetAgvStatuses fails/unusable; OptiSweep stopped/terminates again; RMS still shows abnormal out-of-sync AGVs; site cannot confirm resumed automated operation.</p>
+<p><strong>Inconclusive:</strong> HTTP 200 occurs but schema warning prevents reliable interpretation; service appears Running but timing vs recovery unclear; site confirmation unavailable; broader fleet stability not confirmed.</p>
+<p><strong>Validation Gate:</strong></p>
+<p><strong>Validation checklist:</strong></p>
+<ul>
+<li>Confirm the owning service remains running and stable.</li>
+<li>Confirm the supported API or control endpoint responds.</li>
+<li>Compare database or fleet state with the live HMI or site-observed state.</li>
+<li>Observe the affected workflow for recurrence during the stated observation window.</li>
+</ul>
+<p><strong>Required evidence sources:</strong> SSMS</p>
+<p><strong>Stable-operation observation:</strong> Observe the affected workflow for recurrence during the defined observation window; a reachable screen or successful request alone is not recovery.</p>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L1_support, L2_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>GetAgvStatuses returned HTTP 200 with AGV records, including visible NORMAL values, but the API client reported a schema warning.</li>
+<li>Windows Services shows OptiSweep Running.</li>
+<li>After RMS correction of out-of-sync AGVs, the site resumed auto bag-out.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>healthy</code> → <code></code> when Service responds, AGV status evidence usable, RMS normal, and site confirms stable automated operation</li>
+<li><code>unhealthy</code> → <code>node_8</code> when No response, repeated failure, unresolved AGV abnormality, or no confirmed operational recovery</li>
+</ul>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h3>8 — Stop and escalate when recovery or validation remains unsupported or fails (escalation_gate)</h3>
+<p><strong>Objective:</strong> Hand off only when the supported diagnostic, recovery, and validation path cannot safely continue or does not restore stable operation.</p>
+<p><strong>Why this check is next:</strong> The incident evidence supports stopping when service recovery, AGV correction, or validation does not establish stable operation. Historical coordination and case-management activity are not used as escalation triggers.</p>
+<p><strong>Action:</strong> Stop troubleshooting and prepare an escalation handoff with an evidence package (logs, service states, gateway/API/RMS evidence, recovery actions, and validation outcomes).</p>
+<p><strong>Healthy:</strong> Not applicable (stop gate).</p>
+<p><strong>Unhealthy:</strong> Recovery/validation remains unsafe, unauthorized, unsupported, repeated, unresolved, or evidence is insufficient after supported diagnostics and validation.</p>
+<p><strong>Inconclusive:</strong> Evidence surfaces are unavailable/contradictory or API returns data but cannot be interpreted; recovery timing/outcome unknown.</p>
+<p><strong>Escalation Gate:</strong></p>
+<ul>
+<li><strong>Reason:</strong> Hand off only when the supported diagnostic, recovery, and validation path cannot safely continue or does not restore stable operation.</li>
+<li><strong>Required next team:</strong> The owning L2/L3 service or controls team</li>
+</ul>
+<p><strong>Evidence package:</strong></p>
+<ul>
+<li>Windows Event Viewer System/Application evidence (service termination/crash and application errors)</li>
+<li>Windows Services state for OptiSweep/service components</li>
+<li>Ignition gateway status indicators</li>
+<li>GetAgvStatuses response evidence (including HTTP status and unusable/ambiguous schema warning details if present)</li>
+<li>RMS fleet-state evidence</li>
+<li>Recovery actions attempted and whether completion was verified</li>
+<li>Validation results and explicit stop criteria</li>
+<li>{&#x27;page_ref&#x27;: &#x27;case_228086:page_17&#x27;, &#x27;artifact_id&#x27;: &#x27;artifact_incident_228086_page_017_embedded_image_01&#x27;, &#x27;chunk_id&#x27;: &#x27;stage4_artifact_chunk_002&#x27;, &#x27;quote_or_summary&#x27;: &#x27;API returned HTTP 200 but showed a response-schema warning.&#x27;}</li>
+<li>{&#x27;page_ref&#x27;: &#x27;case_228086:page_29&#x27;, &#x27;artifact_id&#x27;: &#x27;artifact_incident_228086_page_029_embedded_image_01&#x27;, &#x27;chunk_id&#x27;: &#x27;stage4_artifact_chunk_003&#x27;, &#x27;quote_or_summary&#x27;: &#x27;OptiSweep termination was recorded, but successful automatic restart was not confirmed.&#x27;}</li>
+</ul>
+<p><strong>Actions attempted:</strong></p>
+<ul>
+<li>None</li>
+</ul>
+<p><strong>Unresolved questions:</strong></p>
+<ul>
+<li>None</li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> L1_support, L2_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>API returned HTTP 200 but showed a response-schema warning.</li>
+<li>OptiSweep termination was recorded, but successful automatic restart was not confirmed.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Decision Outcomes:</strong></p>
+<ul>
+<li><code>unhealthy</code> (observer=remote; tool=Event Viewer, Windows Services, Ignition gateway, GetAgvStatuses evidence, RMS state, recovery log): Escalation is required due to unresolved recovery or failed validation.</li>
+<li><code>inconclusive</code> (observer=remote; tool=Evidence surfaces as available): Evidence is insufficient or contradictory.</li>
+</ul>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>escalate</code> → <code></code> when Stop and escalate</li>
+</ul>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h2>Branch Graph</h2>
+<table>
+<tr><th>From Node</th><th>Outcome</th><th>Condition</th><th>Next Node</th></tr>
+<tr><td><code>node_1</code></td><td><code>unhealthy</code></td><td>Broad stoppage with abnormal/blank RMS/HMI presentation confirmed</td><td><code>node_2</code></td></tr>
+<tr><td><code>node_1</code></td><td><code>healthy</code></td><td>Impact localized or abnormal RMS/HMI pattern not confirmed</td><td><code></code></td></tr>
+<tr><td><code>node_1</code></td><td><code>inconclusive</code></td><td>Inconclusive scope or RMS message meaning</td><td><code>node_8</code></td></tr>
+<tr><td><code>node_2</code></td><td><code>unhealthy</code></td><td>OptiSweep termination or correlated WCSWebApplication/Application Error evidence is present</td><td><code>node_3</code></td></tr>
+<tr><td><code>node_2</code></td><td><code>healthy</code></td><td>No relevant correlated service/application failure found</td><td><code>node_8</code></td></tr>
+<tr><td><code>node_3</code></td><td><code>unhealthy</code></td><td>Ignition is unavailable or shows correlated abnormal gateway state</td><td><code>node_4</code></td></tr>
+<tr><td><code>node_3</code></td><td><code>healthy</code></td><td>Ignition responds and no correlated gateway failure indicated</td><td><code>node_4</code></td></tr>
+<tr><td><code>node_4</code></td><td><code>healthy</code></td><td>Authorized service or gateway recovery completed</td><td><code>node_5</code></td></tr>
+<tr><td><code>node_4</code></td><td><code>unhealthy</code></td><td>Recovery fails/repeats/cannot be performed within role and safety limits</td><td><code>node_8</code></td></tr>
+<tr><td><code>node_5</code></td><td><code>unhealthy</code></td><td>Residual AGV synchronization or state abnormality is indicated</td><td><code>node_6</code></td></tr>
+<tr><td><code>node_5</code></td><td><code>healthy</code></td><td>Fleet state appears normal or no residual synchronization issue is indicated</td><td><code>node_7</code></td></tr>
+<tr><td><code>node_6</code></td><td><code>healthy</code></td><td>Authorized AGV state correction completed</td><td><code>node_7</code></td></tr>
+<tr><td><code>node_6</code></td><td><code>unhealthy</code></td><td>AGV state remains abnormal or correction cannot be completed safely</td><td><code>node_8</code></td></tr>
+<tr><td><code>node_7</code></td><td><code>healthy</code></td><td>Service responds, AGV status evidence usable, RMS normal, and site confirms stable automated operation</td><td><code></code></td></tr>
+<tr><td><code>node_7</code></td><td><code>unhealthy</code></td><td>No response, repeated failure, unresolved AGV abnormality, or no confirmed operational recovery</td><td><code>node_8</code></td></tr>
+<tr><td><code>node_8</code></td><td><code>escalate</code></td><td>Stop and escalate</td><td><code></code></td></tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,424 @@
+{
+  "procedure_id": "proc_filter_wcs_database_logs_for_errors_and_fatals_v1",
+  "candidate_id": "candidate_training_video_database_log_error_filter",
+  "title": "Filter WCS Database Logs for Errors and Fatals",
+  "procedure_type": "diagnostic",
+  "summary": "Use the WCS / Helix DB (SSMS) read-only database logs to retrieve recent records and isolate records with Error or Fatal severity for support investigation. The logs can provide timestamps, messages, exception details, trace information, host and instance information, and source code location fields.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "wcs_system_faults"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this diagnostic when support needs to inspect recent WCS / Helix DB log records for Error or Fatal severity during investigation of a system issue.",
+  "not_for": [
+    "Do not use this procedure to modify database records.",
+    "Do not use this procedure to run unsupported mutating scripts.",
+    "Do not use this procedure as a resolution procedure for an identified error or fatal; escalate when diagnosis or remediation is not covered."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Access the WCS / Helix DB (SSMS), retrieve recent log records, filter Error and Fatal severities, and review the visible diagnostic fields."
+    },
+    {
+      "role": "L3_support",
+      "responsibility": "Provide escalation support when the log records require diagnosis or resolution steps outside this procedure."
+    }
+  ],
+  "safety_notes": [
+    "This is a read-only diagnostic procedure.",
+    "Do not modify database records or execute unsupported mutating scripts.",
+    "Follow the support handoff when an Error or Fatal requires diagnosis or resolution steps not included here."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "Read access to the relevant OptiSweep database logs",
+    "SSMS log retrieval and filtering functions"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2_support or L3_support access to WCS / Helix DB (SSMS)"
+    ],
+    "system_preconditions": [
+      "The relevant OptiSweep database logs are available in the WCS / Helix DB."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_database_logs_v1",
+    "ctx_training_video_support_runbooks_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+      "description": "SSMS example showing the WCS EntityLogs database, dbo.DeveloperLogs and dbo.OperatorLogs, a top-record query result, and visible log fields including EntityInserted, Message, Level, Exception, TraceId, HostName, InstanceName, AssemblyName, ClassName, MethodName, and LineNumber.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the relevant WCS / Helix database in SSMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Access the OptiSweep database area that contains the system log records.",
+      "instruction": "In WCS / Helix DB (SSMS), select the relevant OptiSweep database that contains the database logs. The source identifies the WCS EntityLogs database as the logging database; the example shows a Helix2x_1Prod_EntityLogs database with log tables.",
+      "expected_result": "The relevant WCS / Helix database is open in SSMS and its log records or log tables are available for inspection.",
+      "healthy_condition": "SSMS opens the relevant database and exposes the database log records without requiring a write operation.",
+      "failure_condition": "The database or its log records cannot be opened or accessed in SSMS.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Select the log database",
+          "exact_action": "Select the relevant OptiSweep WCS / Helix database that contains the database logs.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The relevant database logs cannot be opened in SSMS.",
+        "Access requires permissions not available to the assigned support role."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0008",
+          "page": 8,
+          "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+          "timestamp_start": "00:11:14.000",
+          "timestamp_end": "00:11:14.000",
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "OptiSweep only utilizes entity logs for logging. The SSMS example shows Helix2x_1Prod_EntityLogs and log tables including dbo.DeveloperLogs and dbo.OperatorLogs."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0056",
+          "page": 56,
+          "artifact_id": "artifact_training_video_training_video_day2_0056_so_just_as_they_you_will_primary_03_22_16_000",
+          "timestamp_start": "03:20:42.000",
+          "timestamp_end": "03:23:50.000",
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "The database logs are identified as the location for the Error and Fatal records."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Retrieve the top 100 log records",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Load a recent set of database log records for review.",
+      "instruction": "In the WCS / Helix DB (SSMS), open the available database log records or use the available log query or table action to retrieve the top 100 records. Use the read-only log retrieval action; do not run an unsupported write operation.",
+      "expected_result": "SSMS displays a recent set of up to 100 database log records.",
+      "healthy_condition": "The result grid contains visible log rows that can be filtered and inspected.",
+      "failure_condition": "No log records are returned, or the log retrieval action cannot be performed in SSMS.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Retrieve recent logs",
+          "exact_action": "Select top 100 and filter if needed, using the available right-click logs action or log query.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The database log records cannot be queried or retrieved in SSMS.",
+        "The available action would modify records or requires unsupported SQL syntax."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0056",
+          "page": 56,
+          "artifact_id": "artifact_training_video_training_video_day2_0056_so_just_as_they_you_will_primary_03_22_16_000",
+          "timestamp_start": "03:20:42.000",
+          "timestamp_end": "03:23:50.000",
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "The discussion describes selecting the top 100 records and using the logs action or query."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0008",
+          "page": 8,
+          "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+          "timestamp_start": "00:11:14.000",
+          "timestamp_end": "00:11:14.000",
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "The SSMS example displays a top-record query and result grid for EntityLogs."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Filter for Error and Fatal severity",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Isolate the log records relevant to support investigation.",
+      "instruction": "In the WCS / Helix DB (SSMS) result set, filter the displayed log records for the Error and Fatal severity values in the Level field.",
+      "expected_result": "The SSMS result set is narrowed to records classified as Error or Fatal, when such records are present.",
+      "healthy_condition": "The filtered rows show an identifiable Error or Fatal value in the Level field, or the filtered result is empty when no such record exists in the retrieved set.",
+      "failure_condition": "The result set cannot be filtered by the displayed severity information, or the severity value is unavailable for the returned records.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Filter log severity",
+          "exact_action": "Filter the logs for errors and fatals.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The returned log records cannot be filtered in SSMS.",
+        "An Error or Fatal record is present and requires diagnosis or resolution steps not covered by this runbook."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0056",
+          "page": 56,
+          "artifact_id": "artifact_training_video_training_video_day2_0056_so_just_as_they_you_will_primary_03_22_16_000",
+          "timestamp_start": "03:20:42.000",
+          "timestamp_end": "03:23:50.000",
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "The visible database logs are described as errors and fatals, and the records can be filtered."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0008",
+          "page": 8,
+          "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+          "timestamp_start": "00:11:14.000",
+          "timestamp_end": "00:11:14.000",
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "The SSMS result example includes a Level field with Error and Fatal values."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Review the filtered log details",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Collect the visible information needed for support handoff or further investigation.",
+      "instruction": "Review the filtered Error and Fatal rows in the WCS / Helix DB (SSMS). Inspect the displayed timestamp field EntityInserted, Message, Level, Exception, TraceId, HostName, InstanceName, AssemblyName, ClassName, MethodName, and LineNumber fields when present.",
+      "expected_result": "The filtered records provide visible timestamps, severity, messages, and available exception and affected-system information for the support investigation.",
+      "healthy_condition": "The relevant Error or Fatal row is visible with enough displayed detail to identify when it occurred, what message was generated, and which host, instance, or application location is associated with it.",
+      "failure_condition": "The filtered row lacks usable message or system detail, or the record indicates a condition requiring diagnosis or resolution outside this procedure.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect log fields",
+          "exact_action": "Review the timestamps, messages, and affected system information displayed in the filtered log records.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "A filtered Error or Fatal requires diagnosis or resolution steps not available in this runbook.",
+        "The displayed records do not contain sufficient information for the support handoff."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0008",
+          "page": 8,
+          "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+          "timestamp_start": "00:11:14.000",
+          "timestamp_end": "00:11:14.000",
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "The SSMS log result displays EntityInserted, Message, Level, Exception, TraceId, HostName, InstanceName, AssemblyName, ClassName, MethodName, and LineNumber."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0056",
+          "page": 56,
+          "artifact_id": "artifact_training_video_training_video_day2_0056_so_just_as_they_you_will_primary_03_22_16_000",
+          "timestamp_start": "03:20:42.000",
+          "timestamp_end": "03:23:50.000",
+          "site_code": null,
+          "site_label": null,
+          "quote_or_summary": "The database log review is intended to identify support-relevant Error and Fatal records for handoff and further diagnosis."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The relevant WCS / Helix database logs open in SSMS.",
+    "A recent set of up to 100 log records is displayed.",
+    "The returned records can be filtered for Error and Fatal severity.",
+    "Filtered records expose visible timestamps, messages, and available affected-system or exception details for support investigation."
+  ],
+  "healthy_conditions": [
+    "The WCS / Helix database log records are accessible through SSMS.",
+    "The result grid returns recent log rows.",
+    "The Level field supports identification of Error and Fatal records.",
+    "Relevant rows display fields such as EntityInserted, Message, Level, Exception, TraceId, HostName, InstanceName, AssemblyName, ClassName, MethodName, and LineNumber when present."
+  ],
+  "failure_conditions": [
+    "The relevant database logs cannot be opened in SSMS.",
+    "The top-100 log retrieval cannot be performed.",
+    "The returned records cannot be filtered for Error or Fatal severity.",
+    "An Error or Fatal is present but the available information does not support further diagnosis.",
+    "The required remediation would involve unsupported database modifications or scripts."
+  ],
+  "escalation_guidance": [
+    "Escalate through the support handoff when a filtered Error or Fatal requires diagnosis or resolution steps not covered by this procedure.",
+    "Escalate when the WCS / Helix database logs cannot be opened, queried, or filtered in SSMS.",
+    "Provide the visible timestamp, severity, message, exception, trace, host, instance, and source-location fields available in the filtered record."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0056",
+      "timestamp_start": "03:20:42.000",
+      "timestamp_end": "03:23:50.000",
+      "page": 56,
+      "artifact_id": "artifact_training_video_training_video_day2_0056_so_just_as_they_you_will_primary_03_22_16_000",
+      "site_code": null,
+      "site_label": null,
+      "quote_or_summary": "The discussion describes selecting the top 100 database log records, filtering them, and treating the visible logs as errors and fatals."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0008",
+      "timestamp_start": "00:11:14.000",
+      "timestamp_end": "00:11:14.000",
+      "page": 8,
+      "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+      "site_code": null,
+      "site_label": null,
+      "quote_or_summary": "OptiSweep uses EntityLogs for logging; the SSMS example shows EntityLogs tables and visible log fields."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+      "what_to_look_at": "OptiSweep uses EntityLogs for logging; the SSMS example shows EntityLogs tables and visible log fields."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0056_so_just_as_they_you_will_primary_03_22_16_000",
+      "what_to_look_at": "The discussion describes selecting the top 100 database log records, filtering them, and treating the visible logs as errors and fatals."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_database_log_error_filter"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The exact production database name may vary by site; the source provides Helix2x_1Prod_EntityLogs as an example but does not establish it as the required database name for every deployment.",
+    "The exact table, view, query syntax, and SSMS navigation sequence for retrieving the top 100 records are not fully specified.",
+    "The source does not define Error or Fatal remediation steps.",
+    "The source does not specify a required log-retention period or a precise time-range filter."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

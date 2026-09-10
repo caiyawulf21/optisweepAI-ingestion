@@ -1,0 +1,384 @@
+{
+  "procedure_id": "proc_determine_agv_post_cycle_destination_based_on_tipper_signals_v1",
+  "candidate_id": "candidate_training_video_day1_agv_post_cycle_destination_check",
+  "title": "Determine AGV Post-Cycle Destination Based on Tipper/Software Signals (Return to Sorter vs Hospital vs Charge)",
+  "procedure_type": "diagnostic",
+  "summary": "After an AGV’s full cycle completes and the tipper informs the software that the AGV is clear to move, determine whether the AGV should return to the sorter entrance queue (empty tote), go to the hospital (failed tip/clamp issue), or go to charge (low battery / least charge).",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_active_errors"
+  ],
+  "access_surface": [
+    "rms_ui"
+  ],
+  "audience_roles": [
+    "L1_support"
+  ],
+  "failure_pattern_tags": [
+    "charging_abnormal",
+    "robot_task_or_command_stuck"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this when you need to interpret the documented post-cycle routing logic for an AGV after the full cycle completes—specifically after the tipper signals the software that the AGV is clear to move—so you can identify whether the AGV should be routed to the sorter entrance queue, hospital, or charger.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L1_support: Perform the post-cycle destination mapping check (failed tip/clamp vs low battery/least charge vs all-good) and confirm the AGV’s observable destination matches the expected routing outcome."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Live system visibility sufficient to observe the AGV’s destination (sorter entrance queue, hospital, or charger)."
+  ],
+  "prerequisites": {
+    "access_required": [],
+    "system_preconditions": [
+      "The AGV has completed the full cycle and the tipper has informed the software that the AGV is clear to move."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_agv_post_cycle_destinations_v1",
+    "ctx_training_video_failed_tip_hospital_routing_v1",
+    "ctx_training_video_low_battery_charge_destination_v1",
+    "ctx_training_video_sorter_entrance_queue_empty_tote_v1",
+    "ctx_training_video_tipper_clear_to_move_signal_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+      "description": "Training frame containing the post-cycle routing mapping: tipper clear-to-move, failed tip leads to hospital, low battery/least charge leads to charger, and otherwise return to sorter entrance queue with an empty tote.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Identify the moment when the full cycle is complete and the tipper informs the software that the AGV is clear to move",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Establish the correct decision point for post-cycle destination routing.",
+      "instruction": "Wait until the AGV’s full cycle completes and the tipper indicates to the software that the AGV is clear to move; then use the routing mapping to determine the expected destination.",
+      "expected_result": "You are at the post-cycle decision point where the tipper has informed the software that the AGV is clear to move, enabling selection of one of three destinations (sorter entrance queue, hospital, or charger).",
+      "healthy_condition": "The AGV is eligible to move out after the full cycle completion (i.e., the tipper clear-to-move condition is satisfied).",
+      "failure_condition": "You attempt to apply the routing mapping before the full cycle is complete / before the tipper clear-to-move condition is satisfied.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm clear-to-move post-cycle condition",
+          "exact_action": "When the full cycle is complete, the tipper informs the software that the AGV is clear to move",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "page": 17,
+          "section_id": "training_video_day1_segment_0017",
+          "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+          "quote_or_summary": "“When the full cycle is complete, the tipper informs the software that the AGV is clear to move so the AGV can return the disorder or go to the hospital or go and charge this.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Check whether the failed tip/clamp exception condition applies",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the AGV should be routed to the hospital due to a failed tip/clamp issue.",
+      "instruction": "Determine whether an issue occurred such that the tipper did not clamp correctly (failed tip/clamp issue). If this exception applies, treat it as the failed tip condition for routing purposes.",
+      "expected_result": "You classify the situation as either failed tip/clamp issue (exception applies) or not (exception does not apply).",
+      "healthy_condition": "The failed tip/clamp issue condition is correctly identified (issue/didn’t clamp correctly).",
+      "failure_condition": "You misclassify the condition (e.g., treat a non-failed tip as failed tip, or miss a failed tip/clamp issue).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Assess clamp/tip issue",
+          "exact_action": "If there's an issue or didn't clamp correctly",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "page": 17,
+          "section_id": "training_video_day1_segment_0017",
+          "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+          "quote_or_summary": "“You know, if there's an issue or didn't clamp correctly… Todd sends us a bit and we know it goes to the hospital. So failed tip leads to the hospital.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "If failed tip/clamp issue applies, expect the AGV to go to the hospital",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Apply the documented routing outcome for the failed tip/clamp exception.",
+      "instruction": "If the failed tip/clamp condition applies, expect the AGV to be routed to the hospital.",
+      "expected_result": "The AGV’s observable destination is the hospital.",
+      "healthy_condition": "The AGV arrives at the hospital as the post-cycle destination when a failed tip/clamp issue is present.",
+      "failure_condition": "The AGV does not go to the hospital despite the failed tip/clamp condition applying.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify hospital destination",
+          "exact_action": "Failed tip leads to the hospital",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Observed AGV destination does not match the documented condition mapping (failed tip/clamp should lead to hospital)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "page": 17,
+          "section_id": "training_video_day1_segment_0017",
+          "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+          "quote_or_summary": "“So failed tip leads to the hospital.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "If failed tip/clamp does not apply, check whether the low battery / least charge condition applies",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the AGV should be routed to charge due to low battery / least charge.",
+      "instruction": "If the failed tip/clamp exception does not apply, determine whether the low battery / least charge condition applies. Use the documented rule that low battery/least charge leads to charger.",
+      "expected_result": "You classify the situation as low battery/least charge (condition applies) or not (condition does not apply).",
+      "healthy_condition": "The low battery / least charge condition is correctly identified for routing purposes.",
+      "failure_condition": "You misclassify the battery condition (e.g., treat a non-low-battery AGV as low battery, or miss low battery/least charge).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Assess low battery / least charge condition",
+          "exact_action": "Low battery or the least charge",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "page": 17,
+          "section_id": "training_video_day1_segment_0017",
+          "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+          "quote_or_summary": "“Low battery or the least charge. We always charge the least charge… continuously…”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "If low battery/least charge applies, expect the AGV to go to charge",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Apply the documented routing outcome for the low battery / least charge condition.",
+      "instruction": "If the low battery/least charge condition applies, expect the AGV to be routed to charge (charger).",
+      "expected_result": "The AGV’s observable destination is the charger.",
+      "healthy_condition": "The AGV arrives at the charger as the post-cycle destination when low battery/least charge is present.",
+      "failure_condition": "The AGV does not go to the charger despite the low battery/least charge condition applying.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify charger destination",
+          "exact_action": "Low battery level leads to charger",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Observed AGV destination does not match the documented condition mapping (low battery/least charge should lead to charger)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "page": 17,
+          "section_id": "training_video_day1_segment_0017",
+          "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+          "quote_or_summary": "“Low battery level leads to charger to move out” and “We always charge the least charge… continuously…”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "If none of the above conditions apply (“all is good”), expect return to sorter entrance queue with an empty tote",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Apply the documented normal routing outcome when no exception conditions apply.",
+      "instruction": "If neither failed tip/clamp nor low battery/least charge applies, expect the AGV to return to the sorter entrance queue with an empty tote for its next exchange.",
+      "expected_result": "The AGV’s observable destination is the sorter entrance queue, and it is associated with an empty tote for the next exchange.",
+      "healthy_condition": "The AGV returns to the sorter entrance queue with an empty tote (ready for its next exchange).",
+      "failure_condition": "The AGV does not return to the sorter entrance queue with an empty tote when all is good.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify sorter entrance queue return",
+          "exact_action": "returns to the sorter entrance queue with an empty tote that will be used for its next exchange",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Observed AGV destination does not match the documented condition mapping (all-good should lead to sorter entrance queue with an empty tote)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "page": 17,
+          "section_id": "training_video_day1_segment_0017",
+          "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+          "quote_or_summary": "“If none of that's true, the AGV returns to the sorter entrance queue with an empty tote that will be used for its next exchange.”"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "For the observed post-cycle decision point (tipper clear-to-move), the AGV’s observable destination matches the documented mapping: hospital for failed tip/clamp, charger for low battery/least charge, and sorter entrance queue with an empty tote when all is good."
+  ],
+  "healthy_conditions": [
+    "Tipper clear-to-move condition is satisfied at full cycle completion.",
+    "AGV destination matches the expected routing outcome based on failed tip/clamp vs low battery/least charge vs all-good."
+  ],
+  "failure_conditions": [
+    "AGV destination does not match the documented condition mapping (failed tip/clamp should lead to hospital; low battery/least charge should lead to charger; all-good should lead to sorter entrance queue with an empty tote)."
+  ],
+  "escalation_guidance": [
+    "If the observed AGV destination does not match the documented condition mapping from the source, stop and escalate for deeper system-specific troubleshooting. The source does not provide corrective actions beyond the mapping."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+      "what_to_look_at": "The frame text mapping post-cycle outcomes: tipper clear-to-move; failed tip leads to hospital; low battery/least charge leads to charger; otherwise return to sorter entrance queue with an empty tote."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "source_document_id": "training_video_day1_video",
+      "page": 17,
+      "section_id": "training_video_day1_segment_0017",
+      "quote_or_summary": "When the full cycle is complete, the tipper informs the software that the AGV is clear to move so the AGV can return to the sorter, go to the hospital, or go to charge; failed tip leads to the hospital; low battery/least charge leads to charger; if all is good, AGV returns to the sorter entrance queue with an empty tote for its next exchange.",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+      "what_to_look_at": "The frame text mapping post-cycle outcomes: tipper clear-to-move; failed tip leads to hospital; low battery/least charge leads to charger; otherwise return to sorter entrance queue with an empty tote."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0020_we_ve_got_your_entrance_queue_primary_00_43_45_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0021_yes_so_there_s_something_wrong_primary_00_47_36_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0037_what_are_these_these_are_rack_primary_01_29_18_500"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day1_agv_post_cycle_destination_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The source does not name specific RMS UI fields, SSMS tables, or WCS/OptiSweep API/Dog endpoints to verify the tipper clear-to-move signal or to directly confirm “failed tip/clamp” vs “low battery/least charge” conditions.",
+    "The source does not provide explicit thresholds (e.g., battery percentage cutoffs) for “low battery” or “least charge.”"
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500",
+    "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+    "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+    "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000",
+    "artifact_training_video_training_video_day1_0020_we_ve_got_your_entrance_queue_primary_00_43_45_000",
+    "artifact_training_video_training_video_day1_0021_yes_so_there_s_something_wrong_primary_00_47_36_500",
+    "artifact_training_video_training_video_day1_0037_what_are_these_these_are_rack_primary_01_29_18_500",
+    "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000"
+  ]
+}

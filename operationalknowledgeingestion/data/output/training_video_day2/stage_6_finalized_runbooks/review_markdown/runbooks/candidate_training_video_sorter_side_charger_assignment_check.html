@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check Sorter-Side Charger Assignment in SSMS / Helix DB</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check Sorter-Side Charger Assignment in SSMS / Helix DB</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_sorter_side_charger_assignment_check_v1</td></tr>
+<tr><th>Title</th><td>Check Sorter-Side Charger Assignment in SSMS / Helix DB</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>agv_charging_state, device_roster_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>mapping_abnormal</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the WCS / Helix DB (SSMS) to inspect sorter-side and charger-assignment records. Confirm that the charger has a sorter-side model ID, that the charger is associated with the expected charging area or sorter side, and that its availability or disabled status is consistent with the investigation.</p>
+<h2>When To Use</h2>
+<p>Use this read-only diagnostic when investigating whether a charger is assigned to the expected sorter side, whether the assignment is present, or whether charger availability or disabled status may explain charging behavior. Perform the inspection in the WCS / Helix DB (SSMS).</p>
+<h2>Visual References</h2>
+<figure><img src="assets/7f73e84f02ceaaf8.jpg" alt="artifact_training_video_training_video_day2_0013_let_s_see_and_the_last_primary_00_53_44_500" /><figcaption>WCS database model view showing sorter-side identifiers as model IDs and charging-area, charger, tote-stand, and disabled-status relationships.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the WCS / Helix DB records in SSMS</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS), locate the sorter-side database model and the charging database model or charging-location records for the charger under investigation. Use the live model or record names available in the environment; the supplied source does not specify an exact database name, table name, or navigation path.</p>
+<p><strong>Expected result:</strong></p>
+<p>The relevant sorter-side and charger-related records are available for read-only inspection in SSMS.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L3 support or engineering if the live schema cannot be identified or the required charger-assignment records are unavailable.</li>
+</ul>
+<hr>
+<h3>Step 2 — Inspect the charger and sorter-side model ID</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS), find the investigated charger or charging location. Inspect the sorter-side identifier or model ID associated with it, along with the charging area, charger location or station, tote stand association, and any available or disabled status shown in the live records.</p>
+<p><strong>Expected result:</strong></p>
+<p>The charger record shows a sorter-side identifier or model ID and identifies its related charging-area or charger configuration.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the sorter-side identifier or model ID is missing.</li>
+<li>Escalate if the charger has no identifiable charging-area or location association.</li>
+<li>Do not edit the record when the charger is disabled or unavailable.</li>
+</ul>
+<hr>
+<h3>Step 3 — Compare the assignment with the expected charging relationship</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS), compare the recorded sorter-side model ID and charger status with the expected sorter side for the charger. Confirm whether the charger is assigned to the expected side for normal charging. If the records describe cross-side use, identify whether another side&#x27;s charger is available for emergency charging without changing the configuration.</p>
+<p><strong>Expected result:</strong></p>
+<p>The recorded assignment either maps the charger to the expected sorter side for normal charging or clearly identifies a configured cross-side available charger relationship for emergency use.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L2/engineering if the sorter-side identifier is missing or maps to the wrong side.</li>
+<li>Escalate if the assignment conflicts with the charger&#x27;s charging-area or disabled status.</li>
+<li>Do not change sorter-side assignments or charger availability from this diagnostic.</li>
+</ul>
+<hr>
+</body>
+</html>

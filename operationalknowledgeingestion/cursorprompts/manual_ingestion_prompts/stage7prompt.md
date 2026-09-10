@@ -86,7 +86,7 @@ Stage 7 does NOT perform:
 
 * redrafting runbooks that were not in a merge cluster
 * playbook finalization (Shared Stage 8)
-* relationship linking (Shared Stage 9)
+* relationship linking (operational Stage 8)
 
 ---
 

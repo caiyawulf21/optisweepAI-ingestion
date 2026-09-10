@@ -40,6 +40,8 @@ def build_artifact_enrichment_packets(
             artifact=artifact,
             page=page_by_number.get(int(artifact["page_number"])),
             duplicate_metadata=duplicate_by_artifact.get(artifact["artifact_id"]),
+            site_location=package.get("site_location") or {},
+            source_case_id=package.get("source_case_id"),
         )
         for artifact in source_artifacts
     ]
@@ -56,6 +58,8 @@ def build_enrichment_packet(
     artifact: dict[str, Any],
     page: dict[str, Any] | None,
     duplicate_metadata: dict[str, Any] | None,
+    site_location: dict[str, Any] | None = None,
+    source_case_id: str | None = None,
 ) -> dict[str, Any]:
     source_refs = _merge_source_refs(artifact.get("source_refs") or [], page.get("source_refs") if page else [])
     artifact_ocr_text = artifact.get("ocr_text") or ""
@@ -87,6 +91,8 @@ def build_enrichment_packet(
     return {
         "packet_type": "incident_artifact_enrichment_packet",
         "schema_version": "0.1",
+        "source_case_id": source_case_id,
+        "site_location": site_location or {},
         "artifact_id": artifact["artifact_id"],
         "image_path": artifact.get("storage_path"),
         "artifact_ocr_text": artifact_packet_text,

@@ -1,0 +1,324 @@
+{
+  "procedure_id": "proc_diagnose_overfill_indications_missing_dimension_data_no_photo_eyes_v1",
+  "candidate_id": "candidate_training_video_day1_dimension_data_missing_causes_overfill",
+  "title": "Diagnose overfill indications caused by missing dimension data (no photo eyes)",
+  "procedure_type": "diagnostic",
+  "summary": "Use this diagnostic when chute/tote fullness appears to be at/over thresholds (e.g., chutes closing or totes marked full) but the system does not have chute photo eyes/sensors. The source explains that fullness/closure decisions are driven by received weight and dimensions; if dimension data is missing or incomplete for sort induct/auto inducts, chutes can appear to overfill.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_active_errors"
+  ],
+  "access_surface": [
+    "apidog",
+    "rms_ui"
+  ],
+  "audience_roles": [
+    "L1_support"
+  ],
+  "failure_pattern_tags": [
+    "charging_abnormal",
+    "api_unresponsive"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When support observes overfill/threshold behavior (e.g., chutes closing due to tote fullness) and the site/system is described as having no photo eyes/sensors at the chute, so fullness is based on weighted dimensions. Use to validate whether missing or incomplete dimension/weight data for the sort induct/auto inducts is the cause of the overfill indications.",
+  "not_for": [
+    "Do not use this procedure as the only troubleshooting path when dimension data is confirmed complete; the source only provides the data-missing explanation and does not provide corrective steps beyond escalation."
+  ],
+  "roles_and_responsibilities": [
+    "L1_support: Perform the diagnostic check to determine whether dimension/weight data is missing or incomplete for the relevant sort induct/auto inducts, and correlate that with the overfill symptom described by the source."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Access to the live system view/log/API area that shows whether dimension data is being received for the sort induct / auto inducts (the source references that the team can see they are 'not getting dim data' on their system)."
+  ],
+  "prerequisites": {
+    "access_required": [],
+    "system_preconditions": [
+      "The site/system behavior matches the source constraint: there are no photo eyes/sensors at the chute; fullness decisions rely on weight and dimensions."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_weight_dimension_data_dependency_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+      "description": "Segment showing how parcels are sorted into a chute/tote, how tote fullness is determined from received dimension data scaled up/down, and the explicit statement: 'We don't have any photo eyes... just weighted dimensions' plus the note that missing dim data can make all shoots overfill.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Confirm the source constraint: chute fullness is based on weighted dimensions (no photo eyes/sensors)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Ensure the diagnostic is grounded in the correct sensing model; otherwise missing dimension data would not be a valid explanation for overfill indications.",
+      "instruction": "On the live system, treat chute/tote fullness and chute close behavior as driven by received weight and dimensions (not local chute photo eyes/sensors).",
+      "expected_result": "You can proceed with the diagnostic assumption that fullness/closure thresholds are computed from received weight/dimensions, consistent with the source statement that there are no photo eyes/sensors at the chute.",
+      "healthy_condition": "The site/system configuration aligns with 'no sensors at all, just weighted dimensions' for chute fullness decisions.",
+      "failure_condition": "The site actually has chute photo eyes/sensors that directly drive fullness/closure; in that case, missing dimension data may not explain the overfill symptom.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Validate chute sensing model is 'no photo eyes/sensors'",
+          "exact_action": "Use the source constraint that there are no photo eyes/sensors at the chute; fullness uses weight and dimensions.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0014",
+          "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+          "page": 14,
+          "timestamp_start": "00:20:52.000",
+          "timestamp_end": "00:27:04.000",
+          "quote_or_summary": "Transcript includes: 'We don't have any photo eyes... there's no sensors at all, just weighted dimensions' and 'they can see on their system that they're not getting dim data... all the shoots are overfilling'."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Check whether dimension data is being received for the sort induct / auto inducts",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the overfill symptom is consistent with missing/incomplete dimension data, which the source explicitly ties to overfilling behavior.",
+      "instruction": "Using the live system view/log/API area referenced by the source (where the team can see they are 'not getting dim data'), check whether dimension data is being received for the relevant sort induct / auto inducts that feed the chute/tote fullness calculation.",
+      "expected_result": "You identify whether dimension data is missing entirely or partially (e.g., height/length present but a second length missing, and/or weight missing) for the affected induct(s).",
+      "healthy_condition": "Dimension data is present for the relevant induct(s) such that fullness can be computed from received weight and dimensions.",
+      "failure_condition": "Dimension data is missing or incomplete for the relevant induct(s), matching the source explanation that this can cause chutes to appear to overfill.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify 'dim data' reception status",
+          "exact_action": "Check on the live system whether the system is 'not getting dim data' for the sort induct / auto inducts.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0014",
+          "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+          "page": 14,
+          "timestamp_start": "00:20:52.000",
+          "timestamp_end": "00:27:04.000",
+          "quote_or_summary": "Transcript includes: 'they can see on their system that they're not getting dim data... all the shoots are overfilling' and describes missing dimension data scenarios."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "If dimension data is missing, link the overfill indication to missing/incomplete dimension/weight data",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Provide the diagnostic conclusion the source supports: missing dimension data can make all shoots appear to overfill because fullness is computed from received dimensions/weight.",
+      "instruction": "When you confirm missing dimension data for the affected induct(s), document that the source explanation attributes the overfill indications to missing/incomplete dimension/weight data (not chute photo eyes/sensors).",
+      "expected_result": "Your diagnostic outcome states that the overfill/threshold behavior is consistent with missing dimension data for the sort induct/auto inducts.",
+      "healthy_condition": "The overfill symptom aligns with missing dimension data (e.g., after a power loss event where dimensioners 'vaulted out parcels' and dim data is not received).",
+      "failure_condition": "Dimension data is complete, yet overfill behavior persists (this should trigger escalation per the candidate).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Record missing/incomplete dimension/weight as the cause",
+          "exact_action": "Document that missing dimension data can cause all the shoots to overfill because fullness uses weighted dimensions.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if dimension data appears complete yet overfill behavior persists (source provides only the missing-data explanation and no further corrective steps)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0014",
+          "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+          "page": 14,
+          "timestamp_start": "00:20:52.000",
+          "timestamp_end": "00:27:04.000",
+          "quote_or_summary": "Transcript includes: 'they can see on their system that they're not getting dim data... all the shoots are overfilling' and explains fullness thresholds are computed from received dimension data scaled up/down."
+        },
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0011",
+          "artifact_id": "artifact_training_video_training_video_day1_0011_so_before_a_parcel_reaches_our_primary_00_17_45_500",
+          "page": 11,
+          "timestamp_start": "00:17:45.500",
+          "timestamp_end": "00:17:45.500",
+          "quote_or_summary": "Transcript includes: 'if totes overfill... we're not getting dimension data... happened that has a few weeks ago and they lost power. The dimensioners just vaulted out parcels'."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Handle partial dimension data: confirm which fields are missing (e.g., second length, weight)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "The source provides an example of partial dimension data leading to overfill symptoms; capturing which fields are missing helps validate the mechanism.",
+      "instruction": "If dimension data is partially present, identify which specific dimension/weight components are missing (e.g., height/length present but second length missing; weight missing on other auto inducts).",
+      "expected_result": "You can describe the partial-data pattern that matches the source example and conclude it is consistent with overfill indications.",
+      "healthy_condition": "Partial dimension data is clearly identified (which fields are present vs missing) for the affected induct(s).",
+      "failure_condition": "You cannot determine whether data is partial vs complete, preventing a confident link to the source mechanism.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Identify missing dimension/weight fields",
+          "exact_action": "Determine whether the system receives height/length but misses the second length, and whether weight is missing on other auto inducts.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0014",
+          "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+          "page": 14,
+          "timestamp_start": "00:20:52.000",
+          "timestamp_end": "00:27:04.000",
+          "quote_or_summary": "Transcript includes: 'we were getting height, length, but not the second length. And then we missed weight on a different SO2 auto inducts...'."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You confirm that chute/tote fullness behavior is driven by received weight/dimensions (no photo eyes/sensors at the chute).",
+    "You determine whether dimension data is missing or incomplete for the relevant sort induct/auto inducts feeding the overfill symptom.",
+    "You produce a diagnostic conclusion linking overfill indications to missing/incomplete dimension/weight data, consistent with the source explanation."
+  ],
+  "healthy_conditions": [
+    "Dimension data (weight and dimensions) is being received for the relevant induct(s), allowing fullness thresholds to be computed correctly.",
+    "Overfill indications do not occur when dimension data is complete (per the candidate’s escalation trigger logic)."
+  ],
+  "failure_conditions": [
+    "Dimension data is missing or incomplete, and overfill indications occur (source-supported failure mode).",
+    "Dimension data appears complete yet overfill behavior persists (candidate escalation trigger)."
+  ],
+  "escalation_guidance": [
+    "Escalate if dimension data appears complete yet overfill behavior persists, because the source only provides the missing-data explanation and does not provide further corrective steps."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+      "what_to_look_at": "Transcript statements about: (1) no photo eyes/sensors at the chute, (2) fullness determined from weighted dimensions, (3) missing dim data causing all shoots to overfill, and (4) partial dimension data example (height/length but missing second length; weight missing on other auto inducts)."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "source_document_id": "training_video_day1_video",
+      "section_id": "training_video_day1_segment_0014",
+      "page": 14,
+      "timestamp_start": "00:20:52.000",
+      "timestamp_end": "00:27:04.000",
+      "quote_or_summary": "The source says there are no photo eyes/sensors; fullness uses weight and dimensions. If the system is not getting dimension data, chutes can appear to overfill."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+      "what_to_look_at": "Transcript statements about: (1) no photo eyes/sensors at the chute, (2) fullness determined from weighted dimensions, (3) missing dim data causing all shoots to overfill, and (4) partial dimension data example (height/length but missing second length; weight missing on other auto inducts)."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0011_so_before_a_parcel_reaches_our_primary_00_17_45_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0013_so_why_is_this_potential_and_primary_00_20_02_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0012_one_question_previous_like_the_two_primary_00_19_06_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day1_dimension_data_missing_causes_overfill"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The candidate notes that the source does not name the exact live dashboard/log where 'not getting dim data' is visible. This runbook therefore cannot specify the exact RMS/DB/API screen/table to check for dimension reception."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

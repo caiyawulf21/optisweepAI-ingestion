@@ -1,0 +1,328 @@
+{
+  "procedure_id": "proc_use_memory_trend_identify_service_crash_restart_gc_v1",
+  "candidate_id": "candidate_training_video_diagnostic_memory_trend_service_crash_garbage_collection",
+  "title": "Use Memory Trend to Identify Service Crash/Restart vs Garbage Collection Pattern",
+  "procedure_type": "diagnostic",
+  "summary": "Use the OptiSweep Memory Trend (memory over time) view to correlate a crash/service-stop window (silent period / service gone) with a garbage-collection memory-clearing pattern, then confirm memory build-up and resumed activity after the clearing.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "wcs_service_health"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L1_support"
+  ],
+  "failure_pattern_tags": [
+    "service_crash_or_restart",
+    "shutdown_or_dwell_abnormal"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to interpret a Memory Trend chart to determine whether a service likely stopped/crashed and later restarted, and whether a garbage-collection memory-clearing pattern explains the memory drop followed by memory build-up.",
+  "not_for": [
+    "Do not conclude a crash occurred if the Memory Trend pattern is ambiguous and you cannot match the described sequence (spike → long activity/draft → silent/nothing period → garbage-collection clearing → memory fills up again)."
+  ],
+  "roles_and_responsibilities": [
+    "L1_support: Interpret the Memory Trend chart segments (spike, long activity/draft, silent/nothing gap, garbage-collection clearing, memory build-up) and correlate them with the expected silent-log/crash window described in the source."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Memory Trend display/view (shown as “Memory Trend 4GB”)",
+    "Ability to view the memory trend over time"
+  ],
+  "prerequisites": {
+    "access_required": [],
+    "system_preconditions": [],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_memory_trend_screen_v1",
+    "ctx_training_video_garbage_collection_memory_pattern_v1",
+    "ctx_training_video_service_stop_silent_logs_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0044_probably_understand_this_so_if_the_primary_03_07_17_500",
+      "description": "Memory Trend chart frame labeled “Memory Trend 4GB” used to identify the spike, long draft/activity, silent/nothing period, and garbage-collection clearing pattern.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Memory Trend view used for service behavior interpretation",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Get the correct Memory Trend chart (memory over time) so you can match the expected crash/silent/log-gap and garbage-collection pattern.",
+      "instruction": "Open the Memory Trend display/view that shows the memory chart labeled “Memory Trend 4GB”.",
+      "expected_result": "You can see the Memory Trend 4GB chart with a time axis so you can identify the spike and subsequent segments.",
+      "healthy_condition": "The Memory Trend 4GB chart is visible and shows memory values over time (enough to distinguish a spike, a long period, and later activity).",
+      "failure_condition": "You cannot view the Memory Trend 4GB chart clearly enough to identify the spike and the later memory-clearing/build-up segments.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Open Memory Trend 4GB chart",
+          "exact_action": "Open the Memory Trend view shown as “Memory Trend 4GB”.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 44,
+          "section_id": "training_video_day2_segment_0044",
+          "quote_or_summary": "Transcript discusses interpreting Memory Trend: crash/service starting, a “good spike in the middle,” a long period, “nothing”/silent, and garbage collection clearing memory; also mentions silent logs and a ~10–12 minute gap.",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Locate the “good spike in the middle” and surrounding long activity/silent pattern",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Identify the chart segments that the source uses as anchors for interpreting crash/service-stop vs normal behavior.",
+      "instruction": "On the Memory Trend 4GB chart, find the “good spike in the middle,” then identify the surrounding sequence: a big draft/long activity period, followed by a period of “nothing”/silent, and then activity again.",
+      "expected_result": "You can point to chart regions matching: (1) a “good spike in the middle,” (2) a big draft/long period, (3) a “nothing”/silent gap, and (4) activity resuming after the gap.",
+      "healthy_condition": "The chart shows a distinct spike region and a later silent/nothing region that is followed by memory activity again.",
+      "failure_condition": "The chart does not show a clear spike + long period + silent/nothing gap + resumed activity sequence.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Match spike and silent gap segments",
+          "exact_action": "Locate the “good spike in the middle” and the surrounding pattern (big draft → long period → “nothing”/silent → “then there’s something”).",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 44,
+          "section_id": "training_video_day2_segment_0044",
+          "quote_or_summary": "“there’s a good spike in the middle… So there’s a big draft and then there’s a… long… Then there is then there is nothing… that is silent and then there’s something.”",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Identify the garbage-collection portion where memory clears and then fills up again",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Confirm whether the memory drop/clearing aligns with the source’s garbage-collection interpretation, which can explain why memory becomes low during the silent period and then rises again.",
+      "instruction": "On the same Memory Trend 4GB chart, identify the “garbage collection” portion: memory clears out (a drop/clearing), followed by memory filling up again.",
+      "expected_result": "You can identify a memory-clearing segment consistent with “garbage collection” and then a subsequent memory build-up segment.",
+      "healthy_condition": "A visible memory-clearing/drop occurs, and after that clearing the memory values rise again (memory “files up”).",
+      "failure_condition": "No clear memory-clearing/drop is visible, or memory does not rise again after the clearing segment.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Find memory clearing then build-up",
+          "exact_action": "Identify the “garbage collection” where “the memory clears it out” and then “again then memory files up.”",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 44,
+          "section_id": "training_video_day2_segment_0044",
+          "quote_or_summary": "“So this is the garbage collection… It likes the memory clears it out… and then again then memory files up.”",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Correlate the silent period with the expected ~10–12 minute service-stop/crash window",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Use the source’s timing expectation to strengthen the interpretation that the silent period corresponds to a service stop/crash window.",
+      "instruction": "Measure/estimate the duration of the “nothing”/silent gap on the Memory Trend chart and correlate it with the source’s expectation that the service can be silent for almost 10–12 minutes during the stop/crash window.",
+      "expected_result": "The silent/nothing gap duration on the chart is consistent with an approximately 10–12 minute window as described by the source.",
+      "healthy_condition": "The silent gap is long enough to plausibly match the source’s “almost 10 12 minutes” expectation and sits between the earlier spike/draft and the later garbage-collection clearing and resumed activity.",
+      "failure_condition": "The silent gap duration is not consistent with the source’s ~10–12 minute expectation, or the silent gap cannot be clearly identified.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Correlate silent gap duration",
+          "exact_action": "Correlate the silent period on the trend with the source’s expectation that logs may be silent during the service-stop/crash window (almost 10–12 minutes).",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 44,
+          "section_id": "training_video_day2_segment_0044",
+          "quote_or_summary": "“And then from here to here for almost 1012 minutes service was just like a bomb… You find the logs… log will be silent.”",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Explain whether the service likely stopped due to a crash and restarted after memory cleared",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Provide the diagnostic conclusion based on the matched Memory Trend sequence: crash/service-stop window (silent period) followed by garbage collection clearing and resumed memory activity.",
+      "instruction": "Using the matched chart sequence (spike → big draft/long activity → silent/nothing period → garbage collection memory clearing → memory fills up again), determine whether it is consistent with the source’s crash/service-stop and later restart behavior.",
+      "expected_result": "Your interpretation can point to the chart segments that match the source’s described sequence and supports a crash/stop + restart explanation when the pattern is clear.",
+      "healthy_condition": "The chart clearly shows the full sequence and the silent period aligns with the source’s expectation; the garbage-collection clearing precedes the memory build-up and resumed activity.",
+      "failure_condition": "The chart pattern cannot be matched to the described crash/silent/log-gap behavior; the evidence is ambiguous.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Form diagnostic conclusion from chart pattern",
+          "exact_action": "Use the observed pattern to explain whether the service likely stopped due to a crash and later restarted after the memory cleared and activity resumed.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the Memory Trend pattern cannot be matched to the described crash/silent/log-gap behavior, escalate for deeper log/service verification beyond the chart interpretation described in the source.",
+        "Do not assume a crash occurred solely from the chart if the pattern is ambiguous."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 44,
+          "section_id": "training_video_day2_segment_0044",
+          "quote_or_summary": "“So if the crash happened and the service be starting… there will be… And then… there is nothing… that is silent… So this is the garbage collection… It likes the memory clears it out… and then again then memory files up.” Also: “log will be silent” and “Service must stop.”",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You can identify on the Memory Trend 4GB chart: a “good spike in the middle,” a big draft/long activity period, a “nothing”/silent gap, a garbage-collection memory-clearing segment, and subsequent memory build-up.",
+    "The silent gap duration is consistent with the source’s expectation of almost 10–12 minutes where logs may be silent.",
+    "Your conclusion distinguishes a likely crash/stop + restart pattern from garbage-collection clearing when the chart sequence matches clearly."
+  ],
+  "healthy_conditions": [
+    "Memory Trend 4GB shows a clear spike, then a long period, then a silent/nothing gap, then a memory-clearing (garbage collection) drop, followed by memory filling up again."
+  ],
+  "failure_conditions": [
+    "Memory Trend 4GB does not show a clear silent/nothing gap or does not show a garbage-collection clearing followed by memory build-up.",
+    "The chart pattern is ambiguous such that you cannot confidently match the described crash/silent/log-gap sequence."
+  ],
+  "escalation_guidance": [
+    "If the Memory Trend pattern cannot be matched to the described crash/silent/log-gap behavior, escalate for deeper log/service verification beyond chart interpretation.",
+    "If the pattern is ambiguous, do not assume a crash occurred solely from the chart."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0044_probably_understand_this_so_if_the_primary_03_07_17_500",
+      "what_to_look_at": "Memory Trend 4GB chart frame showing the time axis and the described segments: “good spike in the middle,” big draft/long activity, “nothing”/silent gap, and the garbage-collection memory clearing followed by memory build-up.",
+      "required_level": "required"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 44,
+      "section_id": "training_video_day2_segment_0044",
+      "quote_or_summary": "Transcript discusses interpreting Memory Trend: crash/service starting, a “good spike in the middle,” a long period, “nothing”/silent, and garbage collection clearing memory; also mentions silent logs and a ~10–12 minute gap.",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0044_probably_understand_this_so_if_the_primary_03_07_17_500",
+      "what_to_look_at": "Memory Trend chart frame labeled “Memory Trend 4GB” used to identify the spike, long draft/activity, silent/nothing period, and garbage-collection clearing pattern."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_diagnostic_memory_trend_service_crash_garbage_collection"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "Exact navigation steps to open the Memory Trend view are not provided in the packet; only the chart label “Memory Trend 4GB” is referenced.",
+    "The source does not provide explicit service names, specific Windows service identifiers, or exact log locations/queries; escalation is recommended when the chart pattern is ambiguous."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source",
+    "missing verified live access surface in title/steps/tools"
+  ]
+}

@@ -1,0 +1,347 @@
+{
+  "procedure_id": "proc_cancel_active_unactive_exchanges_after_manual_bag_out_v1",
+  "candidate_id": "candidate_training_video_day2_cancel_active_exchanges_after_bag_out",
+  "title": "Cancel active exchanges after a manual bag out (when system is back up)",
+  "procedure_type": "operation",
+  "summary": "After a manual bag out, items/requests are marked to exchange. Once the system is back up and running, use the system “cancel” function to cancel the active unactive exchanges created by that bag out so the canceled bag-out requests do not continue to require processing.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "bag_out_or_closeout_state"
+  ],
+  "access_surface": [
+    "wcs_api"
+  ],
+  "audience_roles": [
+    "L1_support"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when a customer/operator performed a manual bag out, the system is back up and running, and you need to cancel the active unactive exchanges that were created by the bag out so those bag-out requests do not have to be processed further.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L1_support: Execute the “cancel” action for active unactive exchanges created by the manual bag out after confirming the system is back up and running; verify the bag-out-related exchanges are canceled."
+  ],
+  "safety_notes": [
+    "The source frames manual bag out as a high-impact, labor-intensive event; proceed only after the system is back up and running."
+  ],
+  "access_or_tools_needed": [
+    "Access to the system feature/control that performs the “cancel” function for active unactive exchanges (exact UI/API control name not specified in the packet).",
+    "API Dog access is referenced in the source as the tool used for API calls."
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L1_support access to the system API calls via API Dog (tool referenced by the source)."
+    ],
+    "system_preconditions": [
+      "System is back up and running."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_cancel_exchanges_after_bag_out_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+      "description": "Source segment explaining that after the system is back up and running, you can cancel all active unactive exchanges created by a manual bag out; includes the “cancel” intent and labor-impact context.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+      "description": "Database/model context for how exchanges/bag-out closeout are represented in system state (active exchange model / active bag out entry).",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Confirm the system is back up and running after the manual bag out",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "The cancel action is described as usable only once the system is back up and running.",
+      "instruction": "Confirm the system is back up and running before attempting to cancel active unactive exchanges created by the manual bag out.",
+      "expected_result": "System status is in a back-up-and-running state (so the cancel action is applicable).",
+      "healthy_condition": "System is back up and running (as required by the source before canceling).",
+      "failure_condition": "System is not back up and running, making the cancel action inappropriate per the source framing.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify system is back up and running",
+          "exact_action": "Confirm the system is back up and running",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the system is not back up and running, do not proceed with cancel; resolve system recovery first."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "“Now that the system is back up and running, we can cancel all active unactive exchanges…”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Identify that the bag out event marked items/requests to exchange",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "The source states that when you do a bag out, everything is marked to exchange; cancel targets those exchanges.",
+      "instruction": "Confirm that the manual bag out caused the relevant items/requests to be marked to exchange (i.e., the bag-out-related active unactive exchanges exist).",
+      "expected_result": "Bag-out-related exchanges are present/marked to exchange as a result of the manual bag out.",
+      "healthy_condition": "Bag-out-related exchanges exist and are eligible to be canceled once the system is back up.",
+      "failure_condition": "No bag-out-related active unactive exchanges are present (cancel would have no effect), or the bag-out marking is not reflected as expected.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check bag-out exchange marking exists",
+          "exact_action": "When you do a bag out, everything's marked to exchange",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot confirm bag-out-related exchanges are marked to exchange, pause and reassess before canceling."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "“So when you do a bag out, everything's marked to exchange and this cancels the exchanges…”"
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 25,
+          "section_id": "training_video_day2_segment_0025",
+          "quote_or_summary": "“When a bag out closes out as requested, all the open shoots are closed. Any tote with an item in it is marked for an exchange and similar to the exchange tables, an entry is made in active bag out.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Use the “cancel” function to cancel all active unactive exchanges",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "The source’s operational intent is to cancel active unactive exchanges created by the bag out so operators don’t have to complete the canceled bag-out requests.",
+      "instruction": "Execute the documented “cancel” action to cancel all active unactive exchanges created by the manual bag out.",
+      "expected_result": "Active unactive exchanges created by the bag out are canceled.",
+      "healthy_condition": "Cancel completes successfully and the bag-out-related exchanges are no longer active/required for processing.",
+      "failure_condition": "Cancel does not clear the active exchanges created by the bag out.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Cancel active unactive exchanges",
+          "exact_action": "cancel all active unactive exchanges",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the cancel action does not clear the active exchanges created by the bag out, escalate to support."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "“Now that the system is back up and running, we can cancel all active unactive exchanges…”"
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "“So when you do a bag out, everything's marked to exchange and this cancels the exchanges so that you don't have to.”"
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "“We don't use Postman, we use API dog.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify the bag-out requests/exchanges are canceled",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "The source intent is that canceled bag-out requests do not have to be processed further; verification confirms the cancel took effect.",
+      "instruction": "Verify that the bag-out-related exchanges/requests are canceled so the system no longer requires those bag-out requests to be processed.",
+      "expected_result": "The system no longer requires the canceled bag-out requests to be processed (bag-out-related exchanges are no longer active).",
+      "healthy_condition": "Bag-out-related exchanges are canceled and do not remain active/required for further processing.",
+      "failure_condition": "Bag-out requests/exchanges remain active after cancel (system still requires them to be processed).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm cancel cleared bag-out exchanges",
+          "exact_action": "Verify that the bag-out requests/exchanges are canceled",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the cancel action does not clear the active exchanges created by the bag out, escalate to support."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "“this cancels the exchanges so that you don't have to.”"
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "“Cancel function for active exchanges after bag out: cancel active exchanges created by a bag out event after system is back up.”"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Active unactive exchanges created by the manual bag out are canceled.",
+    "Canceled bag-out requests do not continue to require processing."
+  ],
+  "healthy_conditions": [
+    "System is back up and running before cancel is attempted.",
+    "Bag-out-related exchanges are canceled after the cancel action."
+  ],
+  "failure_conditions": [
+    "Cancel does not clear the active exchanges created by the bag out.",
+    "Bag-out requests/exchanges remain active and still require processing after cancel."
+  ],
+  "escalation_guidance": [
+    "If the cancel action does not clear the active exchanges created by the bag out, escalate to support (the source frames manual bag out as a labor-intensive, high-impact event)."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+      "description": "Cancel intent and timing: after system is back up and running, cancel all active unactive exchanges created by a manual bag out.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+      "description": "Database/model context for how bag out results in active bag out entries and exchange marking.",
+      "required_level": "optional"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 33,
+      "section_id": "training_video_day2_segment_0033",
+      "quote_or_summary": "“Now that the system is back up and running, we can cancel all active unactive exchanges… when you do a bag out, everything's marked to exchange and this cancels the exchanges so that you don't have to.”"
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 25,
+      "section_id": "training_video_day2_segment_0025",
+      "quote_or_summary": "“Any tote with an item in it is marked for an exchange… an entry is made in active bag out.”"
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 33,
+      "section_id": "training_video_day2_segment_0033",
+      "quote_or_summary": "“We don't use Postman, we use API dog.”"
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+      "what_to_look_at": "Source segment explaining that after the system is back up and running, you can cancel all active unactive exchanges created by a manual bag out; includes the “cancel” intent and labor-impact context."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+      "what_to_look_at": "Database/model context for how exchanges/bag-out closeout are represented in system state (active exchange model / active bag out entry)."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_cancel_active_exchanges_after_bag_out"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not specify the exact live UI screen/control or the exact API Dog request name/parameters for the “cancel all active unactive exchanges” action.",
+    "The packet does not specify the exact live verification method (which table/model/view or which field/state indicates that bag-out-related exchanges are canceled)."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

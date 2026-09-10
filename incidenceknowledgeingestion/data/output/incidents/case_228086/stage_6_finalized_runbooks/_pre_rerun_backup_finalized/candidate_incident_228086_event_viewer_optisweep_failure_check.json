@@ -1,0 +1,419 @@
+{
+  "procedure_id": "proc_windows_event_viewer_services_optisweep_wcs_failures_v1",
+  "candidate_id": "candidate_incident_228086_event_viewer_optisweep_failure_check",
+  "title": "Windows Event Viewer / services check for OptiSweep and WCSWebApplication failures",
+  "procedure_type": "diagnostic",
+  "summary": "Use the Windows Event Viewer / services surface to inspect Application and System log entries around the reported 6:35-6:36 AM failure window, then verify the current OptiSweep service state. The check identifies WCSWebApplication database-command errors, OptiSweep termination events, and the live service status before further recovery action.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "windows_service_or_event_log",
+    "wcs_service_health"
+  ],
+  "access_surface": [
+    "event_viewer"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "service_crash_or_restart",
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use the Windows Event Viewer / services surface when OptiSweep or WCSWebApplication behavior is abnormal, the RMS is blank or unavailable, the system has stopped, or a service failure is suspected. Inspect the reported 6:35:24-6:36:07 AM window when validating this incident pattern before further recovery action.",
+  "not_for": [
+    "Do not use Windows Event Viewer / services alone to infer root cause.",
+    "Do not use this check as a substitute for RMS AGV status when the OptiSweep service is confirmed healthy.",
+    "Do not make undocumented database, configuration, or infrastructure changes based only on Event Viewer entries."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Perform the Windows Event Viewer / services diagnostic check and compare the live findings with the failure indicators."
+    },
+    {
+      "role": "L3_support",
+      "responsibility": "Review or receive escalation when the OptiSweep service is not Running, Event ID 7031 repeats, or WCSWebApplication errors continue."
+    }
+  ],
+  "safety_notes": [
+    "This is an inspection procedure. Do not infer root cause or perform undocumented database, configuration, or infrastructure changes from the Windows Event Viewer / services findings alone.",
+    "The Event ID 7031 automatic restart message records configured corrective action; it does not by itself confirm that the restart succeeded."
+  ],
+  "access_or_tools_needed": [
+    "Windows Event Viewer / services",
+    "Windows Logs > Application in Windows Event Viewer / services",
+    "Windows Logs > System in Windows Event Viewer / services",
+    "Windows Services MMC on the Windows Event Viewer / services surface",
+    "OptiSweep service"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2 or L3 access to the affected Windows host and the Windows Event Viewer / services surface."
+    ],
+    "system_preconditions": [
+      "The affected host and its Windows Event Viewer / services interface are reachable.",
+      "The relevant failure time window is known or can be compared with the reported 6:35:24-6:36:07 AM window."
+    ],
+    "external_references": [
+      "Incident case 228086 evidence for the Application log, System log, and OptiSweep service state."
+    ]
+  },
+  "related_context_ids": [],
+  "related_event_ids": [
+    "incident_228086_event_044",
+    "incident_228086_event_045",
+    "incident_228086_event_046",
+    "incident_228086_event_048",
+    "incident_228086_event_049",
+    "incident_228086_event_050",
+    "incident_228086_event_029"
+  ],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_incident_228086_page_027_embedded_image_01",
+      "description": "Windows Event Viewer / services Application log showing clustered WCSWebApplication and Application Error entries around 6:36:02 AM, with Windows Error Reporting Event 1001 at 6:36:07 AM.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_028_embedded_image_01",
+      "description": "Windows Event Viewer / services Application log showing WCSWebApplication Event ID 20102 and the message \"Failed executing DbCommand (1,840ms)\" at 6:35:24 AM.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_029_embedded_image_01",
+      "description": "Windows Event Viewer / services System log showing Service Control Manager Event ID 7031 for unexpected OptiSweep termination and a configured restart after 60000 milliseconds.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+      "description": "Windows Services MMC on the Windows Event Viewer / services surface with OptiSweep selected, showing Status Running and Startup Type Automatic.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Inspect the Application log on Windows Event Viewer / services",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Identify recent WCSWebApplication and Application Error entries associated with the reported failure window.",
+      "instruction": "On the Windows Event Viewer / services surface, open Windows Logs > Application. Inspect entries around 6:35:24-6:36:07 AM, including WCSWebApplication Event ID 20102 with \"Failed executing DbCommand (1,840ms)\" and the nearby WCSWebApplication, Application Error, and Windows Error Reporting entries. Compare the source, event ID, timestamp, level, and message with the live entries.",
+      "expected_result": "The live Application log shows whether WCSWebApplication or Application Error entries are present in the selected time window, and the selected event exposes its source, event ID, timestamp, level, and message.",
+      "healthy_condition": "No continuing cluster of WCSWebApplication or Application Error entries is present in the inspected live time window.",
+      "failure_condition": "The live Application log contains WCSWebApplication Event ID 20102, repeated WCSWebApplication errors, Application Error Event ID 1000, or comparable errors clustered around the failure window.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open Application log",
+          "exact_action": "Select Windows Logs > Application on Windows Event Viewer / services.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect application errors",
+          "exact_action": "Check the WCSWebApplication and Application Error entries around 6:35:24-6:36:07 AM, including Event ID 20102 with “Failed executing DbCommand (1,840ms)” and the nearby WCSWebApplication/Application Error entries.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "WCSWebApplication errors continue after the OptiSweep service is available.",
+        "The live entries indicate an active or recurring application failure that cannot be explained by inspection alone."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_27",
+          "artifact_id": "artifact_incident_228086_page_027_embedded_image_01",
+          "event_id": "incident_228086_event_044",
+          "chunk_id": "stage4_artifact_chunk_003",
+          "support_type": "system_log",
+          "quote_or_summary": "Application log shows Windows Error Reporting Event 1001 at 6:36:07 AM and clustered WCSWebApplication/Application Error entries around 6:36:02 AM."
+        },
+        {
+          "page_ref": "case_228086:page_27",
+          "artifact_id": "artifact_incident_228086_page_027_embedded_image_01",
+          "event_id": "incident_228086_event_045",
+          "chunk_id": "stage4_page_chunk_004",
+          "support_type": "system_log",
+          "quote_or_summary": "Multiple WCSWebApplication errors and an Application Error entry are visible around 6:36:02 AM."
+        },
+        {
+          "page_ref": "case_228086:page_28",
+          "artifact_id": "artifact_incident_228086_page_028_embedded_image_01",
+          "event_id": "incident_228086_event_046",
+          "chunk_id": "stage4_artifact_chunk_003",
+          "support_type": "system_log",
+          "quote_or_summary": "WCSWebApplication Event ID 20102 at 6:35:24 AM shows “Failed executing DbCommand (1,840ms)”."
+        },
+        {
+          "page_ref": "case_228086:page_28",
+          "artifact_id": "artifact_incident_228086_page_028_embedded_image_01",
+          "event_id": "incident_228086_event_048",
+          "chunk_id": "stage4_page_chunk_004",
+          "support_type": "system_log",
+          "quote_or_summary": "Multiple WCSWebApplication error entries are visible at 6:35:24 AM."
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_044",
+        "incident_228086_event_045",
+        "incident_228086_event_046",
+        "incident_228086_event_048"
+      ]
+    },
+    {
+      "step_number": 2,
+      "title": "Inspect the System log on Windows Event Viewer / services",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Determine whether the OptiSweep service termination recorded by Service Control Manager is present and whether an automatic restart action was configured.",
+      "instruction": "On the Windows Event Viewer / services surface, select Windows Logs > System and inspect Service Control Manager Event ID 7031 for OptiSweep. Confirm whether the live event states that the service terminated unexpectedly and whether the recorded corrective action says Restart the service after 60000 milliseconds.",
+      "expected_result": "The live System log identifies whether Event ID 7031 exists for OptiSweep and displays the termination message and any recorded corrective action.",
+      "healthy_condition": "No repeated OptiSweep Event ID 7031 termination events are present in the inspected live period.",
+      "failure_condition": "Event ID 7031 states that OptiSweep terminated unexpectedly, or repeated termination events are present.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open System log",
+          "exact_action": "Select Windows Logs > System on Windows Event Viewer / services.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect OptiSweep Event 7031",
+          "exact_action": "Inspect Service Control Manager Event ID 7031 for OptiSweep. Confirm whether the event states that the service terminated unexpectedly and whether the recorded corrective action was a restart after 60000 milliseconds.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "OptiSweep Event ID 7031 repeats.",
+        "The event shows an unexpected termination and the current service state cannot be confirmed as Running."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_29",
+          "artifact_id": "artifact_incident_228086_page_029_embedded_image_01",
+          "event_id": "incident_228086_event_049",
+          "chunk_id": "stage4_artifact_chunk_003",
+          "support_type": "system_log",
+          "quote_or_summary": "Service Control Manager Event 7031 states that the OptiSweep service terminated unexpectedly at 6:36:02 AM."
+        },
+        {
+          "page_ref": "case_228086:page_29",
+          "artifact_id": "artifact_incident_228086_page_029_embedded_image_01",
+          "event_id": "incident_228086_event_050",
+          "chunk_id": "stage4_page_chunk_004",
+          "support_type": "system_log",
+          "quote_or_summary": "The Event 7031 message states that corrective action will be taken in 60000 milliseconds: Restart the service."
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_049",
+        "incident_228086_event_050"
+      ]
+    },
+    {
+      "step_number": 3,
+      "title": "Verify OptiSweep in Windows Event Viewer / services",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Confirm the current live OptiSweep service state and compare it with the Event Viewer / services failure findings.",
+      "instruction": "On the Windows Event Viewer / services surface, open Windows Services, select OptiSweep, and inspect Status and Startup Type. Compare the current values with the Event Viewer / services findings. The incident capture showed Status Running and Startup Type Automatic; do not treat the available Restart the service link as proof that a restart was performed.",
+      "expected_result": "The live Windows Services MMC displays the current OptiSweep Status and Startup Type so they can be compared with the termination event.",
+      "healthy_condition": "OptiSweep is displayed as Running and its current service state does not show a continuing termination condition.",
+      "failure_condition": "OptiSweep is not Running, or the current service state is inconsistent with a cleared failure condition.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Select OptiSweep",
+          "exact_action": "Open Windows Services on the Windows Event Viewer / services surface and select OptiSweep.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Check service state",
+          "exact_action": "Check Status and Startup Type. The incident capture showed Status “Running” and Startup Type “Automatic”; record the current values and compare them with the Event Viewer findings.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "OptiSweep is not Running.",
+        "Event ID 7031 repeats or WCSWebApplication errors continue after the service is available.",
+        "The service state cannot be reconciled with the Event Viewer / services findings."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_19",
+          "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+          "event_id": "incident_228086_event_029",
+          "chunk_id": "stage4_artifact_chunk_002",
+          "support_type": "artifact_visual",
+          "quote_or_summary": "Windows Services shows OptiSweep selected with Status Running and Startup Type Automatic."
+        },
+        {
+          "page_ref": "case_228086:page_29",
+          "artifact_id": "artifact_incident_228086_page_029_embedded_image_01",
+          "event_id": "incident_228086_event_049",
+          "chunk_id": "stage4_artifact_chunk_003",
+          "support_type": "system_log",
+          "quote_or_summary": "Event 7031 records unexpected OptiSweep termination; the screenshot does not confirm that the configured restart succeeded."
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_029",
+        "incident_228086_event_049"
+      ]
+    }
+  ],
+  "success_criteria": [
+    "The Windows Event Viewer / services Application log has been inspected for the relevant time window and the live WCSWebApplication/Application Error state is identified.",
+    "The Windows Event Viewer / services System log has been inspected for OptiSweep Event ID 7031 and any restart indication.",
+    "The Windows Services MMC shows the current OptiSweep Status and Startup Type.",
+    "No continuing WCSWebApplication errors, repeated OptiSweep Event ID 7031 events, or non-running OptiSweep state are present in the live check."
+  ],
+  "healthy_conditions": [
+    "OptiSweep is Running in Windows Services.",
+    "The current OptiSweep Startup Type is observable and does not conflict with the intended service configuration; the incident capture showed Automatic.",
+    "The inspected Application log does not show continuing clustered WCSWebApplication or Application Error entries.",
+    "The inspected System log does not show repeated OptiSweep Event ID 7031 termination events."
+  ],
+  "failure_conditions": [
+    "OptiSweep is not Running in Windows Services.",
+    "OptiSweep Event ID 7031 repeats or continues to report unexpected termination.",
+    "WCSWebApplication Event ID 20102 or other clustered WCSWebApplication/Application Error entries continue.",
+    "The live evidence does not confirm that the configured automatic restart restored the service."
+  ],
+  "escalation_guidance": [
+    "Stop this diagnostic sequence and escalate to L2/L3 support if OptiSweep is not Running.",
+    "Escalate if OptiSweep Event ID 7031 repeats.",
+    "Escalate if WCSWebApplication errors continue after the service is available.",
+    "Do not infer root cause or make undocumented database, configuration, or infrastructure changes from Event Viewer / services entries alone."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_incident_228086_page_027_embedded_image_01",
+      "what_to_look_at": "Windows Event Viewer / services Application log: clustered WCSWebApplication and Application Error entries around 6:36:02 AM and Windows Error Reporting Event 1001 at 6:36:07 AM."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_028_embedded_image_01",
+      "what_to_look_at": "Windows Event Viewer / services Application log: WCSWebApplication Event ID 20102, timestamp 6:35:24 AM, and “Failed executing DbCommand (1,840ms)”."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_029_embedded_image_01",
+      "what_to_look_at": "Windows Event Viewer / services System log: Service Control Manager Event ID 7031, unexpected OptiSweep termination, and restart after 60000 milliseconds."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+      "what_to_look_at": "Windows Services MMC: OptiSweep selected with Status Running and Startup Type Automatic."
+    }
+  ],
+  "source_refs": [
+    {
+      "page_ref": "case_228086:page_27",
+      "artifact_id": "artifact_incident_228086_page_027_embedded_image_01",
+      "event_id": "incident_228086_event_044",
+      "chunk_id": "stage4_artifact_chunk_003",
+      "support_type": "system_log",
+      "quote_or_summary": "Windows Event Viewer Application log shows Windows Error Reporting Event 1001 at 6:36:07 AM and clustered WCSWebApplication/Application Error entries around 6:36:02 AM."
+    },
+    {
+      "page_ref": "case_228086:page_28",
+      "artifact_id": "artifact_incident_228086_page_028_embedded_image_01",
+      "event_id": "incident_228086_event_046",
+      "chunk_id": "stage4_artifact_chunk_003",
+      "support_type": "system_log",
+      "quote_or_summary": "WCSWebApplication Event ID 20102 at 6:35:24 AM shows “Failed executing DbCommand (1,840ms)”."
+    },
+    {
+      "page_ref": "case_228086:page_29",
+      "artifact_id": "artifact_incident_228086_page_029_embedded_image_01",
+      "event_id": "incident_228086_event_049",
+      "chunk_id": "stage4_artifact_chunk_003",
+      "support_type": "system_log",
+      "quote_or_summary": "Service Control Manager Event 7031 states that the OptiSweep service terminated unexpectedly and would be restarted after 60000 milliseconds."
+    },
+    {
+      "page_ref": "case_228086:page_19",
+      "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+      "event_id": "incident_228086_event_029",
+      "chunk_id": "stage4_artifact_chunk_002",
+      "support_type": "artifact_visual",
+      "quote_or_summary": "Windows Services shows OptiSweep selected with Status Running and Startup Type Automatic."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_incident_228086_page_027_embedded_image_01",
+      "what_to_look_at": "Windows Event Viewer / services Application log: clustered WCSWebApplication and Application Error entries around 6:36:02 AM and Windows Error Reporting Event 1001 at 6:36:07 AM."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_028_embedded_image_01",
+      "what_to_look_at": "Windows Event Viewer / services Application log: WCSWebApplication Event ID 20102, timestamp 6:35:24 AM, and “Failed executing DbCommand (1,840ms)”."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_029_embedded_image_01",
+      "what_to_look_at": "Windows Event Viewer / services System log: Service Control Manager Event ID 7031, unexpected OptiSweep termination, and restart after 60000 milliseconds."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+      "what_to_look_at": "Windows Services MMC: OptiSweep selected with Status Running and Startup Type Automatic."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_incident_228086_event_viewer_optisweep_failure_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "source_case_228086",
+      "source_case_id": "228086",
+      "source_type": "incident_evidence_pdf",
+      "source_title": "Case 228086 Data",
+      "ingestion_batch_id": "batch_20260629T175753Z"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide an ingestion site_location, site_code, or site label in source_package.site_location; the evidence-mentioned site was not substituted for authoritative ingestion metadata.",
+    "The incident does not establish that this diagnostic sequence alone resolved the outage.",
+    "No command-line recovery command, database remediation, configuration change, or infrastructure change is supported for this procedure.",
+    "The Event ID 7031 automatic restart action is recorded, but successful restart completion is not directly evidenced by that event.",
+    "No time estimate is supported by the source."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_incident_runbook_finalization",
+    "source_id": "source_case_228086",
+    "source_type": "incident_evidence_pdf",
+    "source_title": "Case 228086 Data",
+    "source_version": "",
+    "ingestion_batch_id": "batch_20260629T175753Z",
+    "source_quality": "incident_case",
+    "incident_context": {
+      "case_id": "228086",
+      "site": "UPS Fort Worth, TX (Haslet)",
+      "site_code": "",
+      "site_location": {},
+      "incident_start_time": "2026-02-20T07:19:00",
+      "incident_resolved_time": "2026-02-20T14:58:00",
+      "time_to_resolve": "7h 39m",
+      "resolution_confirmed": true
+    }
+  }
+}

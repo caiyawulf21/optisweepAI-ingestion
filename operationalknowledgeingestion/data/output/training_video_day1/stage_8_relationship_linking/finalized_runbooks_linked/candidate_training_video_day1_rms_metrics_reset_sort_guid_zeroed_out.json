@@ -1,0 +1,320 @@
+{
+  "procedure_id": "proc_explain_rms_metrics_zero_after_sort_guid_reset_v1",
+  "candidate_id": "candidate_training_video_day1_rms_metrics_reset_sort_guid_zeroed_out",
+  "title": "Explain RMS metrics showing zero after sort cycle by confirming metrics are scoped to sort GUID and reset on sort cycle",
+  "procedure_type": "diagnostic",
+  "summary": "When a sort cycle runs, the system sends a “reset metrics” bit/message, resets Tipper metrics, and triggers an API flow that generates a new sort GUID. Because RMS statistics are tied to the sort GUID, the new GUID causes the RMS tables/statistics to show no data (appearing zeroed out) for the new sort.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "fleet_system_status"
+  ],
+  "access_surface": [
+    "rms_ui"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "mapping_abnormal"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when RMS totals/metrics appear missing or zeroed out after a sort cycle, and you need to explain the behavior based on sort-cycle reset and sort GUID scoping.",
+  "not_for": [
+    "Do not use this procedure to troubleshoot cases where metrics are zeroed out but there is no evidence that a sort-cycle reset/new sort GUID occurred; the source only provides the sort GUID reset explanation."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support: Interpret RMS zeroed-out totals as expected behavior when a sort cycle resets metrics and generates a new sort GUID; validate the discrepancy using the source’s described time-based metrics validation approach."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "RMS metrics display (to observe zeroed-out totals/metrics).",
+    "Access to the system/API/database view used to confirm sort GUID generation (the source mentions an API call and sort GUID but does not name the exact tool surface)."
+  ],
+  "prerequisites": {
+    "access_required": [],
+    "system_preconditions": [
+      "A sort cycle has occurred (so a reset metrics bit/message could have been sent and a new sort GUID could have been generated)."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_sort_guid_metrics_reset_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000",
+      "description": "Overall System RMS page description and transcript excerpt explaining: stats reset for each sort, reset metrics bit, Todd resets Tipper metrics, API call generates a new sort GUID, and statistics tied to sort GUID show no data/zeroed out after reset.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Confirm RMS totals/metrics are expected to reset on each sort cycle",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish the source-described mechanism for why RMS totals may appear zeroed out after a sort cycle.",
+      "instruction": "When RMS totals/metrics appear missing or zeroed out after a sort cycle, apply the source’s described behavior: the sort cycle sends a bit/message indicating “reset metrics,” which resets Tipper metrics as part of the cycle.",
+      "expected_result": "You can explain that the observed zeroed-out RMS totals/metrics align with a sort-cycle “reset metrics” behavior rather than an independent data corruption issue.",
+      "healthy_condition": "RMS metrics are zeroed out immediately after a sort cycle in a way that matches the source’s described reset behavior (no totals anywhere for the new sort context).",
+      "failure_condition": "RMS metrics are zeroed out, but you cannot support that a sort-cycle reset occurred (no evidence of reset metrics/new sort GUID in the available evidence).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Observe RMS totals/metrics after sort cycle",
+          "exact_action": "Observe the RMS metrics/totals display showing missing or zeroed-out values after the sort cycle.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If metrics are zeroed out but there is no evidence of a sort-cycle reset/new sort GUID, stop and escalate for deeper investigation."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 61,
+          "section_id": "training_video_day1_segment_0061",
+          "quote_or_summary": "When they cycle sort, they send a bit that says reset metrics... resets the Tipper metrics..."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Verify a new sort GUID was generated as part of the reset process",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Tie the zeroed-out RMS view to the source’s stated cause: new sort GUID generation during the reset flow.",
+      "instruction": "Confirm that the reset process included an API call that generated a new sort GUID (the source states this happens as part of the reset metrics flow). Use whatever system/API/database view you have available to confirm sort GUID generation; the source does not name the exact surface.",
+      "expected_result": "You determine that a new sort GUID was generated for the current sort cycle, explaining why RMS statistics for the new GUID show no data.",
+      "healthy_condition": "The evidence you can access indicates the sort GUID changed as part of the reset metrics flow.",
+      "failure_condition": "You cannot confirm that a new sort GUID was generated for the sort cycle in question.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm sort GUID generation",
+          "exact_action": "Confirm that the reset metrics flow includes an API call that generates a new sort GUID.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot find evidence of a new sort GUID generation tied to the sort cycle, stop and escalate for deeper investigation."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 61,
+          "section_id": "training_video_day1_segment_0061",
+          "quote_or_summary": "Then it's an API call... it generates a new sort GUID."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Interpret the RMS result using sort GUID scoping (new GUID => no data/zeroed totals)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Provide the correct interpretation of zeroed-out RMS totals based on the source’s rule for how statistics are stored/displayed.",
+      "instruction": "Use the source’s rule: every statistic is tied to a sort GUID. After you reset the sort GUID, the system looks at the tables and shows no data—so the RMS totals appear zeroed out for the new sort GUID.",
+      "expected_result": "You can state that the zeroed-out RMS totals are expected because statistics are scoped to the current sort GUID, and the new GUID has no prior rows yet (so tables show no data).",
+      "healthy_condition": "The RMS display shows no totals/data for the current sort context immediately after the sort GUID reset, consistent with “shows no data... all zeroed out.”",
+      "failure_condition": "RMS totals are zeroed out even though the sort GUID scoping/reset explanation does not fit the evidence (e.g., no reset/new GUID, or evidence contradicts the scoping behavior).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Apply sort GUID scoping rule to RMS totals",
+          "exact_action": "Interpret RMS totals as tied to sort GUID; after resetting sort GUID, tables show no data (zeroed out).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the evidence does not support sort GUID reset/new GUID, stop and escalate for deeper investigation."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 61,
+          "section_id": "training_video_day1_segment_0061",
+          "quote_or_summary": "Every statistic on my end is a tied to a sort GUID... So you reset the sort GUID, it looks at the tables and shows no data. So it's all zeroed out."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Validate the metrics discrepancy using the source’s time-based approach (if needed)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "When you need additional confirmation beyond the conceptual explanation, use the source’s described validation method.",
+      "instruction": "If needed for validation, pick a specific time and determine what the metrics “should have been showing,” then work through the discrepancy between expected vs observed values using the source’s described approach.",
+      "expected_result": "You can reconcile the observed zeroed-out totals with what the metrics should have shown at a specific time, based on the source’s validation approach.",
+      "healthy_condition": "Your time-based expected-vs-observed reasoning matches the sort-cycle reset/new sort GUID behavior.",
+      "failure_condition": "Time-based validation cannot be reconciled with the sort-cycle reset/new sort GUID explanation.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Choose a specific time for expected metrics",
+          "exact_action": "Look at a time specifically and say what the metrics should have been showing, then work through the discrepancy.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If time-based validation still cannot be reconciled with the sort-cycle reset/new sort GUID explanation, escalate for deeper investigation."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 61,
+          "section_id": "training_video_day1_segment_0061",
+          "quote_or_summary": "When we like validate metrics, I can look at a time specifically and say this is what it should have been showing and then they can kind of work through that."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You can explain zeroed-out RMS totals as expected behavior caused by sort-cycle reset metrics and new sort GUID generation.",
+    "You can support the explanation with evidence that a new sort GUID was generated during the reset process (using available system/API/database evidence)."
+  ],
+  "healthy_conditions": [
+    "RMS totals/metrics show no data/zeroed-out values for the current sort context immediately after sort-cycle reset, consistent with statistics being tied to sort GUID."
+  ],
+  "failure_conditions": [
+    "RMS totals/metrics are zeroed out but there is no evidence of sort-cycle reset/new sort GUID generation.",
+    "Time-based validation cannot be reconciled with the sort-cycle reset/new sort GUID explanation."
+  ],
+  "escalation_guidance": [
+    "If metrics are zeroed out but you cannot support a sort-cycle reset/new sort GUID, stop and escalate for deeper investigation (the source only provides the sort GUID reset explanation)."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000",
+      "description": "Overall System RMS page transcript excerpt describing reset metrics per sort, API call generating new sort GUID, and statistics tied to sort GUID resulting in no data/zeroed totals.",
+      "required_level": "recommended"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1",
+      "source_document_id": "training_video_day1_video",
+      "page": 61,
+      "section_id": "training_video_day1_segment_0061",
+      "start_timecode": "02:11:03.000",
+      "end_timecode": "02:15:09.000",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0037_what_are_these_these_are_rack_primary_01_29_18_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0045_i_i_would_say_like_the_primary_01_37_38_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day1_rms_metrics_reset_sort_guid_metrics_reset_v1"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The source does not name the exact RMS fields/columns or the exact tool surface where the sort GUID can be viewed/confirmed.",
+    "The source does not specify the exact RMS UI labels for the totals that become zeroed out after the new sort GUID is generated."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500",
+    "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+    "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+    "artifact_training_video_training_video_day1_0037_what_are_these_these_are_rack_primary_01_29_18_500",
+    "artifact_training_video_training_video_day1_0045_i_i_would_say_like_the_primary_01_37_38_000",
+    "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000",
+    "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000",
+    "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000"
+  ]
+}

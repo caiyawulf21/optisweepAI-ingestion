@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Verify Shutdown Staging Mapping for AGVs With Tote vs Without Tote Using the ShutDownStaging Table</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Verify Shutdown Staging Mapping for AGVs With Tote vs Without Tote Using the ShutDownStaging Table</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_verify_shutdown_staging_mapping_shutdowndstaging_v1</td></tr>
+<tr><th>Title</th><td>Verify Shutdown Staging Mapping for AGVs With Tote vs Without Tote Using the ShutDownStaging Table</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>robot_dwell_or_shutdown_staging</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>mapping_abnormal</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use SSMS/Helix DB (WCS) to validate that the ShutDownStaging table maps shutdown destinations correctly based on whether an AGV has a tote (tote=true) versus no tote (tote=false), including the expected use of ShutdownOffTheEndId and center queue staging for tote-carrying AGVs, and the expected sorter-location/nearest-open-available shutdown queue behavior for non-tote AGVs. Also confirm that the ShutDownStaging Sequence values align with the zone/entrance sequence behavior used to select the correct shutdown queue destination.</p>
+<h2>When To Use</h2>
+<p>When you need to troubleshoot or confirm that AGVs stage correctly during shutdown, specifically validating that tote-carrying AGVs and non-tote AGVs are routed to the correct shutdown staging destinations per the ShutDownStaging table mapping rules (including off-the-end queue vs nearest open available shutdown queue behavior) and that Sequence mapping is consistent.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/566cf64c9e45d275.jpg" alt="artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500" /><figcaption>Frame showing the ShutDownStaging database model fields including WithTote, ShutDownOffTheEndid, ShutDownQueueld, Sequence, and SorterSideDatabaseModelid, plus the tote vs without-tote mapping explanation.</figcaption></figure>
+<figure><img src="assets/e6b308f21a2ed402.jpg" alt="artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500" /><figcaption>Frame describing sorter-side location types/queues (including shutdown/off-the-end queue and related location types) used to interpret the &#x27;mapped to sorter locations&#x27; expectation for tote=false rows.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open SSMS / Helix DB (WCS / Helix DB (SSMS)) and connect to the OptiSweep/WCS database</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using SSMS / Helix DB (WCS / Helix DB (SSMS)) (surface: wcs_sql), connect to the OptiSweep/WCS database that contains the shutdown staging model table.</p>
+<p><strong>Expected result:</strong></p>
+<p>You are connected in SSMS/Helix DB to the OptiSweep/WCS database and can browse/query the database schema/models.</p>
+<hr>
+<h3>Step 2 — Locate the ShutDownStaging model/table in the WCS database</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS database schema, locate the shutdown staging database model/table named ShutDownStaging (or the exact table/model name used in the database schema).</p>
+<p><strong>Expected result:</strong></p>
+<p>You identify the ShutDownStaging table/model and can view its relevant fields/columns (including WithTote, ShutDownOffTheEndid, ShutDownQueueld, Sequence, and SorterSideDatabaseModelid as shown in the referenced model frame).</p>
+<hr>
+<h3>Step 3 — Validate tote=true rows map to ShutdownOffTheEndid and center queue staging (ShutdownQueueld)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In ShutDownStaging, review rows where WithTote / tote=true and confirm they map to a shutdown off-the-end queue destination (ShutdownOffTheEndid) and a center queue staging destination (ShutdownQueueld / center queue staging fields as shown in the table).</p>
+<p><strong>Expected result:</strong></p>
+<p>For tote=true rows, ShutdownOffTheEndid is populated with an off-the-end queue destination and ShutdownQueueld is populated with the center queue staging destination.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if the table shows tote=true rows missing ShutdownOffTheEndid mappings.</li>
+</ul>
+<hr>
+<h3>Step 4 — Validate tote=false rows map to sorter locations / nearest open available shutdown queue behavior</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In ShutDownStaging, review rows where WithTote / tote=false and confirm they map to sorter locations (i.e., the destination is mapped to sorter locations rather than the shutdown off-the-end queue path).</p>
+<p><strong>Expected result:</strong></p>
+<p>For tote=false rows, the mapped destination corresponds to sorter locations / nearest open available shutdown queue behavior rather than the off-the-end queue path used for tote=true.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if tote=false rows are mapped to the off-the-end queue path instead of sorter locations / nearest open available shutdown queue behavior.</li>
+</ul>
+<hr>
+<h3>Step 5 — Check Sequence behavior aligns with zone/entrance sequence selection of shutdown queue destination</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In ShutDownStaging, check that the table uses a sequence value (Sequence / sequence #) that matches the AGV’s zone/entrance sequence so the system can select the correct shutdown queue destination.</p>
+<p><strong>Expected result:</strong></p>
+<p>Sequence values in ShutDownStaging are present and consistent such that a given zone/entrance sequence selects the corresponding shutdown queue destination.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if sequence values do not align with the described “zone/sequence selects shutdown queue destination” behavior (e.g., sequence rows are missing or inconsistent).</li>
+</ul>
+<hr>
+<h3>Step 6 — Stop and escalate on mapping or sequence inconsistencies</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If any of the validation checks fail (tote=true missing ShutdownOffTheEndid, tote=false routed to off-the-end queue path, or Sequence behavior inconsistent), stop further analysis and escalate.</p>
+<p><strong>Expected result:</strong></p>
+<p>A clear escalation decision is made based on the specific failing condition(s).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>tote=true rows missing ShutdownOffTheEndid mappings</li>
+<li>tote=false rows mapped to off-the-end queue path instead of sorter locations / nearest open available shutdown queue behavior</li>
+<li>Sequence values do not align with zone/sequence selects shutdown queue destination behavior (missing or inconsistent sequence rows)</li>
+</ul>
+<hr>
+</body>
+</html>

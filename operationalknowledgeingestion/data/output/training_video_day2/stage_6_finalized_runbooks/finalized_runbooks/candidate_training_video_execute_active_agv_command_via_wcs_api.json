@@ -1,0 +1,343 @@
+{
+  "procedure_id": "proc_execute_agv_active_command_via_wcs_api_v1",
+  "candidate_id": "candidate_training_video_execute_active_agv_command_via_wcs_api",
+  "title": "Execute an AGV's Active Command Through the OptiSweep WCS API",
+  "procedure_type": "recovery",
+  "summary": "Use the OptiSweep / WCS API ExecutedAgvCommand operation with a confirmed robot ID to execute the active command currently held by an AGV. The source describes this as useful after an unplanned restart when OptiSweep missed callbacks from Geek Plus.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "robot_command_or_task_state"
+  ],
+  "access_surface": [
+    "wcs_api",
+    "apidog"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "robot_task_or_command_stuck",
+    "unplanned_restart"
+  ],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when an AGV has an active command but OptiSweep missed callbacks from Geek Plus, including the source-described unplanned-restart scenario.",
+  "not_for": [
+    "Do not use without a confirmed robot ID.",
+    "Do not use as a replacement-command or manual-command-entry procedure; the source does not define either.",
+    "Do not use when the request cannot be submitted or the AGV does not execute its active command without escalating."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support executes the OptiSweep / WCS API request through Apidog or an equivalent WCS API client.",
+    "L2_support verifies the AGV result using the available live AGV status or movement view.",
+    "L3_support may support escalation when the request cannot be submitted or the active command does not execute."
+  ],
+  "safety_notes": [
+    "Use only a confirmed robot ID.",
+    "This procedure executes the active command already held by the AGV; it does not define a new command."
+  ],
+  "access_or_tools_needed": [
+    "OptiSweep / WCS API",
+    "Apidog or equivalent WCS API client",
+    "ExecutedAgvCommand POST operation",
+    "Confirmed robot ID",
+    "Live AGV status or movement verification"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2/L3 access to the OptiSweep / WCS API through Apidog or an equivalent WCS API client."
+    ],
+    "system_preconditions": [
+      "The AGV has an active command to execute.",
+      "A confirmed robot ID is available."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_execute_active_agv_command_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0029_remove_agv_this_requires_the_robot_primary_02_42_03_000",
+      "description": "OptiSweep / WCS API AGVs operation list showing POST Executed Agv Command and the related robot-ID and active-command behavior.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+      "description": "OptiSweep API overview showing Apidog on the primary server and the AGVs API operations.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the ExecutedAgvCommand operation",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Access the OptiSweep / WCS API operation used to execute the active command held by an AGV.",
+      "instruction": "In Apidog or an equivalent OptiSweep / WCS API client, open the AGVs API group and locate the operation labeled ExecutedAgvCommand, shown as POST Executed Agv Command.",
+      "expected_result": "The POST Executed Agv Command operation is available for submission in the OptiSweep / WCS API client.",
+      "healthy_condition": "The AGVs operation list displays POST Executed Agv Command.",
+      "failure_condition": "The ExecutedAgvCommand operation is unavailable or the API client cannot be opened.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate API operation",
+          "exact_action": "Open the AGVs API operation labeled ExecutedAgvCommand / POST Executed Agv Command.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The API client cannot be opened.",
+        "The ExecutedAgvCommand operation is not available."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "page": 29,
+          "section_id": "training_video_day2_segment_0029",
+          "timestamp_start": "02:41:34.000",
+          "timestamp_end": "02:42:32.000",
+          "quote_or_summary": "The AGVs API list includes POST Executed Agv Command; ExecutedAgvCommand requires a robot ID and executes the active command the AGV has."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "page": 27,
+          "section_id": "training_video_day2_segment_0027",
+          "timestamp_start": "02:39:55.500",
+          "timestamp_end": "02:39:55.500",
+          "quote_or_summary": "OptiSweep provides APIs for data and requests, and Apidog is installed on the primary servers."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Enter the confirmed robot ID",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Target the AGV whose active command is to be executed.",
+      "instruction": "Provide the confirmed robot ID required by the ExecutedAgvCommand operation in the OptiSweep / WCS API client.",
+      "expected_result": "The request contains the robot ID for the intended AGV.",
+      "healthy_condition": "A confirmed robot ID is present for the intended AGV.",
+      "failure_condition": "The robot ID is missing, unconfirmed, or does not identify the intended AGV.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm robot ID",
+          "exact_action": "Provide the robot ID required by ExecutedAgvCommand.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The robot ID cannot be confirmed.",
+        "The intended AGV cannot be identified."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "page": 29,
+          "section_id": "training_video_day2_segment_0029",
+          "timestamp_start": "02:41:34.000",
+          "timestamp_end": "02:42:32.000",
+          "quote_or_summary": "ExecutedAgvCommand requires a robot ID."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Submit the active-command request",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Request execution of the active command already held by the AGV.",
+      "instruction": "Submit the POST ExecutedAgvCommand request in the OptiSweep / WCS API client with the confirmed robot ID.",
+      "expected_result": "The POST request is submitted for the selected AGV.",
+      "healthy_condition": "The OptiSweep / WCS API client accepts and submits the POST ExecutedAgvCommand request.",
+      "failure_condition": "The request cannot be submitted.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Submit API request",
+          "exact_action": "Submit the POST ExecutedAgvCommand request.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The request cannot be submitted."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "page": 29,
+          "section_id": "training_video_day2_segment_0029",
+          "timestamp_start": "02:41:34.000",
+          "timestamp_end": "02:42:32.000",
+          "quote_or_summary": "The ExecutedAgvCommand API operation executes the active command held by the AGV and is described as useful during unplanned restarts when OptiSweep missed Geek Plus callbacks."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify active-command execution",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm on a live AGV surface that the active command was executed.",
+      "instruction": "Use the live AGV status or movement view, including the OptiSweep / WCS API AGV status information when available, to verify that the selected AGV executes its active command.",
+      "expected_result": "The selected AGV's live status or movement shows execution or progression of the active command.",
+      "healthy_condition": "The AGV status or movement view shows the selected AGV executing or progressing the active command.",
+      "failure_condition": "The AGV does not execute or progress the active command after the request.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify AGV state",
+          "exact_action": "Verify on the live AGV status or movement view that the AGV's active command is executed.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The AGV does not execute its active command.",
+        "The live AGV status or movement view does not show execution or progression."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "page": 29,
+          "section_id": "training_video_day2_segment_0029",
+          "timestamp_start": "02:41:34.000",
+          "timestamp_end": "02:42:32.000",
+          "quote_or_summary": "ExecutedAgvCommand executes the active command the AGV has."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The POST ExecutedAgvCommand request is submitted with a confirmed robot ID.",
+    "The selected AGV executes or progresses its active command on the live AGV status or movement view."
+  ],
+  "healthy_conditions": [
+    "The AGVs API group exposes POST Executed Agv Command.",
+    "The request contains a confirmed robot ID.",
+    "The live AGV status or movement view shows execution or progression of the active command."
+  ],
+  "failure_conditions": [
+    "The ExecutedAgvCommand operation is unavailable.",
+    "The robot ID is missing or cannot be confirmed.",
+    "The request cannot be submitted.",
+    "The AGV does not execute or progress its active command."
+  ],
+  "escalation_guidance": [
+    "Escalate to L3_support if the request cannot be submitted.",
+    "Escalate to L3_support if the AGV does not execute or progress its active command after the request.",
+    "Do not substitute a manually entered or replacement command; no such procedure is provided by the source."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0029_remove_agv_this_requires_the_robot_primary_02_42_03_000",
+      "what_to_look_at": "The AGVs API list, specifically POST Executed Agv Command, and the accompanying description that it requires a robot ID and executes the active AGV command."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+      "what_to_look_at": "The OptiSweep API overview identifying Apidog on the primary server and the AGVs API operations."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 29,
+      "section_id": "training_video_day2_segment_0029",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "ExecutedAgvCommand requires a robot ID and executes the active command held by the AGV; it is identified as POST Executed Agv Command and is described as useful after unplanned restarts when OptiSweep missed Geek Plus callbacks."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0029_remove_agv_this_requires_the_robot_primary_02_42_03_000",
+      "what_to_look_at": "The AGVs API list, specifically POST Executed Agv Command, and the accompanying description that it requires a robot ID and executes the active AGV command."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+      "what_to_look_at": "The OptiSweep API overview identifying Apidog on the primary server and the AGVs API operations."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_execute_active_agv_command_via_wcs_api"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide the API request body schema beyond the required robot ID.",
+    "The source does not provide response fields, response status values, or a defined command-state value for confirming execution.",
+    "The source does not identify a specific live AGV status or movement screen for verification.",
+    "The source does not define a retry, replacement-command, or manual-command-entry procedure.",
+    "Production-stop and LOTO requirements are not specified."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

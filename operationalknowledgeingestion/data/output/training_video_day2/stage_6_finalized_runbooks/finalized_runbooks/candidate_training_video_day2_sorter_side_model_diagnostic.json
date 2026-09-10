@@ -1,0 +1,338 @@
+{
+  "procedure_id": "proc_check_sorterside_fields_in_ssms_v1",
+  "candidate_id": "candidate_training_video_day2_sorter_side_model_diagnostic",
+  "title": "Check SorterSide Entrance, Exit, Tipper Count, and Disabled State in SSMS",
+  "procedure_type": "diagnostic",
+  "summary": "Use the WCS / Helix DB (SSMS) surface to perform a read-only inspection of the OptiSweep Robotics SorterSideDatabaseModel. Verify the live sorter-side Name, EntranceId, ExitId, TipperCount, and Disabled fields against the available sorter-side configuration examples.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "zone_config_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "mapping_abnormal"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this read-only WCS / Helix DB (SSMS) diagnostic when validating sorter-side queue mappings, the number of associated tippers, or whether a sorter side is disabled.",
+  "not_for": [
+    "Do not use this procedure to change TipperCount, EntranceId, ExitId, or Disabled values.",
+    "Do not use this procedure as a substitute for confirming whether a disabled sorter side is intentionally excluded from the current rollout phase.",
+    "Do not use this procedure for live sorter control, tote exchange, or AGV commands."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Perform the read-only inspection in the WCS / Helix DB (SSMS)."
+    },
+    {
+      "role": "L3_support",
+      "responsibility": "Review missing, unexpected, or unexplained sorter-side mappings when escalation is required."
+    }
+  ],
+  "safety_notes": [
+    "This is a read-only SSMS check.",
+    "Do not modify TipperCount, queue IDs, or Disabled values during the inspection."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "OptiSweep Robotics database",
+    "SorterSideDatabaseModel",
+    "Name, EntranceId, ExitId, TipperCount, and Disabled fields"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2 or L3 access to the WCS / Helix DB (SSMS) surface.",
+      "Read access to the OptiSweep Robotics database."
+    ],
+    "system_preconditions": [
+      "The relevant sorter-side identifier or operational issue is known well enough to select the relevant SorterSide record."
+    ],
+    "external_references": [
+      "SorterSideDatabaseModel field definitions and sorter-side examples supplied in the source packet."
+    ]
+  },
+  "related_context_ids": [
+    "ctx_training_video_sorter_side_database_model_v1",
+    "ctx_training_video_sorter_side_tipper_distribution_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+      "description": "Robotics Database SorterSideDatabaseModel table showing Name, EntranceId, ExitId, TipperCount, Disabled, and sorter-side example rows.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the OptiSweep Robotics database in SSMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Establish a read-only WCS / Helix DB (SSMS) view of the Robotics database that contains the sorter-side model.",
+      "instruction": "In the WCS / Helix DB (SSMS) surface, open SSMS and select the OptiSweep Robotics database.",
+      "expected_result": "The OptiSweep Robotics database is selected and available for inspection in SSMS.",
+      "healthy_condition": "The Robotics database can be opened for read-only inspection.",
+      "failure_condition": "The Robotics database is unavailable or the required read-only access cannot be established.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open SSMS",
+          "exact_action": "Open SSMS and select the OptiSweep Robotics database.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L3 support if the OptiSweep Robotics database cannot be accessed."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0009",
+          "timestamp_start": "00:17:15.500",
+          "timestamp_end": "00:17:15.500",
+          "quote_or_summary": "The SorterSideDatabaseModel is presented in the Robotics Database."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Locate SorterSideDatabaseModel in the Robotics database",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Open the sorter-side model that contains the queue mapping, tipper count, and disabled-state fields.",
+      "instruction": "In the WCS / Helix DB (SSMS) surface, locate the SorterSideDatabaseModel table or model in the OptiSweep Robotics database.",
+      "expected_result": "The SorterSideDatabaseModel is available for inspection.",
+      "healthy_condition": "The model or table can be opened and exposes sorter-side records.",
+      "failure_condition": "The SorterSideDatabaseModel cannot be located or opened.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate sorter-side model",
+          "exact_action": "Locate the SorterSideDatabaseModel table or model.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L3 support if the model or table is missing from the Robotics database."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0009",
+          "timestamp_start": "00:17:15.500",
+          "timestamp_end": "00:17:15.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+          "quote_or_summary": "The Robotics Database Sorter Side Database Model defines the legs of the sorter and includes entrance and exit queue locations, tipper count, and disabled state."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Inspect the relevant sorter-side fields",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Verify that the selected sorter-side record contains readable identifiers and configuration values needed to interpret its mapping.",
+      "instruction": "In the WCS / Helix DB (SSMS) surface, find the relevant SorterSide record and inspect its Name, EntranceId, ExitId, TipperCount, and Disabled fields.",
+      "expected_result": "The relevant SorterSide row is present with a readable Name, entrance and exit queue IDs, a numeric TipperCount, and a Disabled value.",
+      "healthy_condition": "Name, EntranceId, ExitId, TipperCount, and Disabled are populated and readable for the selected sorter-side row.",
+      "failure_condition": "The row is missing, EntranceId or ExitId is absent, TipperCount is blank or unexpected, or Disabled cannot be read.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect sorter-side row",
+          "exact_action": "Find the relevant SorterSide record and inspect its Name, EntranceId, ExitId, TipperCount, and Disabled fields.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if the SorterSide row is missing, an entrance or exit ID is absent, TipperCount is blank or unexpected, or the Disabled state cannot be interpreted."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0009",
+          "timestamp_start": "00:17:15.500",
+          "timestamp_end": "00:17:15.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+          "quote_or_summary": "The SorterSideDatabaseModel contains Name, EntranceId, ExitId, TipperCount, and Disabled."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Compare the live row with the sorter-side configuration examples",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Identify mapping or disabled-state discrepancies that may explain sorter-side behavior.",
+      "instruction": "In the WCS / Helix DB (SSMS) surface, compare the live SorterSide row with the available examples: SorterSide 1a has EntranceId 46, ExitId 44, TipperCount 4, Disabled 0; SorterSide 1b has EntranceId 246, ExitId 244, TipperCount 4, Disabled 0; SorterSide 2a has EntranceId 446, ExitId 444, TipperCount 4, Disabled 0; and SorterSide 2b has EntranceId 648, ExitId 646, TipperCount 4, Disabled 1.",
+      "expected_result": "The live row can be compared field by field with the named sorter-side examples, and the Disabled value is identified as either 0 or 1 where displayed.",
+      "healthy_condition": "The live row has a coherent Name, EntranceId, ExitId, numeric TipperCount, and Disabled state; any difference from the examples is explainable by the live configuration.",
+      "failure_condition": "The live row has an unexplained queue-ID or tipper-count mismatch, or its Disabled state conflicts with the observed sorter-side condition or expected rollout configuration.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Compare configuration values",
+          "exact_action": "Compare the live row with the documented row structure for SorterSide 1a, 1b, 2a, and 2b.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if the live row does not match the expected sorter-side mapping and no approved configuration explanation is available.",
+        "Do not change TipperCount, EntranceId, ExitId, or Disabled values during this check."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0009",
+          "timestamp_start": "00:17:15.500",
+          "timestamp_end": "00:17:15.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+          "quote_or_summary": "Displayed rows: SorterSide 1a 46/44/4/0; SorterSide 1b 246/244/4/0; SorterSide 2a 446/444/4/0; SorterSide 2b 648/646/4/1 for EntranceId, ExitId, TipperCount, and Disabled."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0009",
+          "timestamp_start": "00:13:33.000",
+          "timestamp_end": "00:20:58.000",
+          "quote_or_summary": "The transcript explains that a disabled sorter side can reflect a sorter side not included in the current configuration phase."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The OptiSweep Robotics database is opened in SSMS.",
+    "SorterSideDatabaseModel is located and readable.",
+    "The relevant sorter-side row is present.",
+    "Name, EntranceId, ExitId, TipperCount, and Disabled are inspected.",
+    "Any discrepancy is recorded for L2/L3 review without modifying the database."
+  ],
+  "healthy_conditions": [
+    "The relevant SorterSide row is present in the OptiSweep Robotics database.",
+    "EntranceId and ExitId identify readable queue locations.",
+    "TipperCount is numeric.",
+    "Disabled is readable as a configuration state; the source examples show 0 for enabled examples and 1 for SorterSide 2b.",
+    "The live values are consistent with the applicable sorter-side configuration."
+  ],
+  "failure_conditions": [
+    "SorterSideDatabaseModel or the relevant row is missing.",
+    "EntranceId or ExitId is absent.",
+    "TipperCount is blank or unexpected.",
+    "Disabled cannot be read or does not match the expected live sorter-side condition.",
+    "The live mapping differs from the available configuration examples without an approved explanation."
+  ],
+  "escalation_guidance": [
+    "Escalate missing rows, missing queue IDs, blank or unexpected TipperCount values, and unexplained Disabled states to L2/L3 support.",
+    "A Disabled value of 1 should be investigated in the context of the live sorter-side configuration; the source describes disabled sorter sides as potentially related to phased rollout configuration.",
+    "Do not make database changes during this diagnostic."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+      "what_to_look_at": "The SorterSideDatabaseModel table or model: Name, EntranceId, ExitId, TipperCount, Disabled, and the rows for SorterSide 1a, 1b, 2a, and 2b."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "timestamp_start": "00:17:15.500",
+      "timestamp_end": "00:17:15.500",
+      "start_time_seconds": 1035.5,
+      "end_time_seconds": 1035.5,
+      "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+      "segment_id": "segment_training_video_0009",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0009"
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+      "what_to_look_at": "The SorterSideDatabaseModel table or model: Name, EntranceId, ExitId, TipperCount, Disabled, and the rows for SorterSide 1a, 1b, 2a, and 2b."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_sorter_side_model_diagnostic"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide SQL statements or exact query syntax.",
+    "The packet does not establish whether SorterSideDatabaseModel is exposed as a physical table, view, or another model representation in every site database.",
+    "Site-specific expected sorter-side mappings and rollout phase are not supplied; a Disabled value of 1 therefore requires live configuration context before being treated as a fault.",
+    "The packet does not define the exact escalation channel or ticketing process for L2/L3 support."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

@@ -1,8 +1,17 @@
 """Stage 3 - LLM incident artifact enrichment.
 
-Reads Stage 2.5 joined enrichment packets and uses Azure OpenAI to produce
-English, source-grounded enriched artifact records. This stage requires an LLM;
-fake deterministic enrichment is intentionally not supported.
+Reads Stage 2.5 joined enrichment packets and uses Azure Computer Vision plus
+Azure OpenAI to produce English, source-grounded enriched artifact records.
+This stage requires an LLM; fake deterministic enrichment is intentionally
+not supported.
+
+Company policy requires Azure Computer Vision to be the only vision model
+used anywhere in this repository. Accordingly this stage never sends the
+artifact image itself to Azure OpenAI's chat endpoint. Instead it is a
+two-step process: Azure Computer Vision's Image Analysis API describes the
+image as structured data (caption, dense captions, tags, objects, read/OCR
+text), and that description is sent to Azure OpenAI as text alongside the
+rest of the packet. The LLM reasons over the description, not the pixels.
 """
 
 from __future__ import annotations
@@ -11,22 +20,18 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Protocol
-import base64
 import json
-import mimetypes
 import os
 import re
 import urllib.error
-import urllib.parse
 import urllib.request
 
 from dotenv import load_dotenv
 
+from shared_pipeline_stages.azure_computer_vision import AzureComputerVisionDescriptionClient, VisionDescription
+from shared_pipeline_stages.llm_pacing import azure_chat_candidate_requests, default_azure_api_version
 from optisweep_incidence_ingestion.utils.json_utils import read_json, write_json
 from optisweep_incidence_ingestion.utils.markdown_review import write_stage3_review_markdown
-
-FOUNDRY_API_VERSION = "2025-04-01-preview"
-CLASSIC_AZURE_OPENAI_API_VERSION = "2024-10-21"
 
 REQUIRED_ENRICHMENT_FIELDS = {
     "artifact_id": "",
@@ -75,17 +80,30 @@ class AzureOpenAIIncidentArtifactClient:
         deployment: str | None = None,
         api_version: str | None = None,
         prompt_path: str | Path | None = None,
-        include_images: bool = True,
+        include_images: bool = False,
+        vision_client: Any | None = None,
+        vision_descriptions_dir: str | Path | None = None,
     ) -> None:
         load_dotenv()
         self.endpoint = _clean_env_value(endpoint or os.getenv("AZURE_OPENAI_ENDPOINT")).rstrip("/")
         self.api_key = _clean_env_value(api_key or os.getenv("AZURE_OPENAI_API_KEY"))
         self.deployment = _clean_env_value(deployment or os.getenv("AZURE_OPENAI_DEPLOYMENT"))
         env_api_version = _clean_env_value(os.getenv("AZURE_OPENAI_API_VERSION"))
-        self.api_version = _clean_env_value(api_version) or self._default_api_version(env_api_version)
+        self.api_version = _clean_env_value(api_version) or default_azure_api_version(self.endpoint, env_api_version)
         default_prompt = Path(__file__).resolve().parent / "prompts" / "stage3_artifact_enrichment_prompt.md"
         self.prompt = Path(prompt_path or default_prompt).read_text(encoding="utf-8")
-        self.include_images = include_images
+        if include_images:
+            raise ValueError(
+                "include_images=True (sending the raw artifact image to Azure OpenAI) is no "
+                "longer supported. Company policy requires Azure Computer Vision to be the only "
+                "vision model used anywhere in this repository. Stage 3 now describes the image "
+                "via Azure Computer Vision and sends only that description as text to Azure "
+                "OpenAI. Pass include_images=False (the default)."
+            )
+        self.vision_client = vision_client or AzureComputerVisionDescriptionClient(
+            features=("caption", "denseCaptions", "tags", "objects", "read"),
+        )
+        self.vision_descriptions_dir = Path(vision_descriptions_dir) if vision_descriptions_dir else None
         missing = [
             name
             for name, value in [
@@ -100,20 +118,42 @@ class AzureOpenAIIncidentArtifactClient:
             raise RuntimeError("Azure OpenAI is not configured. Set these environment variables: " + ", ".join(missing))
 
     def enrich(self, packet: dict[str, Any]) -> dict[str, Any]:
-        return self._request_enrichment(packet, self.api_version)
+        vision_description = self._describe_artifact_image(packet)
+        return self._request_enrichment(packet, vision_description, self.api_version)
 
-    def _request_enrichment(self, packet: dict[str, Any], api_version: str) -> dict[str, Any]:
-        body = {
-            "messages": [
-                {"role": "system", "content": self.prompt},
-                {"role": "user", "content": self._user_content(packet)},
-            ],
-            "temperature": 0.1,
-            "response_format": {"type": "json_object"},
-        }
+    def _describe_artifact_image(self, packet: dict[str, Any]) -> VisionDescription | None:
+        image_path_value = packet.get("image_path")
+        if not image_path_value:
+            return None
+        image_path = Path(image_path_value)
+        if not image_path.is_file():
+            return None
+        description = self.vision_client.describe(image_path)
+        if self.vision_descriptions_dir:
+            self.vision_descriptions_dir.mkdir(parents=True, exist_ok=True)
+            artifact_id = packet.get("artifact_id") or image_path.stem
+            write_json(
+                self.vision_descriptions_dir / f"{artifact_id}.json",
+                _vision_description_to_dict(description),
+            )
+        return description
+
+    def _request_enrichment(
+        self,
+        packet: dict[str, Any],
+        vision_description: VisionDescription | None,
+        api_version: str,
+    ) -> dict[str, Any]:
         errors: list[str] = []
-        for url, headers, include_model in self._candidate_requests(api_version):
-            request_body = body | ({"model": self.deployment} if include_model else {})
+        candidates = azure_chat_candidate_requests(
+            endpoint=self.endpoint,
+            api_key=self.api_key,
+            deployment=self.deployment,
+            api_version=api_version,
+            system_prompt=self.prompt,
+            user_content=self._user_content(packet, vision_description),
+        )
+        for url, headers, request_body, response_parser in candidates:
             request = urllib.request.Request(
                 url,
                 data=json.dumps(request_body).encode("utf-8"),
@@ -123,7 +163,7 @@ class AzureOpenAIIncidentArtifactClient:
             try:
                 with _urlopen_no_proxy(request, timeout=120) as response:
                     payload = json.loads(response.read().decode("utf-8"))
-                return parse_llm_response(payload["choices"][0]["message"]["content"])
+                return parse_llm_response(response_parser(payload))
             except urllib.error.HTTPError as exc:
                 details = exc.read().decode("utf-8", errors="replace")
                 errors.append(f"HTTP {exc.code}: {details}")
@@ -133,37 +173,10 @@ class AzureOpenAIIncidentArtifactClient:
                 raise RuntimeError(f"Azure OpenAI request failed: {exc.reason}") from exc
         raise RuntimeError("Azure OpenAI request failed for endpoint patterns tried: " + " | ".join(errors))
 
-    def _user_content(self, packet: dict[str, Any]) -> str | list[dict[str, Any]]:
-        text = json.dumps(_packet_for_llm(packet), ensure_ascii=False)
-        if not self.include_images:
-            return text
-        image_url = _image_data_url(packet.get("image_path"))
-        if not image_url:
-            return text
-        return [
-            {"type": "text", "text": text},
-            {"type": "image_url", "image_url": {"url": image_url}},
-        ]
-
-    def _candidate_requests(self, api_version: str) -> list[tuple[str, dict[str, str], bool]]:
-        encoded_deployment = urllib.parse.quote(self.deployment, safe="")
-        query = urllib.parse.urlencode({"api-version": api_version})
-        headers = {"Content-Type": "application/json", "api-key": self.api_key}
-        parsed = urllib.parse.urlparse(self.endpoint)
-        if self._is_foundry_project_endpoint():
-            foundry_base = urllib.parse.urlunparse((parsed.scheme, parsed.netloc, "", "", "", "")).rstrip("/")
-            return [(f"{foundry_base}/models/chat/completions?{query}", headers, True)]
-        return [(f"{self.endpoint}/openai/deployments/{encoded_deployment}/chat/completions?{query}", headers, False)]
-
-    def _is_foundry_project_endpoint(self) -> bool:
-        parsed = urllib.parse.urlparse(self.endpoint)
-        return parsed.netloc.endswith(".services.ai.azure.com") and "/api/projects/" in parsed.path
-
-    def _default_api_version(self, env_api_version: str = "") -> str:
-        parsed = urllib.parse.urlparse(self.endpoint)
-        if parsed.netloc.endswith(".services.ai.azure.com") and "/api/projects/" in parsed.path:
-            return FOUNDRY_API_VERSION
-        return env_api_version or CLASSIC_AZURE_OPENAI_API_VERSION
+    def _user_content(self, packet: dict[str, Any], vision_description: VisionDescription | None) -> str:
+        packet_for_llm = _packet_for_llm(packet)
+        packet_for_llm["azure_vision_description"] = _vision_description_to_dict(vision_description)
+        return json.dumps(packet_for_llm, ensure_ascii=False)
 
 
 def enrich_incident_artifacts(
@@ -270,6 +283,7 @@ def merge_enrichment(artifact: dict[str, Any], enrichment: dict[str, Any], packe
     merged["linked_runbook_candidate_ids"] = artifact.get("linked_runbook_candidate_ids") or []
     merged["enrichment_metadata"] = {
         "method": "azure_openai_stage_3_artifact_enrichment",
+        "vision_source": "azure_computer_vision_image_analysis",
         "llm_used": True,
         "prompt": "stage3_artifact_enrichment_prompt.md",
         "packet_source": "artifact_enrichment_packets.json",
@@ -370,6 +384,7 @@ def _failed_enrichment_defaults(packet: dict[str, Any], error: str) -> dict[str,
             "page_ocr_context": packet.get("page_ocr_text") or "",
             "page_ocr_clean_context": packet.get("page_ocr_clean_text") or "",
             "page_ocr_quality": packet.get("page_ocr_quality", {}).get("quality"),
+            "azure_vision_read_text": "",
             "important_visible_text": [],
         },
         "duplicate_analysis": packet.get("duplicate_group") or {},
@@ -381,6 +396,7 @@ def _failed_enrichment_defaults(packet: dict[str, Any], error: str) -> dict[str,
         "source_refs": packet.get("source_refs") or [],
         "enrichment_metadata": {
             "method": "azure_openai_stage_3_artifact_enrichment",
+            "vision_source": None,
             "llm_used": True,
             "prompt": "stage3_artifact_enrichment_prompt.md",
             "packet_source": "artifact_enrichment_packets.json",
@@ -399,15 +415,21 @@ def _packet_for_llm(packet: dict[str, Any]) -> dict[str, Any]:
     return packet_copy
 
 
-def _image_data_url(path_value: str | None) -> str | None:
-    if not path_value:
+def _vision_description_to_dict(description: VisionDescription | None) -> dict[str, Any] | None:
+    if description is None:
         return None
-    path = Path(path_value)
-    if not path.exists() or not path.is_file():
-        return None
-    mime_type = mimetypes.guess_type(path.name)[0] or "image/png"
-    data = base64.b64encode(path.read_bytes()).decode("ascii")
-    return f"data:{mime_type};base64,{data}"
+    return {
+        "caption": description.caption_text,
+        "caption_confidence": description.caption_confidence,
+        "dense_captions": [
+            {"text": dc.text, "confidence": dc.confidence} for dc in description.dense_captions
+        ],
+        "tags": [{"name": t.name, "confidence": t.confidence} for t in description.tags],
+        "objects": [{"name": o.name, "confidence": o.confidence} for o in description.objects],
+        "read_text": description.read_text,
+        "read_confidence": description.read_confidence,
+        "provenance": description.provenance,
+    }
 
 
 def _list(value: Any) -> list[Any]:

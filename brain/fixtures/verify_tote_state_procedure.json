@@ -1,0 +1,42 @@
+{
+  "id": "procedure:verify_tote_state:training_day2",
+  "type": "procedure",
+  "schema_version": "1.0",
+
+  "capability_id": "capability:verify_tote_state",
+  "procedure_type": "diagnostic",
+  "title": "Verify tote state via the tote task history table",
+  "summary": "Query the backend tote task history table to confirm whether the reported tote state matches the WCS task record.",
+
+  "when_to_use": ["A tote's on-screen state looks stale or inconsistent with its physical location."],
+  "not_for": ["A tote that has never been assigned a task."],
+  "allowed_role_entity_ids": ["entity:role:l2"],
+
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the tote task history table",
+      "instruction": "In SSMS, query ToteTaskHistory for the tote's most recent TaskId ordered by CreatedAt descending.",
+      "responsible_role_entity_id": "entity:role:l2",
+      "purpose": "Establish the backend's last known state for this tote.",
+      "expected_result": "One or more task history rows are returned for the tote.",
+      "healthy_condition": "The most recent row's State field matches what the operator screen shows.",
+      "failure_condition": "The most recent row's State field does not match the operator screen, or no rows are returned.",
+      "stop_or_escalate_if": ["No task history rows exist for a tote the operator screen shows as active."],
+      "actions": [
+        {
+          "label": "Query ToteTaskHistory",
+          "exact_action": "SELECT TOP 5 * FROM ToteTaskHistory WHERE ToteId = @ToteId ORDER BY CreatedAt DESC",
+          "role_entity_id": "entity:role:l2"
+        }
+      ],
+      "source_refs": ["evidence:training_day2:segment_042"]
+    }
+  ],
+
+  "validation_status": "needs_sme_review",
+  "source_refs": ["evidence:training_day2:segment_042"],
+  "constraints": {},
+  "created_at": "2026-09-02T00:00:00Z",
+  "updated_at": "2026-09-02T00:00:00Z"
+}

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check SystemDatabaseModel lifecycle/staging status in Helix2x_1Prod_Robotics (SSMS)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check SystemDatabaseModel lifecycle/staging status in Helix2x_1Prod_Robotics (SSMS)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_systemdatabasemodel_lifecycle_staging_status_ssms_v1</td></tr>
+<tr><th>Title</th><td>Check SystemDatabaseModel lifecycle/staging status in Helix2x_1Prod_Robotics (SSMS)</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>sort_lifecycle_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>None</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use SSMS against the Helix2x_1Prod_Robotics database to confirm the SystemDatabaseModel snapshot lifecycle/staging status value is currently one of the expected states (StartingUp, StartUpRequested, Running, ShutDownRequested, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, CloseOutStaged).</p>
+<h2>When To Use</h2>
+<p>When you need to verify the current system lifecycle/staging state (startup, running, shutdown, zone config, closeout) by checking the SystemDatabaseModel snapshot status values in the Robotics database.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/73959e129fe8ea06.jpg" alt="artifact_training_video_training_video_day2_0020_yes_and_there_ll_be_a_primary_01_36_33_500" /><figcaption>Training frame showing [Helix2x_1Prod_Robotics].[dbo].[SystemDatabaseModel] WITH (SNAPSHOT) and the lifecycle/staging status values list (StartingUp, StartUpRequested, Running, ShutDownRequested, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, CloseOutStaged).</figcaption></figure>
+<figure><img src="assets/ddafaa4a681bc7fb.jpg" alt="artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000" /><figcaption>Training frame showing the SystemDatabaseModel status concept and the status values set used for interpreting current system state.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Connect to the WCS / Helix DB (SSMS) and select Helix2x_1Prod_Robotics</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using SSMS (WCS / Helix DB (SSMS)), connect to the environment and select the Helix2x_1Prod_Robotics database.</p>
+<p><strong>Expected result:</strong></p>
+<p>SSMS is connected and the Helix2x_1Prod_Robotics database is selected as the active database.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop if you cannot connect to SSMS or cannot access the Helix2x_1Prod_Robotics database (permissions/query errors).</li>
+</ul>
+<hr>
+<h3>Step 2 — Locate dbo.SystemDatabaseModel in the dbo schema</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In SSMS, navigate to the dbo schema and locate the table/model named [dbo].[SystemDatabaseModel].</p>
+<p><strong>Expected result:</strong></p>
+<p>dbo.SystemDatabaseModel is found and visible in the SSMS database object tree.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop if dbo.SystemDatabaseModel cannot be located or accessed (permissions/query errors).</li>
+</ul>
+<hr>
+<h3>Step 3 — Read the SystemDatabaseModel snapshot status using WITH (SNAPSHOT)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Run a read-only query/view of [dbo].[SystemDatabaseModel] using WITH (SNAPSHOT) to view the current snapshot row(s) and the status field(s) that represent lifecycle/staging state.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can view the current SystemDatabaseModel snapshot row(s) and identify the lifecycle/staging status value present in the status field(s).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if the snapshot cannot be read (permissions/query errors).</li>
+<li>Stop and escalate if the status value(s) are outside the documented lifecycle/staging set or appear inconsistent (e.g., multiple lifecycle states simultaneously).</li>
+</ul>
+<hr>
+<h3>Step 4 — Confirm the current lifecycle/staging status is within the documented set</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Identify which lifecycle/staging status value is currently present in the SystemDatabaseModel status field(s) and confirm it matches one of: StartingUp, StartUpRequested, Running, ShutDownRequested, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, CloseOutStaged.</p>
+<p><strong>Expected result:</strong></p>
+<p>Exactly one current lifecycle/staging status value is present and it matches one of the documented values.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the snapshot shows an unexpected combination (e.g., multiple lifecycle states simultaneously).</li>
+<li>Escalate if the status value is outside the documented lifecycle/staging set.</li>
+</ul>
+<hr>
+</body>
+</html>

@@ -1,0 +1,323 @@
+{
+  "procedure_id": "proc_look_up_system_error_definitions_in_the_robotics_database_v1",
+  "candidate_id": "candidate_training_video_robotics_system_error_definition_lookup",
+  "title": "Look Up System Error Definitions in the Robotics Database",
+  "procedure_type": "diagnostic",
+  "summary": "Use read-only SSMS against the WCS / Helix Robotics Database to match a reported system error to its Error, Area, SystemErrorDescription, and SystemErrorResolution values.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "agv_active_errors"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this read-only SSMS diagnostic when a named system error must be interpreted using the Robotics Database SystemErrorDefinition table. Use the returned Area, SystemErrorDescription, and SystemErrorResolution values to support troubleshooting and escalation.",
+  "not_for": [
+    "Do not use this procedure to execute the SystemErrorResolution value.",
+    "Do not use this procedure to perform mutating database actions or equipment actions.",
+    "Do not use this procedure as a substitute for checking current active errors in the SystemActiveError model."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Perform the read-only lookup in SSMS and preserve the observed error name and returned definition values."
+    },
+    {
+      "role": "L3_support",
+      "responsibility": "Support interpretation or escalation when the error is absent or definition fields are missing or inconsistent."
+    }
+  ],
+  "safety_notes": [
+    "This procedure is read-only.",
+    "Treat SystemErrorResolution as documented diagnostic information only; do not perform the listed resolution from this lookup procedure."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "SSMS",
+    "Robotics Database",
+    "SystemErrorDefinition table"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Read access to the WCS / Helix Robotics Database through SSMS."
+    ],
+    "system_preconditions": [
+      "The reported system error name is available for lookup."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_system_error_definition_table_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0017_so_moving_on_system_error_definition_primary_01_34_34_500",
+      "description": "Robotics Database SystemErrorDefinition view showing Error, Area, SystemErrorDescription, and SystemErrorResolution values and examples.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Robotics Database in SSMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Establish a read-only connection to the database that contains the system error definitions.",
+      "instruction": "In the WCS / Helix DB (SSMS) surface, open SSMS and select the Robotics Database.",
+      "expected_result": "The Robotics Database is selected in SSMS and the SystemErrorDefinition table is available for inspection.",
+      "healthy_condition": "SSMS displays the Robotics Database and exposes the SystemErrorDefinition table.",
+      "failure_condition": "The Robotics Database or SystemErrorDefinition table cannot be accessed.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Select Robotics Database",
+          "exact_action": "Open SSMS and select the Robotics Database.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the Robotics Database or the SystemErrorDefinition table is unavailable."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0017",
+          "page": 17,
+          "timestamp_start": "01:34:14.000",
+          "timestamp_end": "01:34:55.000",
+          "quote_or_summary": "The Robotics Database SystemErrorDefinition table stores the definition of system errors."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Open the SystemErrorDefinition table",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Locate the table and fields needed to interpret the reported system error.",
+      "instruction": "In SSMS, open the SystemErrorDefinition table and inspect the displayed Error, Area, SystemErrorDescription, and SystemErrorResolution columns.",
+      "expected_result": "The SystemErrorDefinition table displays the reported error entry or confirms that no matching entry is present.",
+      "healthy_condition": "The table is readable and the Error, Area, SystemErrorDescription, and SystemErrorResolution fields are available for the lookup.",
+      "failure_condition": "The table cannot be opened, the reported Error entry is absent, or the required definition columns are unavailable.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open definition table",
+          "exact_action": "Open the SystemErrorDefinition table and locate the relevant Error entry.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop the lookup if the reported error is not present.",
+        "Escalate if the SystemErrorDefinition table cannot be read."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0017",
+          "page": 17,
+          "timestamp_start": "01:34:14.000",
+          "timestamp_end": "01:34:55.000",
+          "quote_or_summary": "The displayed table includes Error, Area, SystemErrorDescription, and SystemErrorResolution values."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Inspect the error definition values",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Capture the documented classification, description, and resolution information associated with the reported system error.",
+      "instruction": "In the SSMS SystemErrorDefinition row, inspect and preserve the Error, Area, SystemErrorDescription, and SystemErrorResolution values. Examples shown in the table include AgvHasNotMoved30Seconds / AGV / AGV has not moved in 30 seconds / Reboot AGV and AgvOutOfSequence / AGV / AGV is out of sequence / Remove AGV.",
+      "expected_result": "The matching row provides a non-empty Error name with corresponding Area, SystemErrorDescription, and SystemErrorResolution values.",
+      "healthy_condition": "The row contains a consistent Error, Area, SystemErrorDescription, and SystemErrorResolution value that can be reported for troubleshooting.",
+      "failure_condition": "One or more required definition fields are empty, unreadable, or inconsistent with the reported Error.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Read definition fields",
+          "exact_action": "Check the corresponding Area, SystemErrorDescription, and SystemErrorResolution values.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop the lookup if any required definition field is empty.",
+        "Escalate if the definition values are inconsistent."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0017",
+          "page": 17,
+          "timestamp_start": "01:34:14.000",
+          "timestamp_end": "01:34:55.000",
+          "quote_or_summary": "Examples include AgvHasNotMoved30Seconds with Area AGV, description AGV has not moved in 30 seconds, and resolution Reboot AGV; and AgvOutOfSequence with Area AGV, description AGV is out of sequence, and resolution Remove AGV."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Preserve unmatched or incomplete lookup results",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Provide an accurate escalation record when the Robotics Database does not contain a usable definition.",
+      "instruction": "If the reported Error is not present or any required definition field is empty or inconsistent in SSMS, stop the lookup and preserve the observed error name together with the missing or inconsistent field information for escalation.",
+      "expected_result": "The escalation record identifies the observed error name and states whether the row was absent or which definition field was missing or inconsistent.",
+      "healthy_condition": "A complete, consistent definition row is available and no escalation is required for the lookup itself.",
+      "failure_condition": "No matching SystemErrorDefinition row exists, or the row lacks a usable Area, SystemErrorDescription, or SystemErrorResolution value.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Preserve lookup gap",
+          "exact_action": "Preserve the observed error name for escalation.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate when the reported error has no matching SystemErrorDefinition row.",
+        "Escalate when definition fields are missing or inconsistent.",
+        "Do not perform a database or equipment action based only on the SystemErrorResolution value."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0017",
+          "page": 17,
+          "timestamp_start": "01:34:14.000",
+          "timestamp_end": "01:34:55.000",
+          "quote_or_summary": "SystemErrorDefinition stores definitions of system errors, including the error name, area, description, and resolution."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The Robotics Database is accessible in SSMS.",
+    "The reported Error has a matching SystemErrorDefinition row.",
+    "The row provides Error, Area, SystemErrorDescription, and SystemErrorResolution values.",
+    "The observed values are preserved for troubleshooting without executing a mutating action."
+  ],
+  "healthy_conditions": [
+    "The SystemErrorDefinition table is readable in the Robotics Database.",
+    "A matching Error row is present.",
+    "Area, SystemErrorDescription, and SystemErrorResolution are populated and consistent."
+  ],
+  "failure_conditions": [
+    "The Robotics Database or SystemErrorDefinition table is unavailable.",
+    "The reported Error is not present.",
+    "Area, SystemErrorDescription, or SystemErrorResolution is empty.",
+    "Definition values are inconsistent with the reported Error."
+  ],
+  "escalation_guidance": [
+    "Escalate to L3_support when no matching SystemErrorDefinition row is found.",
+    "Escalate to L3_support when required definition fields are missing or inconsistent.",
+    "Include the observed error name and the available Area, SystemErrorDescription, and SystemErrorResolution values in the escalation record.",
+    "Do not execute the documented SystemErrorResolution as part of this read-only lookup."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0017",
+      "page": 17,
+      "timestamp_start": "01:34:14.000",
+      "timestamp_end": "01:34:55.000",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "The Robotics Database SystemErrorDefinition table stores system error definitions and displays Error, Area, SystemErrorDescription, and SystemErrorResolution values."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0017_so_moving_on_system_error_definition_primary_01_34_34_500"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_robotics_system_error_definition_lookup"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide SQL syntax or a query template.",
+    "The source does not specify exact SSMS navigation or filtering actions for locating an Error entry.",
+    "The source does not define how to resolve discrepancies between a reported error and the SystemErrorDefinition row.",
+    "This procedure identifies documented resolution text only; execution of that resolution requires a separate, source-supported procedure."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0017_so_moving_on_system_error_definition_primary_01_34_34_500"
+  ]
+}

@@ -1,6 +1,6 @@
-This section is generated from `incidenceknowledgeingestion/docs/development_status.md`. Update that file whenever an incident-ingestion stage moves from planned to implemented, changes scope, or gains new review outputs.
+This section is generated from `incidenceknowledgeingestion/docs/development_status.md`. Update that file whenever an incident-ingestion stage moves from planned to implemented, changes scope, or gains new review outputs. Architecture rationale: `docs/architecture.md`. Update process: `docs/README_UPDATE.md`.
 
-Current position: Case 228086 is the proof case. Stages 1, 2, and 2.5 are implemented as deterministic local scripts. Stage 3 is the required LLM artifact enrichment step. Stage 4 prompts and CLI wiring are implemented for LLM-backed canonical incident record and timeline extraction. Stage 5 runbook and playbook candidate discovery is implemented and consumes Stage 4 outputs.
+Current position: Cases `218550`, `223554`, `228086`, and `228723` run through Stages 1–6 + 8 into shared publish. Stage 2 uses Azure Computer Vision gating (`--stage2-artifact-gate azure_cv`) plus automatic page/OpenCV fallback when embedded wrappers yield no nested crops (fix for 218550 empty artifacts). Stage 5 playbook candidates must carry short `support_user_language_examples`; Shared Stage 8 enriches them further before cumulative Stage 11 publish. Stage 5 playbook discovery is source-grounded: nodes separate observed and historical surfaces with provenance from required evidence concepts, while ontology surfaces are not injected and Stage 8 selects the current diagnostic surface. Incident **runbook** Stage 5/6 still mirrors operational live-surface rules (`allowed_access_surfaces`, `ontology_snippets`, eligibility, tag emit/infer). Shared Stage 8 caps confidence on pairing/hospital/roster gaps and hard-rejects recovery-prep on check-only nodes.
 
 ## Implemented Content
 
@@ -10,7 +10,8 @@ datastructureprompts/
   Runbook Example.md - Stage 6 candidate/shared canonical runbook structure reference
   Timeline Events.md - Stage 4 timeline event example
 scripts/
-  extract_incident_knowledge.py - Stages 1-5 local runner
+  extract_incident_knowledge.py - Stages 1-8 local runner
+  stage8_link_relationships.py - Stage 8 relationship linking CLI
   update_readme.py - all-stage documentation utility
 src/optisweep_incidence_ingestion/
   ocr.py - Stage 2 OCR support helpers
@@ -20,6 +21,9 @@ src/optisweep_incidence_ingestion/
   stage3_artifact_enrichment.py - Stage 3 LLM artifact enrichment
   stage4_canonical_incident_record.py - Stage 4 LLM canonical incident and timeline extraction
   stage5_runbook_candidates.py - Stage 5 LLM incident runbook and playbook candidate discovery
+  stage6_runbook_finalization.py - Stage 6 LLM incident source runbook finalization
+  stage8_relationship_linking.py - Stage 8 deterministic incident relationship linking
+  tools/incident_relationship_linker.py - Stage 8 link graph builder
   prompts/stage3_artifact_enrichment_prompt.md - Stage 3 artifact enrichment prompt
   prompts/stage4_canonical_incident_record_prompt.md - Stage 4 canonical incident record prompt
   prompts/stage4_timeline_events_prompt.md - Stage 4 timeline event prompt
@@ -38,16 +42,16 @@ These files are prompt/schema examples, deterministic extraction code, and local
 | Stage 2.5 | Artifact enrichment packet preparation | Implemented |
 | Stage 3 | Incident artifact enrichment | Ready for LLM run |
 | Stage 4 | Create canonical incident records and timeline | Implemented |
-| Stage 5 | Incident runbook and playbook candidate discovery | Implemented |
-| Stage 6 | Candidate pool contribution | Planned |
-| Stage 7 | Source-specific validation and extraction report | Planned |
-| Stage 8 | Source-specific final output writing | Planned |
-| Stage 9 | Reserved for source-specific handoff packaging | Planned |
-| Shared Stage 11 | Cross-source canonical runbook synthesis | Shared planned |
-| Shared Stage 12 | Canonical workflow/playbook synthesis | Shared planned |
-| Shared Stage 13 | Relationship linking | Shared planned |
-| Shared Stage 14 | Embedding generation | Shared planned |
-| Shared Stage 15 | Cosmos DB and vector publishing | Shared planned |
+| Stage 5 | Incident runbook and playbook candidate discovery | Implemented — source-grounded playbook surfaces/evidence; runbook packets include allowed_access_surfaces + ontology_snippets |
+| Stage 6 | Source runbook finalization | Implemented — access_surface/capability tag emit + ontology packet alignment |
+| Stage 8 | Per-source relationship linking (artifact ↔ incident record ↔ runbook) | Implemented |
+| Shared Stage 6.5 | Runbook pool and merge preparation | Shared implemented |
+| Shared Stage 7 | Cross-source canonical runbook synthesis | Shared implemented |
+| Shared Stage 8 | Playbook finalization, runbook linking, operator-language enrichment | Shared implemented |
+| Shared Stage 8.5 | Corpus relationship linking | Shared implemented |
+| Shared Stage 9 | Corpus validation | Shared implemented |
+| Shared Stage 10 | Embedding generation | Shared implemented |
+| Shared Stage 11 | Cumulative Cosmos publish + gate + smoke + gate_phrase_table | Shared implemented |
 
 ## Stage 1 And Stage 2 Notes
 
@@ -55,11 +59,15 @@ Stage 1 builds `incident_source_package.json` with source and page inventory.
 
 Stage 2 renders every page for page inventory and OCR, extracts embedded PDF images as candidate artifacts, extracts nested media from Teams/chat wrapper screenshots when possible, OCRs rendered pages and extracted evidence with local Tesseract, classifies incident evidence types, and records duplicate groups. By default, Stage 2 uses a local Qwen2.5-VL artifact gate to keep attached evidence images/forms/screenshots while suppressing outer wrapper/feed text. Use `--stage2-artifact-gate none` for deterministic-only extraction without Qwen.
 
+When an embedded wrapper yields **no** nested crops, Stage 2 automatically falls back to the rendered page and may promote OpenCV crops (`detected_crop_mode: fallback_only`). Use `--include-detected-crops` to force broader crop promotion when a PDF exposes no useful embedded images. Without this fallback, cases like 218550 produced zero `source_artifacts`, empty runbook `image_refs`, and weak playbook evidence.
+
 Full-page renders and chat-wrapper screenshots stay in page/page OCR context and are not promoted into `source_artifacts.json` when a cleaner nested image can be extracted.
 
 After Stage 2, `incident_source_package.json` also contains `source_bundle`, which is the compact handoff object for later stages. Stage 2.5 and later should read `incident_source_package.json.source_bundle` first and only open detailed files when deeper audit context is needed.
 
 Stage 2.5 builds `artifact_enrichment_packets.json` by joining clean artifact images/OCR with page-level OCR context. It does not enrich artifacts or turn OCR into English. Stage 3 reads those packets and requires `--llm`; fake enrichment is not supported. Stage 4 reads page OCR and Stage 3 enriched artifacts, builds compact `stage4_evidence_chunks.json`, then uses separate prompts to create the concise canonical incident record and detailed timeline events.
+
+Per-source Stage 8 relationship linking runs after Stage 6. It connects incident artifacts to `canonical_incident_record.json`, `timeline_events.json`, and finalized runbooks. Playbook candidates remain for Shared Stage 8 playbook→runbook linking; Shared Stage 8.5 aggregates per-source graphs into one corpus-wide link export.
 
 ## Current Proof Output
 
@@ -116,12 +124,17 @@ or more candidates, but creates multiple only when separable troubleshooting
 flows are clearly present. Playbook discovery describes incident response logic and
 needed runbook capabilities without binding nodes to canonical runbook IDs. All
 candidates are needs-review source-specific discoveries, not finalized
-canonical runbooks or playbooks.
+canonical runbooks or playbooks. Playbook component vocabulary includes
+**WCS database / SSMS (read-only)**; prompts ban SQL statements in nodes but
+allow naming that surface for remote corroboration. Diagnostic nodes should
+emit `expects_capability` / `expects_surface` / `preferred_audience` from
+`docs/ontology/taxonomy/runbook_capability_taxonomy.json` (see
+`docs/design_decisions/stage_5_8_c2_b2_b1_changelog.md`).
 
-Stage 2 defaults to `--stage2-artifact-gate qwen` and resolves the cached local `Qwen/Qwen2.5-VL-3B-Instruct` snapshot when present. To bypass Qwen for a faster deterministic-only run, add:
+Stage 2 defaults to `--stage2-artifact-gate none` (no gate; embedded/nested image heuristics and OpenCV crop fallback only). Company policy requires Azure Computer Vision to be the only vision model used anywhere in this repo, so the only optional gate is Azure CV-backed:
 
 ```powershell
-  --stage2-artifact-gate none
+  --stage2-artifact-gate azure_cv
 ```
 
 Run Stage 3 after Azure OpenAI environment variables are configured:
@@ -148,8 +161,8 @@ python incidenceknowledgeingestion\scripts\extract_incident_knowledge.py `
   --llm
 ```
 
-Use `--include-detected-crops` only when a PDF does not expose useful embedded images and OpenCV fallback crops are needed. The default keeps artifact images focused on the actual embedded screenshots/photos and avoids surrounding document or chat text in the image file.
+Default crop mode is `fallback_only` (automatic when wrappers yield no nested media). Pass `--include-detected-crops` only when you need forced OpenCV crops across pages; that can pull more surrounding chat/UI text into artifact images.
 
 ## Next Development Target
 
-Stage 4 should be run and reviewed for Case 228086. The first quality gate is whether it preserves source refs, handles Haslet/Alliance location ambiguity, keeps exact downtime warnings when needed, and avoids promoting restart guidance or case comments into canonical root cause.
+Keep operator-language examples and remote-support procedure wording aligned with demo findings (`docs/demo_testing_report.md`). Every new case must survive Shared Stage 8 enrichment + Stage 11 cumulative gate/smoke so `AUTO_PUBLISH_VERSION=true` stays safe.

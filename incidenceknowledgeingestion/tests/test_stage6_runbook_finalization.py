@@ -8,6 +8,11 @@ def test_build_incident_finalization_packet_includes_related_evidence() -> None:
         "related_artifact_ids": ["artifact_incident_228086_page_015_embedded_image_01"],
         "related_event_ids": ["incident_228086_event_019"],
         "source_refs": [{"chunk_id": "stage4_page_chunk_002"}],
+        "rough_steps": [
+            "Open Ignition gateway and run gwcmd -r.",
+            "Verify GetAgvStatuses responds with HTTP 200.",
+        ],
+        "access_or_tools_needed": ["Ignition gateway", "API Dog"],
     }
     artifacts = {
         "artifact_incident_228086_page_015_embedded_image_01": {
@@ -45,3 +50,7 @@ def test_build_incident_finalization_packet_includes_related_evidence() -> None:
     assert len(packet["related_artifacts"]) == 1
     assert len(packet["timeline_events"]) == 1
     assert len(packet["evidence_chunks"]["page_text_chunks"]) == 1
+    assert isinstance(packet["allowed_access_surfaces"], list)
+    assert any(item.get("id") == "wcs_sql" for item in packet["allowed_access_surfaces"])
+    assert "ontology_snippets" in packet
+    assert any("access_surface" in str(item).lower() for item in packet["instructions"])

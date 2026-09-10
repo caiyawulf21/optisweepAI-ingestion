@@ -1,0 +1,353 @@
+{
+  "procedure_id": "proc_recover_from_agv_fault_during_exchange_recovery_v1",
+  "candidate_id": "candidate_manual_optisweep_agv_fault_during_exchange_recovery",
+  "title": "Recover From AGV Fault During Exchange (RMS E-stop, remove faulted AGV, backfill, introduce new tote + empty AGV)",
+  "procedure_type": "recovery",
+  "summary": "Restore exchange flow after an AGV faults while leaving by stopping RMS, removing the faulted AGV from the RMS, optionally removing the trailing AGV if it does not backfill, then introducing a new tote and placing an empty AGV in the affected zone.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [],
+  "access_surface": [
+    "rms_ui",
+    "wcs_api"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when an AGV faults during exchange while leaving and you need to restore exchange flow by removing the faulted AGV from RMS, handling backfill behavior, and reintroducing the correct tote + empty-AGV state in the affected zone.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Execute RMS stop (E-stop) and AGV removal/add actions via the RMS UI and the referenced AGV API Controls flow; verify backfill behavior and that the affected zone is re-established with a newly introduced tote and an empty AGV."
+  ],
+  "safety_notes": [
+    "Perform an RMS E-stop as the first recovery action for this fault scenario."
+  ],
+  "access_or_tools_needed": [
+    "RMS / fleet status UI (rms_ui)",
+    "AGV API Controls referenced by the manual (accessed via RMS / fleet status UI)"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "rms_ui"
+    ],
+    "system_preconditions": [],
+    "external_references": [
+      "AGV API Controls (referenced by the manual on page 24; used from the RMS UI)"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_agv_fault_during_exchange_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+      "description": "HMI screenshot showing the faulted AGV with tote state (used as visual context for the faulted condition during exchange recovery).",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen",
+      "description": "RMS screen for adding an AGV to a zone when no empty AGV is present (visual support for re-establishing empty AGV state in the affected zone).",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+      "description": "RMS screen showing an AGV fault example (visual context for RMS fault screens; not specific to this exact exchange-fault step).",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "description": "AGV API Controls screen showing controls such as Remove AGV / Recover AGV / Pause All AGVs / Resume All AGVs (used for the AGV removal action referenced by the recovery procedure).",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "E-stop RMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Stop RMS movement before removing the faulted AGV and re-establishing the exchange state.",
+      "instruction": "On the RMS / fleet status UI (rms_ui), perform an E-stop of the RMS.",
+      "expected_result": "RMS is in an E-stopped state (fleet movement is stopped) on the RMS / fleet status UI.",
+      "healthy_condition": "RMS remains stopped (no exchange movement continuing) while you proceed with AGV removal actions.",
+      "failure_condition": "RMS does not enter/maintain the stopped state, or movement continues while you attempt recovery actions.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "E-stop RMS",
+          "exact_action": "E-stop RMS.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "RMS does not stop as expected (movement continues) — stop recovery actions and escalate."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page_start": 91,
+          "page_end": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_5_agv_fault_during_exchange",
+          "quote_or_summary": "5.8.2.5: AGV FAULT DURING EXCHANGE: 1. E-stop RMS."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Remove the faulted AGV that is lifted and faulted out while leaving",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Clear the faulted AGV from the RMS so exchange can be re-established.",
+      "instruction": "On the RMS / fleet status UI (rms_ui), identify the AGV that is lifted and has faulted out while leaving, then remove that AGV from the RMS using the AGV API Controls flow referenced by the manual.",
+      "expected_result": "The faulted AGV is removed from the RMS (it no longer appears as an active AGV in the RMS fleet context for the affected zone).",
+      "healthy_condition": "Only the faulted AGV is removed; the RMS remains stopped while you confirm the removal is reflected in the RMS UI.",
+      "failure_condition": "The faulted AGV cannot be removed from RMS, or it remains present/active in the RMS UI after the removal action.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Remove AGV from RMS",
+          "exact_action": "Remove the AGV that is lifted that has faulted out while leaving from the RMS. (See \"AGV API Controls\" on page 24.)",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the faulted AGV cannot be removed from RMS using the AGV API Controls flow — escalate."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page_start": 91,
+          "page_end": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_2_5_agv_fault_during_exchange",
+          "quote_or_summary": "5.8.2.5: AGV FAULT DURING EXCHANGE: 2. Remove the AGV that is lifted that has faulted out while leaving from the RMS. (See \"AGV API Controls\" on page 24.)"
+        },
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page_start": 40,
+          "page_end": 40,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_2_agv_api_controls",
+          "quote_or_summary": "AGV API CONTROLS: Remove AGV — An AGV can be removed from the system by entering the AGV ID. If an AGV has an issue, it must be physically removed from the system. If the AGV has a tote, it must be taken to the hospital where the tote is removed. (Figure 4-12.)"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Check backfill; remove trailing AGV if it does not backfill",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure the zone behind the faulted AGV is correctly cleared so exchange can resume.",
+      "instruction": "On the RMS / fleet status UI (rms_ui), check whether the AGV behind the faulted AGV backfills into the expected position. If it does not backfill, remove that trailing AGV as well using the same AGV API Controls flow referenced by the manual.",
+      "expected_result": "Either (a) the AGV behind backfills into the expected position, or (b) the trailing AGV is removed from RMS when it does not backfill.",
+      "healthy_condition": "Backfill occurs as expected, or the trailing AGV is successfully removed so the zone can be re-established with the correct tote + empty AGV state.",
+      "failure_condition": "The trailing AGV does not backfill and cannot be removed/cleared as described.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify backfill behavior",
+          "exact_action": "Check whether the AGV behind it does not back fill.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "command_action",
+          "label": "Remove trailing AGV (if no backfill)",
+          "exact_action": "If the AGV behind it does not back fill, also remove that AGV.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Trailing AGV does not backfill and cannot be removed/cleared as described — escalate."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page_start": 91,
+          "page_end": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_5_agv_fault_during_exchange",
+          "quote_or_summary": "5.8.2.5: AGV FAULT DURING EXCHANGE: 3. If the AGV behind it does not back fill, also remove that AGV."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Introduce new tote and place an empty AGV in the affected zone",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Re-establish the exchange-ready state in the affected zone so exchange can proceed.",
+      "instruction": "Introduce a new tote at the faulted location and place an empty AGV in that zone using the RMS UI actions referenced by the manual.",
+      "expected_result": "A newly introduced tote is present at the affected location, and an empty AGV is placed in that zone so exchange can proceed.",
+      "healthy_condition": "The affected exchange location shows the newly introduced tote and an empty AGV in the zone (exchange can resume).",
+      "failure_condition": "The new tote/empty AGV cannot be introduced into the correct zone.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Introduce new tote",
+          "exact_action": "Introduce a new tote at that location.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "command_action",
+          "label": "Place empty AGV in zone",
+          "exact_action": "Place an empty AGV in that zone.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "New tote/empty AGV cannot be introduced into the correct zone — escalate."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page_start": 91,
+          "page_end": 91,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_5_agv_fault_during_exchange",
+          "quote_or_summary": "5.8.2.5: AGV FAULT DURING EXCHANGE: 4. Introduce a new tote at that location and place an empty AGV in that zone."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Faulted AGV is removed from RMS.",
+    "If the AGV behind did not backfill, the trailing AGV is also removed.",
+    "Affected exchange location has a newly introduced tote and an empty AGV placed in the correct zone so exchange can proceed."
+  ],
+  "healthy_conditions": [
+    "RMS remains stopped during removal/reconfiguration actions.",
+    "Faulted AGV is no longer present as an active AGV in RMS.",
+    "Backfill occurs as expected OR trailing AGV is removed when backfill does not occur.",
+    "Affected zone shows newly introduced tote and an empty AGV."
+  ],
+  "failure_conditions": [
+    "Trailing AGV does not backfill and cannot be removed/cleared as described.",
+    "New tote and/or empty AGV cannot be introduced into the correct zone."
+  ],
+  "escalation_guidance": [
+    "Escalate if the trailing AGV does not backfill and cannot be removed/cleared as described, or if the new tote/empty AGV cannot be introduced into the correct zone."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+      "page_start": 91,
+      "page_end": 91,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_5_agv_fault_during_exchange",
+      "site_code": "",
+      "site_label": "",
+      "quote_or_summary": "5.8.2.5: AGV FAULT DURING EXCHANGE: 1) E-stop RMS. 2) Remove the AGV that is lifted and faulted out while leaving from the RMS. 3) If the AGV behind it does not back fill, also remove that AGV. 4) Introduce a new tote at that location and place an empty AGV in that zone."
+    },
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+      "page_start": 40,
+      "page_end": 40,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_2_agv_api_controls",
+      "site_code": "",
+      "site_label": "",
+      "quote_or_summary": "AGV API CONTROLS (Figure 4-12): Remove AGV by entering AGV ID; if AGV has an issue, it must be physically removed; if AGV has a tote, take tote to the Hospital where tote is removed; includes controls for Recover/Pause/Resume and GET AGV STATUS."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen"
+    },
+    {
+      "artifact_id": "artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen"
+    },
+    {
+      "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen"
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_manual_optisweep_agv_fault_during_exchange_recovery"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The manual section provides the recovery sequence but does not provide explicit RMS UI navigation/field labels for the RMS E-stop control and the specific RMS UI controls used to identify the faulted AGV and confirm removal.",
+    "The manual section does not specify the exact RMS UI workflow for introducing a new tote and placing an empty AGV into the correct zone (only the high-level actions are stated)."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

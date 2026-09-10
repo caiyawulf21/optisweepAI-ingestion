@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Look Up System Error Definitions in the Robotics Database</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Look Up System Error Definitions in the Robotics Database</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_look_up_system_error_definitions_in_the_robotics_database_v1</td></tr>
+<tr><th>Title</th><td>Look Up System Error Definitions in the Robotics Database</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>agv_active_errors</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>None</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use read-only SSMS against the WCS / Helix Robotics Database to match a reported system error to its Error, Area, SystemErrorDescription, and SystemErrorResolution values.</p>
+<h2>When To Use</h2>
+<p>Use this read-only SSMS diagnostic when a named system error must be interpreted using the Robotics Database SystemErrorDefinition table. Use the returned Area, SystemErrorDescription, and SystemErrorResolution values to support troubleshooting and escalation.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/445c91f76e7e9c07.jpg" alt="artifact_training_video_training_video_day2_0017_so_moving_on_system_error_definition_primary_01_34_34_500" /><figcaption>Robotics Database SystemErrorDefinition view showing Error, Area, SystemErrorDescription, and SystemErrorResolution values and examples.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the Robotics Database in SSMS</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS) surface, open SSMS and select the Robotics Database.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Robotics Database is selected in SSMS and the SystemErrorDefinition table is available for inspection.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if the Robotics Database or the SystemErrorDefinition table is unavailable.</li>
+</ul>
+<hr>
+<h3>Step 2 — Open the SystemErrorDefinition table</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In SSMS, open the SystemErrorDefinition table and inspect the displayed Error, Area, SystemErrorDescription, and SystemErrorResolution columns.</p>
+<p><strong>Expected result:</strong></p>
+<p>The SystemErrorDefinition table displays the reported error entry or confirms that no matching entry is present.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop the lookup if the reported error is not present.</li>
+<li>Escalate if the SystemErrorDefinition table cannot be read.</li>
+</ul>
+<hr>
+<h3>Step 3 — Inspect the error definition values</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the SSMS SystemErrorDefinition row, inspect and preserve the Error, Area, SystemErrorDescription, and SystemErrorResolution values. Examples shown in the table include AgvHasNotMoved30Seconds / AGV / AGV has not moved in 30 seconds / Reboot AGV and AgvOutOfSequence / AGV / AGV is out of sequence / Remove AGV.</p>
+<p><strong>Expected result:</strong></p>
+<p>The matching row provides a non-empty Error name with corresponding Area, SystemErrorDescription, and SystemErrorResolution values.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop the lookup if any required definition field is empty.</li>
+<li>Escalate if the definition values are inconsistent.</li>
+</ul>
+<hr>
+<h3>Step 4 — Preserve unmatched or incomplete lookup results</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the reported Error is not present or any required definition field is empty or inconsistent in SSMS, stop the lookup and preserve the observed error name together with the missing or inconsistent field information for escalation.</p>
+<p><strong>Expected result:</strong></p>
+<p>The escalation record identifies the observed error name and states whether the row was absent or which definition field was missing or inconsistent.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate when the reported error has no matching SystemErrorDefinition row.</li>
+<li>Escalate when definition fields are missing or inconsistent.</li>
+<li>Do not perform a database or equipment action based only on the SystemErrorResolution value.</li>
+</ul>
+<hr>
+</body>
+</html>

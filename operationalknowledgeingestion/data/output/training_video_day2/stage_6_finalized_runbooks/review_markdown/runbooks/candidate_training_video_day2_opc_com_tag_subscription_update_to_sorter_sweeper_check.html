@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check OPC COM tag subscription updates flowing to Sorter Sweeper (Ignition tag provider → OPC server → Sorter Sweeper processing)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check OPC COM tag subscription updates flowing to Sorter Sweeper (Ignition tag provider → OPC server → Sorter Sweeper processing)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_opc_com_tag_subscription_updates_to_sorter_sweeper_v1</td></tr>
+<tr><th>Title</th><td>Check OPC COM tag subscription updates flowing to Sorter Sweeper (Ignition tag provider → OPC server → Sorter Sweeper processing)</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>wcs_api_responsiveness, gateway_health</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql, ignition_gateway</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>api_unresponsive, gateway_unhealthy</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Verify that OPC COM is actively subscribing to tags and that tag updates are being written to the OPC server and forwarded to the Sorter Sweeper module for processing by checking live WCS/Helix DB (SSMS) tables/models for OPC COM activity and correlating it to Sorter Sweeper processing records; also confirm Ignition gateway health when needed.</p>
+<h2>When To Use</h2>
+<p>Use when you need to confirm the live tag flow: OPC COM subscribes to tags, tag updates are written via the OPC server/ignition tag provider, and Sorter Sweeper receives/acts on those updates.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/ec2354c26e54703e.jpg" alt="artifact_training_video_training_video_day2_0041_this_is_just_the_gateway_and_primary_03_03_43_000" /><figcaption>Ignition gateway performance page used as a support view for memory/performance behavior (used here only as a health-check visual reference).</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open WCS/Helix DB (SSMS) and connect to the live OptiSweep/WCS database catalog</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using SSMS / Helix DB (wcs_sql), connect to the live OptiSweep/WCS database catalog that includes the OPC Comms and Sorter Sweeper modules.</p>
+<p><strong>Expected result:</strong></p>
+<p>SSMS connection is established and you can browse the live database objects for the OPC Comms and Sorter Sweeper modules.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you cannot connect to the live WCS/Helix DB, stop and escalate (database access/connectivity issue).</li>
+</ul>
+<hr>
+<h3>Step 2 — Locate live OPC COM communications and Sorter Sweeper processing models/tables</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In SSMS / Helix DB (wcs_sql), locate the live tables/models for OPC COM communications and for Sorter Sweeper processing.</p>
+<p><strong>Expected result:</strong></p>
+<p>You have identified the live OPC COM communications objects and the live Sorter Sweeper processing objects that will be used for correlation.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you cannot locate the correct live OPC Comms and Sorter Sweeper objects, stop and escalate (schema mapping gap).</li>
+</ul>
+<hr>
+<h3>Step 3 — Check for recent OPC COM tag update activity in OPC COM communications objects</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the OPC COM communications objects you identified in SSMS / Helix DB (wcs_sql), check for recent tag update activity (e.g., recently updated records/timestamps) for the relevant subscribed tags.</p>
+<p><strong>Expected result:</strong></p>
+<p>There are recent records showing tag update activity (updated timestamps/entries) in the OPC COM communications objects.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if OPC COM shows no recent tag updates (possible OPC server connectivity/subscription issue).</li>
+</ul>
+<hr>
+<h3>Step 4 — Correlate OPC COM tag updates to Sorter Sweeper processing records</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In SSMS / Helix DB (wcs_sql), correlate the timeframe of the recent OPC COM tag update activity to Sorter Sweeper processing records; if available, match tag identifiers between the two.</p>
+<p><strong>Expected result:</strong></p>
+<p>Sorter Sweeper has corresponding processing entries for the same tag update timeframe (and, if available, matching tag identifiers).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if OPC COM updates exist but there are no corresponding Sorter Sweeper processing records.</li>
+</ul>
+<hr>
+<h3>Step 5 — If applicable, verify Ignition gateway health for tag provider connectivity</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using Ignition gateway (ignition_gateway), perform a basic health check to confirm the gateway is not in a failed/unreachable state.</p>
+<p><strong>Expected result:</strong></p>
+<p>Ignition gateway status indicates it is reachable/healthy enough to provide tag updates.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if Ignition gateway health indicates it is failed/unreachable (tag provider connectivity issue).</li>
+</ul>
+<hr>
+<h3>Step 6 — Stop and escalate based on correlation results</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Based on your findings from Steps 3–4, stop and escalate using the failure mode that matches the observed evidence.</p>
+<p><strong>Expected result:</strong></p>
+<p>Escalation is triggered only when the evidence indicates missing tag updates or missing Sorter Sweeper processing correlation.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>OPC COM shows no recent tag updates (possible OPC server connectivity/subscription issue).</li>
+<li>OPC COM updates exist but there are no corresponding Sorter Sweeper processing records (possible Sorter Sweeper subscription/processing failure).</li>
+</ul>
+<hr>
+</body>
+</html>

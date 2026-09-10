@@ -1,0 +1,439 @@
+{
+  "procedure_id": "proc_check_robot_command_database_model_table_active_status_v1",
+  "candidate_id": "candidate_training_video_robot_command_database_model_table_status_check",
+  "title": "Check Robot Command Database Model Table for Active Robot Command Status (Sent → In Progress → Archived)",
+  "procedure_type": "diagnostic",
+  "summary": "Use WCS / Helix DB (SSMS) to verify whether a robot command is still active in RobotCommandDatabaseModel, whether it progressed from sent to in-progress, and whether completed commands have been archived to robot command activity (historical record).",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L2_support"
+  ],
+  "capability_tags": [
+    "robot_command_or_task_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "mapping_abnormal"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to confirm the lifecycle evidence of a specific robot command for an AGV (sent vs in-progress vs completed/archived) using the active transactional table and the archived historical record.",
+  "not_for": [
+    "Do not use this procedure as the primary method to resolve physical safety issues (use on-site physical safety procedures instead).",
+    "Do not use this procedure when you only need to view AGV faults/errors without checking command lifecycle evidence (use the appropriate active error/fault procedure instead)."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support: Execute SSMS read-only checks against WCS / Helix DB to determine whether the targeted command is present in RobotCommandDatabaseModel and whether sent/in-progress timestamps indicate progression; verify completion by checking archived robot command activity."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS) read-only access",
+    "RobotCommandDatabaseModel table (Robot Command Database model table)",
+    "Robot command activity archive table/view (historical record of completed/resolved commands)"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "WCS / Helix DB (SSMS) read-only access"
+    ],
+    "system_preconditions": [
+      "The targeted command instance must be identifiable by CommandName and the relevant robot/container/station identifiers used in the incident context."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_robot_command_database_table_v1",
+    "ctx_training_video_robot_command_activity_archive_v1",
+    "ctx_training_video_command_status_and_queue_capacity_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+      "description": "RobotCommandDatabaseModel table lifecycle explanation and example fields (sent time, in-progress time, archived to robot command activity; includes command name/status/robot/container/station parameters).",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Connect to WCS / Helix DB in SSMS (read-only)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Access the WCS / Helix DB environment where RobotCommandDatabaseModel and the archived robot command activity record are stored.",
+      "instruction": "Open SSMS and connect to the WCS / Helix DB read-only environment.",
+      "expected_result": "SSMS is connected to the WCS / Helix DB environment and ready to browse databases/tables.",
+      "healthy_condition": "You can view the database list and expand the relevant WCS/OptiSweep database(s) in Object Explorer.",
+      "failure_condition": "You cannot connect to the WCS / Helix DB environment or cannot view the database list.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Connect to SSMS WCS/Helix DB",
+          "exact_action": "Open SSMS and connect to the WCS / Helix DB read-only environment.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 14,
+          "section_id": "training_video_day2_segment_0014",
+          "quote_or_summary": "RobotCommandDatabaseModel tracks status of robot commands requested by the Robotics module for AGVs; sent time is written, in-progress is marked when the AGV is marked; when completed, commands are archived to robot command activity (historical record).",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Open the WCS/OptiSweep database containing RobotCommandDatabaseModel",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure you are querying the correct database that contains the active transactional table for robot command lifecycle evidence.",
+      "instruction": "In the database list, open the OptiSweep/WCS database that contains the RobotCommandDatabaseModel table.",
+      "expected_result": "The database containing RobotCommandDatabaseModel is opened/expanded in SSMS.",
+      "healthy_condition": "RobotCommandDatabaseModel is discoverable under the database’s table list.",
+      "failure_condition": "RobotCommandDatabaseModel is not found in the selected database.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Select correct WCS/OptiSweep database",
+          "exact_action": "In the database list, open the OptiSweep/WCS database that contains the RobotCommandDatabaseModel table (robot command transactional tables).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 14,
+          "section_id": "training_video_day2_segment_0014",
+          "quote_or_summary": "RobotCommandDatabaseModel is a constantly updating transactional table for active commands only; completed commands are archived to robot command activity.",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Locate RobotCommandDatabaseModel and identify lifecycle evidence fields",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the table columns/fields needed to determine sent → in-progress → archived lifecycle progression.",
+      "instruction": "Locate the RobotCommandDatabaseModel table and identify the columns/fields shown in the table UI for command lifecycle evidence, including sent time and in-progress time, plus command identifiers such as command name and robot/container/station parameters.",
+      "expected_result": "RobotCommandDatabaseModel is open and the lifecycle evidence fields (sent time and in-progress time) and identifiers (command name and robot/container/station parameters) are visible.",
+      "healthy_condition": "You can see sent time and in-progress time fields in the table view, along with command name/status and robot/container/station parameters.",
+      "failure_condition": "The table view does not show sent time and in-progress time fields, or required identifiers are not visible.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open RobotCommandDatabaseModel",
+          "exact_action": "Locate the RobotCommandDatabaseModel table and identify the columns/fields shown in the table UI for command lifecycle evidence, including sent time and in-progress time, plus command identifiers such as command name and robot/container/station parameters.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 14,
+          "section_id": "training_video_day2_segment_0014",
+          "quote_or_summary": "The Robot Command Database model table shows sent time and in-progress time; it also includes command name, status, robot name, container and station, and timing fields (set time, progress time, execute time, station circuit, total time).",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Find the specific command instance by CommandName and robot/container/station identifiers",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Target the correct row(s) representing the command instance tied to the incident context.",
+      "instruction": "Find the specific command instance by using the command name (e.g., MoveTote, PickupTote, DropOffTote, RemoveAgv, GoCharge) and the relevant robot/container/station identifiers that match the incident context.",
+      "expected_result": "A matching row (or set of rows) for the targeted CommandName and robot/container/station identifiers is located in RobotCommandDatabaseModel.",
+      "healthy_condition": "The located row(s) correspond to the incident’s robot/container/station identifiers and show a sent time value.",
+      "failure_condition": "No matching command row can be found for the provided CommandName and robot/container/station identifiers.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate command row(s)",
+          "exact_action": "Find the specific command instance by using the command name and the relevant robot/container/station identifiers that match the incident context.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 14,
+          "section_id": "training_video_day2_segment_0014",
+          "quote_or_summary": "The table records command name, status, robot name, container and station, and parameters sent to the Geek Plus COM module; it is used to see whether a command is in a current command (active DB) or archived after completion.",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Verify lifecycle progression: sent time and in-progress time",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the command is still active and whether it has progressed from sent to in-progress.",
+      "instruction": "Observe the lifecycle timestamps/fields for the targeted row: confirm whether the row shows a sent time and whether it has transitioned to an in-progress state (in-progress time populated).",
+      "expected_result": "For the targeted command row, sent time is populated; in-progress time is populated if the command has progressed to in-progress.",
+      "healthy_condition": "Sent time is populated; in-progress time is populated when the AGV is marked as in-progress for that command.",
+      "failure_condition": "Sent time is populated but in-progress time is not populated (command remains stuck in sent without in-progress transition).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check sent vs in-progress timestamps",
+          "exact_action": "Observe the lifecycle timestamps/fields: confirm whether the row shows a sent time and whether it has transitioned to an in-progress state (in-progress time populated).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the command remains in RobotCommandDatabaseModel without an in-progress transition (sent time populated but in-progress time not populated), escalate for deeper command/task state troubleshooting rather than assuming completion."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 14,
+          "section_id": "training_video_day2_segment_0014",
+          "quote_or_summary": "When we write it to the table, we put sent; when we get in progress is when we mark that AGV. This shows you the sent time and in progress time.",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Check destination/queue-capacity interaction evidence for in-progress commands",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Corroborate that in-progress status corresponds to active queue/location occupancy behavior.",
+      "instruction": "If the command is in-progress, confirm queue/capacity interaction evidence by checking that the destination queue/location is reflected as freed/occupied based on in-progress status (e.g., in-progress indicates the AGV is occupying the queue/location capacity).",
+      "expected_result": "The destination/current location fields associated with the in-progress command reflect active occupancy behavior consistent with queue capacity handling.",
+      "healthy_condition": "In-progress status aligns with queue/location occupancy freeing/occupying behavior described by the robot location model (max AGVs per queue/location).",
+      "failure_condition": "In-progress status does not align with expected occupancy/capacity evidence for the destination queue/location.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Corroborate queue/location occupancy evidence",
+          "exact_action": "Confirm queue/capacity interaction evidence by checking that the destination queue/location is reflected as freed/occupied based on in-progress status.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 14,
+          "section_id": "training_video_day2_segment_0014",
+          "quote_or_summary": "Until we get it in progress, you still have current destination location; in the robot location model you have Max Agvs, and each tipper can only have one (some have two). When it is in progress, we freed up that queue, that location.",
+          "site_code": "",
+          "site_label": ""
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 9,
+          "section_id": "training_video_day2_segment_0009",
+          "quote_or_summary": "Robot Location database model contains station number, whether it’s occupied or not, zone, closeout zone, location type, Max number of AGVs allowed at that location, and whether the location should be tracked for dwell time.",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Verify completion: command archived out of RobotCommandDatabaseModel into robot command activity",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm that completed commands are no longer present in the active transactional table and are available in the historical archive with a resolved status.",
+      "instruction": "If the command is completed, verify it is no longer present as an active command in RobotCommandDatabaseModel and instead exists in the archived robot command activity (historical record).",
+      "expected_result": "For the targeted command instance, RobotCommandDatabaseModel no longer contains the active row; the command appears in robot command activity archive with a status such as errored or cancelled.",
+      "healthy_condition": "Active table does not show the completed command; archived activity contains the command record with a resolved status (e.g., errored or cancelled).",
+      "failure_condition": "The command appears completed but is still present in RobotCommandDatabaseModel, or the command cannot be found in either active or archived records.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check active vs archived presence",
+          "exact_action": "Verify it is no longer present as an active command in RobotCommandDatabaseModel and instead exists in the archived robot command activity (historical record).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the command appears completed but is still present in RobotCommandDatabaseModel, escalate to investigate archiving behavior and transactional table consistency.",
+        "If you cannot locate the command by CommandName + robot/container/station identifiers, confirm the correct robot/container/station context and command naming used by the Robotics module."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 14,
+          "section_id": "training_video_day2_segment_0014",
+          "quote_or_summary": "When commands are complete, they're archived to robot command activity. The table only keeps active commands and archives them after completion; archived records include command name and status (it could be errored, it could be cancelled).",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "For the targeted command instance, RobotCommandDatabaseModel shows sent time populated.",
+    "If the command has progressed, in-progress time is populated.",
+    "If the command is completed, it is absent from RobotCommandDatabaseModel and present in robot command activity archive with a resolved status (e.g., errored or cancelled)."
+  ],
+  "healthy_conditions": [
+    "Active command evidence exists in RobotCommandDatabaseModel with sent time populated.",
+    "In-progress commands show in-progress time populated and align with destination queue/location occupancy/capacity behavior described by the robot location model (max AGVs per queue/location).",
+    "Completed commands are archived out of RobotCommandDatabaseModel into robot command activity (historical record)."
+  ],
+  "failure_conditions": [
+    "Sent time populated but in-progress time not populated (command stuck in sent state).",
+    "Completed command still present in RobotCommandDatabaseModel (archiving/transactional consistency issue).",
+    "Command cannot be located using CommandName + robot/container/station identifiers (context or naming mismatch)."
+  ],
+  "escalation_guidance": [
+    "If the command remains in RobotCommandDatabaseModel without an in-progress transition (sent populated, in-progress not populated), escalate for deeper command/task state troubleshooting (e.g., Geek translation path and task state).",
+    "If the command appears completed but is still present in RobotCommandDatabaseModel, escalate to investigate archiving behavior and transactional table consistency.",
+    "If you cannot locate the command by CommandName + robot/container/station identifiers, confirm the correct robot/container/station context and command naming used by the Robotics module."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+      "what_to_look_at": "RobotCommandDatabaseModel lifecycle explanation and example fields: sent time, in-progress time, and that completed commands are archived to robot command activity with status such as errored or cancelled."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 14,
+      "section_id": "training_video_day2_segment_0014",
+      "quote_or_summary": "RobotCommandDatabaseModel tracks status of robot commands requested by the Robotics module for AGVs; sent time is written, in-progress is marked when the AGV is marked; when completed, commands are archived to robot command activity (historical record) with status such as errored or cancelled; active commands are kept in the database and archived after completion.",
+      "site_code": "",
+      "site_label": ""
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 9,
+      "section_id": "training_video_day2_segment_0009",
+      "quote_or_summary": "Robot Location database model contains station number, whether it’s occupied or not, zone, closeout zone, location type, Max number of AGVs allowed at that location, and whether the location should be tracked for dwell time.",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+      "what_to_look_at": "RobotCommandDatabaseModel lifecycle explanation and example fields: sent time, in-progress time, and that completed commands are archived to robot command activity with status such as errored or cancelled."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_robot_command_database_model_table_status_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide explicit SSMS navigation steps (exact menu clicks) or the exact archived table/view name for 'robot command activity' within the SSMS database environment; the procedure therefore instructs to verify presence in the archived robot command activity without specifying the exact object name."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000"
+  ]
+}

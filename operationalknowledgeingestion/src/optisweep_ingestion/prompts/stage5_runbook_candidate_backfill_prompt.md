@@ -26,7 +26,11 @@ Do not write final polished or canonical runbooks yet.
 
 Use only the provided section_text, related_operational_context, related_artifacts, and source_refs.
 
-Do not invent commands, access paths, service names, hostnames, SQL queries, API endpoints, screenshots, photos, image contents, expected values, status meanings, or escalation paths.
+Do not invent commands, access paths, service names, hostnames, SQL statements, API endpoints, screenshots, photos, image contents, expected values, status meanings, or escalation paths that are not in the packet.
+
+**Source-backed WCS / SSMS / database diagnostics are valid.** If this section documents SSMS, Helix/WCS DB checks, named tables/models, or API/DB state interpretation, extract a `diagnostic` candidate with `L1_support` or preferably `L2_support` (never `operator` for WCS DB). Do not invent SELECT text; keep steps source-grounded and leave SQL polish to Stage 6.
+
+**Training / architecture sections:** emit a live-support procedure (SSMS/API Dog/HMI + named module/table/request), not a study guide. Ban steps like “from the training material” / “record that the source says….” `expected_result` must be an observable live outcome naming fields/states/values when the packet has them. Prefer same-section artifacts; never treat Q&A/lunch/agenda slides as evidence. If the section only names modules with no check surface, return `{"candidates": []}`.
 
 Do not infer visual details from artifact IDs, figure numbers, or captions alone. Only describe image support when it is supported by source text, caption, artifact metadata, or explicit image analysis in the input packet.
 
@@ -38,7 +42,7 @@ Return at least one candidate if the section_text contains any of the following:
 - Physical actions (remove, install, replace, tighten, adjust, connect)
 - Tool or access requirements
 - Safety requirements tied to an action
-- Expected values, positions, or outcomes to verify
+- SSMS / Helix / WCS database / SQL / API diagnostic checks with named tools or tables- Expected values, positions, or outcomes to verify
 
 If the section_text is only a chapter heading, a table of contents entry, or a list of child subsection titles with no procedural steps, return an empty candidates list.
 
@@ -111,17 +115,43 @@ Allowed likely_role_required values:
 - L2_support
 - L3_support
 
+## Role / Component Access Matrix
+
+When assigning `likely_role_required`, follow this matrix. Do not assign a role that has **No access** to a component the procedure requires.
+
+**Role meanings:** `operator` = site/customer (not FORTNA). `L1_support` / `L2_support` / `L3_support` = FORTNA remote on Zscaler. **Access** = may interact.
+
+| Component | `operator` (site) | `L1_support` | `L2_support` / `L3_support` |
+| --- | --- | --- | --- |
+| RMS (fleet / AGV status web) | Access | Access | Access |
+| RMS soft stop (pause — **not** E-stop) | — | No access | Access |
+| E-stop (physical) | Access | No access | No access |
+| OptiSweep / WCS API | No access | Access | Access |
+| WCS / Helix DB (SSMS) | No access | Access | Access |
+| Event Viewer / Windows Services | No access | Access | Access |
+| Ignition gateway | No access | Access | Access |
+| Tipper HMI / WebVisu / VISU | Access | Access | Access |
+| Hospital HMI / lane UI | Access | Access | Access |
+| Building / ACB overview HMI | Access | Access | Access |
+| AVEVA HMI | Access | No access | No access |
+
+Hard rules: only `operator` may E-stop; RMS soft stop is L2/L3 only; AVEVA is site-only.
+
 Role guidance:
-- operator: normal operations, basic HMI actions, visual checks, scanning, tote handling, and source-backed operator recovery.
-- L1_support: guided diagnostics, alarm/status review, evidence gathering, and low-risk checks.
-- L2_support: advanced site support, maintenance, controls, software/systems, non-routine troubleshooting, LOTO/service work, or system-level risk.
-- L3_support: engineering, vendor, platform escalation, code/API/database/configuration changes, or unresolved fault analysis.
+- operator: site/customer normal operations, basic HMI actions available to site (including day-to-day **RMS**), visual checks, scanning, tote handling, physical E-stop, and source-backed operator recovery. Not FORTNA.
+- L1_support: FORTNA remote (Zscaler) first-pass diagnostics using allowed remotes (**RMS** overview, WebVisu, Hospital HMI); evidence gathering; no E-stop; no RMS soft stop; no AVEVA; no SSMS how-to.
+- L2_support: FORTNA remote deeper troubleshooting (deeper RMS, SSMS/WCS DB, API/Apidog, Event Viewer, Ignition, Stunnel as source-supported); may RMS soft stop (pause); no physical E-stop; no AVEVA.
+- L3_support: FORTNA escalation depth on allowed remotes; same access bounds as L2 for this matrix; engineering/vendor escalation when source requires.
 
 Role selection rules:
-1. Choose the lowest safe role supported by the source.
-2. Do not assign operator just because the HMI is involved.
-3. If the procedure includes LOTO, mechanical replacement, electrical work, guarded-area access, unsupported manual movement, configuration changes, or source-unclear recovery, prefer L2_support or L3_support.
-4. If role is uncertain, choose the higher safer role and explain why in extraction_notes.
+1. Choose the lowest safe role supported by the source **and** the access matrix.
+2. Prefer `operator` for site-facing **RMS** procedures; use `L1_support` when the procedure is FORTNA remote RMS triage. Prefer `L2_support`/`L3_support` for WCS/SSMS.
+3. Do not assign operator just because the HMI is involved — if the procedure is FORTNA-only remote tooling (SSMS, Ignition admin, Event Viewer), use L1/L2/L3 as appropriate.
+4. If the procedure includes physical E-stop, only `operator` may execute it.
+5. If the procedure includes RMS soft stop (pause), require L2_support or L3_support.
+6. If the procedure requires AVEVA HMI, require `operator` (site/floor only).
+7. If the procedure includes LOTO, mechanical replacement, electrical work, guarded-area access, or unsupported manual movement, prefer operator (site) for physical execution and L2_support/L3_support for remote system-side steps when source-supported.
+8. If role is uncertain, choose the higher safer FORTNA role that still has Access, and explain why in extraction_notes.
 
 Allowed confidence values:
 - high

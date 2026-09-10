@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Use API Dog to observe Ignition HMI API request/response behavior (fault stats, pause, recover, startup)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Use API Dog to observe Ignition HMI API request/response behavior (fault stats, pause, recover, startup)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_use_api_dog_to_observe_ignition_hmi_request_response_behavior_v1</td></tr>
+<tr><th>Title</th><td>Use API Dog to observe Ignition HMI API request/response behavior (fault stats, pause, recover, startup)</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>wcs_api_responsiveness, gateway_health</td></tr>
+<tr><th>Access Surface</th><td>apidog, rms_ui</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>api_unresponsive, gateway_unhealthy</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use API Dog on a primary server to verify that AVEVA/HMI actions are implemented as request/response calls through Ignition (used as an OPC server). Confirm that API Dog returns responses reflecting system state (e.g., startup returns a response indicating whether the system is in the running/shutdown state) and that data-oriented calls return payloads rather than downstream module-to-module tracing.</p>
+<h2>When To Use</h2>
+<p>When you need to confirm that AVEVA/HMI interactions are correctly represented at the Ignition-hosted API layer as request/response behavior (GET-style data fetches and push-button/action-style requests like startup), and to interpret the returned response as system state (running/shutdown) rather than expecting internal module-to-module flow tracing.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/a47b2c64a103b938.jpg" alt="artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500" /><figcaption>Frame showing Ignition has the APIs outlined in the API guide and that AVEVA sends a request which Ignition processes and returns responses (fault stats, pause, recover).</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Connect to a primary server where the Ignition-hosted APIs are locally hosted</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Jump onto a primary server. The source states the APIs are locally hosted and installed on every primary server, and that anyone can jump on the primary to get to all the APIs.</p>
+<p><strong>Expected result:</strong></p>
+<p>You are operating from a primary server environment where the locally hosted APIs are available for API Dog calls.</p>
+<hr>
+<h3>Step 2 — Open API Dog and locate the shared API collection/documentation used for Ignition HMI APIs</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open API Dog and locate the shared API collection/documentation referenced by the source. The source states they use API Dog rather than Postman and that there is API documentation in an API guide (Word document mentioned).</p>
+<p><strong>Expected result:</strong></p>
+<p>API Dog is open and you have access to the API guide/collection entries needed to call the Ignition-hosted APIs.</p>
+<hr>
+<h3>Step 3 — Run an API Dog call for an HMI action (e.g., startup) to observe request/response behavior</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In API Dog, run an API call corresponding to an HMI action such as “startup”. The source states AVEVA hits a request tag; Ignition processes and returns responses.</p>
+<p><strong>Expected result:</strong></p>
+<p>API Dog returns a response message for the startup action.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If API Dog calls do not return responses or return unexpected errors, escalate to support (source indicates deeper module-to-module tracing is not available at this layer).</li>
+</ul>
+<hr>
+<h3>Step 4 — Interpret the startup response as system state (running vs shutdown) rather than expecting internal flow tracing</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Read the API Dog response message from the startup call and determine whether it indicates the system is in the running state or not (and similarly for shutdown state). The source states there is no stacking/flow tracing at this level—only request/response.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can map the response message to system state constraints (e.g., response indicates system is not in the running state when startup is clicked in the wrong state).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the response does not reflect system state gating or is missing/unexpected, escalate to support (source: deeper module-to-module tracing is not exposed at this layer).</li>
+</ul>
+<hr>
+<h3>Step 5 — For data-oriented calls, confirm you receive a response payload (not downstream module-to-module flow)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Run a data-oriented API Dog call (the source describes these as mainly fetching data). Confirm that the call returns a response payload rather than a trace of downstream module-to-module flow.</p>
+<p><strong>Expected result:</strong></p>
+<p>API Dog returns a response payload for data-oriented calls.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If API Dog calls do not return responses or return unexpected errors, escalate to support (source: deeper module-to-module tracing is not available at this layer).</li>
+</ul>
+<hr>
+<h3>Step 6 — If you suspect downstream failures (e.g., 55XX), note that this layer does not expose module-to-module stacking/flow tracing</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>When interpreting API Dog results, remember the source claim: there is no stacking/flow tracing at this level. Even if a downstream module call fails with a 55XX error, the HMI API request/response layer only provides the response indicating state (or failure) rather than a trace of where it stopped.</p>
+<p><strong>Expected result:</strong></p>
+<p>You do not attempt to infer internal module call chains from the API Dog request/response layer; you treat the response as the observable signal.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you need deeper downstream failure origin beyond request/response, escalate to support (source: deeper stacking/flow tracing is not exposed at the HMI API request/response layer).</li>
+</ul>
+<hr>
+</body>
+</html>

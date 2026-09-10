@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check Robot Command Database Model Table for Active Command Status (Sent → In Progress → Archived)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check Robot Command Database Model Table for Active Command Status (Sent → In Progress → Archived)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_robot_command_database_model_table_active_command_status_v1</td></tr>
+<tr><th>Title</th><td>Check Robot Command Database Model Table for Active Command Status (Sent → In Progress → Archived)</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>robot_command_or_task_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>api_unresponsive, robot_task_or_command_stuck</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the Robotics module’s transactional table, RobotCommandDatabaseModel, to determine whether a robot command is still active (sent/in-progress) or has completed and been archived to Robot Command Activity (historical status such as errored or cancelled).</p>
+<h2>When To Use</h2>
+<p>When you need to verify whether a specific Robotics-module robot command for an AGV is still active (sent/in-progress) or has completed and moved into the archived Robot Command Activity record.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/bc80d134a7f69ff3.jpg" alt="artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000" /><figcaption>Training frame showing RobotCommandDatabaseModel command names and fields (including sent/in-progress indicators and command lifecycle context).</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the Robot Command Database model table view (RobotCommandDatabaseModel)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the Robot Command Database model table view for RobotCommandDatabaseModel and display the columns/fields used to identify command lifecycle (including sent time and in-progress time) and command identity fields (command name, robot name, container, station/parameters).</p>
+<p><strong>Expected result:</strong></p>
+<p>RobotCommandDatabaseModel is visible with rows that include command identity fields and lifecycle timing fields (sent time and in-progress time).</p>
+<hr>
+<h3>Step 2 — Locate the relevant active command row by command name and associated parameters</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In RobotCommandDatabaseModel, locate the row matching the command name (examples from the source include MoveTote, PickupTote, DropOffTote, EmptyGoTo, RemoveAgv, ReleaseAgv, GoCharge) and match the associated robot name/container/station parameters shown in the table.</p>
+<p><strong>Expected result:</strong></p>
+<p>A single RobotCommandDatabaseModel row is identified for the target command name and the associated robot/container/station parameters.</p>
+<hr>
+<h3>Step 3 — Check lifecycle timestamps/fields (sent time and in-progress time)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>For the identified RobotCommandDatabaseModel row, confirm the row has a sent time and determine whether it is marked as in progress by checking the in-progress time field/indicator described in the source.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can classify the command lifecycle state based on the presence/values of sent time and in-progress time (sent but not in-progress vs marked in-progress).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the command appears stuck (e.g., not progressing from sent to in-progress as described), stop and escalate for deeper investigation.</li>
+</ul>
+<hr>
+<h3>Step 4 — If not in active table, confirm archive in Robot Command Activity and review archived status</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the command is no longer present in RobotCommandDatabaseModel, open the Robot Command Activity archive view/table and search for the historical record for the same command name and associated robot/container/station parameters. Review the archived status, noting that the source states it could be errored or cancelled.</p>
+<p><strong>Expected result:</strong></p>
+<p>A matching historical record is found in Robot Command Activity with an archived status (e.g., errored or cancelled) for the target command.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the expected command is not present in RobotCommandDatabaseModel and also not found in Robot Command Activity, stop and escalate for deeper investigation.</li>
+</ul>
+<hr>
+<h3>Step 5 — Interpret queue/capacity implication of in-progress vs not-yet in-progress</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the source’s described relationship between command lifecycle and queue/location capacity, interpret the observed lifecycle state: when the command is in-progress, it frees up the queue/location capacity; until then, the current destination location remains.</p>
+<p><strong>Expected result:</strong></p>
+<p>Your lifecycle classification (sent vs in-progress vs archived) aligns with the expected queue/location capacity behavior described by the source.</p>
+<hr>
+</body>
+</html>

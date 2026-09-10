@@ -1,0 +1,366 @@
+{
+  "procedure_id": "proc_interpret_sorter_sweeper_location_model_lane_status_v1",
+  "candidate_id": "candidate_training_video_day2_interpret_sorter_sweeper_location_model_lane_status",
+  "title": "Interpret Sorter Sweeper Database Location Model: location types and lane status (active/bypass/not tracking)",
+  "procedure_type": "diagnostic",
+  "summary": "Use the Sorter Sweeper database Location Model fields to identify what a location represents (Sorter, Tipper, Hospital, Induction) and interpret the lane status for a destination as active/open, bypass/closed, or not tracking/not yet used.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "zone_config_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "mapping_abnormal"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to interpret how a sorter-side destination is represented in the Sorter Sweeper database Location Model—specifically the location type and whether the destination is active/open, bypass/closed, or not tracking/not yet used.",
+  "not_for": [
+    "Do not use this procedure to perform physical safety actions (no E-stop).",
+    "Do not use this procedure if you cannot access the Sorter Sweeper database objects needed to view the Location Model fields (request the correct database/table/view name instead)."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support: Interpret the Location Model fields (LocationType and lane status) and map them to the operational meanings (open/closed/not yet used) for the destination of interest."
+  ],
+  "safety_notes": [
+    "This procedure is interpretive (database field meaning). It does not require physical safety actions."
+  ],
+  "access_or_tools_needed": [
+    "Sorter Sweeper database access appropriate for interpreting the Location Model (access may be limited; CS/support teams may use VM)."
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the Sorter Sweeper database view/table that contains the Location Model for sorter-side stations."
+    ],
+    "system_preconditions": [
+      "The database objects you open must include the LocationType field and a lane status field for the destination/location record you are interpreting."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_sorter_model_legs_and_receiver_fields_v1",
+    "ctx_training_video_location_model_station_types_v1",
+    "ctx_training_video_sort_location_attributes_v1",
+    "ctx_training_video_lane_status_reference_v1",
+    "ctx_training_video_access_reference_cs_team_vm_access_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+      "description": "Frame showing Sorter Sweeper Database Location Model: locations represent stations in the map; LocationType values (Sorter, Tipper, Hospital, Induction) and lane status meanings (active/open, bypass/closed, not tracking/not yet used).",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Sorter Sweeper database Location Model view/table for sorter-side stations",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Get to the specific database object that contains the Location Model records so you can read LocationType and lane status for the destination/location you care about.",
+      "instruction": "Open the Sorter Sweeper database view/table that contains the Location Model for sorter-side stations (the source indicates there is an actual database, but access may be limited and may require CS/support team access via VM).",
+      "expected_result": "You can view location records in the Sorter Sweeper database that include (at minimum) a LocationType field and a lane status field for each location/destination record.",
+      "healthy_condition": "The opened view/table shows location records and includes the fields needed to interpret location type and lane status.",
+      "failure_condition": "You cannot find the LocationType or lane status fields in the view/table you opened.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open Location Model table/view",
+          "exact_action": "Open the Sorter Sweeper database view/table that contains the Location Model for sorter-side stations.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot find the LocationType or lane status fields in the database view you opened, stop and request the correct database/table/view name from the CS/support team mentioned as having access."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 21,
+          "section_id": "training_video_day2_segment_0021",
+          "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+          "quote_or_summary": "“These are in the database… We will have actual database… CS team… log into VM.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Identify the station type using LocationType (Sorter, Tipper, Hospital, Induction)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine what the destination/location represents in the map by reading the LocationType value for the record.",
+      "instruction": "In the Location Model records, locate the LocationType field and confirm the value is one of: Sorter, Tipper, Hospital, or Induction.",
+      "expected_result": "For the destination/location record you are analyzing, LocationType is one of the four supported types: Sorter, Tipper, Hospital, Induction.",
+      "healthy_condition": "LocationType values are present and match the four named types used by the Location Model.",
+      "failure_condition": "LocationType is missing, empty, or contains values outside the four named types.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check LocationType value",
+          "exact_action": "Locate the fields that identify the station type (LocationType) and confirm it is one of: Sorter, Tipper, Hospital, Induction.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If LocationType is not present or does not match the source-listed values, stop and escalate to the team that owns the database schema/definitions for that site."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 21,
+          "section_id": "training_video_day2_segment_0021",
+          "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+          "quote_or_summary": "“Locations have four types, disorder, Tipper, hospital, and induction.” (OCR shows LocationType values and definitions)."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Interpret Induction and Hospital LocationType meanings",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Apply the correct operational meaning to Hospital and Induction locations so you interpret the destination correctly.",
+      "instruction": "If LocationType is Induction, confirm it is described as the specified tote induction location at the hospital. If LocationType is Hospital, confirm it is described as the specified tote drop-off location at the hospital.",
+      "expected_result": "For the record(s) where LocationType is Induction or Hospital, you can state which hospital tote function the location represents (induction vs drop-off) using the source-backed definitions.",
+      "healthy_condition": "Induction records correspond to tote induction at the hospital; Hospital records correspond to tote drop-off at the hospital.",
+      "failure_condition": "You cannot reconcile the record’s LocationType with the Induction/Hospital definitions (e.g., the record appears to represent a different function than induction/drop-off).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Apply Induction/Hospital definitions",
+          "exact_action": "If LocationType is Induction, confirm it is described as the specified tote induction location at the hospital; if LocationType is Hospital, confirm it is the specified tote drop-off location at the hospital.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 21,
+          "section_id": "training_video_day2_segment_0021",
+          "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+          "quote_or_summary": "“The induction is specified tote Induction location at the hospital. The hospital is the specified tote drop off location at the hospital.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Read lane status for the destination/location record",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the destination is currently open/active, closed/bypassed, or not yet used by interpreting the lane status field.",
+      "instruction": "Find the lane status field for the location/destination record and identify whether it is one of: active, bypass, or not tracking.",
+      "expected_result": "The lane status value for the record is one of the source-listed values: active, bypass, or not tracking.",
+      "healthy_condition": "Lane status is populated and matches one of the three supported values.",
+      "failure_condition": "Lane status is not one of the source-listed values (active, bypass, not tracking).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check lane status value",
+          "exact_action": "Find the lane status field for the location/destination and identify whether it is one of: active, bypass, or not tracking.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the lane status value is not one of the source-listed values (active, bypass, not tracking), stop and escalate to the team that owns the database schema/definitions for that site."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 21,
+          "section_id": "training_video_day2_segment_0021",
+          "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+          "quote_or_summary": "“Lane status is active, bypass or not tracking.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Map lane status to operational meaning (active=open, bypass=closed, not tracking=not yet used)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Translate the lane status value into the operational state of the destination so you can interpret whether it is open/closed or unused.",
+      "instruction": "Map the observed lane status to the source meanings: active = open; bypass = closed; not tracking = destinations that have not been used yet.",
+      "expected_result": "You can state the destination’s operational state as open/active, closed/bypassed, or not yet used based on the lane status value in the record.",
+      "healthy_condition": "The mapping you apply matches the source-backed meanings for active/bypass/not tracking.",
+      "failure_condition": "You cannot map the lane status value to one of the three meanings because the value is outside the supported set.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Apply lane status mapping",
+          "exact_action": "Map the observed lane status to the source meanings: active = open; bypass = closed; not tracking = destinations that have not been used yet.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 21,
+          "section_id": "training_video_day2_segment_0021",
+          "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+          "quote_or_summary": "“It’s active, it’s open; bypass, it’s closed; not tracking are destinations that have not been used yet.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Optionally verify additional location attributes to ensure you are looking at the correct location record",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Reduce misinterpretation risk by confirming the record’s other identifying attributes match the destination you intended to analyze.",
+      "instruction": "Optionally verify additional location attributes mentioned by the source (e.g., sort name, sort side, zone, sequence from sort entrance, lane/chute number, lane delay, keep-closed, tipper select) to ensure you are looking at the correct location record for the destination you care about.",
+      "expected_result": "The record’s additional attributes align with the destination context you are investigating (sort/zone/sequence/lane/chute and related flags).",
+      "healthy_condition": "The record’s attributes consistently identify the intended destination and its lane behavior (including lane status).",
+      "failure_condition": "The record’s attributes do not align with the destination context you intended to analyze.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Cross-check location attributes",
+          "exact_action": "Optionally verify additional location attributes mentioned by the source (e.g., sort name, sort side, zone, sequence from sort entrance, lane/chute number, lane delay, keep-closed, tipper select) to ensure you are looking at the correct location record for the destination you care about.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 21,
+          "section_id": "training_video_day2_segment_0021",
+          "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+          "quote_or_summary": "“Sort locations have attributes for reporting the sort name, the sort of side… the zone… the sequence… the lane… lane delay… lane status (active, bypass or not tracking)… keep closed… tipper select.”"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "For the destination/location record you opened, LocationType is identified as one of: Sorter, Tipper, Hospital, Induction.",
+    "For that same record, lane status is read as active, bypass, or not tracking.",
+    "You can correctly interpret the destination state as open/active, closed/bypassed, or not yet used based on the lane status mapping."
+  ],
+  "healthy_conditions": [
+    "Lane status values are limited to active, bypass, and not tracking.",
+    "LocationType values are limited to Sorter, Tipper, Hospital, and Induction.",
+    "Induction and Hospital records match the tote induction vs tote drop-off meanings."
+  ],
+  "failure_conditions": [
+    "Lane status contains a value outside active/bypass/not tracking.",
+    "LocationType field is missing or contains values outside the four named types.",
+    "The required fields (LocationType and lane status) are not present in the opened database view/table."
+  ],
+  "escalation_guidance": [
+    "If lane status is not one of the source-listed values (active, bypass, not tracking), stop and escalate to the team that owns the database schema/definitions for that site.",
+    "If you cannot find the LocationType or lane status fields in the database view you opened, stop and request the correct database/table/view name from the CS/support team mentioned as having access."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+      "what_to_look_at": "LocationType values/definitions and lane status meanings (active/open, bypass/closed, not tracking/not yet used) in the Sorter Sweeper Database Location Model frame."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 21,
+      "section_id": "training_video_day2_segment_0021",
+      "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+      "quote_or_summary": "Locations represent stations in the map; LocationType has four types (Sorter, Tipper, Hospital, Induction). Lane status is active, bypass, or not tracking; active=open, bypass=closed, not tracking=destinations not used yet."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000",
+      "what_to_look_at": "Frame showing Sorter Sweeper Database Location Model: locations represent stations in the map; LocationType values (Sorter, Tipper, Hospital, Induction) and lane status meanings (active/open, bypass/closed, not tracking/not yet used)."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_interpret_sorter_sweeper_location_model_lane_status"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The candidate references a specific “Sorter Sweeper database view/table” name, but the packet does not provide the exact database object name(s) to open.",
+    "The packet does not provide the exact column name for the lane status field (only the lane status values and their meanings)."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

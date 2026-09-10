@@ -1,0 +1,373 @@
+{
+  "procedure_id": "proc_shut_down_optisweep_system_through_wcs_api_v1",
+  "candidate_id": "candidate_training_video_day2_shutdown_system_wcs_api",
+  "title": "Shut Down OptiSweep System Through the WCS API",
+  "procedure_type": "operation",
+  "summary": "Use the OptiSweep / WCS API client to confirm that the system is in the running state, execute POST System Shutdown, and verify that GET System State reports shutdown.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "fleet_system_status"
+  ],
+  "access_surface": [
+    "wcs_api",
+    "apidog"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use the OptiSweep / WCS API when an authorized L2 or L3 support user needs to shut down the OptiSweep system from its live running state and verify the resulting system state.",
+  "not_for": [
+    "Do not use POST System Shutdown unless GET System State confirms that the system is running.",
+    "Do not use this procedure as a physical emergency stop or a substitute for site safety actions.",
+    "Do not use this procedure when the API request cannot be executed or returns an unrecognized result; escalate instead."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support or L3_support performs the API state checks and shutdown request using the OptiSweep / WCS API client.",
+    "The executing support role verifies the post-request system state and escalates when the state does not change or the result is unrecognized."
+  ],
+  "safety_notes": [
+    "Confirm the current system state before issuing the shutdown request.",
+    "POST System Shutdown is described as shutting down the system when it is in a running state."
+  ],
+  "access_or_tools_needed": [
+    "OptiSweep / WCS API",
+    "Apidog / WCS API client",
+    "GET System State",
+    "POST System Shutdown"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the OptiSweep / WCS API through Apidog or an equivalent approved API client.",
+      "L2_support or L3_support authorization to execute the shutdown operation."
+    ],
+    "system_preconditions": [
+      "GET System State must report running before POST System Shutdown is executed."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_system_api_operations_v1",
+    "ctx_training_video_system_state_reference_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+      "description": "OptiSweep API overview showing the System API list and Apidog on the primary server.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0028_so_we_have_open_all_shoots_primary_02_40_50_000",
+      "description": "System API list showing GET System State, POST System Startup, and POST System Shutdown, with the shutdown state behavior described.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the System Shutdown request in the WCS API client",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Locate the live shutdown operation before checking or changing system state.",
+      "instruction": "Open the OptiSweep / WCS API in Apidog or an equivalent approved API client and locate POST System Shutdown in the System API list.",
+      "expected_result": "The POST System Shutdown request is available in the OptiSweep / WCS API client.",
+      "healthy_condition": "The System API list contains POST System Shutdown and GET System State.",
+      "failure_condition": "The API client cannot be opened, the System API list is unavailable, or POST System Shutdown cannot be located.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate System Shutdown",
+          "exact_action": "Locate POST System Shutdown in the OptiSweep / WCS API client.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the API request cannot be executed or POST System Shutdown is not available."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0027",
+          "timestamp_start": "02:39:55.500",
+          "timestamp_end": "02:39:55.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+          "quote_or_summary": "OptiSweep provides APIs to get data and make requests; Apidog is installed on the primary servers."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "page": 28,
+          "section_id": "training_video_day2_segment_0028",
+          "timestamp_start": "02:40:50.000",
+          "timestamp_end": "02:40:50.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0028_so_we_have_open_all_shoots_primary_02_40_50_000",
+          "quote_or_summary": "The System API list includes GET System State and POST System Shutdown."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Verify the current state through the WCS API",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Ensure the shutdown operation is being applied from the supported running state.",
+      "instruction": "In the OptiSweep / WCS API client, execute GET System State and inspect the returned current system state. Continue only when the returned state is running.",
+      "expected_result": "GET System State returns the current system state as running.",
+      "healthy_condition": "The live WCS API response identifies the system state as running.",
+      "failure_condition": "The returned state is not running, the request fails, or the response is unrecognized.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Get current system state",
+          "exact_action": "Execute GET System State and confirm that the returned state is running.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop if GET System State does not report running.",
+        "Escalate if GET System State cannot be executed or returns an unrecognized result."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "page": 28,
+          "section_id": "training_video_day2_segment_0028",
+          "timestamp_start": "02:40:06.000",
+          "timestamp_end": "02:41:34.000",
+          "quote_or_summary": "System State gets the current state of the system. System Shutdown shuts down the system if it is in a running state."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Execute System Shutdown and query state again",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Issue the supported WCS API shutdown operation and obtain a live post-operation state.",
+      "instruction": "In the OptiSweep / WCS API client, execute POST System Shutdown. After the request completes, execute GET System State again.",
+      "expected_result": "The shutdown request completes and a subsequent GET System State response is available for verification.",
+      "healthy_condition": "POST System Shutdown can be executed while the pre-request state is running, and GET System State returns a recognized state.",
+      "failure_condition": "The POST request cannot be executed, returns an unrecognized result, or no subsequent system-state response is available.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Request system shutdown",
+          "exact_action": "Execute POST System Shutdown.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Recheck system state",
+          "exact_action": "Execute GET System State again after the shutdown request.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the API request cannot be executed or returns an unrecognized result."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "page": 28,
+          "section_id": "training_video_day2_segment_0028",
+          "timestamp_start": "02:40:06.000",
+          "timestamp_end": "02:41:34.000",
+          "quote_or_summary": "System Shutdown shuts down the system if it is in a running state; System State gets the current state."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Confirm the shutdown state",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Verify that the live system state changed to the documented shutdown state.",
+      "instruction": "Inspect the state returned by the post-request GET System State call and compare it with the documented shutdown state.",
+      "expected_result": "The post-request GET System State response reports shutdown.",
+      "healthy_condition": "The live WCS API state is shutdown after POST System Shutdown.",
+      "failure_condition": "The live WCS API state does not change to shutdown or the returned state is unrecognized.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify shutdown state",
+          "exact_action": "Compare the returned state with the shutdown state.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the system state does not change to shutdown after the shutdown request.",
+        "Escalate if the returned state is unrecognized."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "page": 28,
+          "section_id": "training_video_day2_segment_0028",
+          "timestamp_start": "02:40:06.000",
+          "timestamp_end": "02:41:34.000",
+          "quote_or_summary": "System Startup starts the system from a shutdown state, and System Shutdown shuts down the system from a running state."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "GET System State reports running before the shutdown request.",
+    "POST System Shutdown executes successfully.",
+    "A subsequent GET System State reports shutdown."
+  ],
+  "healthy_conditions": [
+    "The OptiSweep / WCS API client exposes GET System State and POST System Shutdown.",
+    "The pre-operation system state is running.",
+    "The post-operation system state is shutdown."
+  ],
+  "failure_conditions": [
+    "The system is not in the running state before POST System Shutdown.",
+    "The API request cannot be executed.",
+    "The API returns an unrecognized result.",
+    "The system state does not change to shutdown after the request."
+  ],
+  "escalation_guidance": [
+    "Stop and escalate when the pre-shutdown state is not running.",
+    "Escalate when the API request cannot be executed or returns an unrecognized result.",
+    "Stop and escalate when the post-request system state does not change to shutdown."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+      "what_to_look_at": "The OptiSweep API overview and the presence of Apidog on the primary server."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0028_so_we_have_open_all_shoots_primary_02_40_50_000",
+      "what_to_look_at": "The System API list entries for GET System State and POST System Shutdown and the stated running-to-shutdown behavior."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 28,
+      "section_id": "training_video_day2_segment_0028",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "POST System Shutdown shuts down the system if it is in a running state."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 27,
+      "section_id": "training_video_day2_segment_0027",
+      "timestamp_start": "02:39:55.500",
+      "timestamp_end": "02:39:55.500",
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+      "quote_or_summary": "OptiSweep provides APIs to get data and make requests; Apidog is installed on the primary servers."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 28,
+      "section_id": "training_video_day2_segment_0028",
+      "timestamp_start": "02:40:50.000",
+      "timestamp_end": "02:40:50.000",
+      "artifact_id": "artifact_training_video_training_video_day2_0028_so_we_have_open_all_shoots_primary_02_40_50_000",
+      "quote_or_summary": "The System API list includes GET System State, POST System Startup, and POST System Shutdown."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+      "what_to_look_at": "The OptiSweep API overview and the presence of Apidog on the primary server."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0028_so_we_have_open_all_shoots_primary_02_40_50_000",
+      "what_to_look_at": "The System API list entries for GET System State and POST System Shutdown and the stated running-to-shutdown behavior."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_shutdown_system_wcs_api"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not define the detailed response schema or HTTP status expected from POST System Shutdown.",
+    "The source does not specify the exact API base URL, authentication method, request headers, or request body.",
+    "The source does not provide a timeout or polling interval for the post-shutdown GET System State check.",
+    "The source does not define the approved operational authorization or site notification process before shutdown."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

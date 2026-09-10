@@ -1,0 +1,422 @@
+{
+  "procedure_id": "proc_inspect_sort_confirmation_dimension_data_helix_lane_activity_model_v1",
+  "candidate_id": "candidate_training_video_ssms_inspect_lane_activity_sort_confirmation",
+  "title": "Inspect Sort Confirmation and Dimension Data in the Helix Lane Activity Model with SSMS",
+  "procedure_type": "diagnostic",
+  "summary": "Use the WCS / Helix DB (SSMS) to review recent SortConf records in the Helix2x_1Prod_SorterSweeper database and determine whether lane activity contains package dimensions and sorter-event indicators relevant to missing dimension data, AI1 data loss, or tote overflow.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "sorter_item_or_scan_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "miss_scan_or_dimension_fallback"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use the WCS / Helix DB (SSMS) diagnostic when totes are overflowing, AI1 is reported as not sending data, default package dimensions may be in use, or recent lane activity needs to be checked for missing dimension data and related sorter events.",
+  "not_for": [
+    "Do not use this read-only diagnostic to modify database records or configuration.",
+    "Do not use this procedure to direct site personnel to reboot or modify dimensioner equipment; the source supports identifying missing data in the WCS / Helix DB (SSMS), not performing dimensioner repair."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Perform the read-only inspection in the WCS / Helix DB (SSMS), interpret SortConf records, and escalate unexplained missing or defaulted dimensions and abnormal event-indicator patterns."
+    }
+  ],
+  "safety_notes": [
+    "Keep the WCS / Helix DB (SSMS) activity read-only.",
+    "Do not modify database records or configuration as part of this diagnostic."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "SSMS",
+    "Helix2x_1Prod_SorterSweeper database",
+    "dbo.IgnitionLaneActivityModel"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2_support or L3_support access to the WCS / Helix DB (SSMS)."
+    ],
+    "system_preconditions": [
+      "The Helix2x_1Prod_SorterSweeper database is available in the WCS / Helix DB (SSMS).",
+      "The dbo.IgnitionLaneActivityModel contains or can be queried for lane activity records."
+    ],
+    "external_references": [
+      "Reported condition, such as AI1 not sending data, default dimensions being used, or totes overflowing."
+    ]
+  },
+  "related_context_ids": [
+    "ctx_training_video_lane_activity_model_reference_v1",
+    "ctx_training_video_ai1_default_dimensions_reference_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000",
+      "description": "WCS / Helix DB (SSMS) results view filtered to SortConf records, showing TrackingNumber, Length, Width, Height, Weight, Cube, and related event-indicator columns.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0060_they_they_had_a_power_flicker_primary_03_28_33_000",
+      "description": "WCS / Helix DB (SSMS) results view showing recent SortConf rows and dimension fields in the IgnitionLaneActivityModel.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0024_the_items_model_so_items_are_primary_02_10_19_000",
+      "description": "IgnitionLaneActivityModel field view showing lane, package, dimension, classification, and sorter-event fields, including MissingDimensionData and Recirc.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0057_but_this_is_it_not_for_primary_03_23_52_500",
+      "description": "WCS / Helix DB (SSMS) results view showing recent IgnitionLaneActivityModel rows and SortConf-related fields.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Helix sorter database in SSMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish the read-only WCS / Helix DB (SSMS) view used for the lane activity diagnostic.",
+      "instruction": "In the WCS / Helix DB (SSMS), open the Helix2x_1Prod_SorterSweeper database without making changes to records or configuration.",
+      "expected_result": "The Helix2x_1Prod_SorterSweeper database is selected and available for inspection in SSMS.",
+      "healthy_condition": "SSMS can access the named Helix2x_1Prod_SorterSweeper database and expose its lane activity model.",
+      "failure_condition": "The database is unavailable or the named lane activity model cannot be accessed.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Select Helix database",
+          "exact_action": "Select the Helix2x_1Prod_SorterSweeper database in SSMS.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The Helix2x_1Prod_SorterSweeper database is unavailable to the WCS / Helix DB (SSMS) user."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0058",
+          "timestamp_start": "03:23:55.000",
+          "timestamp_end": "03:27:50.000",
+          "quote_or_summary": "The support-chat image identifies the Helix2x_1Prod_SorterSweeper database and dbo.IgnitionLaneActivityModel."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Review recent SortConf records",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm that recent sorter confirmation activity is represented in the WCS / Helix DB (SSMS).",
+      "instruction": "In the WCS / Helix DB (SSMS), open or query dbo.IgnitionLaneActivityModel and filter the Message field to SortConf. Review the most recent records, ordered by the available record identifier in descending order when using the source-supported query pattern.",
+      "expected_result": "Recent SortConf rows are visible in dbo.IgnitionLaneActivityModel with lane, package, dimension, classification, and sorter-event fields.",
+      "healthy_condition": "Recent SortConf rows are present and include observable values such as TrackingNumber, package or tote identifiers, lane information, and the available dimension and event fields.",
+      "failure_condition": "No recent SortConf rows are present, or the returned records do not expose the expected lane activity fields.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Filter lane activity",
+          "exact_action": "Filter dbo.IgnitionLaneActivityModel where Message = \"SortConf\" and review the recent results.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Recent SortConf records are absent from dbo.IgnitionLaneActivityModel."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0058",
+          "timestamp_start": "03:23:55.000",
+          "timestamp_end": "03:27:50.000",
+          "quote_or_summary": "OCR shows a query against dbo.IgnitionLaneActivityModel with Message = \"SortConf\" and results ordered by Id desc."
+        },
+        {
+          "source_id": "training_video_day2",
+          "artifact_id": "artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000",
+          "section_id": "training_video_day2_segment_0059",
+          "timestamp_start": "03:28:03.000",
+          "timestamp_end": "03:28:03.000",
+          "quote_or_summary": "The SSMS results are filtered on sort confirmation to inspect whether AI1 is sending sort and dimension data."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Inspect dimension and sorter-event fields",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the SortConf records contain package dimensions and indicators associated with missing or abnormal sorter data.",
+      "instruction": "In the WCS / Helix DB (SSMS) SortConf results, inspect TrackingNumber, Length, Width, Height, Weight, and Cube. Also inspect MissingDimensionData, MissingInduct, ToteNotFound, Diverted, OffTheEnd, and Recirc for the same records.",
+      "expected_result": "The selected SortConf rows show which package dimension fields are populated and the corresponding values of the sorter-event indicators.",
+      "healthy_condition": "Recent records contain dimension values when dimension data is available, and the event-indicator fields do not show a consistently abnormal pattern across the records being reviewed.",
+      "failure_condition": "Dimension fields are consistently null, blank, or defaulted; MissingDimensionData is repeatedly asserted; or ToteNotFound, Diverted, OffTheEnd, Recirc, or related indicators show an unexplained abnormal pattern.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect dimension fields",
+          "exact_action": "Review TrackingNumber, Length, Width, Height, Weight, and Cube in the SortConf results.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect event indicators",
+          "exact_action": "Review MissingDimensionData, MissingInduct, ToteNotFound, Diverted, OffTheEnd, and Recirc in the SortConf results.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Dimension fields are consistently missing or defaulted.",
+        "The event indicators show an abnormal pattern that cannot be explained from the available WCS / Helix DB (SSMS) records."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "artifact_id": "artifact_training_video_training_video_day2_0024_the_items_model_so_items_are_primary_02_10_19_000",
+          "section_id": "training_video_day2_segment_0024",
+          "timestamp_start": "02:10:19.000",
+          "timestamp_end": "02:10:19.000",
+          "quote_or_summary": "OCR lists TrackingNumber, Length, Height, Weight, Cube, Message, PackageClassification, MissingDimensionData, MissingInduct, ToteNotFound, Diverted, OffTheEnd, and Recirc."
+        },
+        {
+          "source_id": "training_video_day2",
+          "artifact_id": "artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000",
+          "section_id": "training_video_day2_segment_0059",
+          "timestamp_start": "03:28:03.000",
+          "timestamp_end": "03:28:03.000",
+          "quote_or_summary": "The observed example states that Width, Height, and Weight were consistently 1 in the filtered SortConf results, indicating that AI1 was not sending sort or dimension data."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Compare the records with the reported condition",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Relate the live WCS / Helix DB (SSMS) observations to the reported AI1, default-dimension, or tote-overflow condition.",
+      "instruction": "Compare the recent SortConf dimension values and event indicators in the WCS / Helix DB (SSMS) with the reported condition. Treat repeated missing or defaulted dimensions together with MissingDimensionData or the reported AI1 data loss as evidence that the lane activity is not receiving expected dimension data. Do not infer a cause beyond the records.",
+      "expected_result": "The diagnostic identifies whether the live SortConf records support or do not support the reported missing-dimension or tote-overflow condition.",
+      "healthy_condition": "Recent SortConf records contain usable dimension values for the reviewed records and do not consistently indicate missing dimension data.",
+      "failure_condition": "The records show absent AI1-related activity, repeated defaulted or missing dimensions, or a pattern consistent with the reported tote overflow that cannot be explained by the available records.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Correlate live records",
+          "exact_action": "Compare the recent SortConf records with the reported AI1 data loss, default dimensions, or tote overflow.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "AI1-related data is not represented in recent lane activity records.",
+        "Default dimensions or tote overflow continue and the available records do not explain the condition."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0058",
+          "timestamp_start": "03:23:55.000",
+          "timestamp_end": "03:27:50.000",
+          "quote_or_summary": "The support example links tote overflow with AI1 not sending data and the use of default dimensions."
+        },
+        {
+          "source_id": "training_video_day2",
+          "artifact_id": "artifact_training_video_training_video_day2_0060_they_they_had_a_power_flicker_primary_03_28_33_000",
+          "section_id": "training_video_day2_segment_0060",
+          "timestamp_start": "03:28:33.000",
+          "timestamp_end": "03:28:33.000",
+          "quote_or_summary": "The example associates a power flicker with dimension data not rebooting properly and directs support to identify missing dimension data in the database."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Stop the read-only diagnostic and escalate unexplained findings",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Prevent unsupported database or equipment changes and route conditions that cannot be explained from the WCS / Helix DB (SSMS) evidence.",
+      "instruction": "Stop the WCS / Helix DB (SSMS) inspection without modifying records or configuration when recent SortConf rows are absent, dimensions remain consistently missing or defaulted, or event indicators show an unexplained abnormal pattern. Escalate the evidence and the reported operating condition to L3_support.",
+      "expected_result": "The diagnostic ends with the observed database evidence preserved for escalation and no database or configuration changes made.",
+      "healthy_condition": "The investigation can be concluded from recent SortConf records without unexplained missing data or abnormal indicator patterns.",
+      "failure_condition": "The available WCS / Helix DB (SSMS) records cannot account for the reported AI1, default-dimension, or tote-overflow condition.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Escalate evidence",
+          "exact_action": "Stop the read-only diagnostic and escalate when the recent SortConf records or indicators do not explain the condition.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Recent SortConf records are absent.",
+        "Dimension fields are consistently missing or defaulted.",
+        "Event indicators show an abnormal pattern that cannot be explained from the available records.",
+        "Tote overflow continues while AI1 data or expected dimension data is not represented in the lane activity records."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0058",
+          "timestamp_start": "03:23:55.000",
+          "timestamp_end": "03:27:50.000",
+          "quote_or_summary": "The candidate source supports checking the lane activity model and escalating when AI1 data is absent or default dimensions and tote overflow continue."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Recent SortConf rows are located in dbo.IgnitionLaneActivityModel using the WCS / Helix DB (SSMS).",
+    "TrackingNumber, Length, Width, Height, Weight, Cube, and the listed sorter-event indicators are inspected.",
+    "The records provide live evidence for or against missing dimension data, AI1 data loss, default dimensions, or tote overflow.",
+    "No database records or configuration are modified."
+  ],
+  "healthy_conditions": [
+    "Recent SortConf records are present in dbo.IgnitionLaneActivityModel.",
+    "Dimension values are populated when dimension data is available.",
+    "MissingDimensionData and related event indicators do not show a consistently unexplained abnormal pattern."
+  ],
+  "failure_conditions": [
+    "Recent SortConf records are absent.",
+    "TrackingNumber or dimension fields are consistently missing, blank, null, or defaulted.",
+    "MissingDimensionData is repeatedly asserted or Width, Height, or Weight show the repeated defaulted pattern described in the source.",
+    "AI1-related data is not represented in recent lane activity records.",
+    "Tote overflow continues and the available SortConf records do not explain the condition."
+  ],
+  "escalation_guidance": [
+    "Escalate to L3_support when recent SortConf records are absent or the available WCS / Helix DB (SSMS) evidence cannot explain the reported condition.",
+    "Include the reviewed database, table, SortConf filter, affected dimension fields, and observed event-indicator pattern in the escalation.",
+    "Do not direct site personnel to modify dimensioner equipment based solely on this database diagnostic."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000",
+      "what_to_look_at": "WCS / Helix DB (SSMS) SortConf results filtered to show TrackingNumber, Length, Width, Height, Weight, Cube, and event indicators."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0060_they_they_had_a_power_flicker_primary_03_28_33_000",
+      "what_to_look_at": "Recent dbo.IgnitionLaneActivityModel SortConf rows and the visible dimension fields."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0024_the_items_model_so_items_are_primary_02_10_19_000",
+      "what_to_look_at": "IgnitionLaneActivityModel field names for package, dimension, classification, and sorter-event data."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0057_but_this_is_it_not_for_primary_03_23_52_500",
+      "what_to_look_at": "SSMS results view containing recent lane activity rows and SortConf-related fields."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0058",
+      "timestamp_start": "03:23:55.000",
+      "timestamp_end": "03:27:50.000",
+      "artifact_id": "artifact_training_video_training_video_day2_0058_i_got_a_question_about_the_primary_03_25_52_500",
+      "quote_or_summary": "The support-chat image shows a check of Helix2x_1Prod_SorterSweeper.dbo.IgnitionLaneActivityModel for SortConf records with tracking, dimension, classification, and sorter-event fields."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000",
+      "what_to_look_at": "WCS / Helix DB (SSMS) SortConf results filtered to show TrackingNumber, Length, Width, Height, Weight, Cube, and event indicators."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0060_they_they_had_a_power_flicker_primary_03_28_33_000",
+      "what_to_look_at": "Recent dbo.IgnitionLaneActivityModel SortConf rows and the visible dimension fields."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0024_the_items_model_so_items_are_primary_02_10_19_000",
+      "what_to_look_at": "IgnitionLaneActivityModel field names for package, dimension, classification, and sorter-event data."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0057_but_this_is_it_not_for_primary_03_23_52_500",
+      "what_to_look_at": "SSMS results view containing recent lane activity rows and SortConf-related fields."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_ssms_inspect_lane_activity_sort_confirmation"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide a complete validated SQL statement beyond the visible filter and ordering pattern; do not invent or require a query beyond the named database, table, Message = SortConf filter, and recent-record review.",
+    "The source does not define a numeric threshold for an acceptable missing-dimension rate or event-indicator rate.",
+    "The source does not identify a definitive remediation procedure for AI1 or dimensioner equipment.",
+    "The source does not establish a specific escalation queue, case number, or site-specific contact."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0024_the_items_model_so_items_are_primary_02_10_19_000",
+    "artifact_training_video_training_video_day2_0057_but_this_is_it_not_for_primary_03_23_52_500",
+    "artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000",
+    "artifact_training_video_training_video_day2_0060_they_they_had_a_power_flicker_primary_03_28_33_000"
+  ]
+}

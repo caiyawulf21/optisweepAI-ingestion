@@ -94,3 +94,4 @@ Before returning, verify:
 - `merged_from_procedure_ids` lists every contributing source procedure ID.
 - Conflicts are recorded when sources disagree.
 - Pass-through and merged runbooks use the same Stage 6 field structure.
+- Preserve and union taxonomy tags from sources: `capability_tags`, `access_surface`, `audience_roles`, `failure_pattern_tags`.

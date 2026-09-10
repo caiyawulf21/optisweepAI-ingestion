@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check IgnitionLaneActivityModel in SSMS for MissingDimensionData after a power flicker</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check IgnitionLaneActivityModel in SSMS for MissingDimensionData after a power flicker</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_ignitionlanemodel_missingdimensiondata_after_power_flicker_v1</td></tr>
+<tr><th>Title</th><td>Check IgnitionLaneActivityModel in SSMS for MissingDimensionData after a power flicker</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>wcs_system_faults</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>charging_abnormal, api_unresponsive</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use SSMS to inspect the lane activity database model/view [dbo].[IgnitionLaneActivityHodel] / [dbo].[IgnitionLaneActivityModel] and confirm whether the MissingDimensionData field is flagged for lane activity rows in the affected time window after a power flicker. This provides database evidence that upstream dimension data did not reboot properly.</p>
+<h2>When To Use</h2>
+<p>Use when a power flicker occurred and you need to verify whether upstream dimension data failed to reboot properly, by checking the lane activity dataset for MissingDimensionData.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/d3061ef3fe825a42.jpg" alt="artifact_training_video_training_video_day2_0060_they_they_had_a_power_flicker_primary_03_28_33_000" /><figcaption>Frame showing SSMS-style results for [dbo].[IgnitionLaneActivityHodel] / [dbo].[IgnitionLaneActivityModel] including fields MissingDimensionData, MissingInduct, ToteNotFound, and dimension fields (Length, Width, Height, Weight, Cube), plus lane activity rows with timestamp-like values.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open SSMS and connect to the database containing IgnitionLaneActivityHodel / IgnitionLaneActivityModel</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In SSMS, connect to the WCS/Helix database that contains the lane activity model/view named [dbo].[IgnitionLaneActivityHodel] / [dbo].[IgnitionLaneActivityModel].</p>
+<p><strong>Expected result:</strong></p>
+<p>You are connected in SSMS and can access the [dbo].[IgnitionLaneActivityHodel] / [dbo].[IgnitionLaneActivityModel] object.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you cannot access the database/model/view, stop and escalate for database access/permissions troubleshooting.</li>
+</ul>
+<hr>
+<h3>Step 2 — Locate IgnitionLaneActivityHodel / IgnitionLaneActivityModel and identify dimension-data-related fields</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In SSMS, locate the lane activity model/view named [dbo].[IgnitionLaneActivityHodel] / [dbo].[IgnitionLaneActivityModel] and ensure the result set includes the fields shown in the source OCR: MissingDimensionData, MissingInduct, ToteNotFound, and dimension fields Length, Width, Height, Weight, Cube.</p>
+<p><strong>Expected result:</strong></p>
+<p>The SSMS results show the columns/fields MissingDimensionData, MissingInduct, ToteNotFound, and dimension fields Length, Width, Height, Weight, Cube.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If MissingDimensionData is not present in the result set for this model/view, stop and escalate for deeper investigation of the correct lane activity model/view or schema.</li>
+</ul>
+<hr>
+<h3>Step 3 — Filter to the affected time window after the power flicker</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the SSMS results for [dbo].[IgnitionLaneActivityHodel] / [dbo].[IgnitionLaneActivityModel], filter/identify the lane activity rows for the affected time window after the power flicker using the timestamp-like values visible in the results (as shown in the source OCR).</p>
+<p><strong>Expected result:</strong></p>
+<p>You have identified one or more lane activity rows in the SSMS results whose timestamp-like values fall within the affected time window after the power flicker.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you cannot isolate the affected time window, stop and escalate for guidance on the correct time basis/filters for this model/view.</li>
+</ul>
+<hr>
+<h3>Step 4 — Check MissingDimensionData for the identified lane activity rows</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>For the lane activity rows you identified in the affected time window, check the MissingDimensionData field to see whether it is present/flagged in the results.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can point to lane activity rows in [dbo].[IgnitionLaneActivityHodel] / [dbo].[IgnitionLaneActivityModel] where MissingDimensionData is present/flagged for the post-flicker time window.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the database does not show MissingDimensionData for the affected lane activity/time window, stop and escalate for deeper investigation.</li>
+</ul>
+<hr>
+<h3>Step 5 — Communicate the database evidence that upstream dimension data did not reboot properly</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the observed SSMS evidence (rows where MissingDimensionData is flagged), communicate that the system is supposed to get dimension data, but the database indicates it is not for the affected post-flicker lane activity rows.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can reference the specific lane activity rows and the MissingDimensionData field values/flagging that support the claim of missing dimension data after the power flicker.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the evidence is ambiguous (e.g., MissingDimensionData cannot be tied to the post-flicker rows), stop and escalate for deeper investigation.</li>
+</ul>
+<hr>
+</body>
+</html>

@@ -1,0 +1,345 @@
+{
+  "procedure_id": "proc_use_hospital_reject_detection_home_base_initialization_v1",
+  "candidate_id": "candidate_training_video_day1_hospital_reject_detection_and_home_base_initialization",
+  "title": "Use Hospital as reject detection and home-base initialization when tipping can’t occur",
+  "procedure_type": "operation",
+  "summary": "Use the Hospital area as the expected routing/behavior location when an AGV cannot tip at the tipper (the hospital represents a reject state/detection, not that the AGV is “sick”). The same Hospital area is also used as a home-base style initialization point for new AGVs, including shutdown-state replacement behavior where a newly added AGV goes through the hospital first and then determines where it is needed.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "capability_tags": [
+    "hospital_diversion",
+    "robot_command_or_task_state"
+  ],
+  "access_surface": [
+    "tipper_hmi"
+  ],
+  "audience_roles": [
+    "operator"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you observe/need to interpret AGV behavior in which tipping cannot occur at the tipper, and you want to confirm that the AGV should route through the Hospital as reject detection/handling. Also when you are observing shutdown-state AGV replacement/initialization behavior for newly added AGVs.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "Operator: Observe AGV routing/behavior through the Hospital area and interpret it as reject detection/handling when tipping can’t occur, and as the home-base initialization path for new AGVs (including shutdown-state replacement)."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Live visibility of AGV routing through the Hospital area",
+    "Source diagram/frame for module naming (Hospital, Tipper, entrance/exit queues)"
+  ],
+  "prerequisites": {
+    "access_required": [],
+    "system_preconditions": [
+      "AGV behavior is observable in the system during the tipping-not-possible scenario and/or during shutdown-state replacement/initialization."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_hospital_reject_and_home_base_v1",
+    "ctx_training_video_shutdown_agv_rebalance_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0020_we_ve_got_your_entrance_queue_primary_00_43_45_000",
+      "description": "Hospital/tipper/entrance-queue routing diagram and shutdown-state example text: hospital first, reject detection, and home-base initialization behavior.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0021_yes_so_there_s_something_wrong_primary_00_47_36_500",
+      "description": "Frame text describing Hospital as a reject station for operator to address totes when Tipper has an issue; also includes shutdown queue description.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+      "description": "Frame text describing that failed tip leads to the Hospital and that the tipper informs the software when AGVs can return to sorter entrance queue, go to hospital, or go to charge.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Identify the scenario where tipping can’t occur at the tipper",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Establish the correct interpretation context: when tipping can’t occur at the tipper, the Hospital is used for reject detection/handling.",
+      "instruction": "In the observed scenario, confirm that the condition is “it can’t tip at the tipper” (i.e., tipping is not possible at the tipper).",
+      "expected_result": "You are in the tipping-not-possible scenario that the source describes as the trigger for using the Hospital.",
+      "healthy_condition": "The situation matches the source-described condition: tipping cannot occur at the tipper.",
+      "failure_condition": "The scenario is not actually a “can’t tip at the tipper” case (e.g., tipping is possible/normal), so Hospital should not be interpreted using this reject-detection meaning.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm tipping-not-possible condition",
+          "exact_action": "Identify the scenario where tipping can’t occur at the tipper",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Observe AGV routing through the Hospital area when tipping is not possible",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Verify the expected routing behavior: when tipping can’t happen, the AGV goes through the Hospital first.",
+      "instruction": "Observe the AGV’s path/next location and confirm it routes through the Hospital area as the next step when tipping cannot occur.",
+      "expected_result": "The AGV routes through the Hospital area in the tipping-not-possible scenario.",
+      "healthy_condition": "AGV behavior matches the source routing description: “Everything for the most part goes through the hospital when you're at it hospital.”",
+      "failure_condition": "The AGV does not route through the Hospital in the tipping-not-possible scenario.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Track AGV through Hospital",
+          "exact_action": "Observe that the AGV routes through the hospital area when tipping is not possible",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the Hospital is not used in the described reject/initialization scenarios, stop and escalate (source provides no corrective actions)."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Interpret the Hospital meaning as reject detection/handling (not AGV sickness)",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Ensure correct operational interpretation: Hospital indicates reject state/detection, not that the AGV is “sick.”",
+      "instruction": "When the AGV is in the Hospital, interpret the Hospital as the reject state/detection handling area described by the source.",
+      "expected_result": "You interpret the Hospital presence as “reject state / reject detection” for the tipping-not-possible condition.",
+      "healthy_condition": "Your interpretation matches the source clarification: “It's not like AGV is sick… No, no, no. OK, so it's a reject. It's a reject state… It's a reject detection.”",
+      "failure_condition": "You interpret Hospital as meaning the AGV is “sick” rather than a reject state/detection handling area.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Apply reject-detection interpretation",
+          "exact_action": "Interpret the source-described meaning: the hospital corresponds to a reject state / reject detection",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Confirm Hospital is used to initialize new AGVs (home-base behavior)",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Verify the second purpose of the Hospital: it acts as a home-base initialization entry point for new AGVs.",
+      "instruction": "Observe/confirm that when new AGVs are added for initialization, they go through the Hospital first and then proceed to their needed actions/locations.",
+      "expected_result": "New AGVs use the Hospital as the home-base style initialization path (“go here first”).",
+      "healthy_condition": "Your observation aligns with the source: “we use the hospital to initialize new AGV… kind of like it's home based. Like I'll go here first…”",
+      "failure_condition": "New AGVs do not use the Hospital as the initialization/home-base entry point.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify initialization via Hospital",
+          "exact_action": "Observe that the hospital is used to initialize new AGVs (home-base behavior)",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the Hospital is not used in the described reject/initialization scenarios, stop and escalate (source provides no corrective actions)."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Validate shutdown-state replacement behavior: added AGV goes through Hospital first and then determines where it is needed",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm the shutdown-state behavior described by the source: when an AGV is removed without a tote and another AGV is added, the added AGV goes through the Hospital first and then determines the missing AGV condition.",
+      "instruction": "In a shutdown-state replacement scenario, observe that the newly added AGV goes through the Hospital first, then determines where it is needed based on the missing AGV condition.",
+      "expected_result": "The added AGV routes through the Hospital first, then determines “there’s an AGV missing” and proceeds accordingly.",
+      "healthy_condition": "Matches the source shutdown-state example: “remove an AGV that doesn't have a tote and you add another… it'll go through the hospital 1st and then determine, oh, there's an AGV missing…”",
+      "failure_condition": "In shutdown-state replacement, the added AGV does not go through the Hospital first or does not follow the described missing-AGV determination behavior.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Observe shutdown-state replacement routing",
+          "exact_action": "Observe that in a shutdown-state example the added AGV goes through the hospital 1st and then determines where it is needed",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the Hospital is not used in the described reject/initialization scenarios, stop and escalate (source provides no corrective actions)."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "In the tipping-not-possible scenario, the AGV routes through the Hospital area.",
+    "When the AGV is in the Hospital, it is interpreted as reject state/detection handling (not “AGV is sick”).",
+    "Newly added AGVs use the Hospital as a home-base initialization entry point.",
+    "In shutdown-state replacement, the added AGV goes through the Hospital first and then determines where it is needed based on the missing AGV condition."
+  ],
+  "healthy_conditions": [
+    "Source-described reject-detection interpretation is applied: “It’s a reject… reject state… reject detection” and “not like AGV is sick.”",
+    "Source-described routing behavior is observed: “it'll go through the hospital 1st” and “Everything for the most part goes through the hospital…”",
+    "Source-described initialization behavior is observed: “we use the hospital to initialize new AGV… like it's home based.”"
+  ],
+  "failure_conditions": [
+    "Hospital is not used in the described reject/initialization scenarios.",
+    "Hospital is misinterpreted as indicating the AGV is “sick” rather than reject state/detection handling.",
+    "Shutdown-state replacement does not show the added AGV going through the Hospital first."
+  ],
+  "escalation_guidance": [
+    "If the Hospital is not used in the described reject/initialization scenarios, stop and escalate; the source does not provide corrective actions."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0020_we_ve_got_your_entrance_queue_primary_00_43_45_000",
+      "what_to_look_at": "Hospital/tipper/entrance-queue routing diagram and the shutdown-state example text: hospital first, reject detection, and home-base initialization."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0021_yes_so_there_s_something_wrong_primary_00_47_36_500",
+      "what_to_look_at": "Text stating Hospital is a reject station for operator to address totes when Tipper has an issue; includes shutdown queue description."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+      "what_to_look_at": "Text stating failed tip leads to Hospital and that tipper informs software for return to sorter entrance queue / go to hospital / go to charge."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "section_id": "training_video_day1_segment_0020",
+      "page": 20,
+      "timestamp_start": "00:43:45.000",
+      "timestamp_end": "00:43:45.000",
+      "artifact_id": "artifact_training_video_training_video_day1_0020_we_ve_got_your_entrance_queue_primary_00_43_45_000",
+      "site_code": "",
+      "site_label": ""
+    },
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "section_id": "training_video_day1_segment_0021",
+      "page": 21,
+      "timestamp_start": "00:47:36.500",
+      "timestamp_end": "00:47:36.500",
+      "artifact_id": "artifact_training_video_training_video_day1_0021_yes_so_there_s_something_wrong_primary_00_47_36_500",
+      "site_code": "",
+      "site_label": ""
+    },
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "section_id": "training_video_day1_segment_0017",
+      "page": 17,
+      "timestamp_start": "00:32:57.500",
+      "timestamp_end": "00:32:57.500",
+      "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0020_we_ve_got_your_entrance_queue_primary_00_43_45_000",
+      "what_to_look_at": "Hospital/tipper/entrance-queue routing diagram and the shutdown-state example text: hospital first, reject detection, and home-base initialization."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0021_yes_so_there_s_something_wrong_primary_00_47_36_500",
+      "what_to_look_at": "Text stating Hospital is a reject station for operator to address totes when Tipper has an issue; includes shutdown queue description."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+      "what_to_look_at": "Text stating failed tip leads to Hospital and that tipper informs software for return to sorter entrance queue / go to hospital / go to charge."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0037_what_are_these_these_are_rack_primary_01_29_18_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0035_it_d_be_a_question_mark_primary_01_25_36_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0042_if_you_change_it_to_if_primary_01_35_45_500"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day1_hospital_reject_detection_and_home_base_initialization"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The source provides conceptual/behavioral routing meaning (Hospital as reject detection/home base) but does not provide explicit live UI field names, alarm codes, or specific RMS/SSMS/DB table fields to check."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500",
+    "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+    "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+    "artifact_training_video_training_video_day1_0020_we_ve_got_your_entrance_queue_primary_00_43_45_000",
+    "artifact_training_video_training_video_day1_0021_yes_so_there_s_something_wrong_primary_00_47_36_500",
+    "artifact_training_video_training_video_day1_0035_it_d_be_a_question_mark_primary_01_25_36_500",
+    "artifact_training_video_training_video_day1_0037_what_are_these_these_are_rack_primary_01_29_18_500",
+    "artifact_training_video_training_video_day1_0042_if_you_change_it_to_if_primary_01_35_45_500"
+  ]
+}

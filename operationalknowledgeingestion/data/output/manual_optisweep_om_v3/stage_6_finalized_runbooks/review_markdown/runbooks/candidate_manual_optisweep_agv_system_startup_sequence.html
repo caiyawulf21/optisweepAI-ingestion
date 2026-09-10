@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Start OptiSweep AGV System (Reset Metrics → Start System → Close Out/Bag Out → Verify Running → Shut Down)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Start OptiSweep AGV System (Reset Metrics → Start System → Close Out/Bag Out → Verify Running → Shut Down)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_start_optsweep_agv_system_reset_metrics_start_closeout_bagout_verify_running_shutdown_v1</td></tr>
+<tr><th>Title</th><td>Start OptiSweep AGV System (Reset Metrics → Start System → Close Out/Bag Out → Verify Running → Shut Down)</td></tr>
+<tr><th>Procedure Type</th><td>operation</td></tr>
+<tr><th>Primary Role</th><td>operator</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>fleet_system_status</td></tr>
+<tr><th>Access Surface</th><td>rms_ui, tipper_hmi</td></tr>
+<tr><th>Audience Roles</th><td>operator</td></tr>
+<tr><th>Failure Pattern Tags</th><td>None</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Perform the required AGV start-up prerequisites (nine empty AGVs: five under the north rack and four under the south rack), start the OptiSweep system 15 minutes before the sort, run the documented start sequence (Reset Metrics → Start System → Close Out/Bag Out), verify the system returns to the &quot;Running&quot; state after Bag Out, and then shut down.</p>
+<h2>When To Use</h2>
+<p>Use to start the OptiSweep AGV system for an upcoming sort, ensuring the system is properly prepared (nine empty AGVs) and that the system transitions back to the &quot;Running&quot; state after close out (Bag Out).</p>
+<h2>Visual References</h2>
+<figure><img src="assets/597651fff1a13999.jpeg" alt="artifact_fig_5_1_system_in_shut_down_mode" /><figcaption>System screen showing the shut-down state used during the AGV system start-up procedure (includes the documented sequence: Reset metrics → Start system → Close out (Bag Out) → Running → Shut down).</figcaption></figure>
+<figure><img src="assets/2a4d007ef9ff9ec1.jpeg" alt="artifact_fig_4_9_system_api_controls" /><figcaption>System API Controls screen showing controls for Get System State, System Startup, System Shutdown, System Close Out, System Purge, and Reset Metrics.</figcaption></figure>
+<figure><img src="assets/ec83d895fff08cd8.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen" /><figcaption>RMS screen for adding an AGV to a zone when no empty AGV is present (includes steps to E-stop RMS, move an AGV into the zone, add AGV in RMS, wait for AGV to turn blue, and verify AGV status is &quot;szonestaging&quot;).</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Verify nine empty AGVs are present (5 north / 4 south)</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Verify there are nine (9) AGVs without totes in the system: five (5) under the north rack and four (4) under the south rack.</p>
+<p><strong>Expected result:</strong></p>
+<p>You confirm five (5) empty AGVs under the north rack and four (4) empty AGVs under the south rack.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the nine empty AGV prerequisite cannot be met (5 under north rack, 4 under south rack), do not proceed until an empty AGV is moved into the missing zone and added to the RMS.</li>
+</ul>
+<hr>
+<h3>Step 2 — Move an empty AGV into the missing zone and add it to RMS (if needed)</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>If fewer than nine empty AGVs are present, move an AGV without a tote into the zone that is missing an empty AGV, then add that AGV to the RMS after moving it.</p>
+<p><strong>Expected result:</strong></p>
+<p>The missing zone now has an empty AGV, and the moved AGV has been added to RMS.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the nine empty AGV prerequisite cannot be met (5 under north rack, 4 under south rack), do not proceed without moving an empty AGV into the missing zone and adding it to the RMS.</li>
+</ul>
+<hr>
+<h3>Step 3 — Confirm start timing (15 minutes before sort starts)</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Confirm the system start will occur 15 minutes before the sort starts.</p>
+<p><strong>Expected result:</strong></p>
+<p>You confirm the start time is set to occur 15 minutes before the sort begins.</p>
+<hr>
+<h3>Step 4 — Reset metrics</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the system control surface (System API Controls), perform the Reset Metrics step.</p>
+<p><strong>Expected result:</strong></p>
+<p>Metrics have been reset (Reset Metrics action completed on the System API Controls screen).</p>
+<hr>
+<h3>Step 5 — Start the system</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the system control surface (System API Controls), start the system using the System Startup control.</p>
+<p><strong>Expected result:</strong></p>
+<p>The system is placed into the running state via the System Startup control.</p>
+<hr>
+<h3>Step 6 — Perform close out (Bag Out)</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the system control surface (System API Controls), perform Close Out (Bag Out) as the next step in the sequence.</p>
+<p><strong>Expected result:</strong></p>
+<p>Close out (Bag Out) is completed.</p>
+<hr>
+<h3>Step 7 — Verify system returns to &quot;Running&quot; after Bag Out</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>After close out (Bag Out) is completed, verify the system state returns to &quot;Running&quot;.</p>
+<p><strong>Expected result:</strong></p>
+<p>System state is &quot;Running&quot; after Bag Out completes.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the system does not return to &quot;Running&quot; after close out (Bag Out), stop and escalate for support rather than continuing the sequence.</li>
+</ul>
+<hr>
+<h3>Step 8 — Shut down the system</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the system control surface (System API Controls), shut down the system using the System Shutdown control.</p>
+<p><strong>Expected result:</strong></p>
+<p>System shutdown is initiated/completed via the System Shutdown control.</p>
+<hr>
+</body>
+</html>

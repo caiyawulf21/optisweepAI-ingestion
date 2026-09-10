@@ -1,0 +1,5142 @@
+{
+  "schema_version": "0.4",
+  "catalog_id": "capabilities",
+  "description": "Rich capability cards for Stage 6 mini-RAG: each job links to access surfaces, SQL databases/models/key fields, API checks, activities, observables, failures, and role paths. Constrained tag IDs remain the taxonomy capability id list; this file is reference enrichment.",
+  "ground_truth_principle": {
+    "statement": "WCS SQL (Helix/SSMS) is the authoritative backend state store for all operational surfaces. RMS, Ignition, AVEVA, the hospital HMI, and the WCS API are interfaces that read from or write to WCS SQL; they do not hold independent state.",
+    "applies_to_capabilities": [
+      "agv_active_errors",
+      "device_roster_state",
+      "hospital_diversion",
+      "zone_pairing_state",
+      "wcs_service_health",
+      "wcs_api_responsiveness",
+      "windows_service_or_event_log",
+      "tote_exchange_sequence",
+      "robot_command_or_task_state",
+      "wcs_system_faults",
+      "tote_lifecycle_state",
+      "sort_lifecycle_state",
+      "agv_charging_state"
+    ],
+    "backend_pairing_rule_ref": "docs/design_decisions/stage_8_playbook_finalization.md#backend-vs-ui-evidence-rule-2026-08-07"
+  },
+  "capabilities": [
+    {
+      "id": "agv_active_errors",
+      "label": "AGV active errors",
+      "job": "Confirm whether AGVs/robots currently have active error or fault state.",
+      "description": "Confirm whether AGVs/robots have active error or fault state (RMS and/or WCS AGV Active Error / SystemActiveErrorModel).",
+      "when_to_use": "Site reports AGV stopped, alarms, bump, path lost, or software showing robot faults; corroborate RMS overview vs WCS truth.",
+      "not_for": "Physical bump recovery steps (use agv_physical_recovery); Ignition OPC alone; tote NoRead.",
+      "primary_access_surfaces": [
+        "rms_ui",
+        "wcs_sql",
+        "wcs_api"
+      ],
+      "secondary_access_surfaces": [
+        "site_interview",
+        "apidog"
+      ],
+      "primary_databases": [
+        "robotics"
+      ],
+      "secondary_databases": [
+        "sorter_sweeper"
+      ],
+      "primary_models": [
+        "AgvActiveErrorDatabaseModel",
+        "SystemActiveErrorModel",
+        "AGVErrorActivityDatabaseModel",
+        "AgvErrorModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "robotics",
+          "model": "AgvErrorModel",
+          "purpose": "Lookup dictionary of AGV error codes/descriptions; critical vs noncritical for metrics."
+        },
+        {
+          "database": "robotics",
+          "model": "AgvActiveErrorDatabaseModel",
+          "purpose": "Currently active AGV errors in the system."
+        },
+        {
+          "database": "robotics",
+          "model": "AGVErrorActivityDatabaseModel",
+          "purpose": "Archive of resolved/removed AGV errors."
+        },
+        {
+          "database": "robotics",
+          "model": "SystemActiveErrorModel",
+          "purpose": "Currently active system errors (also used by Active AGV error SQL guide query)."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "AgvStatusModel",
+          "purpose": "Geek AGV status → tipper RMS fault notify; hospital waiting/maintenance routing."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "AgvActiveErrorDatabaseModel",
+          "database": "robotics",
+          "field": "Name",
+          "meaning": "Robot code.",
+          "needs_sme": false
+        },
+        {
+          "model": "AgvActiveErrorDatabaseModel",
+          "database": "robotics",
+          "field": "Error code",
+          "meaning": "Active error code.",
+          "needs_sme": false
+        },
+        {
+          "model": "AgvActiveErrorDatabaseModel",
+          "database": "robotics",
+          "field": "Description",
+          "meaning": "Error description.",
+          "needs_sme": false
+        },
+        {
+          "model": "AgvActiveErrorDatabaseModel",
+          "database": "robotics",
+          "field": "SortGuid",
+          "meaning": "Sort identifier during which the error occurred.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemActiveErrorModel",
+          "database": "robotics",
+          "field": "Id",
+          "meaning": "Row id.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemActiveErrorModel",
+          "database": "robotics",
+          "field": "EntityInserted",
+          "meaning": "Insert timestamp.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemActiveErrorModel",
+          "database": "robotics",
+          "field": "EntityLastUpdate",
+          "meaning": "Last update timestamp.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemActiveErrorModel",
+          "database": "robotics",
+          "field": "Name",
+          "meaning": "Error name.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemActiveErrorModel",
+          "database": "robotics",
+          "field": "Area",
+          "meaning": "Error area (e.g. AGV, Communication).",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemActiveErrorModel",
+          "database": "robotics",
+          "field": "Error",
+          "meaning": "Error code.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemActiveErrorModel",
+          "database": "robotics",
+          "field": "LastSeen",
+          "meaning": "Last seen timestamp.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemActiveErrorModel",
+          "database": "robotics",
+          "field": "SystemErrorDescription",
+          "meaning": "Description of the system error.",
+          "needs_sme": false
+        }
+      ],
+      "api_checks": [
+        "GetAGVStatuses",
+        "GetAGVFaultStats"
+      ],
+      "activities": [
+        {
+          "id": "rms_overview_agv_status",
+          "access_surface": "rms_ui",
+          "role": "operator",
+          "action": "Open RMS overview / AGV status; note alarms present vs clear vs blank UI."
+        },
+        {
+          "id": "ssms_robotics_active_agv_error",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "SSMS Helix/Robotics: AgvActiveError / SystemActiveError (+ activity history)."
+        },
+        {
+          "id": "apidog_get_agv_statuses",
+          "access_surface": "wcs_api",
+          "role": "L2_support",
+          "action": "GetAGVStatuses (and GetAGVFaultStats if needed) via Apidog."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "rms_overview_agv_status",
+          "access_surface": "rms_ui",
+          "label": "Open RMS overview / AGV status",
+          "observables": [
+            "alarms present",
+            "alarms clear",
+            "RMS blank"
+          ]
+        },
+        {
+          "id": "ssms_robotics_active_agv_error",
+          "access_surface": "wcs_sql",
+          "label": "SSMS Robotics AgvActiveError / SystemActiveError",
+          "observables": [
+            "active error rows present",
+            "active error rows clear",
+            "ErrorCode / SystemErrorDescription populated"
+          ]
+        },
+        {
+          "id": "apidog_get_agv_statuses",
+          "access_surface": "wcs_api",
+          "label": "GetAGVStatuses via Apidog / WCS API",
+          "observables": [
+            "API success with AGV fault/state",
+            "API timeout or error"
+          ]
+        },
+        {
+          "id": "apidog_get_agv_statuses",
+          "access_surface": "apidog",
+          "label": "GetAGVStatuses",
+          "observables": [
+            "AGV state/command/vitals/errors returned",
+            "API unresponsive"
+          ]
+        },
+        {
+          "id": "query_agv_active_errors",
+          "access_surface": "wcs_sql",
+          "label": "Query AgvActiveError / SystemActiveError",
+          "observables": [
+            "active errors present",
+            "clean"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "RMS AGV overview shows no active alarms for the robots in question",
+          "AgvActiveError / SystemActiveError rows empty or cleared",
+          "GetAGVStatuses shows robots not in active error"
+        ],
+        "degraded": [
+          "RMS shows AGV alarms / fault codes",
+          "Active error rows with ErrorCode / SystemErrorDescription",
+          "API status reports faulted or blocked AGVs"
+        ],
+        "escalate": [
+          "RMS blank while site running — check wcs_service_health",
+          "RMS vs SQL/API conflict — deepen L2/L3, consider L4"
+        ]
+      },
+      "failure_patterns": [
+        "system_fault",
+        "bump_fault",
+        "agv_tracking_or_path_lost",
+        "object_blocking_agv"
+      ],
+      "role_paths": {
+        "operator": "Primary RMS overview / AGV status on site; report floor symptoms; no SSMS",
+        "L1_support": "Remote RMS overview + optional site_interview; not SSMS how-to",
+        "L2_support": "Deeper RMS + Robotics active-error models + GetAGVStatuses",
+        "L3_support": "Same as L2; own resolve/RCA when persistent"
+      },
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "wcs_sql",
+          "wcs_api",
+          "rms_ui"
+        ],
+        "control_surfaces": [
+          "wcs_api"
+        ],
+        "required_evidence": [
+          "agv_active_errors"
+        ],
+        "forbidden_capabilities": [
+          "optisweep_service_restart",
+          "ignition_restart"
+        ],
+        "backend_mappings": [
+          {
+            "operational_concept": "agv_active_errors",
+            "site_ui_sources": [
+              "rms_ui"
+            ],
+            "support_read_sources": [
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "AgvActiveErrorDatabaseModel",
+                "fields": [
+                  "Name",
+                  "ErrorCode",
+                  "Description",
+                  "SortGuid"
+                ]
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "SystemActiveErrorModel",
+                "fields": [
+                  "Id",
+                  "EntityInserted",
+                  "EntityLastUpdate",
+                  "Name",
+                  "Area",
+                  "Error",
+                  "LastSeen",
+                  "SystemErrorDescription"
+                ]
+              }
+            ],
+            "preferred_support_surface": "wcs_sql"
+          }
+        ]
+      },
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "device_roster_state",
+      "label": "Device roster / map state",
+      "job": "Confirm robot roster, mapping, locations, cell codes, or abnormal fleet membership.",
+      "description": "Confirm robot roster, mapping, locations, cell codes, or abnormal fleet membership (RMS and/or Robotics robot / robot-location / cell-code models).",
+      "when_to_use": "Robots missing on map, wrong zone, mapping abnormal, roster vs floor mismatch.",
+      "not_for": "Active error code triage alone (agv_active_errors); physical remove without system-side steps.",
+      "primary_access_surfaces": [
+        "rms_ui",
+        "wcs_sql",
+        "wcs_api"
+      ],
+      "secondary_access_surfaces": [
+        "site_interview",
+        "physical_floor",
+        "apidog"
+      ],
+      "primary_databases": [
+        "robotics"
+      ],
+      "secondary_databases": [
+        "geek_agv",
+        "sorter_sweeper"
+      ],
+      "primary_models": [
+        "RobotDatabaseModel",
+        "RobotLocationDatabaseModel",
+        "CellCodeDatabaseModel",
+        "LatticeCodeModel",
+        "AgvStatusModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "robotics",
+          "model": "RobotLocationDatabaseModel",
+          "purpose": "All location information shown as orange stations on RMS."
+        },
+        {
+          "database": "robotics",
+          "model": "SorterSideDatabaseModel",
+          "purpose": "Defines sorter legs: entrance/exit queue locations, tipper count, disabled flag."
+        },
+        {
+          "database": "robotics",
+          "model": "SortLocationsDatabaseModel",
+          "purpose": "Sorter locations, queue locations, sorter side, sequence."
+        },
+        {
+          "database": "robotics",
+          "model": "CellCodeDatabaseModel",
+          "purpose": "Cell codes (RMS node codes), hospital association, missing-zone under sorter check."
+        },
+        {
+          "database": "robotics",
+          "model": "RobotDatabaseModel",
+          "purpose": "Robot/AGV live state (large state enum in slides)."
+        },
+        {
+          "database": "geek_agv",
+          "model": "LatticeCodeModel",
+          "purpose": "Lattice codes and respective station IDs (induct/drop-off translation)."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "AgvStatusModel",
+          "purpose": "Geek AGV status → tipper RMS fault notify; hospital waiting/maintenance routing."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "RobotDatabaseModel",
+          "database": "robotics",
+          "field": "State",
+          "meaning": "Robot state enum (Tipper/Hospital/Charger/Sorter/GLD/ShutDown family); full enum confirmed live in optisweep_training_slides p.77-80.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotDatabaseModel",
+          "database": "robotics",
+          "field": "ToteId",
+          "meaning": "Tote currently associated with robot (column confirmed as ToteId, not ToteName).",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotDatabaseModel",
+          "database": "robotics",
+          "field": "SorterSideId",
+          "meaning": "Assigned sorter side (column confirmed as SorterSideId, not AssignedSorterSide).",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotDatabaseModel",
+          "database": "robotics",
+          "field": "CurrentLocationId",
+          "meaning": "Current location id.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotDatabaseModel",
+          "database": "robotics",
+          "field": "DestinationLocationId",
+          "meaning": "Destination location id.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotLocationDatabaseModel",
+          "database": "robotics",
+          "field": "StationNumber",
+          "meaning": "Station / workstation number for the location.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotLocationDatabaseModel",
+          "database": "robotics",
+          "field": "Occupied",
+          "meaning": "Whether the location is currently occupied.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotLocationDatabaseModel",
+          "database": "robotics",
+          "field": "Zone",
+          "meaning": "Zone associated with the location (sorter-side zones).",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotLocationDatabaseModel",
+          "database": "robotics",
+          "field": "CloseOutZone",
+          "meaning": "Closeout zone for the location.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotLocationDatabaseModel",
+          "database": "robotics",
+          "field": "LocationType",
+          "meaning": "Type of location (Sorter*, Tipper*, Hospital*, ShutDown*, GLD*).",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotLocationDatabaseModel",
+          "database": "robotics",
+          "field": "MaxAgvs",
+          "meaning": "Max number of AGVs allowed at that location.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotLocationDatabaseModel",
+          "database": "robotics",
+          "field": "DwellTracking",
+          "meaning": "True/false whether dwell time should be tracked at this location.",
+          "needs_sme": false
+        }
+      ],
+      "api_checks": [
+        "GetAGVStatuses",
+        "RecoverAGV",
+        "RemoveAgv"
+      ],
+      "activities": [
+        {
+          "id": "rms_map_monitor",
+          "access_surface": "rms_ui",
+          "role": "operator",
+          "action": "RMS roster/map monitor; ask site if robots missing visually."
+        },
+        {
+          "id": "ssms_robot_location_cellcode",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "SSMS Robotics Robot / RobotLocation / CellCode; GeekAgv LatticeCode if mapping."
+        },
+        {
+          "id": "api_recover_remove_agv",
+          "access_surface": "wcs_api",
+          "role": "L2_support",
+          "action": "RecoverAGV / RemoveAgv when system-side roster repair is required."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "rms_map_monitor",
+          "access_surface": "rms_ui",
+          "label": "Map monitor / robotControl",
+          "observables": [
+            "robot disconnected",
+            "emergency stop trigger on map",
+            "workstation IDs"
+          ]
+        },
+        {
+          "id": "query_robot_location_roster",
+          "access_surface": "wcs_sql",
+          "label": "Query RobotLocation / Robot / CellCode",
+          "observables": [
+            "roster matches RMS",
+            "mapping gap"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "Roster matches expected robots on RMS",
+          "RobotLocation Occupied/Zone/LocationType coherent",
+          "Cell/lattice codes match mapped fleet"
+        ],
+        "degraded": [
+          "Robot missing on map or disconnected",
+          "Zone / LocationType mismatch",
+          "CellCode or LatticeCode abnormal"
+        ],
+        "escalate": [
+          "Cannot reconcile roster vs floor after RMS+DB+API"
+        ]
+      },
+      "failure_patterns": [
+        "mapping_abnormal",
+        "zone_agv_mismatch",
+        "rms_map_collision_display"
+      ],
+      "role_paths": {
+        "operator": "Primary RMS roster/map on site; confirm visual presence / missing robots",
+        "L1_support": "Remote RMS roster/map + site visual confirm",
+        "L2_support": "Robot/RobotLocation/CellCode + Recover/Remove APIs",
+        "L3_support": "Same as L2 for persistent mapping issues"
+      },
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "wcs_sql",
+          "wcs_api",
+          "rms_ui"
+        ],
+        "control_surfaces": [
+          "aveva_hmi",
+          "wcs_api",
+          "approved_system_hmi"
+        ],
+        "required_evidence": [
+          "device_roster_state",
+          "robot_location_state"
+        ],
+        "forbidden_capabilities": [
+          "optisweep_service_restart",
+          "ignition_restart"
+        ],
+        "backend_mappings": [
+          {
+            "operational_concept": "robot_location_state",
+            "site_ui_sources": [
+              "rms_ui",
+              "aveva_hmi",
+              "hospital_hmi"
+            ],
+            "support_read_sources": [
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "RobotDatabaseModel",
+                "fields": [
+                  "State",
+                  "CurrentLocationId",
+                  "DestinationLocationId"
+                ]
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "RobotLocationDatabaseModel",
+                "fields": [
+                  "StationNumber"
+                ]
+              }
+            ],
+            "correlation_keys": [
+              "robot_id",
+              "location_id"
+            ],
+            "freshness_field": "EntityLastUpdate",
+            "preferred_support_surface": "wcs_sql",
+            "approved_control_surfaces": [
+              "aveva_hmi",
+              "wcs_api",
+              "approved_system_hmi"
+            ]
+          }
+        ]
+      },
+      "backend_mappings": [
+        {
+          "operational_concept": "robot_location_state",
+          "site_ui_sources": [
+            "rms_ui",
+            "aveva_hmi",
+            "hospital_hmi"
+          ],
+          "support_read_sources": [
+            {
+              "surface": "wcs_sql",
+              "database": "robotics",
+              "model": "RobotDatabaseModel",
+              "fields": [
+                "State",
+                "CurrentLocationId",
+                "DestinationLocationId"
+              ]
+            },
+            {
+              "surface": "wcs_sql",
+              "database": "robotics",
+              "model": "RobotLocationDatabaseModel",
+              "fields": [
+                "StationNumber"
+              ]
+            }
+          ],
+          "correlation_keys": [
+            "robot_id",
+            "location_id"
+          ],
+          "freshness_field": "EntityLastUpdate",
+          "preferred_support_surface": "wcs_sql",
+          "approved_control_surfaces": [
+            "aveva_hmi",
+            "wcs_api",
+            "approved_system_hmi"
+          ]
+        }
+      ],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "fleet_system_status",
+      "label": "Fleet / overall system status",
+      "job": "Confirm overall fleet / system-down vs running from overview surfaces.",
+      "description": "Confirm overall RMS/system-down or fleet overview health.",
+      "when_to_use": "Blank RMS, site-wide stoppage report, overall system page down.",
+      "not_for": "Single-AGV active error deep dive without overall context.",
+      "primary_access_surfaces": [
+        "rms_ui",
+        "aveva_hmi"
+      ],
+      "secondary_access_surfaces": [
+        "event_viewer",
+        "wcs_sql",
+        "site_interview"
+      ],
+      "primary_databases": [
+        "robotics",
+        "sorter_sweeper"
+      ],
+      "secondary_databases": [],
+      "primary_models": [
+        "SystemDatabaseModel",
+        "SystemStateModel",
+        "SortModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "robotics",
+          "model": "SystemDatabaseModel",
+          "purpose": "System state and current sort GUID."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "SystemDatabaseModel",
+          "database": "robotics",
+          "field": "Id",
+          "meaning": "Row id.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemDatabaseModel",
+          "database": "robotics",
+          "field": "EntityInserted",
+          "meaning": "Insert timestamp.",
+          "needs_sme": true
+        },
+        {
+          "model": "SystemDatabaseModel",
+          "database": "robotics",
+          "field": "EntityLastUpdate",
+          "meaning": "Last update timestamp.",
+          "needs_sme": true
+        },
+        {
+          "model": "SystemDatabaseModel",
+          "database": "robotics",
+          "field": "Status",
+          "meaning": "System status enum.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemDatabaseModel",
+          "database": "robotics",
+          "field": "SortGuid",
+          "meaning": "Current sort GUID.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemStateModel",
+          "database": "sorter_sweeper",
+          "field": "SystemStatus",
+          "meaning": "Same status enum family as Robotics SystemDatabaseModel.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemStateModel",
+          "database": "sorter_sweeper",
+          "field": "Keep chutes closed after bag-out",
+          "meaning": "Flag after bag-out.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemStateModel",
+          "database": "sorter_sweeper",
+          "field": "Getting sort data",
+          "meaning": "Whether receiving sort data.",
+          "needs_sme": false
+        },
+        {
+          "model": "SortModel",
+          "database": "sorter_sweeper",
+          "field": "SortName",
+          "meaning": "Sort name created on ResetMetrics.",
+          "needs_sme": false
+        },
+        {
+          "model": "SortModel",
+          "database": "sorter_sweeper",
+          "field": "SortGuid",
+          "meaning": "Sort GUID for historical metrics sort-to-sort.",
+          "needs_sme": false
+        },
+        {
+          "model": "SortModel",
+          "database": "sorter_sweeper",
+          "field": "CurrentSort",
+          "meaning": "Flag for current sort row.",
+          "needs_sme": true
+        }
+      ],
+      "api_checks": [
+        "SystemState"
+      ],
+      "activities": [
+        {
+          "id": "rms_overall_system",
+          "access_surface": "rms_ui",
+          "role": "operator",
+          "action": "Check RMS overall / fleet overview blank or down."
+        },
+        {
+          "id": "aveva_overall_system",
+          "access_surface": "aveva_hmi",
+          "role": "operator",
+          "action": "Aveva Overall System page if site can view; FORTNA may coach only."
+        },
+        {
+          "id": "ssms_system_state",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "SSMS SystemDatabaseModel / SystemStateModel; corroborate Event Viewer services."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "rms_overview_agv_status",
+          "access_surface": "rms_ui",
+          "label": "Open RMS overview / AGV status",
+          "observables": [
+            "alarms present",
+            "alarms clear",
+            "RMS blank"
+          ]
+        },
+        {
+          "id": "aveva_overall_system",
+          "access_surface": "aveva_hmi",
+          "label": "Overall system / bag-out / RMS page",
+          "observables": [
+            "system blank/down",
+            "bag-out controls"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "Overview shows system running",
+          "SystemState consistent with running sort"
+        ],
+        "degraded": [
+          "RMS/Aveva blank or system-down indicators",
+          "SystemState shows stopped/faulted"
+        ],
+        "escalate": [
+          "Unplanned restart — wcs_service_health / Ignition / Stunnel host trio"
+        ]
+      },
+      "failure_patterns": [
+        "site_stoppage"
+      ],
+      "role_paths": {
+        "operator": "Primary RMS / Aveva overall on site when reachable",
+        "L1_support": "Remote RMS overview + site report",
+        "L2_support": "Services + SystemState / system DB + deeper RMS"
+      },
+      "support_contract": {},
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "sort_lifecycle_state",
+      "label": "Sort lifecycle / system state",
+      "job": "Confirm sort / system lifecycle: running, starting, shutting down, SortGuid continuity.",
+      "description": "Confirm WCS system/sort state and sort GUID (startup, running, shutdown, zone-config, closeout staging) via system state model or equivalent UI.",
+      "when_to_use": "Site unsure if sort is running vs shutting down; lifecycle stuck between states.",
+      "not_for": "Bag-out stuck alone (bag_out_or_closeout_state); single AGV fault.",
+      "primary_access_surfaces": [
+        "wcs_sql",
+        "wcs_api",
+        "rms_ui"
+      ],
+      "secondary_access_surfaces": [
+        "aveva_hmi",
+        "apidog",
+        "site_interview"
+      ],
+      "primary_databases": [
+        "robotics",
+        "sorter_sweeper"
+      ],
+      "secondary_databases": [],
+      "primary_models": [
+        "SystemDatabaseModel",
+        "SystemStateModel",
+        "SortModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "robotics",
+          "model": "SystemDatabaseModel",
+          "purpose": "System state and current sort GUID."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "SortModel",
+          "purpose": "SortName/SortGuid created when UPS cycles sort via ResetMetrics; opens closed chutes."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "SystemStateModel",
+          "purpose": "SorterSweeper system status mirror; keep chutes closed after bag-out; getting sort data."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "SystemDatabaseModel",
+          "database": "robotics",
+          "field": "Id",
+          "meaning": "Row id.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemDatabaseModel",
+          "database": "robotics",
+          "field": "EntityInserted",
+          "meaning": "Insert timestamp.",
+          "needs_sme": true
+        },
+        {
+          "model": "SystemDatabaseModel",
+          "database": "robotics",
+          "field": "EntityLastUpdate",
+          "meaning": "Last update timestamp.",
+          "needs_sme": true
+        },
+        {
+          "model": "SystemDatabaseModel",
+          "database": "robotics",
+          "field": "Status",
+          "meaning": "System status enum.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemDatabaseModel",
+          "database": "robotics",
+          "field": "SortGuid",
+          "meaning": "Current sort GUID.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemStateModel",
+          "database": "sorter_sweeper",
+          "field": "SystemStatus",
+          "meaning": "Same status enum family as Robotics SystemDatabaseModel.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemStateModel",
+          "database": "sorter_sweeper",
+          "field": "Keep chutes closed after bag-out",
+          "meaning": "Flag after bag-out.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemStateModel",
+          "database": "sorter_sweeper",
+          "field": "Getting sort data",
+          "meaning": "Whether receiving sort data.",
+          "needs_sme": false
+        },
+        {
+          "model": "SortModel",
+          "database": "sorter_sweeper",
+          "field": "SortName",
+          "meaning": "Sort name created on ResetMetrics.",
+          "needs_sme": false
+        },
+        {
+          "model": "SortModel",
+          "database": "sorter_sweeper",
+          "field": "SortGuid",
+          "meaning": "Sort GUID for historical metrics sort-to-sort.",
+          "needs_sme": false
+        },
+        {
+          "model": "SortModel",
+          "database": "sorter_sweeper",
+          "field": "CurrentSort",
+          "meaning": "Flag for current sort row.",
+          "needs_sme": true
+        }
+      ],
+      "api_checks": [
+        "SystemState",
+        "SystemStartup",
+        "SystemShutdown",
+        "ResetMetrics"
+      ],
+      "activities": [
+        {
+          "id": "ask_sort_running",
+          "access_surface": "site_interview",
+          "role": "L1_support",
+          "action": "Ask site/RMS whether system is running vs shutting down."
+        },
+        {
+          "id": "ssms_sort_lifecycle",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "SSMS SystemDatabaseModel / SystemStateModel / SortModel (SortGuid)."
+        },
+        {
+          "id": "api_system_state",
+          "access_surface": "wcs_api",
+          "role": "L2_support",
+          "action": "SystemState (and Startup/Shutdown only when playbook authorizes)."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "aveva_api_pages",
+          "access_surface": "aveva_hmi",
+          "label": "Aveva API pages (system/AGV/tote)",
+          "observables": [
+            "startup/shutdown/closeout responses",
+            "tote init/tasks/exchange settings"
+          ]
+        },
+        {
+          "id": "query_system_status",
+          "access_surface": "wcs_sql",
+          "label": "Query SystemDatabaseModel / SystemStateModel",
+          "observables": [
+            "Running",
+            "Shutdown",
+            "CloseOut*"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "Lifecycle matches expected running/idle",
+          "SortGuid stable for active sort"
+        ],
+        "degraded": [
+          "Stuck between start/shutdown",
+          "SortGuid missing or inconsistent"
+        ],
+        "escalate": [
+          "Cannot advance lifecycle after documented SystemState checks"
+        ]
+      },
+      "failure_patterns": [
+        "sort_lifecycle_stuck"
+      ],
+      "role_paths": {
+        "L1_support": "Ask site + RMS high-level running vs shutdown",
+        "L2_support": "SSMS + SystemState APIs",
+        "L3_support": "Authorize startup/shutdown mutations per playbook",
+        "operator": "Report floor state / Aveva if available"
+      },
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "wcs_sql",
+          "wcs_api"
+        ],
+        "control_surfaces": [
+          "wcs_api"
+        ],
+        "required_evidence": [
+          "sort_lifecycle_state"
+        ],
+        "backend_mappings": [
+          {
+            "operational_concept": "sort_lifecycle_state",
+            "site_ui_sources": [
+              "aveva_hmi"
+            ],
+            "support_read_sources": [
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "SystemDatabaseModel",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "sorter_sweeper",
+                "model": "SortModel",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "sorter_sweeper",
+                "model": "SystemStateModel",
+                "fields": []
+              }
+            ],
+            "preferred_support_surface": "wcs_sql"
+          }
+        ]
+      },
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "hospital_diversion",
+      "label": "Hospital diversion / lane routing",
+      "job": "Confirm hospital diversion path: lanes, stacklight, hospital tags/locations, AGV routing to hospital.",
+      "description": "Confirm hospital lane diversion, stacklight, hospital model queues, or hospital workflow routing.",
+      "when_to_use": "Hospital diversion active or suspected; stacklight/lane alarms; robots diverting unexpectedly.",
+      "not_for": "Generic tipper fault without hospital context.",
+      "primary_access_surfaces": [
+        "rms_ui",
+        "hospital_hmi",
+        "wcs_sql"
+      ],
+      "secondary_access_surfaces": [
+        "site_interview",
+        "building_acb_hmi"
+      ],
+      "primary_databases": [
+        "robotics",
+        "sorter_sweeper"
+      ],
+      "secondary_databases": [],
+      "primary_models": [
+        "HospitalDatabaseModel",
+        "HosptialSorterSideDatabaseModel",
+        "HospitalTagsModel",
+        "LocationModel",
+        "CellCodeDatabaseModel",
+        "AgvStatusModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "robotics",
+          "model": "HospitalDatabaseModel",
+          "purpose": "Hospital entrance/exit queue, drop-off, induction locations."
+        },
+        {
+          "database": "robotics",
+          "model": "HosptialSorterSideDatabaseModel",
+          "purpose": "SorterSide ↔ Hospital map (slide typo Hosptial preserved as alias)."
+        },
+        {
+          "database": "robotics",
+          "model": "CellCodeDatabaseModel",
+          "purpose": "Cell codes (RMS node codes), hospital association, missing-zone under sorter check."
+        },
+        {
+          "database": "robotics",
+          "model": "RobotDatabaseModel",
+          "purpose": "Robot/AGV live state (large state enum in slides)."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "LocationModel",
+          "purpose": "SorterSweeper stations: Sorter/Tipper/Hospital/Induction; lane/chute attributes."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "HospitalTagsModel",
+          "purpose": "Subscribed hospital PLC tags; actioned by TagTypeParent (in/out)."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "AgvStatusModel",
+          "purpose": "Geek AGV status → tipper RMS fault notify; hospital waiting/maintenance routing."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "HospitalDatabaseModel",
+          "database": "robotics",
+          "field": "Entrance/exit queue",
+          "meaning": "Hospital entrance and exit queue locations.",
+          "needs_sme": false
+        },
+        {
+          "model": "HospitalDatabaseModel",
+          "database": "robotics",
+          "field": "DropOff",
+          "meaning": "Hospital tote drop-off location.",
+          "needs_sme": false
+        },
+        {
+          "model": "HospitalDatabaseModel",
+          "database": "robotics",
+          "field": "Induction",
+          "meaning": "Hospital tote induction location.",
+          "needs_sme": false
+        },
+        {
+          "model": "HospitalDatabaseModel",
+          "database": "robotics",
+          "field": "PickupId",
+          "meaning": "Pickup location id (location FK).",
+          "needs_sme": false
+        },
+        {
+          "model": "HospitalDatabaseModel",
+          "database": "robotics",
+          "field": "DropOffId",
+          "meaning": "Drop-off location id (location FK).",
+          "needs_sme": false
+        },
+        {
+          "model": "HosptialSorterSideDatabaseModel",
+          "database": "robotics",
+          "field": "SorterSide↔Hospital map",
+          "meaning": "Maps sorter sides to hospital.",
+          "needs_sme": true
+        },
+        {
+          "model": "HospitalTagsModel",
+          "database": "sorter_sweeper",
+          "field": "TagTypeParent",
+          "meaning": "Whether tag is in or out; drives action.",
+          "needs_sme": false
+        },
+        {
+          "model": "HospitalTagsModel",
+          "database": "sorter_sweeper",
+          "field": "Subscribed hospital tags",
+          "meaning": "List of hospital controller tags.",
+          "needs_sme": false
+        },
+        {
+          "model": "HospitalTagsModel",
+          "database": "sorter_sweeper",
+          "field": "Value / variable type columns",
+          "meaning": "Modular typed value columns (string/bool) selected by variable type.",
+          "needs_sme": true
+        },
+        {
+          "model": "LocationModel",
+          "database": "sorter_sweeper",
+          "field": "Type",
+          "meaning": "Location type: Sorter, Tipper, Hospital, Induction.",
+          "needs_sme": false
+        },
+        {
+          "model": "LocationModel",
+          "database": "sorter_sweeper",
+          "field": "SorterName",
+          "meaning": "Sorter name for the location.",
+          "needs_sme": false
+        },
+        {
+          "model": "LocationModel",
+          "database": "sorter_sweeper",
+          "field": "Zone",
+          "meaning": "Zone the location belongs to.",
+          "needs_sme": false
+        }
+      ],
+      "api_checks": [],
+      "activities": [
+        {
+          "id": "rms_hospital_routing",
+          "access_surface": "rms_ui",
+          "role": "operator",
+          "action": "RMS fleet routing toward hospital; ask stacklight color."
+        },
+        {
+          "id": "hospital_hmi_lane",
+          "access_surface": "hospital_hmi",
+          "role": "operator",
+          "action": "Hospital HMI / lane UI / stacklight; FORTNA coaches or views if remote."
+        },
+        {
+          "id": "ssms_hospital_models",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "SSMS Hospital* / HospitalTags / Location / CellCode for diversion state."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "hospital_stacklight_lane",
+          "access_surface": "hospital_hmi",
+          "label": "Hospital stacklight / lane alarm",
+          "observables": [
+            "stacklight color",
+            "lane alarm"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "No unexpected hospital diversion",
+          "Hospital tags/lanes idle as expected"
+        ],
+        "degraded": [
+          "Stacklight divert color",
+          "Hospital tags/locations active",
+          "AGVs routed to hospital"
+        ],
+        "escalate": [
+          "Diversion persists after lane/HMI+DB corroboration"
+        ]
+      },
+      "failure_patterns": [
+        "hospital_diversion"
+      ],
+      "role_paths": {
+        "L1_support": "RMS + site stacklight/lane report",
+        "L2_support": "Hospital HMI remote + SSMS hospital models",
+        "operator": "Hospital HMI / stacklight primary on floor"
+      },
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "wcs_sql",
+          "wcs_api",
+          "hospital_hmi"
+        ],
+        "control_surfaces": [
+          "hospital_hmi",
+          "aveva_hmi",
+          "wcs_api"
+        ],
+        "required_evidence": [
+          "hospital_diversion"
+        ],
+        "backend_mappings": [
+          {
+            "operational_concept": "hospital_diversion",
+            "site_ui_sources": [
+              "hospital_hmi"
+            ],
+            "support_read_sources": [
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "HospitalDatabaseModel",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "HosptialSorterSideDatabaseModel",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "CellCodeDatabaseModel",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "RobotDatabaseModel",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "sorter_sweeper",
+                "model": "LocationModel",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "sorter_sweeper",
+                "model": "HospitalTagsModel",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "sorter_sweeper",
+                "model": "AgvStatusModel",
+                "fields": []
+              }
+            ],
+            "preferred_support_surface": "wcs_sql"
+          }
+        ]
+      },
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "zone_pairing_state",
+      "label": "Zone pairing state",
+      "job": "Confirm zone pairing health (pair fail / unable to get a pair).",
+      "description": "Confirm whether a zone can obtain a pair / normal pairing behavior.",
+      "when_to_use": "Pairing failure symptoms on RMS or site report of zone pair issues.",
+      "not_for": "Zone config mutation (zone_config_state); tote exchange pairing.",
+      "primary_access_surfaces": [
+        "rms_ui",
+        "site_interview"
+      ],
+      "secondary_access_surfaces": [
+        "wcs_sql",
+        "aveva_hmi"
+      ],
+      "primary_databases": [],
+      "secondary_databases": [
+        "robotics"
+      ],
+      "primary_models": [],
+      "sql_model_links": [],
+      "field_highlights": [],
+      "api_checks": [],
+      "activities": [
+        {
+          "id": "rms_pairing_symptoms",
+          "access_surface": "rms_ui",
+          "role": "operator",
+          "action": "RMS pairing symptoms; ask site what they see on zone/pair UI."
+        },
+        {
+          "id": "deeper_rms_pair",
+          "access_surface": "rms_ui",
+          "role": "L2_support",
+          "action": "Deeper RMS pairing views; related DB only if source-backed rows exist."
+        }
+      ],
+      "cross_link_activities": [],
+      "observables": {
+        "healthy": [
+          "Zones paired as expected",
+          "No pair-fail alarms"
+        ],
+        "degraded": [
+          "Unable to get a pair",
+          "Pairing failure alarms"
+        ],
+        "escalate": [
+          "Persistent pair fail after RMS deep dive — L3/L4"
+        ]
+      },
+      "failure_patterns": [
+        "pairing_failure"
+      ],
+      "role_paths": {
+        "L1_support": "RMS symptoms + site_interview",
+        "L2_support": "Deeper RMS / related DB if present",
+        "operator": "Report zone/pair UI symptoms"
+      },
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "rms_ui",
+          "wcs_sql"
+        ],
+        "control_surfaces": [],
+        "required_evidence": [
+          "zone_pairing_state",
+          "device_roster_state"
+        ]
+      },
+      "backend_mappings": [
+        {
+          "operational_concept": "zone_pairing_state",
+          "site_ui_sources": [
+            "rms_ui",
+            "aveva_hmi"
+          ],
+          "support_read_sources": [
+            {
+              "surface": "wcs_sql",
+              "database": "robotics",
+              "model": "RobotDatabaseModel",
+              "fields": [
+                "State",
+                "AssignedSorterSide",
+                "CurrentLocationId"
+              ]
+            },
+            {
+              "surface": "wcs_sql",
+              "database": "robotics",
+              "model": "RobotLocationDatabaseModel",
+              "fields": [
+                "Zone",
+                "Occupied",
+                "MaxAgvs"
+              ]
+            }
+          ],
+          "preferred_support_surface": "rms_ui",
+          "note": "No SQL model documents a dedicated pairing/pair-fail state as such; this cross-links zone_pairing_state to the same robot-location/roster backend evidence used by device_roster_state, since an 'unable to get a pair' symptom is operationally a roster/location mismatch (an AGV missing/duplicated at the expected zone location). Do not treat this as a source-confirmed pairing-specific SQL model."
+        }
+      ],
+      "gaps": [
+        "No dedicated SQL model for zone/pair-fail state; cross-linked to RobotDatabaseModel/RobotLocationDatabaseModel roster-adjacent fields as the closest available backend evidence. Expand with a real pairing-specific model when Day1/OM or incident SSMS evidence lands."
+      ],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "zone_config_state",
+      "label": "Zone configuration state",
+      "job": "Confirm zone configuration / staging via Aveva overview and GetZoneConfig.",
+      "description": "Confirm current zone configuration (Get/Update Zone Config) or zone-config staging/closeout progress.",
+      "when_to_use": "Zone config mismatch, staging wrong zone settings, need read of zone config.",
+      "not_for": "UpdateZoneConfig mutate unless playbook explicitly authorizes (slides: rarely customer-used).",
+      "primary_access_surfaces": [
+        "aveva_hmi",
+        "wcs_api",
+        "apidog"
+      ],
+      "secondary_access_surfaces": [
+        "wcs_sql",
+        "rms_ui"
+      ],
+      "primary_databases": [],
+      "secondary_databases": [],
+      "primary_models": [],
+      "sql_model_links": [],
+      "field_highlights": [],
+      "api_checks": [
+        "GetZoneConfig",
+        "UpdateZoneConfig"
+      ],
+      "activities": [
+        {
+          "id": "aveva_zone_config",
+          "access_surface": "aveva_hmi",
+          "role": "operator",
+          "action": "Aveva Zone Config overview if available on site."
+        },
+        {
+          "id": "apidog_get_zone_config",
+          "access_surface": "apidog",
+          "role": "L2_support",
+          "action": "GetZoneConfig via Apidog; treat UpdateZoneConfig as high-risk mutate."
+        }
+      ],
+      "cross_link_activities": [],
+      "observables": {
+        "healthy": [
+          "Zone config matches expected staging",
+          "GetZoneConfig returns expected payload"
+        ],
+        "degraded": [
+          "Zone config mismatch",
+          "Staging not applied"
+        ],
+        "escalate": [
+          "Need UpdateZoneConfig beyond playbook — SME/L4"
+        ]
+      },
+      "failure_patterns": [],
+      "role_paths": {
+        "L1_support": "Coach Aveva overview if reachable; else escalate",
+        "L2_support": "GetZoneConfig primary; mutate only if authorized",
+        "operator": "Aveva Zone Config primary on floor"
+      },
+      "support_contract": {},
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "tipper_station_fault",
+      "label": "Tipper / operator station fault",
+      "job": "Confirm tipper station faults via WebVisu/VISU screens and tipper/tag/bits models.",
+      "description": "Confirm tipper, VISU/WebVisu, tipper/tipper-station DB models, or operator-station fault indications.",
+      "when_to_use": "Tipper alarms, pneumatic/feedrate faults, station not releasing, need VISU_ALARM / IO diag.",
+      "not_for": "OPC connection faulted alone (opc_connection_or_tipper_heartbeat); Aveva pages; LOTO without capability intent.",
+      "primary_access_surfaces": [
+        "tipper_hmi",
+        "wcs_sql"
+      ],
+      "secondary_access_surfaces": [
+        "site_interview",
+        "ignition_gateway"
+      ],
+      "primary_databases": [
+        "robotics",
+        "sorter_sweeper"
+      ],
+      "secondary_databases": [
+        "opc_comms"
+      ],
+      "primary_models": [
+        "TipperStationDatabaseModel",
+        "TipperDatabaseModel",
+        "TipperStationModel",
+        "TipperModel",
+        "BitsModel",
+        "TagModel",
+        "TipperDepartureActivityModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "robotics",
+          "model": "SorterSideDatabaseModel",
+          "purpose": "Defines sorter legs: entrance/exit queue locations, tipper count, disabled flag."
+        },
+        {
+          "database": "robotics",
+          "model": "TipperStationDatabaseModel",
+          "purpose": "Stores tipper station name (robotics)."
+        },
+        {
+          "database": "robotics",
+          "model": "TipperDatabaseModel",
+          "purpose": "Tipper location ids, entrance/exit, load type, GLD pre-queue ids."
+        },
+        {
+          "database": "robotics",
+          "model": "SorterSideTipperStation",
+          "purpose": "Sorter-side tipper sequence / association."
+        },
+        {
+          "database": "opc_comms",
+          "model": "OpcTags",
+          "purpose": "Startup subscribed OPC tags."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "LocationModel",
+          "purpose": "SorterSweeper stations: Sorter/Tipper/Hospital/Induction; lane/chute attributes."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "TipperStationModel",
+          "purpose": "Operator stations (standard vs GLD); two tippers per station."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "TipperModel",
+          "purpose": "All tippers: id, printer, location, status."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "TagModel",
+          "purpose": "12 tags per tipper (7 in / 5 out); OptiSweep reads out tags, writes in tags."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "BitsModel",
+          "purpose": "Bit decomposition for multi-bit tipper tags."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "TagReadWriteLogs",
+          "purpose": "History of all tag reads/writes."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "TipperDepartureActivityModel",
+          "purpose": "Every time AGV leaves tipper: DropOffSorter/Hospital, tote, tag path, fault code — tipper issue narrowing."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "TipperStationDatabaseModel",
+          "database": "robotics",
+          "field": "Name",
+          "meaning": "Tipper station name.",
+          "needs_sme": false
+        },
+        {
+          "model": "TipperDatabaseModel",
+          "database": "robotics",
+          "field": "LocationId",
+          "meaning": "Location id of the tipper.",
+          "needs_sme": false
+        },
+        {
+          "model": "TipperDatabaseModel",
+          "database": "robotics",
+          "field": "EntranceId",
+          "meaning": "Entrance id.",
+          "needs_sme": false
+        },
+        {
+          "model": "TipperDatabaseModel",
+          "database": "robotics",
+          "field": "ExitId",
+          "meaning": "Exit id.",
+          "needs_sme": false
+        },
+        {
+          "model": "TipperDatabaseModel",
+          "database": "robotics",
+          "field": "TipperLoadType",
+          "meaning": "GLD (gaylord) or Standard tipper.",
+          "needs_sme": false
+        },
+        {
+          "model": "TipperDatabaseModel",
+          "database": "robotics",
+          "field": "GLDPreQueueEntranceId",
+          "meaning": "GLD pre-queue entrance; ignore for Standard tippers.",
+          "needs_sme": false
+        },
+        {
+          "model": "TipperDatabaseModel",
+          "database": "robotics",
+          "field": "GLDPreQueueExitId",
+          "meaning": "GLD pre-queue exit; ignore for Standard tippers.",
+          "needs_sme": false
+        },
+        {
+          "model": "TipperStationModel",
+          "database": "sorter_sweeper",
+          "field": "Standard vs GLD stations",
+          "meaning": "Station class.",
+          "needs_sme": false
+        },
+        {
+          "model": "TipperStationModel",
+          "database": "sorter_sweeper",
+          "field": "2 tippers per station",
+          "meaning": "Left/right tippers per station.",
+          "needs_sme": false
+        },
+        {
+          "model": "TipperModel",
+          "database": "sorter_sweeper",
+          "field": "TipperId",
+          "meaning": "Tipper name; A/B for right/left at operator station.",
+          "needs_sme": false
+        },
+        {
+          "model": "TipperModel",
+          "database": "sorter_sweeper",
+          "field": "PrinterName",
+          "meaning": "Printer name for print-label directive to UPS.",
+          "needs_sme": false
+        },
+        {
+          "model": "TipperModel",
+          "database": "sorter_sweeper",
+          "field": "PrinterIp",
+          "meaning": "Printer IP.",
+          "needs_sme": false
+        }
+      ],
+      "api_checks": [],
+      "activities": [
+        {
+          "id": "visu_read_alarm",
+          "access_surface": "tipper_hmi",
+          "role": "operator",
+          "action": "VISU_ALARM — read active tipper alarms + SHOW HISTORY (last 1500); FORTNA asks text/photo if not remote."
+        },
+        {
+          "id": "visu_data_banner",
+          "access_surface": "tipper_hmi",
+          "role": "L1_support",
+          "action": "VISU_DATA banner / station data, or coach site for alarm text/color/photo."
+        },
+        {
+          "id": "visu_io_diag_troubleshoot",
+          "access_surface": "tipper_hmi",
+          "role": "L2_support",
+          "action": "VISU_IO_DIAG read-only IO + VISU_MCP_DUAL fault reset as appropriate."
+        },
+        {
+          "id": "ssms_tipper_bits_tags",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "SSMS Tipper* models + Tag/Bits; guide LOTO only when physical work required (operator executes)."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "tipper_alarm_text",
+          "access_surface": "tipper_hmi",
+          "label": "Read tipper alarm / heartbeat",
+          "observables": [
+            "alarm text",
+            "heartbeat flatline",
+            "IO faults"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "No tipper alarms on VISU_ALARM",
+          "Bits/tags show healthy station state",
+          "MCP controls normal"
+        ],
+        "degraded": [
+          "VISU alarm text/timestamp",
+          "IO diag mismatch",
+          "Tipper fault bits set",
+          "Departure activity stuck"
+        ],
+        "escalate": [
+          "Needs LOTO / mechanical — operator + L2 coach; safety SME if unclear"
+        ]
+      },
+      "failure_patterns": [
+        "tipper_fault"
+      ],
+      "role_paths": {
+        "operator": "Primary VISU user (MCP/DATA/ALARM/IO); physical tipper actions",
+        "L1_support": "Remote VISU if available else ask alarm text/photo — not SSMS how-to",
+        "L2_support": "VISU_IO_DIAG / alarm history + SSMS tipper/tag/bits",
+        "L3_support": "Persistent tipper + VISU_MDS axis params per OM"
+      },
+      "support_contract": {},
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "e_stop_or_safety_stop",
+      "label": "E-stop / safety stop",
+      "job": "Confirm physical E-stop / safety stop state and coordinate on-site reset.",
+      "description": "Confirm physical E-stop or safety-stop state (site/operator for physical E-stop; WCS ESTOP model may corroborate Geek callbacks).",
+      "when_to_use": "Emergency stop depressed, safety circuit, master E-stop clear prep.",
+      "not_for": "RMS soft stop / PauseAGVs (rms_soft_stop).",
+      "primary_access_surfaces": [
+        "physical_floor",
+        "site_interview",
+        "rms_ui"
+      ],
+      "secondary_access_surfaces": [
+        "wcs_sql",
+        "aveva_hmi"
+      ],
+      "primary_databases": [
+        "sorter_sweeper"
+      ],
+      "secondary_databases": [],
+      "primary_models": [
+        "EstopModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "sorter_sweeper",
+          "model": "EstopModel",
+          "purpose": "Geek ESTOP callbacks: name, Geek AreaId, ActivelyEstopped; metrics duration."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "EstopModel",
+          "database": "sorter_sweeper",
+          "field": "Name",
+          "meaning": "ESTOP name.",
+          "needs_sme": false
+        },
+        {
+          "model": "EstopModel",
+          "database": "sorter_sweeper",
+          "field": "Geek AreaId",
+          "meaning": "Geek area id for the ESTOP zone.",
+          "needs_sme": false
+        },
+        {
+          "model": "EstopModel",
+          "database": "sorter_sweeper",
+          "field": "ActivelyEstopped",
+          "meaning": "Whether currently e-stopped.",
+          "needs_sme": false
+        }
+      ],
+      "api_checks": [],
+      "activities": [
+        {
+          "id": "ask_physical_estop",
+          "access_surface": "site_interview",
+          "role": "L1_support",
+          "action": "Ask site if any E-stop depressed; note remote cues on RMS map."
+        },
+        {
+          "id": "rms_before_master_estop_clear",
+          "access_surface": "rms_ui",
+          "role": "L2_support",
+          "action": "Confirm robotControl loads before master E-stop clear coaching."
+        },
+        {
+          "id": "ssms_estop_model",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "EstopModel + HMI corroboration; operator performs physical reset only."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "rms_map_monitor",
+          "access_surface": "rms_ui",
+          "label": "Map monitor / robotControl",
+          "observables": [
+            "robot disconnected",
+            "emergency stop trigger on map",
+            "workstation IDs"
+          ]
+        },
+        {
+          "id": "rms_before_master_estop_clear",
+          "access_surface": "rms_ui",
+          "label": "Confirm load / robots before master E-stop clear",
+          "observables": [
+            "robotControl loads"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "No E-stop depressed; safety clear",
+          "EstopModel clear"
+        ],
+        "degraded": [
+          "E-stop active",
+          "Map emergency stop trigger",
+          "EstopModel set"
+        ],
+        "escalate": [
+          "Safety uncertainty — do not clear remotely"
+        ]
+      },
+      "failure_patterns": [],
+      "role_paths": {
+        "operator": "Only role that performs physical E-stop reset",
+        "L1_support": "Ask/confirm; never perform E-stop",
+        "L2_support": "Remote status + coach operator; never perform E-stop",
+        "L3_support": "Same hard rule — no remote E-stop"
+      },
+      "support_contract": {},
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "rms_soft_stop",
+      "label": "RMS soft stop (pause)",
+      "job": "Pause/resume AGVs via RMS soft stop (not physical E-stop).",
+      "description": "Apply or confirm RMS pause/soft stop or PauseAGVs/ResumeAGVs — L2/L3 only; not physical E-stop.",
+      "when_to_use": "Need fleet pause without E-stop.",
+      "not_for": "Physical E-stop; L1 mutate.",
+      "primary_access_surfaces": [
+        "rms_ui",
+        "wcs_api",
+        "apidog"
+      ],
+      "secondary_access_surfaces": [],
+      "primary_databases": [],
+      "secondary_databases": [],
+      "primary_models": [],
+      "sql_model_links": [],
+      "field_highlights": [],
+      "api_checks": [
+        "PauseAGVs",
+        "ResumeAGVs"
+      ],
+      "activities": [
+        {
+          "id": "rms_pause_agvs",
+          "access_surface": "rms_ui",
+          "role": "L2_support",
+          "action": "RMS pause UI — L2/L3 only."
+        },
+        {
+          "id": "api_pause_resume_agvs",
+          "access_surface": "wcs_api",
+          "role": "L2_support",
+          "action": "PauseAGVs / ResumeAGVs via Apidog when authorized."
+        }
+      ],
+      "cross_link_activities": [],
+      "observables": {
+        "healthy": [
+          "AGVs paused or resumed as intended"
+        ],
+        "degraded": [
+          "Pause/resume not taking effect"
+        ],
+        "escalate": [
+          "Confused with E-stop — stop and clarify capability"
+        ]
+      },
+      "failure_patterns": [],
+      "role_paths": {
+        "L1_support": "No access to soft-stop mutate",
+        "L2_support": "Pause/Resume only",
+        "L3_support": "Pause/Resume + resolve if stuck",
+        "operator": "Use physical E-stop path if safety requires"
+      },
+      "support_contract": {},
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "gateway_health",
+      "label": "Ignition gateway health",
+      "job": "Confirm Ignition gateway health / role in the host stack.",
+      "description": "Confirm Ignition gateway health, Systems Overview / performance, memory, or OPC connection page reachability.",
+      "when_to_use": "Suspect Ignition down, performance issues, or unplanned restart host path.",
+      "not_for": "Tipper alarm text alone without gateway/OPC context.",
+      "primary_access_surfaces": [
+        "ignition_gateway"
+      ],
+      "secondary_access_surfaces": [
+        "event_viewer",
+        "wcs_api",
+        "site_interview"
+      ],
+      "primary_databases": [],
+      "secondary_databases": [],
+      "primary_models": [],
+      "sql_model_links": [],
+      "field_highlights": [],
+      "api_checks": [],
+      "activities": [
+        {
+          "id": "identify_ignition_role",
+          "access_surface": "site_interview",
+          "role": "L1_support",
+          "action": "Identify Ignition role / symptoms only; do not admin-recover as L1 how-to."
+        },
+        {
+          "id": "gateway_performance",
+          "access_surface": "ignition_gateway",
+          "role": "L2_support",
+          "action": "Ignition Gateway performance UI + connectivity; host restart path with OptiSweep/Stunnel."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "opc_connections_view",
+          "access_surface": "ignition_gateway",
+          "label": "Config → OPC → OPC Connections",
+          "observables": [
+            "connection Connected",
+            "Faulted (e.g. tipper powered off)"
+          ]
+        },
+        {
+          "id": "gateway_performance",
+          "access_surface": "ignition_gateway",
+          "label": "Gateway performance / memory trend",
+          "observables": [
+            "memory spike to zero",
+            "gateway unreachable"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "Gateway up; performance acceptable"
+        ],
+        "degraded": [
+          "Gateway slow/unreachable",
+          "Related Aveva/tag feed unhealthy"
+        ],
+        "escalate": [
+          "Product defect → L4"
+        ]
+      },
+      "failure_patterns": [
+        "gateway_unhealthy"
+      ],
+      "role_paths": {
+        "L1_support": "Identify role / symptoms only",
+        "L2_support": "Gateway UI + restart path with host trio",
+        "L3_support": "Own recovery; escalate L4 if product defect",
+        "operator": "Report site symptoms; no Ignition admin"
+      },
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "wcs_sql",
+          "ignition_gateway",
+          "event_viewer",
+          "wcs_api"
+        ],
+        "control_surfaces": [
+          "ignition_gateway"
+        ],
+        "required_evidence": [
+          "gateway_health"
+        ],
+        "forbidden_capabilities": [
+          "agv_physical_recovery",
+          "tote_lifecycle_state"
+        ]
+      },
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "wcs_service_health",
+      "label": "WCS / OptiSweep service health",
+      "job": "Confirm OptiSweep / WCS Windows service health and related host recovery signals.",
+      "description": "Confirm OptiSweep Windows service and host trio with Ignition/Stunnel; SQL Server connectivity / SQL Agent on backup as needed (unplanned restart).",
+      "when_to_use": "Blank RMS, service crash, unplanned restart, need OptiSweep service + SQL Agent checks.",
+      "not_for": "Single AGV active error without service-down evidence.",
+      "primary_access_surfaces": [
+        "event_viewer",
+        "rms_ui"
+      ],
+      "secondary_access_surfaces": [
+        "wcs_sql",
+        "ignition_gateway",
+        "stunnel",
+        "site_interview"
+      ],
+      "primary_databases": [],
+      "secondary_databases": [],
+      "primary_models": [],
+      "sql_model_links": [],
+      "field_highlights": [],
+      "api_checks": [],
+      "activities": [
+        {
+          "id": "rms_blank_check",
+          "access_surface": "rms_ui",
+          "role": "operator",
+          "action": "Note blank/unreachable RMS as system-down symptom."
+        },
+        {
+          "id": "services_optisweep",
+          "access_surface": "event_viewer",
+          "role": "L2_support",
+          "action": "Services MMC / Event Viewer for OptiSweep + WCSWebApplication; SQL Agent on backup after unplanned restart."
+        },
+        {
+          "id": "host_trio_unplanned_restart",
+          "access_surface": "ignition_gateway",
+          "role": "L2_support",
+          "action": "Unplanned restart host path: Ignition → Stunnel → OptiSweep (+ tipper heartbeat, RMS loads)."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "rms_before_master_estop_clear",
+          "access_surface": "rms_ui",
+          "label": "Confirm load / robots before master E-stop clear",
+          "observables": [
+            "robotControl loads"
+          ]
+        },
+        {
+          "id": "services_mmc",
+          "access_surface": "event_viewer",
+          "label": "Services MMC — OptiSweep / related",
+          "observables": [
+            "Running",
+            "Stopped",
+            "restart required after Ignition lag"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "OptiSweep service running",
+          "RMS reachable",
+          "SQL Agent running on backup when expected"
+        ],
+        "degraded": [
+          "Service stopped/crashed",
+          "7031 / restart storms",
+          "RMS blank"
+        ],
+        "escalate": [
+          "Repeated crashes after restart path — L3/L4"
+        ]
+      },
+      "failure_patterns": [
+        "unplanned_restart",
+        "service_crash_or_restart"
+      ],
+      "role_paths": {
+        "L1_support": "High-level system down / blank RMS; escalate tooling",
+        "L2_support": "Event Viewer / Services + host trio",
+        "L3_support": "Own restore/RCA",
+        "operator": "Report site outage symptoms"
+      },
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "wcs_sql",
+          "event_viewer",
+          "ignition_gateway",
+          "wcs_api"
+        ],
+        "control_surfaces": [
+          "windows_services",
+          "ignition_gateway",
+          "wcs_api"
+        ],
+        "required_evidence": [
+          "windows_service_or_event_log",
+          "wcs_api_responsiveness"
+        ],
+        "forbidden_capabilities": [
+          "agv_physical_recovery",
+          "tote_lifecycle_state",
+          "rms_map_reposition"
+        ],
+        "availability_rules": {
+          "wcs_sql": "available_when_site_has_rms_aveva_hmi_or_other_wcs_backed_interface",
+          "vpn_exception": "vpn_or_connectivity_unavailable",
+          "service_down": "prefer_ignition_host_service_event_log_api_and_sql_when_site_ui_is_unavailable"
+        }
+      },
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "wcs_api_responsiveness",
+      "label": "WCS / OptiSweep API responsiveness",
+      "job": "Confirm OptiSweep/WCS API responds (GetAGVStatuses and related) via Apidog.",
+      "description": "Confirm API calls such as GetAgvStatuses or related WCS API health.",
+      "when_to_use": "Suspect API dead; Ignition/Aveva fed by same APIs unhealthy; remote AGV/system corroboration.",
+      "not_for": "Operator HMI-only checks; mutating APIs beyond playbook.",
+      "primary_access_surfaces": [
+        "apidog",
+        "wcs_api"
+      ],
+      "secondary_access_surfaces": [
+        "ignition_gateway",
+        "rms_ui"
+      ],
+      "primary_databases": [],
+      "secondary_databases": [],
+      "primary_models": [],
+      "sql_model_links": [],
+      "field_highlights": [],
+      "api_checks": [
+        "GetAGVStatuses",
+        "GetAGVFaultStats",
+        "SystemState"
+      ],
+      "activities": [
+        {
+          "id": "apidog_get_agv_statuses",
+          "access_surface": "apidog",
+          "role": "L2_support",
+          "action": "Run GetAGVStatuses on primary Apidog; note latency/errors."
+        },
+        {
+          "id": "apidog_system_state",
+          "access_surface": "apidog",
+          "role": "L2_support",
+          "action": "SystemState / related read APIs if AGV status alone is inconclusive."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "apidog_get_agv_statuses",
+          "access_surface": "wcs_api",
+          "label": "GetAGVStatuses via Apidog / WCS API",
+          "observables": [
+            "API success with AGV fault/state",
+            "API timeout or error"
+          ]
+        },
+        {
+          "id": "tag_provider_sys1",
+          "access_surface": "ignition_gateway",
+          "label": "Tag provider / SYS1 metrics tags",
+          "observables": [
+            "tipper/hospital tags present",
+            "Aveva request/response tags"
+          ]
+        },
+        {
+          "id": "apidog_get_agv_statuses",
+          "access_surface": "apidog",
+          "label": "GetAGVStatuses",
+          "observables": [
+            "AGV state/command/vitals/errors returned",
+            "API unresponsive"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "API returns timely success payload"
+        ],
+        "degraded": [
+          "Timeouts, 5xx, empty unexpected payloads"
+        ],
+        "escalate": [
+          "API down with services up — L4 / product defect"
+        ]
+      },
+      "failure_patterns": [
+        "api_unresponsive"
+      ],
+      "role_paths": {
+        "L1_support": "Rarely primary; escalate to L2 Apidog",
+        "L2_support": "Apidog / WCS API primary",
+        "L3_support": "Same + deeper API diagnostics",
+        "operator": "No access"
+      },
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "wcs_sql",
+          "wcs_api",
+          "event_viewer"
+        ],
+        "control_surfaces": [
+          "wcs_api"
+        ],
+        "required_evidence": [
+          "wcs_api_responsiveness"
+        ],
+        "forbidden_capabilities": [
+          "agv_physical_recovery",
+          "tote_lifecycle_state"
+        ]
+      },
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "windows_service_or_event_log",
+      "label": "Windows services / Event Viewer",
+      "job": "Confirm Windows Event Viewer / Services evidence for OptiSweep or related host faults.",
+      "description": "Confirm service state or Application/System log errors.",
+      "when_to_use": "7031 crashes, service restarts, need host log proof.",
+      "not_for": "Substitute for RMS AGV status when service is healthy.",
+      "primary_access_surfaces": [
+        "event_viewer"
+      ],
+      "secondary_access_surfaces": [
+        "wcs_service_health"
+      ],
+      "primary_databases": [],
+      "secondary_databases": [],
+      "primary_models": [],
+      "sql_model_links": [],
+      "field_highlights": [],
+      "api_checks": [],
+      "activities": [
+        {
+          "id": "event_viewer_optisweep",
+          "access_surface": "event_viewer",
+          "role": "L2_support",
+          "action": "Event Viewer Application/System logs for OptiSweep/WCSWebApplication crash/restart evidence (incl. 7031)."
+        },
+        {
+          "id": "services_mmc_optisweep",
+          "access_surface": "event_viewer",
+          "role": "L2_support",
+          "action": "Services MMC: confirm OptiSweep / related services Running vs Stopped; note restart storms."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "services_mmc",
+          "access_surface": "event_viewer",
+          "label": "Services MMC — OptiSweep / related",
+          "observables": [
+            "Running",
+            "Stopped",
+            "restart required after Ignition lag"
+          ]
+        },
+        {
+          "id": "event_log_crash",
+          "access_surface": "event_viewer",
+          "label": "Event Viewer crash / 7031",
+          "observables": [
+            "service crash events"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "No crash/restart storm for OptiSweep services",
+          "Services Running"
+        ],
+        "degraded": [
+          "7031 / unexpected restarts",
+          "Service stopped"
+        ],
+        "escalate": [
+          "Catalog gap for deep runbooks — honest unresolved if no procedure"
+        ]
+      },
+      "failure_patterns": [
+        "service_crash_or_restart",
+        "web_app_fault"
+      ],
+      "role_paths": {
+        "L1_support": "No Event Viewer how-to; escalate",
+        "L2_support": "Event Viewer / Services primary",
+        "L3_support": "Same + RCA packaging",
+        "operator": "No access"
+      },
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "wcs_sql",
+          "event_viewer",
+          "windows_services"
+        ],
+        "control_surfaces": [
+          "windows_services"
+        ],
+        "required_evidence": [
+          "windows_service_or_event_log"
+        ],
+        "forbidden_capabilities": [
+          "agv_physical_recovery",
+          "tote_lifecycle_state"
+        ]
+      },
+      "backend_mappings": [],
+      "gaps": [
+        "Thin procedure catalog historically — allow unresolved in playbooks"
+      ],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "agv_physical_recovery",
+      "label": "AGV physical recovery / removal",
+      "job": "Coordinate on-site AGV add/remove/bump recovery with system-side roster repair.",
+      "description": "On-site remove/add AGV, bump recovery, or isolation from active fleet.",
+      "when_to_use": "Floor recovery, bump codes, motionless robot handling, remove/add AGV.",
+      "not_for": "SQL-only active error query without floor action when physical recovery is required.",
+      "primary_access_surfaces": [
+        "physical_floor",
+        "rms_ui",
+        "wcs_api"
+      ],
+      "secondary_access_surfaces": [
+        "site_interview",
+        "apidog"
+      ],
+      "primary_databases": [],
+      "secondary_databases": [
+        "robotics"
+      ],
+      "primary_models": [],
+      "sql_model_links": [],
+      "field_highlights": [],
+      "api_checks": [
+        "RemoveAgv",
+        "RecoverAGV",
+        "GetAGVStatuses"
+      ],
+      "activities": [
+        {
+          "id": "coach_floor_recovery",
+          "access_surface": "site_interview",
+          "role": "L1_support",
+          "action": "Coach site add/remove/bump; confirm RMS status first when possible."
+        },
+        {
+          "id": "operator_floor_recovery",
+          "access_surface": "physical_floor",
+          "role": "operator",
+          "action": "Execute physical AGV recovery / bump handling."
+        },
+        {
+          "id": "api_remove_recover",
+          "access_surface": "wcs_api",
+          "role": "L2_support",
+          "action": "RemoveAgv / RecoverAGV + RMS corroboration after floor work."
+        }
+      ],
+      "cross_link_activities": [],
+      "observables": {
+        "healthy": [
+          "Robot recovered on floor and roster/map healthy"
+        ],
+        "degraded": [
+          "Bump/object blocking persists",
+          "Remove/Recover API fails"
+        ],
+        "escalate": [
+          "Repeated physical faults — mechanical SME / L3"
+        ]
+      },
+      "failure_patterns": [
+        "bump_fault",
+        "object_blocking_agv",
+        "agv_tracking_or_path_lost"
+      ],
+      "role_paths": {
+        "operator": "Executes floor recovery",
+        "L1_support": "Coaches site + RMS pre-check",
+        "L2_support": "System-side Remove/Recover + RMS",
+        "L3_support": "Persistent recovery ownership"
+      },
+      "support_contract": {},
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "robot_dwell_or_shutdown_staging",
+      "label": "Robot dwell / shutdown staging",
+      "job": "Confirm robots stuck in dwell tracking or shutdown staging queues/locations.",
+      "description": "Confirm Location Active Dwell, shutdown staging queues/sequence, or related Robotics DB state (Day 2 SSMS).",
+      "when_to_use": "Shutdown/dwell stuck on floor; robots piled in shutdown queues.",
+      "not_for": "Normal charging state (agv_charging_state).",
+      "primary_access_surfaces": [
+        "wcs_sql",
+        "rms_ui"
+      ],
+      "secondary_access_surfaces": [
+        "site_interview"
+      ],
+      "primary_databases": [
+        "robotics"
+      ],
+      "secondary_databases": [],
+      "primary_models": [
+        "LocationActiveDwellModel",
+        "ShutDownStaging",
+        "RobotLocationDatabaseModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "robotics",
+          "model": "RobotLocationDatabaseModel",
+          "purpose": "All location information shown as orange stations on RMS."
+        },
+        {
+          "database": "robotics",
+          "model": "ShutDownStaging",
+          "purpose": "Maps where AGVs should go during shutdown."
+        },
+        {
+          "database": "robotics",
+          "model": "LocationActiveDwellModel",
+          "purpose": "Active dwells at locations with DwellTracking=true; UPS bottleneck/idle statistics."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "LocationActiveDwellModel",
+          "database": "robotics",
+          "field": "AgvName",
+          "meaning": "AGV name dwelling.",
+          "needs_sme": false
+        },
+        {
+          "model": "LocationActiveDwellModel",
+          "database": "robotics",
+          "field": "Station",
+          "meaning": "Station where dwell is tracked.",
+          "needs_sme": false
+        },
+        {
+          "model": "LocationActiveDwellModel",
+          "database": "robotics",
+          "field": "SortGuid",
+          "meaning": "Sort guid for the dwell interval.",
+          "needs_sme": false
+        },
+        {
+          "model": "LocationActiveDwellModel",
+          "database": "robotics",
+          "field": "StartTime",
+          "meaning": "Dwell start time (archive columns).",
+          "needs_sme": true
+        },
+        {
+          "model": "LocationActiveDwellModel",
+          "database": "robotics",
+          "field": "FinishTime",
+          "meaning": "Dwell finish time (archive).",
+          "needs_sme": true
+        },
+        {
+          "model": "LocationActiveDwellModel",
+          "database": "robotics",
+          "field": "TotalTime",
+          "meaning": "Total dwell duration (archive).",
+          "needs_sme": false
+        },
+        {
+          "model": "ShutDownStaging",
+          "database": "robotics",
+          "field": "WithTote",
+          "meaning": "Whether the staging row is for AGVs with totes (1) vs without (0).",
+          "needs_sme": false
+        },
+        {
+          "model": "ShutDownStaging",
+          "database": "robotics",
+          "field": "ShutDownOffTheEndId",
+          "meaning": "Off-the-end queue location for AGVs with totes.",
+          "needs_sme": false
+        },
+        {
+          "model": "ShutDownStaging",
+          "database": "robotics",
+          "field": "ShutDownQueueId",
+          "meaning": "Center stage queue for AGVs with totes.",
+          "needs_sme": false
+        },
+        {
+          "model": "ShutDownStaging",
+          "database": "robotics",
+          "field": "Sequence",
+          "meaning": "Staging sequence order.",
+          "needs_sme": false
+        },
+        {
+          "model": "ShutDownStaging",
+          "database": "robotics",
+          "field": "SorterSideDatabaseModelId",
+          "meaning": "FK to sorter side.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotLocationDatabaseModel",
+          "database": "robotics",
+          "field": "StationNumber",
+          "meaning": "Station / workstation number for the location.",
+          "needs_sme": false
+        }
+      ],
+      "api_checks": [],
+      "activities": [
+        {
+          "id": "ask_dwell_stuck",
+          "access_surface": "site_interview",
+          "role": "L1_support",
+          "action": "Ask if shutdown/dwell stuck on floor; RMS location cues if visible."
+        },
+        {
+          "id": "ssms_dwell_shutdown",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "SSMS LocationActiveDwell + ShutDownStaging (+ RobotLocation LocationType shutdown queues)."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "query_dwell_shutdown",
+          "access_surface": "wcs_sql",
+          "label": "Query LocationActiveDwell / ShutDownStaging",
+          "observables": [
+            "active dwells",
+            "shutdown staging map"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "No abnormal dwell; shutdown staging clear when expected"
+        ],
+        "degraded": [
+          "Active dwell rows",
+          "Robots in ShutDownQueue / staging LocationTypes"
+        ],
+        "escalate": [
+          "Cannot clear staging after documented recoveries"
+        ]
+      },
+      "failure_patterns": [
+        "shutdown_or_dwell_abnormal"
+      ],
+      "role_paths": {
+        "L1_support": "Ask floor/RMS symptoms",
+        "L2_support": "LocationActiveDwell + ShutDownStaging",
+        "L3_support": "Persistent staging ownership",
+        "operator": "Report floor pile-up / shutdown queue visuals"
+      },
+      "support_contract": {},
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "agv_charging_state",
+      "label": "AGV charging state",
+      "job": "Confirm charging areas, charger locations, thresholds, or charge-related robot state.",
+      "description": "Confirm charging areas, charger locations, charging thresholds, or charge-related robot state (Day 2 SSMS / RMS).",
+      "when_to_use": "Charge-related stops, charger unavailable, threshold misbehavior.",
+      "not_for": "Shutdown staging queues (robot_dwell_or_shutdown_staging).",
+      "primary_access_surfaces": [
+        "wcs_sql",
+        "rms_ui",
+        "wcs_api"
+      ],
+      "secondary_access_surfaces": [
+        "apidog"
+      ],
+      "primary_databases": [
+        "robotics"
+      ],
+      "secondary_databases": [],
+      "primary_models": [
+        "ChargingDatabaseModel",
+        "ChargingLocationDatabaseModel",
+        "ChargingThresholdsDatabaseModel",
+        "RobotDatabaseModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "robotics",
+          "model": "ChargingDatabaseModel",
+          "purpose": "Separate charging areas with entrance/exit locations."
+        },
+        {
+          "database": "robotics",
+          "model": "ChargingLocationDatabaseModel",
+          "purpose": "Individual chargers, stations, and associated tote stands."
+        },
+        {
+          "database": "robotics",
+          "model": "ChargingThresholdsDatabaseModel",
+          "purpose": "Code thresholds for need-charge / kick-off / emergency charge decisions."
+        },
+        {
+          "database": "robotics",
+          "model": "RobotDatabaseModel",
+          "purpose": "Robot/AGV live state (large state enum in slides)."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "ChargingDatabaseModel",
+          "database": "robotics",
+          "field": "EntranceId",
+          "meaning": "Charging area entrance location.",
+          "needs_sme": false
+        },
+        {
+          "model": "ChargingDatabaseModel",
+          "database": "robotics",
+          "field": "ExitId",
+          "meaning": "Charging area exit location.",
+          "needs_sme": false
+        },
+        {
+          "model": "ChargingDatabaseModel",
+          "database": "robotics",
+          "field": "Disabled",
+          "meaning": "Whether charging area is disabled.",
+          "needs_sme": false
+        },
+        {
+          "model": "ChargingLocationDatabaseModel",
+          "database": "robotics",
+          "field": "Charger station",
+          "meaning": "Individual charger station.",
+          "needs_sme": false
+        },
+        {
+          "model": "ChargingLocationDatabaseModel",
+          "database": "robotics",
+          "field": "Tote stand",
+          "meaning": "Tote stand associated with the charger.",
+          "needs_sme": false
+        },
+        {
+          "model": "ChargingLocationDatabaseModel",
+          "database": "robotics",
+          "field": "Disabled",
+          "meaning": "Whether charger is disabled.",
+          "needs_sme": false
+        },
+        {
+          "model": "ChargingLocationDatabaseModel",
+          "database": "robotics",
+          "field": "ChargingArea",
+          "meaning": "Associated charging area.",
+          "needs_sme": true
+        },
+        {
+          "model": "ChargingThresholdsDatabaseModel",
+          "database": "robotics",
+          "field": "Need charge",
+          "meaning": "Threshold indicating AGV needs charge.",
+          "needs_sme": false
+        },
+        {
+          "model": "ChargingThresholdsDatabaseModel",
+          "database": "robotics",
+          "field": "Kick off charger",
+          "meaning": "Threshold to kick AGV off charger.",
+          "needs_sme": false
+        },
+        {
+          "model": "ChargingThresholdsDatabaseModel",
+          "database": "robotics",
+          "field": "Emergency charge",
+          "meaning": "Emergency charge threshold.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotDatabaseModel",
+          "database": "robotics",
+          "field": "State",
+          "meaning": "Robot state enum (Tipper/Hospital/Charger/Sorter/GLD/ShutDown family).",
+          "needs_sme": true
+        },
+        {
+          "model": "RobotDatabaseModel",
+          "database": "robotics",
+          "field": "ToteName",
+          "meaning": "Tote currently associated with robot.",
+          "needs_sme": true
+        }
+      ],
+      "api_checks": [
+        "GetChargersStatus"
+      ],
+      "activities": [
+        {
+          "id": "rms_charge_indicators",
+          "access_surface": "rms_ui",
+          "role": "operator",
+          "action": "RMS charge indicators if visible."
+        },
+        {
+          "id": "ssms_charging_models",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "SSMS Charging* models + robot charge-related fields."
+        },
+        {
+          "id": "api_chargers_status",
+          "access_surface": "wcs_api",
+          "role": "L2_support",
+          "action": "GetChargersStatus via Apidog."
+        }
+      ],
+      "cross_link_activities": [],
+      "observables": {
+        "healthy": [
+          "Chargers available",
+          "Thresholds as expected",
+          "Robots charging normally"
+        ],
+        "degraded": [
+          "Charger unavailable",
+          "Threshold/location abnormal",
+          "API charger fault"
+        ],
+        "escalate": [
+          "Persistent charging abnormal after DB+API"
+        ]
+      },
+      "failure_patterns": [
+        "charging_abnormal"
+      ],
+      "role_paths": {
+        "L1_support": "RMS indicators if visible",
+        "L2_support": "Charging* models + GetChargersStatus",
+        "operator": "Report floor charger / robot charge symptoms"
+      },
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "wcs_sql",
+          "rms_ui"
+        ],
+        "control_surfaces": [],
+        "required_evidence": [
+          "agv_charging_state"
+        ],
+        "backend_mappings": [
+          {
+            "operational_concept": "agv_charging_state",
+            "site_ui_sources": [
+              "rms_ui"
+            ],
+            "support_read_sources": [
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "ChargingDatabaseModel",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "ChargingLocationDatabaseModel",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "ChargingThresholdsDatabaseModel",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "RobotDatabaseModel",
+                "fields": []
+              }
+            ],
+            "preferred_support_surface": "wcs_sql"
+          }
+        ]
+      },
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "sorter_item_or_scan_state",
+      "label": "Sorter item / scan state",
+      "job": "Confirm sorter item/scan path: miss-scans, dimensions, destinations, lane activity.",
+      "description": "Confirm SorterSweeper Items model, scan data, lane activity, cube/default dimensions, or related DB/UI state.",
+      "when_to_use": "Miss-scans, odd dimensions, recirculation, lane scan anomalies.",
+      "not_for": "Chute open/closed alone without item evidence (lane_or_chute_state).",
+      "primary_access_surfaces": [
+        "wcs_sql",
+        "site_interview"
+      ],
+      "secondary_access_surfaces": [
+        "aveva_hmi",
+        "rms_ui"
+      ],
+      "primary_databases": [
+        "sorter_sweeper"
+      ],
+      "secondary_databases": [],
+      "primary_models": [
+        "ItemModels",
+        "ItemDefaultDimModel",
+        "ItemCubeAdjustmentModel",
+        "IgnitionLaneActivityModel",
+        "DestinationModel",
+        "RecircDestinationsModel",
+        "SorterModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "sorter_sweeper",
+          "model": "SorterModel",
+          "purpose": "Sorter legs: name, XLE receiver IP/name for chat messages."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "ItemModels",
+          "purpose": "Parcels on sorter; updated from Scan Data 2 / Sort / SortConf; removed on final divert."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "ItemCubeAdjustmentModel",
+          "purpose": "Percent of cube to take by package classification."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "ItemDefaultDimModel",
+          "purpose": "Default dimensions when scan dims missing (example spoken: 12×12×1, weight 1)."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "RecircDestinationsModel",
+          "purpose": "Destinations for packages that go off the end."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "DestinationModel",
+          "purpose": "Possible destinations from Sort message; cleared on SortConf with item."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "IgnitionLaneActivityModel",
+          "purpose": "Tracks ScanData / Induct(Sort) / SortConf messages in working area — support path for missing dims (AI01/AI02)."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "ItemModels",
+          "database": "sorter_sweeper",
+          "field": "PackageUID",
+          "meaning": "Package unique ID from Scan Data 2.",
+          "needs_sme": false
+        },
+        {
+          "model": "ItemModels",
+          "database": "sorter_sweeper",
+          "field": "Tracking",
+          "meaning": "Tracking number.",
+          "needs_sme": false
+        },
+        {
+          "model": "ItemModels",
+          "database": "sorter_sweeper",
+          "field": "Length/Width/Height/Weight",
+          "meaning": "Dimensions and weight from scan.",
+          "needs_sme": false
+        },
+        {
+          "model": "ItemModels",
+          "database": "sorter_sweeper",
+          "field": "Classification",
+          "meaning": "Package classification (flats/box/poly etc.).",
+          "needs_sme": false
+        },
+        {
+          "model": "ItemModels",
+          "database": "sorter_sweeper",
+          "field": "Sort / SortConf",
+          "meaning": "Sort and sort-confirm message linkage.",
+          "needs_sme": false
+        },
+        {
+          "model": "ItemModels",
+          "database": "sorter_sweeper",
+          "field": "Recirc count",
+          "meaning": "Recirculation / diverted-off-end related count.",
+          "needs_sme": true
+        },
+        {
+          "model": "ItemModels",
+          "database": "sorter_sweeper",
+          "field": "Missing dimensions",
+          "meaning": "True when any dim/weight missing and defaults applied.",
+          "needs_sme": false
+        },
+        {
+          "model": "ItemModels",
+          "database": "sorter_sweeper",
+          "field": "Missing Induction",
+          "meaning": "Got sort confirmation without prior knowledge of item.",
+          "needs_sme": false
+        },
+        {
+          "model": "ItemModels",
+          "database": "sorter_sweeper",
+          "field": "Cube",
+          "meaning": "Adjusted cube after classification percent (not raw L×W×H).",
+          "needs_sme": false
+        },
+        {
+          "model": "ItemModels",
+          "database": "sorter_sweeper",
+          "field": "ToteNotFound",
+          "meaning": "Sort confirm when tote not currently at location (exchange timing edge).",
+          "needs_sme": false
+        },
+        {
+          "model": "ItemDefaultDimModel",
+          "database": "sorter_sweeper",
+          "field": "Default dimensions when missing",
+          "meaning": "Defaults applied when dims missing.",
+          "needs_sme": false
+        },
+        {
+          "model": "ItemCubeAdjustmentModel",
+          "database": "sorter_sweeper",
+          "field": "Cube % by package classification",
+          "meaning": "e.g. ~120% box, ~45% bag; others ~100%.",
+          "needs_sme": false
+        }
+      ],
+      "api_checks": [],
+      "activities": [
+        {
+          "id": "ask_miss_scans",
+          "access_surface": "site_interview",
+          "role": "L1_support",
+          "action": "Ask about miss-scans / odd dimensions / recirculation symptoms."
+        },
+        {
+          "id": "ssms_item_lane_activity",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "SSMS Item* / IgnitionLaneActivity / Destination / Recirc models."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "query_lane_activity_dims",
+          "access_surface": "wcs_sql",
+          "label": "Query IgnitionLaneActivityModel missing dims",
+          "observables": [
+            "MissingDimensionData",
+            "AI01/AI02 chat id"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "Scans succeed",
+          "Dimensions in expected range",
+          "Destinations coherent"
+        ],
+        "degraded": [
+          "Miss-scan / NoRead pattern",
+          "Default-dim fallback",
+          "Lane activity anomalies"
+        ],
+        "escalate": [
+          "Persistent missort after item+lane DB checks"
+        ]
+      },
+      "failure_patterns": [
+        "miss_scan_or_dimension_fallback"
+      ],
+      "role_paths": {
+        "L1_support": "Site symptoms + high-level RMS/Aveva cues",
+        "L2_support": "SorterSweeper item/lane models",
+        "operator": "Report scanner/HMI miss-scan symptoms"
+      },
+      "support_contract": {},
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "tote_exchange_sequence",
+      "label": "Tote exchange sequence",
+      "job": "Confirm tote exchange sequence / hot-bin or missort exchange path.",
+      "description": "Confirm tote exchange sequence, ActiveExchangeModel, exchange settings (cube/count/weight thresholds), or hot-bin / missort / purge exchange types.",
+      "when_to_use": "Exchange stuck, hot-bin/missort exchange, exchange settings wrong.",
+      "not_for": "Initialize tote alone (tote_lifecycle_state).",
+      "primary_access_surfaces": [
+        "wcs_sql",
+        "wcs_api",
+        "aveva_hmi"
+      ],
+      "secondary_access_surfaces": [
+        "apidog",
+        "rms_ui"
+      ],
+      "primary_databases": [
+        "sorter_sweeper",
+        "robotics"
+      ],
+      "secondary_databases": [],
+      "primary_models": [
+        "ActiveExchangeModel",
+        "ToteConfigModel",
+        "ToteModel",
+        "RobotToteDatabseModel",
+        "TipperDepartureActivityModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "robotics",
+          "model": "SortLocationsDatabaseModel",
+          "purpose": "Sorter locations, queue locations, sorter side, sequence."
+        },
+        {
+          "database": "robotics",
+          "model": "RobotToteDatabseModel",
+          "purpose": "Robot↔tote association and tote state machine on robotics side."
+        },
+        {
+          "database": "robotics",
+          "model": "RobotTaskDatabaseModel",
+          "purpose": "Tracks tote tasks requested by SorterSweeper; archived when complete."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "TipperDepartureActivityModel",
+          "purpose": "Every time AGV leaves tipper: DropOffSorter/Hospital, tote, tag path, fault code — tipper issue narrowing."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "ToteModel",
+          "purpose": "SorterSweeper tote statuses, errors, exchange types/lanes."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "ToteConfigModel",
+          "purpose": "Cube/count thresholds triggering pickup / priority / close chute; method Cube/Count/CubeAndCount."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "ActiveExchangeModel",
+          "purpose": "Active exchange when chute closed; archived when empty tote replaces."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "ActiveExchangeModel",
+          "database": "sorter_sweeper",
+          "field": "Active exchange on chute close",
+          "meaning": "Created when chute closed; closed when empty tote replaces.",
+          "needs_sme": false
+        },
+        {
+          "model": "ToteConfigModel",
+          "database": "sorter_sweeper",
+          "field": "Cube/Count thresholds for Pickup/Priority/Close",
+          "meaning": "Threshold settings UPS can adjust (weight contractual ~70 / 90%).",
+          "needs_sme": false
+        },
+        {
+          "model": "ToteConfigModel",
+          "database": "sorter_sweeper",
+          "field": "Method",
+          "meaning": "Cube / Count / CubeAndCount.",
+          "needs_sme": false
+        },
+        {
+          "model": "ToteModel",
+          "database": "sorter_sweeper",
+          "field": "ToteStatus",
+          "meaning": "InTransit / AtTipper / AtSorter / PickupToteSent / Removed / AtSorterLifted / AtInduction / AtHospital.",
+          "needs_sme": false
+        },
+        {
+          "model": "ToteModel",
+          "database": "sorter_sweeper",
+          "field": "ToteError",
+          "meaning": "NoRead / MissMatch / AgvRemoved (and related spoken: AGV called, flagged by bagger, tipper disabled).",
+          "needs_sme": false
+        },
+        {
+          "model": "ToteModel",
+          "database": "sorter_sweeper",
+          "field": "ExchangeType",
+          "meaning": "SystemGenerated / MissSort / HotBin / HotBinCloseOut / HotBinDisabled / CloseOut / Purge / UserSent / CloseOutLowest.",
+          "needs_sme": false
+        },
+        {
+          "model": "ToteModel",
+          "database": "sorter_sweeper",
+          "field": "ExchangedLanes",
+          "meaning": "LaneCloseout / SorterSideCloseout / AgvCalled / FlaggedByBagger / TipperDisabled.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotToteDatabseModel",
+          "database": "robotics",
+          "field": "ToteId",
+          "meaning": "Tote identifier.",
+          "needs_sme": true
+        },
+        {
+          "model": "RobotToteDatabseModel",
+          "database": "robotics",
+          "field": "ToteState",
+          "meaning": "Tote state enum on robotics side.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotToteDatabseModel",
+          "database": "robotics",
+          "field": "LocationId",
+          "meaning": "Location id.",
+          "needs_sme": true
+        },
+        {
+          "model": "RobotToteDatabseModel",
+          "database": "robotics",
+          "field": "RobotId",
+          "meaning": "Robot id.",
+          "needs_sme": true
+        },
+        {
+          "model": "TipperDepartureActivityModel",
+          "database": "sorter_sweeper",
+          "field": "DropOffSorter/Hospital",
+          "meaning": "Departure destination type.",
+          "needs_sme": false
+        }
+      ],
+      "api_checks": [
+        "ExchangeTote",
+        "ExchangeLane",
+        "ExchangeSorterSideZone",
+        "GetExchangeSettings",
+        "UpdateExchange",
+        "GetToteTask",
+        "Purge"
+      ],
+      "activities": [
+        {
+          "id": "aveva_exchange_indicators",
+          "access_surface": "aveva_hmi",
+          "role": "operator",
+          "action": "Verify normal exchange indicators on Aveva when available."
+        },
+        {
+          "id": "ssms_active_exchange",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "SSMS ActiveExchange + ToteConfig + related tote/robot-tote rows."
+        },
+        {
+          "id": "api_exchange",
+          "access_surface": "wcs_api",
+          "role": "L2_support",
+          "action": "GetExchangeSettings / Exchange* APIs when authorized."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "aveva_api_pages",
+          "access_surface": "aveva_hmi",
+          "label": "Aveva API pages (system/AGV/tote)",
+          "observables": [
+            "startup/shutdown/closeout responses",
+            "tote init/tasks/exchange settings"
+          ]
+        },
+        {
+          "id": "query_tote_exchange_bagout",
+          "access_surface": "wcs_sql",
+          "label": "Query ActiveExchange / ActiveBagOut / ToteModel",
+          "observables": [
+            "active exchange",
+            "bag-out until tipped"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "Exchange completes",
+          "ActiveExchange clear when idle",
+          "Settings match expected"
+        ],
+        "degraded": [
+          "ActiveExchange stuck",
+          "Hot-bin/missort exchange pattern",
+          "Settings mismatch"
+        ],
+        "escalate": [
+          "Exchange APIs fail after DB corroboration"
+        ]
+      },
+      "failure_patterns": [
+        "hot_bin_or_missort_exchange"
+      ],
+      "role_paths": {
+        "L1_support": "Verify remote indicators; escalate DB/API",
+        "L2_support": "ActiveExchange + exchange APIs",
+        "operator": "Aveva exchange UI when on floor"
+      },
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "wcs_sql",
+          "wcs_api",
+          "aveva_hmi",
+          "rms_ui"
+        ],
+        "control_surfaces": [
+          "wcs_api"
+        ],
+        "required_evidence": [
+          "tote_exchange_sequence"
+        ],
+        "backend_mappings": [
+          {
+            "operational_concept": "tote_exchange_sequence",
+            "site_ui_sources": [
+              "rms_ui",
+              "aveva_hmi"
+            ],
+            "support_read_sources": [
+              {
+                "surface": "wcs_sql",
+                "database": "sorter_sweeper",
+                "model": "ActiveExchangeModel",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "RobotToteDatabseModel",
+                "fields": [
+                  "ToteId",
+                  "ToteState",
+                  "RobotId"
+                ]
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "RobotTaskDatabaseModel",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "RobotCommandDatabaseModel",
+                "fields": [
+                  "Command status",
+                  "Sent time",
+                  "In-progress time"
+                ]
+              }
+            ],
+            "preferred_support_surface": "wcs_sql",
+            "note": "Covers the 'front AGV moves out without a trailing AGV backfilling' pattern: check whether the trailing AGV had an active fault at/around the move-out time (RobotCommandDatabaseModel sent/in-progress timestamps + AgvActiveErrorDatabaseModel), and whether ActiveExchangeModel/ToteModel show the chute closed before the exchange completed."
+          }
+        ]
+      },
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "bag_out_or_closeout_state",
+      "label": "Bag-out / closeout state",
+      "job": "Confirm bag-out / closeout state vs service-down.",
+      "description": "Confirm active bag-out / chute closeout progress vs stuck (active bag-out model; sort closeout path).",
+      "when_to_use": "Bag-out stuck, closeout not completing, cancel closeout needed.",
+      "not_for": "Generic site stoppage without bag-out evidence.",
+      "primary_access_surfaces": [
+        "wcs_sql",
+        "wcs_api",
+        "apidog"
+      ],
+      "secondary_access_surfaces": [
+        "rms_ui",
+        "site_interview"
+      ],
+      "primary_databases": [
+        "sorter_sweeper"
+      ],
+      "secondary_databases": [],
+      "primary_models": [
+        "ActiveBagOutModel",
+        "SystemStateModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "sorter_sweeper",
+          "model": "ActiveBagOutModel",
+          "purpose": "Active bag-out until tote tipped; then archived."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "SystemStateModel",
+          "purpose": "SorterSweeper system status mirror; keep chutes closed after bag-out; getting sort data."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "ActiveBagOutModel",
+          "database": "sorter_sweeper",
+          "field": "Active bag-out until tipped",
+          "meaning": "Entry while bag-out in progress; closes once tote tipped.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemStateModel",
+          "database": "sorter_sweeper",
+          "field": "SystemStatus",
+          "meaning": "Same status enum family as Robotics SystemDatabaseModel.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemStateModel",
+          "database": "sorter_sweeper",
+          "field": "Keep chutes closed after bag-out",
+          "meaning": "Flag after bag-out.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemStateModel",
+          "database": "sorter_sweeper",
+          "field": "Getting sort data",
+          "meaning": "Whether receiving sort data.",
+          "needs_sme": false
+        }
+      ],
+      "api_checks": [
+        "CloseOut",
+        "CancelCloseout",
+        "OpenAllChutes"
+      ],
+      "activities": [
+        {
+          "id": "ask_bag_out",
+          "access_surface": "site_interview",
+          "role": "L1_support",
+          "action": "Confirm bag-out vs service-down symptoms."
+        },
+        {
+          "id": "ssms_active_bag_out",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "SSMS ActiveBagOutModel (+ SystemState if needed)."
+        },
+        {
+          "id": "api_closeout",
+          "access_surface": "wcs_api",
+          "role": "L2_support",
+          "action": "CloseOut / CancelCloseout when authorized; OpenAllChutes if chute-related."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "aveva_overall_system",
+          "access_surface": "aveva_hmi",
+          "label": "Overall system / bag-out / RMS page",
+          "observables": [
+            "system blank/down",
+            "bag-out controls"
+          ]
+        },
+        {
+          "id": "query_tote_exchange_bagout",
+          "access_surface": "wcs_sql",
+          "label": "Query ActiveExchange / ActiveBagOut / ToteModel",
+          "observables": [
+            "active exchange",
+            "bag-out until tipped"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "No stuck ActiveBagOut",
+          "Closeout completes"
+        ],
+        "degraded": [
+          "ActiveBagOut stuck",
+          "Closeout fails"
+        ],
+        "escalate": [
+          "CancelCloseout required repeatedly — L3"
+        ]
+      },
+      "failure_patterns": [
+        "bag_out_stuck"
+      ],
+      "role_paths": {
+        "L1_support": "Symptom triage bag-out vs service-down",
+        "L2_support": "ActiveBagOut + CloseOut APIs",
+        "operator": "Report bag-out floor/HMI symptoms"
+      },
+      "support_contract": {},
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "robot_command_or_task_state",
+      "label": "Robot command / task state",
+      "job": "Confirm robot command/task lifecycle and Geek translation path.",
+      "description": "Confirm Robotics robot-command / robot-task (and SorterSweeper task) status toward Geek Plus — stuck, active, or archive.",
+      "when_to_use": "Commands stuck, Geek task not progressing, OptiSweep vs Geek ownership of a command.",
+      "not_for": "Training-study fluff without live SSMS/API checks.",
+      "primary_access_surfaces": [
+        "wcs_sql",
+        "wcs_api",
+        "apidog"
+      ],
+      "secondary_access_surfaces": [],
+      "primary_databases": [
+        "robotics",
+        "audit",
+        "geek_agv"
+      ],
+      "secondary_databases": [
+        "sorter_sweeper"
+      ],
+      "primary_models": [
+        "RobotCommandDatabaseModel",
+        "RobotTaskDatabaseModel",
+        "TaskIdToRequestId",
+        "GeekAgvActionLoggingModel",
+        "TaskModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "robotics",
+          "model": "RobotCommandDatabaseModel",
+          "purpose": "Tracks status of robot commands requested by robotics for AGVs (vendor-agnostic); archived when complete."
+        },
+        {
+          "database": "robotics",
+          "model": "RobotTaskDatabaseModel",
+          "purpose": "Tracks tote tasks requested by SorterSweeper; archived when complete."
+        },
+        {
+          "database": "geek_agv",
+          "model": "GeekAgvActionLoggingModel",
+          "purpose": "History of tasks sent to Geek+."
+        },
+        {
+          "database": "geek_agv",
+          "model": "LatticeCodeModel",
+          "purpose": "Lattice codes and respective station IDs (induct/drop-off translation)."
+        },
+        {
+          "database": "audit",
+          "model": "TaskIdToRequestId",
+          "purpose": "Maps AgvId / GeekTaskId / CommandGuid."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "TaskModel",
+          "purpose": "Tasks sent to robotics engine; archived when complete."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "RobotCommandDatabaseModel",
+          "database": "robotics",
+          "field": "Command status",
+          "meaning": "Status of the command.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotCommandDatabaseModel",
+          "database": "robotics",
+          "field": "Command GUID",
+          "meaning": "GUID for the command (used by ResendGeekCommand).",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotCommandDatabaseModel",
+          "database": "robotics",
+          "field": "CommandName",
+          "meaning": "Command name from CommandNames enum.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotTaskDatabaseModel",
+          "database": "robotics",
+          "field": "Tote task status",
+          "meaning": "Status of tote task from Sorter Sweeper.",
+          "needs_sme": false
+        },
+        {
+          "model": "TaskIdToRequestId",
+          "database": "audit",
+          "field": "AgvId",
+          "meaning": "AGV id.",
+          "needs_sme": false
+        },
+        {
+          "model": "TaskIdToRequestId",
+          "database": "audit",
+          "field": "GeekTaskId",
+          "meaning": "Current Geek task id.",
+          "needs_sme": false
+        },
+        {
+          "model": "TaskIdToRequestId",
+          "database": "audit",
+          "field": "CommandGuid",
+          "meaning": "Command GUID from robotics.",
+          "needs_sme": false
+        },
+        {
+          "model": "GeekAgvActionLoggingModel",
+          "database": "geek_agv",
+          "field": "Geek+ task history",
+          "meaning": "Logged Geek+ tasks.",
+          "needs_sme": false
+        },
+        {
+          "model": "TaskModel",
+          "database": "sorter_sweeper",
+          "field": "TaskId",
+          "meaning": "Task id.",
+          "needs_sme": false
+        },
+        {
+          "model": "TaskModel",
+          "database": "sorter_sweeper",
+          "field": "Task name",
+          "meaning": "Name of the task.",
+          "needs_sme": false
+        },
+        {
+          "model": "TaskModel",
+          "database": "sorter_sweeper",
+          "field": "ToteId",
+          "meaning": "Tote id (spoken as third column).",
+          "needs_sme": false
+        },
+        {
+          "model": "TaskModel",
+          "database": "sorter_sweeper",
+          "field": "Station",
+          "meaning": "Station for the task.",
+          "needs_sme": false
+        }
+      ],
+      "api_checks": [
+        "ResendGeekCommand",
+        "ExecutedAgvCommand",
+        "ResendToteTask"
+      ],
+      "activities": [
+        {
+          "id": "ssms_robot_command_task",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "SSMS RobotCommand/RobotTask; Audit TaskIdToRequestId; GeekAgv action logs."
+        },
+        {
+          "id": "api_resend_geek",
+          "access_surface": "wcs_api",
+          "role": "L2_support",
+          "action": "ResendGeekCommand / ExecutedAgvCommand when source-backed after unplanned restart miss."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "apidog_resend_geek",
+          "access_surface": "apidog",
+          "label": "ResendGeekCommand",
+          "observables": [
+            "command resent after unplanned restart"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "Commands complete",
+          "GUID mapping present",
+          "Geek actions progress"
+        ],
+        "degraded": [
+          "Stuck RobotTask/Command",
+          "Missing Audit mapping",
+          "Geek log gap"
+        ],
+        "escalate": [
+          "ResendGeekCommand fails repeatedly"
+        ]
+      },
+      "failure_patterns": [
+        "robot_task_or_command_stuck"
+      ],
+      "role_paths": {
+        "L1_support": "Usually not L1 primary",
+        "L2_support": "SSMS + ResendGeekCommand as documented",
+        "L3_support": "Persistent command-path ownership",
+        "operator": "No SSMS/API access"
+      },
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "wcs_sql",
+          "wcs_api"
+        ],
+        "control_surfaces": [
+          "wcs_api",
+          "approved_system_hmi"
+        ],
+        "required_evidence": [
+          "robot_command_or_task_state"
+        ],
+        "forbidden_capabilities": [
+          "optisweep_service_restart",
+          "ignition_restart"
+        ],
+        "backend_mappings": [
+          {
+            "operational_concept": "robot_command_or_task_state",
+            "site_ui_sources": [
+              "rms_ui"
+            ],
+            "support_read_sources": [
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "RobotCommandDatabaseModel",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "RobotTaskDatabaseModel",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "geek_agv",
+                "model": "GeekAgvActionLoggingModel",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "geek_agv",
+                "model": "LatticeCodeModel",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "audit",
+                "model": "TaskIdToRequestId",
+                "fields": []
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "sorter_sweeper",
+                "model": "TaskModel",
+                "fields": []
+              }
+            ],
+            "preferred_support_surface": "wcs_sql"
+          }
+        ]
+      },
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "wcs_system_faults",
+      "label": "WCS system faults",
+      "job": "Confirm WCS/system-level active faults (SystemActiveError / system fault tables).",
+      "description": "Confirm WCS system faults / System Active Error (software-level) beyond per-AGV active errors alone.",
+      "when_to_use": "High-level software fault report; system errors distinct from single-AGV bump.",
+      "not_for": "Ignore AGV-specific active errors when both present — link both capabilities.",
+      "primary_access_surfaces": [
+        "wcs_sql",
+        "rms_ui",
+        "wcs_api"
+      ],
+      "secondary_access_surfaces": [
+        "apidog"
+      ],
+      "primary_databases": [
+        "robotics"
+      ],
+      "secondary_databases": [],
+      "primary_models": [
+        "SystemActiveErrorModel",
+        "SystemErrorActivityModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "robotics",
+          "model": "SystemActiveErrorModel",
+          "purpose": "Currently active system errors (also used by Active AGV error SQL guide query)."
+        },
+        {
+          "database": "robotics",
+          "model": "SystemErrorActivityModel",
+          "purpose": "Archived system errors after resolution."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "SystemActiveErrorModel",
+          "database": "robotics",
+          "field": "Id",
+          "meaning": "Row id.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemActiveErrorModel",
+          "database": "robotics",
+          "field": "EntityInserted",
+          "meaning": "Insert timestamp.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemActiveErrorModel",
+          "database": "robotics",
+          "field": "EntityLastUpdate",
+          "meaning": "Last update timestamp.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemActiveErrorModel",
+          "database": "robotics",
+          "field": "Name",
+          "meaning": "Error name.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemActiveErrorModel",
+          "database": "robotics",
+          "field": "Area",
+          "meaning": "Error area (e.g. AGV, Communication).",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemActiveErrorModel",
+          "database": "robotics",
+          "field": "Error",
+          "meaning": "Error code.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemActiveErrorModel",
+          "database": "robotics",
+          "field": "LastSeen",
+          "meaning": "Last seen timestamp.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemActiveErrorModel",
+          "database": "robotics",
+          "field": "SystemErrorDescription",
+          "meaning": "Description of the system error.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemActiveErrorModel",
+          "database": "robotics",
+          "field": "SystemErrorResolution",
+          "meaning": "Suggested resolution text.",
+          "needs_sme": false
+        },
+        {
+          "model": "SystemErrorActivityModel",
+          "database": "robotics",
+          "field": "Archived system errors",
+          "meaning": "Historical system errors.",
+          "needs_sme": false
+        }
+      ],
+      "api_checks": [
+        "GetAGVStatuses",
+        "GetAGVFaultStats"
+      ],
+      "activities": [
+        {
+          "id": "rms_system_fault_cues",
+          "access_surface": "rms_ui",
+          "role": "operator",
+          "action": "High-level software fault cues on RMS."
+        },
+        {
+          "id": "ssms_system_active_error",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "SSMS SystemActiveError / SystemErrorActivity."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "ssms_robotics_active_agv_error",
+          "access_surface": "wcs_sql",
+          "label": "SSMS Robotics AgvActiveError / SystemActiveError",
+          "observables": [
+            "active error rows present",
+            "active error rows clear",
+            "ErrorCode / SystemErrorDescription populated"
+          ]
+        },
+        {
+          "id": "query_agv_active_errors",
+          "access_surface": "wcs_sql",
+          "label": "Query AgvActiveError / SystemActiveError",
+          "observables": [
+            "active errors present",
+            "clean"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "No system active errors"
+        ],
+        "degraded": [
+          "SystemActiveError rows present",
+          "System error activity recent"
+        ],
+        "escalate": [
+          "System faults + service down — join wcs_service_health"
+        ]
+      },
+      "failure_patterns": [
+        "system_fault"
+      ],
+      "role_paths": {
+        "L1_support": "High-level fault report",
+        "L2_support": "SystemActiveError tables + API corroboration",
+        "operator": "Report site software-fault symptoms"
+      },
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "wcs_sql",
+          "wcs_api",
+          "rms_ui"
+        ],
+        "control_surfaces": [],
+        "required_evidence": [
+          "wcs_system_faults"
+        ],
+        "forbidden_capabilities": [
+          "optisweep_service_restart",
+          "ignition_restart"
+        ],
+        "backend_mappings": [
+          {
+            "operational_concept": "wcs_system_faults",
+            "site_ui_sources": [
+              "rms_ui"
+            ],
+            "support_read_sources": [
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "SystemActiveErrorModel",
+                "fields": [
+                  "Id",
+                  "EntityInserted",
+                  "EntityLastUpdate",
+                  "Name",
+                  "Area",
+                  "Error",
+                  "LastSeen",
+                  "SystemErrorDescription",
+                  "SystemErrorResolution"
+                ]
+              }
+            ],
+            "preferred_support_surface": "wcs_sql"
+          }
+        ]
+      },
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "lane_or_chute_state",
+      "label": "Lane / chute state",
+      "job": "Confirm lane/chute open-closed / bypass state.",
+      "description": "Confirm sorter lane/chute status (Active/Bypassed/NotTracking), KeepClose, OpenAllChutes, or related Aveva/API/DB state.",
+      "when_to_use": "Chute stuck closed, bypassed, OpenAllChutes needed, lane status wrong.",
+      "not_for": "Item miss-scan root cause without lane evidence.",
+      "primary_access_surfaces": [
+        "aveva_hmi",
+        "wcs_sql",
+        "wcs_api"
+      ],
+      "secondary_access_surfaces": [
+        "apidog",
+        "site_interview"
+      ],
+      "primary_databases": [
+        "sorter_sweeper"
+      ],
+      "secondary_databases": [],
+      "primary_models": [
+        "LocationModel",
+        "SorterModel",
+        "IgnitionLaneActivityModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "sorter_sweeper",
+          "model": "SorterModel",
+          "purpose": "Sorter legs: name, XLE receiver IP/name for chat messages."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "LocationModel",
+          "purpose": "SorterSweeper stations: Sorter/Tipper/Hospital/Induction; lane/chute attributes."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "IgnitionLaneActivityModel",
+          "purpose": "Tracks ScanData / Induct(Sort) / SortConf messages in working area — support path for missing dims (AI01/AI02)."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "LocationModel",
+          "database": "sorter_sweeper",
+          "field": "Type",
+          "meaning": "Location type: Sorter, Tipper, Hospital, Induction.",
+          "needs_sme": false
+        },
+        {
+          "model": "LocationModel",
+          "database": "sorter_sweeper",
+          "field": "SorterName",
+          "meaning": "Sorter name for the location.",
+          "needs_sme": false
+        },
+        {
+          "model": "LocationModel",
+          "database": "sorter_sweeper",
+          "field": "Zone",
+          "meaning": "Zone the location belongs to.",
+          "needs_sme": false
+        },
+        {
+          "model": "LocationModel",
+          "database": "sorter_sweeper",
+          "field": "Sequence",
+          "meaning": "Sequence from sorter entrance.",
+          "needs_sme": false
+        },
+        {
+          "model": "LocationModel",
+          "database": "sorter_sweeper",
+          "field": "Lane",
+          "meaning": "Chute/lane number UPS defines.",
+          "needs_sme": false
+        },
+        {
+          "model": "LocationModel",
+          "database": "sorter_sweeper",
+          "field": "LaneDelay",
+          "meaning": "Delay used historically for straight-line divert prediction (mostly unused on these sorters).",
+          "needs_sme": false
+        },
+        {
+          "model": "LocationModel",
+          "database": "sorter_sweeper",
+          "field": "LaneStatus",
+          "meaning": "Active (open), Bypassed (closed), NotTracking (not yet in control / phased).",
+          "needs_sme": false
+        },
+        {
+          "model": "LocationModel",
+          "database": "sorter_sweeper",
+          "field": "KeepClose",
+          "meaning": "If chute should remain closed after an exchange (e.g. hot bin).",
+          "needs_sme": false
+        },
+        {
+          "model": "LocationModel",
+          "database": "sorter_sweeper",
+          "field": "TipperSelect",
+          "meaning": "If location has a specified tipper (GLD).",
+          "needs_sme": false
+        },
+        {
+          "model": "LocationModel",
+          "database": "sorter_sweeper",
+          "field": "LoadCategory",
+          "meaning": "Load category (e.g. sure post) messaging to tipper; often null in production.",
+          "needs_sme": true
+        },
+        {
+          "model": "SorterModel",
+          "database": "sorter_sweeper",
+          "field": "Name",
+          "meaning": "Sorter side name from RMS map (top to bottom).",
+          "needs_sme": false
+        },
+        {
+          "model": "SorterModel",
+          "database": "sorter_sweeper",
+          "field": "XleIp",
+          "meaning": "Receiver IP when sending messages to this sorter.",
+          "needs_sme": false
+        }
+      ],
+      "api_checks": [
+        "OpenAllChutes",
+        "ExchangeLane"
+      ],
+      "activities": [
+        {
+          "id": "ask_chute_state",
+          "access_surface": "site_interview",
+          "role": "L1_support",
+          "action": "Ask chute open/closed; Aveva lane/zone if available."
+        },
+        {
+          "id": "ssms_lane_status",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "SSMS LocationModel LaneStatus / SorterModel / lane activity."
+        },
+        {
+          "id": "api_open_all_chutes",
+          "access_surface": "wcs_api",
+          "role": "L2_support",
+          "action": "OpenAllChutes when authorized for closed chutes."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "hospital_stacklight_lane",
+          "access_surface": "hospital_hmi",
+          "label": "Hospital stacklight / lane alarm",
+          "observables": [
+            "stacklight color",
+            "lane alarm"
+          ]
+        },
+        {
+          "id": "query_lane_status",
+          "access_surface": "wcs_sql",
+          "label": "Query LocationModel LaneStatus",
+          "observables": [
+            "Active",
+            "Bypassed",
+            "NotTracking"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "Chutes open as expected",
+          "LaneStatus healthy"
+        ],
+        "degraded": [
+          "Chute stuck closed/bypassed",
+          "LaneStatus abnormal"
+        ],
+        "escalate": [
+          "OpenAllChutes ineffective — physical/HMI path"
+        ]
+      },
+      "failure_patterns": [
+        "chute_bypassed_or_stuck_closed"
+      ],
+      "role_paths": {
+        "L1_support": "Ask chute state + Aveva overview if reachable",
+        "L2_support": "LocationModel + OpenAllChutes",
+        "operator": "Physical/HMI chute confirmation"
+      },
+      "support_contract": {},
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "tote_lifecycle_state",
+      "label": "Tote lifecycle / inventory state",
+      "job": "Confirm tote lifecycle: initialize, tasks, NoRead/MissMatch errors, remove tote.",
+      "description": "Confirm tote initialize/remove, Tote Model status/errors (NoRead, MissMatch, AgvRemoved), or GetToteTask inventory.",
+      "when_to_use": "Initialize tote / tote tasks issues; tote error NoRead or MissMatch.",
+      "not_for": "Exchange sequence alone (tote_exchange_sequence).",
+      "primary_access_surfaces": [
+        "aveva_hmi",
+        "wcs_sql",
+        "wcs_api"
+      ],
+      "secondary_access_surfaces": [
+        "apidog"
+      ],
+      "primary_databases": [
+        "sorter_sweeper"
+      ],
+      "secondary_databases": [
+        "robotics"
+      ],
+      "primary_models": [
+        "ToteModel",
+        "RobotToteDatabseModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "robotics",
+          "model": "RobotToteDatabseModel",
+          "purpose": "Robot↔tote association and tote state machine on robotics side."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "ToteModel",
+          "purpose": "SorterSweeper tote statuses, errors, exchange types/lanes."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "ToteModel",
+          "database": "sorter_sweeper",
+          "field": "ToteStatus",
+          "meaning": "InTransit / AtTipper / AtSorter / PickupToteSent / Removed / AtSorterLifted / AtInduction / AtHospital.",
+          "needs_sme": false
+        },
+        {
+          "model": "ToteModel",
+          "database": "sorter_sweeper",
+          "field": "ToteError",
+          "meaning": "NoRead / MissMatch / AgvRemoved (and related spoken: AGV called, flagged by bagger, tipper disabled).",
+          "needs_sme": false
+        },
+        {
+          "model": "ToteModel",
+          "database": "sorter_sweeper",
+          "field": "ExchangeType",
+          "meaning": "SystemGenerated / MissSort / HotBin / HotBinCloseOut / HotBinDisabled / CloseOut / Purge / UserSent / CloseOutLowest.",
+          "needs_sme": false
+        },
+        {
+          "model": "ToteModel",
+          "database": "sorter_sweeper",
+          "field": "ExchangedLanes",
+          "meaning": "LaneCloseout / SorterSideCloseout / AgvCalled / FlaggedByBagger / TipperDisabled.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotToteDatabseModel",
+          "database": "robotics",
+          "field": "ToteId",
+          "meaning": "Tote identifier.",
+          "needs_sme": true
+        },
+        {
+          "model": "RobotToteDatabseModel",
+          "database": "robotics",
+          "field": "ToteState",
+          "meaning": "Tote state enum on robotics side.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotToteDatabseModel",
+          "database": "robotics",
+          "field": "LocationId",
+          "meaning": "Location id.",
+          "needs_sme": true
+        },
+        {
+          "model": "RobotToteDatabseModel",
+          "database": "robotics",
+          "field": "RobotId",
+          "meaning": "Robot id.",
+          "needs_sme": true
+        }
+      ],
+      "api_checks": [
+        "GetToteTask",
+        "InitializeTote",
+        "RemoveTote",
+        "ResendToteTask"
+      ],
+      "activities": [
+        {
+          "id": "aveva_initialize_tote",
+          "access_surface": "aveva_hmi",
+          "role": "operator",
+          "action": "Aveva Initialize Tote / Tote Tasks pages."
+        },
+        {
+          "id": "ssms_tote_model",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "SSMS ToteModel (+ RobotTote) for lifecycle/error enums."
+        },
+        {
+          "id": "api_tote_lifecycle",
+          "access_surface": "wcs_api",
+          "role": "L2_support",
+          "action": "GetToteTask / InitializeTote / RemoveTote as authorized."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "aveva_api_pages",
+          "access_surface": "aveva_hmi",
+          "label": "Aveva API pages (system/AGV/tote)",
+          "observables": [
+            "startup/shutdown/closeout responses",
+            "tote init/tasks/exchange settings"
+          ]
+        },
+        {
+          "id": "query_tote_exchange_bagout",
+          "access_surface": "wcs_sql",
+          "label": "Query ActiveExchange / ActiveBagOut / ToteModel",
+          "observables": [
+            "active exchange",
+            "bag-out until tipped"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "Tote tasks progress",
+          "No NoRead/MissMatch",
+          "Initialize succeeds"
+        ],
+        "degraded": [
+          "Tote error NoRead/MissMatch",
+          "Stuck tote task",
+          "Initialize fails"
+        ],
+        "escalate": [
+          "Repeated tote errors after API+DB"
+        ]
+      },
+      "failure_patterns": [
+        "tote_error_noread_or_mismatch"
+      ],
+      "role_paths": {
+        "L1_support": "Coach Aveva if reachable; else escalate",
+        "L2_support": "ToteModel + tote APIs",
+        "operator": "Aveva tote pages primary"
+      },
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "wcs_sql",
+          "wcs_api"
+        ],
+        "control_surfaces": [
+          "aveva_hmi",
+          "wcs_api",
+          "approved_system_hmi"
+        ],
+        "required_evidence": [
+          "tote_association_state"
+        ],
+        "forbidden_capabilities": [
+          "optisweep_service_restart",
+          "ignition_restart"
+        ],
+        "backend_mappings": [
+          {
+            "operational_concept": "tote_robot_association",
+            "site_ui_sources": [
+              "aveva_hmi",
+              "hospital_hmi",
+              "rms_ui"
+            ],
+            "support_read_sources": [
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "RobotDatabaseModel",
+                "fields": [
+                  "ToteName",
+                  "CurrentLocationId",
+                  "DestinationLocationId"
+                ]
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "RobotToteDatabseModel",
+                "fields": [
+                  "ToteId",
+                  "RobotId"
+                ]
+              }
+            ],
+            "correlation_keys": [
+              "robot_id",
+              "tote_id"
+            ],
+            "freshness_field": "EntityLastUpdate",
+            "preferred_support_surface": "wcs_sql",
+            "approved_control_surfaces": [
+              "aveva_hmi",
+              "wcs_api",
+              "approved_system_hmi"
+            ]
+          }
+        ]
+      },
+      "backend_mappings": [
+        {
+          "operational_concept": "tote_robot_association",
+          "site_ui_sources": [
+            "aveva_hmi",
+            "hospital_hmi",
+            "rms_ui"
+          ],
+          "support_read_sources": [
+            {
+              "surface": "wcs_sql",
+              "database": "robotics",
+              "model": "RobotDatabaseModel",
+              "fields": [
+                "ToteName",
+                "CurrentLocationId",
+                "DestinationLocationId"
+              ]
+            },
+            {
+              "surface": "wcs_sql",
+              "database": "robotics",
+              "model": "RobotToteDatabseModel",
+              "fields": [
+                "ToteId",
+                "RobotId"
+              ]
+            }
+          ],
+          "correlation_keys": [
+            "robot_id",
+            "tote_id"
+          ],
+          "freshness_field": "EntityLastUpdate",
+          "preferred_support_surface": "wcs_sql",
+          "approved_control_surfaces": [
+            "aveva_hmi",
+            "wcs_api",
+            "approved_system_hmi"
+          ]
+        }
+      ],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "ups_chat_or_stunnel_health",
+      "label": "UPS Chat / Stunnel health",
+      "job": "Confirm UPS Chat / Stunnel message path (AI01, AI02, SortationChat).",
+      "description": "Confirm S-Tunnel connections (AI01/AI02/SortationChat) and Chat xLE path between OTNet and UPS.",
+      "when_to_use": "Scan/sort/hot-bin messages not flowing; Stunnel/Chat down after restart.",
+      "not_for": "RMS AGV alarm as substitute for message-path health.",
+      "primary_access_surfaces": [
+        "stunnel",
+        "site_interview"
+      ],
+      "secondary_access_surfaces": [
+        "event_viewer",
+        "wcs_service_health"
+      ],
+      "primary_databases": [],
+      "secondary_databases": [],
+      "primary_models": [],
+      "sql_model_links": [],
+      "field_highlights": [],
+      "api_checks": [],
+      "activities": [
+        {
+          "id": "ask_chat_flowing",
+          "access_surface": "site_interview",
+          "role": "L1_support",
+          "action": "Ask if Chat/sort messages are flowing."
+        },
+        {
+          "id": "stunnel_connections",
+          "access_surface": "stunnel",
+          "role": "L2_support",
+          "action": "Stunnel connection list AI01/AI02/SortationChat on primary."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "stunnel_connections_list",
+          "access_surface": "stunnel",
+          "label": "File → Connections list",
+          "observables": [
+            "AI01/AI02/SortationChat connected",
+            "connection missing"
+          ]
+        },
+        {
+          "id": "ask_messages_flowing",
+          "access_surface": "stunnel",
+          "label": "Ask if Chat/sort messages flowing (L1)",
+          "observables": [
+            "site reports messages flowing / not"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "Stunnel connections up",
+          "Chat/sort messages flowing"
+        ],
+        "degraded": [
+          "Stunnel/Chat down",
+          "Messages not flowing"
+        ],
+        "escalate": [
+          "Down after host restart path — join wcs_service_health"
+        ]
+      },
+      "failure_patterns": [
+        "stunnel_or_chat_down"
+      ],
+      "role_paths": {
+        "L1_support": "Ask if messages flowing (not overview-only pretend check)",
+        "L2_support": "Stunnel connection check primary",
+        "L3_support": "Persistent Stunnel/Chat ownership",
+        "operator": "Report message-flow symptoms from site tools if any"
+      },
+      "support_contract": {},
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "opc_connection_or_tipper_heartbeat",
+      "label": "OPC connection / tipper heartbeat",
+      "job": "Confirm Ignition OPC connections and tipper WebVisu heartbeat.",
+      "description": "Confirm Ignition OPC Connections to tippers/hospital and tipper WebVisu heartbeat (unplanned-restart path).",
+      "when_to_use": "OPC Connections faulted; tipper HMI dead; heartbeat flatline after unplanned restart.",
+      "not_for": "RMS AGV alarm list as substitute for OPC faulted; Aveva as tipper HMI.",
+      "primary_access_surfaces": [
+        "ignition_gateway",
+        "tipper_hmi"
+      ],
+      "secondary_access_surfaces": [
+        "wcs_sql",
+        "site_interview",
+        "event_viewer"
+      ],
+      "primary_databases": [
+        "opc_comms"
+      ],
+      "secondary_databases": [
+        "sorter_sweeper"
+      ],
+      "primary_models": [
+        "OpcConfiguration",
+        "OpcTags",
+        "TagModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "opc_comms",
+          "model": "OpcConfiguration",
+          "purpose": "OPC connection parameters."
+        },
+        {
+          "database": "opc_comms",
+          "model": "OpcTags",
+          "purpose": "Startup subscribed OPC tags."
+        },
+        {
+          "database": "sorter_sweeper",
+          "model": "TagModel",
+          "purpose": "12 tags per tipper (7 in / 5 out); OptiSweep reads out tags, writes in tags."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "OpcConfiguration",
+          "database": "opc_comms",
+          "field": "OPC connection parameters",
+          "meaning": null,
+          "needs_sme": true
+        },
+        {
+          "model": "OpcTags",
+          "database": "opc_comms",
+          "field": "Startup subscribed tags",
+          "meaning": null,
+          "needs_sme": true
+        },
+        {
+          "model": "TagModel",
+          "database": "sorter_sweeper",
+          "field": "TagType",
+          "meaning": "Defines tag and processes action.",
+          "needs_sme": false
+        },
+        {
+          "model": "TagModel",
+          "database": "sorter_sweeper",
+          "field": "Bit",
+          "meaning": "Whether tag should be broken into bits.",
+          "needs_sme": false
+        },
+        {
+          "model": "TagModel",
+          "database": "sorter_sweeper",
+          "field": "Value",
+          "meaning": "Current tag value.",
+          "needs_sme": false
+        },
+        {
+          "model": "TagModel",
+          "database": "sorter_sweeper",
+          "field": "Flag",
+          "meaning": "Tracks when tipper went into cycle.",
+          "needs_sme": false
+        }
+      ],
+      "api_checks": [],
+      "activities": [
+        {
+          "id": "ask_tipper_hmi_alive",
+          "access_surface": "site_interview",
+          "role": "L1_support",
+          "action": "Ask if tipper HMI/WebVisu alive and whether heartbeats look flat."
+        },
+        {
+          "id": "opc_connections_view",
+          "access_surface": "ignition_gateway",
+          "role": "L2_support",
+          "action": "Ignition Config → OPC → OPC Connections (Day2: tippers powered off show Faulted)."
+        },
+        {
+          "id": "webvisu_heartbeat_check",
+          "access_surface": "tipper_hmi",
+          "role": "L2_support",
+          "action": "Confirm tipper heartbeats; if flatlined after Ignition late start, restart OptiSweep (OPC path)."
+        },
+        {
+          "id": "ssms_opc_tags",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "OPCComms OpcConfiguration/OpcTags (+ SorterSweeper TagModel) when needed."
+        }
+      ],
+      "cross_link_activities": [
+        {
+          "id": "opc_connections_view",
+          "access_surface": "ignition_gateway",
+          "label": "Config → OPC → OPC Connections",
+          "observables": [
+            "connection Connected",
+            "Faulted (e.g. tipper powered off)"
+          ]
+        },
+        {
+          "id": "tag_provider_sys1",
+          "access_surface": "ignition_gateway",
+          "label": "Tag provider / SYS1 metrics tags",
+          "observables": [
+            "tipper/hospital tags present",
+            "Aveva request/response tags"
+          ]
+        },
+        {
+          "id": "tipper_alarm_text",
+          "access_surface": "tipper_hmi",
+          "label": "Read tipper alarm / heartbeat",
+          "observables": [
+            "alarm text",
+            "heartbeat flatline",
+            "IO faults"
+          ]
+        }
+      ],
+      "observables": {
+        "healthy": [
+          "OPC connected",
+          "WebVisu heartbeat alive",
+          "Tipper tags readable"
+        ],
+        "degraded": [
+          "OPC tipper Faulted",
+          "Heartbeat flatline",
+          "Tipper HMI not responding"
+        ],
+        "escalate": [
+          "OPC faulted → OptiSweep restart path; LOTO if physical; L4 if product OPC defect"
+        ]
+      },
+      "failure_patterns": [
+        "opc_connection_faulted"
+      ],
+      "role_paths": {
+        "L1_support": "Ask tipper HMI alive / heartbeat symptoms",
+        "L2_support": "OPC Connections + WebVisu heartbeat + OptiSweep restart when documented",
+        "L3_support": "Persistent OPC/heartbeat ownership with host trio",
+        "operator": "Confirm tipper HMI/local alarms on station"
+      },
+      "support_contract": {},
+      "backend_mappings": [],
+      "gaps": [],
+      "source_refs": [
+        "docs/ontology/support_roles_components_and_adjacency.md",
+        "docs/ontology/catalogs/wcs_sql_catalog.json",
+        "docs/ontology/catalogs/wcs_api_catalog.json",
+        "docs/ontology/catalogs/cross_links.json"
+      ]
+    },
+    {
+      "id": "robot_location_state",
+      "label": "Robot location state",
+      "job": "Confirm a robot/AGV's current and destination location, independent of active-error or task-command state.",
+      "description": "Confirm robot location via RobotDatabaseModel (State/CurrentLocationId/DestinationLocationId) and RobotLocationDatabaseModel (station metadata); corroborate with RMS/Aveva/hospital HMI location display.",
+      "when_to_use": "Device roster / location diagnostics need robot position specifically, separate from active-error state (use agv_active_errors) or task/command state (use robot_command_or_task_state).",
+      "not_for": "Active AGV error/fault state (agv_active_errors); robot-tote pairing (tote_association_state); task/command progression (robot_command_or_task_state).",
+      "primary_access_surfaces": [
+        "wcs_sql",
+        "wcs_api",
+        "rms_ui"
+      ],
+      "secondary_access_surfaces": [
+        "aveva_hmi",
+        "hospital_hmi"
+      ],
+      "primary_databases": [
+        "robotics"
+      ],
+      "secondary_databases": [],
+      "primary_models": [
+        "RobotDatabaseModel",
+        "RobotLocationDatabaseModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "robotics",
+          "model": "RobotDatabaseModel",
+          "purpose": "Per-robot current state, current location id, destination location id."
+        },
+        {
+          "database": "robotics",
+          "model": "RobotLocationDatabaseModel",
+          "purpose": "Station/location metadata (station number, zone, closeout zone, location type, max AGVs, dwell tracking) for a given location id."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "RobotDatabaseModel",
+          "database": "robotics",
+          "field": "State",
+          "meaning": "Current robot state.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotDatabaseModel",
+          "database": "robotics",
+          "field": "CurrentLocationId",
+          "meaning": "Robot's current location id.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotDatabaseModel",
+          "database": "robotics",
+          "field": "DestinationLocationId",
+          "meaning": "Robot's destination location id.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotLocationDatabaseModel",
+          "database": "robotics",
+          "field": "StationNumber",
+          "meaning": "Station/workstation number for the location.",
+          "needs_sme": false
+        }
+      ],
+      "api_checks": [],
+      "activities": [
+        {
+          "id": "ssms_robot_location_state",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "SSMS Robotics: RobotDatabaseModel current/destination location joined to RobotLocationDatabaseModel station metadata."
+        }
+      ],
+      "cross_link_activities": [],
+      "observables": {
+        "healthy": [
+          "CurrentLocationId matches an expected station; DestinationLocationId consistent with active task"
+        ],
+        "degraded": [
+          "CurrentLocationId stale relative to EntityLastUpdate; DestinationLocationId does not resolve to a known station"
+        ],
+        "escalate": [
+          "Location state disagrees with RMS/Aveva/hospital HMI display — deepen with device_roster_state / robot_command_or_task_state"
+        ]
+      },
+      "failure_patterns": [],
+      "role_paths": {
+        "operator": "Primary RMS/Aveva/hospital HMI location display.",
+        "L1_support": "Remote RMS overview + site report of displayed location.",
+        "L2_support": "SSMS Robotics RobotDatabaseModel + RobotLocationDatabaseModel.",
+        "L3_support": "Same as L2; correlate with device_roster_state for zone/roster-level discrepancies."
+      },
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "wcs_sql",
+          "wcs_api",
+          "rms_ui"
+        ],
+        "control_surfaces": [
+          "aveva_hmi",
+          "wcs_api",
+          "approved_system_hmi"
+        ],
+        "required_evidence": [
+          "robot_location_state"
+        ],
+        "forbidden_capabilities": [
+          "optisweep_service_restart",
+          "ignition_restart"
+        ],
+        "backend_mappings": [
+          {
+            "operational_concept": "robot_location_state",
+            "site_ui_sources": [
+              "rms_ui",
+              "aveva_hmi",
+              "hospital_hmi"
+            ],
+            "support_read_sources": [
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "RobotDatabaseModel",
+                "fields": [
+                  "State",
+                  "CurrentLocationId",
+                  "DestinationLocationId"
+                ]
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "RobotLocationDatabaseModel",
+                "fields": [
+                  "StationNumber"
+                ]
+              }
+            ],
+            "correlation_keys": [
+              "robot_id",
+              "location_id"
+            ],
+            "freshness_field": "EntityLastUpdate",
+            "preferred_support_surface": "wcs_sql",
+            "approved_control_surfaces": [
+              "aveva_hmi",
+              "wcs_api",
+              "approved_system_hmi"
+            ]
+          }
+        ]
+      },
+      "backend_mappings": [],
+      "gaps": [
+        "Card assembled 2026-09-01 by lifting device_roster_state.support_contract.backend_mappings' robot_location_state entry into its own card; needs SME confirmation of the scope boundary vs. device_roster_state."
+      ],
+      "source_refs": [
+        "docs/ontology/catalogs/capability_catalog.json (device_roster_state.support_contract.backend_mappings)",
+        "docs/ontology/catalogs/wcs_sql_catalog.json"
+      ]
+    },
+    {
+      "id": "tote_association_state",
+      "label": "Tote-robot association state",
+      "job": "Confirm which robot/AGV a given tote is currently associated with (robot-side pairing), independent of the tote's sorter-side lifecycle status.",
+      "description": "Confirm robot-tote pairing via RobotDatabaseModel.ToteName and RobotToteDatabseModel (ToteId/RobotId); corroborate with Aveva/hospital/RMS UI display. Complements tote_lifecycle_state, which covers the sorter-side ToteModel status/error/exchange fields.",
+      "when_to_use": "Need to confirm which robot is currently carrying/paired with a specific tote, or whether a tote shows as associated with a robot the site does not expect.",
+      "not_for": "Sorter-side tote status/error/exchange type (use tote_lifecycle_state); tote exchange sequencing alone (tote_exchange_sequence); robot location without tote context (robot_location_state).",
+      "primary_access_surfaces": [
+        "wcs_sql",
+        "wcs_api"
+      ],
+      "secondary_access_surfaces": [
+        "aveva_hmi",
+        "hospital_hmi",
+        "rms_ui"
+      ],
+      "primary_databases": [
+        "robotics"
+      ],
+      "secondary_databases": [],
+      "primary_models": [
+        "RobotDatabaseModel",
+        "RobotToteDatabseModel"
+      ],
+      "sql_model_links": [
+        {
+          "database": "robotics",
+          "model": "RobotDatabaseModel",
+          "purpose": "Robot's currently associated tote name/id, current and destination location."
+        },
+        {
+          "database": "robotics",
+          "model": "RobotToteDatabseModel",
+          "purpose": "Robot↔tote association record and tote state machine on the robotics side."
+        }
+      ],
+      "field_highlights": [
+        {
+          "model": "RobotDatabaseModel",
+          "database": "robotics",
+          "field": "ToteName",
+          "meaning": "Tote currently associated with this robot.",
+          "needs_sme": false
+        },
+        {
+          "model": "RobotToteDatabseModel",
+          "database": "robotics",
+          "field": "ToteId",
+          "meaning": "Tote identifier.",
+          "needs_sme": true
+        },
+        {
+          "model": "RobotToteDatabseModel",
+          "database": "robotics",
+          "field": "RobotId",
+          "meaning": "Robot identifier paired with this tote.",
+          "needs_sme": true
+        }
+      ],
+      "api_checks": [],
+      "activities": [
+        {
+          "id": "ssms_tote_robot_association",
+          "access_surface": "wcs_sql",
+          "role": "L2_support",
+          "action": "SSMS Robotics: RobotDatabaseModel.ToteName joined to RobotToteDatabseModel (ToteId/RobotId) for current robot-tote pairing."
+        }
+      ],
+      "cross_link_activities": [],
+      "observables": {
+        "healthy": [
+          "RobotDatabaseModel.ToteName matches the tote reported at that robot's location"
+        ],
+        "degraded": [
+          "RobotToteDatabseModel shows a pairing the site does not observe, or no pairing where one is expected"
+        ],
+        "escalate": [
+          "Pairing state disagrees with tote_lifecycle_state's sorter-side status — corroborate with ToteModel before treating as a robot-side fault"
+        ]
+      },
+      "failure_patterns": [],
+      "role_paths": {
+        "operator": "Primary Aveva/hospital/RMS UI tote-at-robot display.",
+        "L1_support": "Remote UI overview + site report of tote/robot pairing shown.",
+        "L2_support": "SSMS Robotics RobotDatabaseModel + RobotToteDatabseModel.",
+        "L3_support": "Same as L2; correlate with tote_lifecycle_state's sorter-side ToteModel for cross-system disagreement."
+      },
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "wcs_sql",
+          "wcs_api"
+        ],
+        "control_surfaces": [
+          "aveva_hmi",
+          "wcs_api",
+          "approved_system_hmi"
+        ],
+        "required_evidence": [
+          "tote_association_state"
+        ],
+        "forbidden_capabilities": [
+          "optisweep_service_restart",
+          "ignition_restart"
+        ],
+        "backend_mappings": [
+          {
+            "operational_concept": "tote_robot_association",
+            "site_ui_sources": [
+              "aveva_hmi",
+              "hospital_hmi",
+              "rms_ui"
+            ],
+            "support_read_sources": [
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "RobotDatabaseModel",
+                "fields": [
+                  "ToteName",
+                  "CurrentLocationId",
+                  "DestinationLocationId"
+                ]
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "RobotToteDatabseModel",
+                "fields": [
+                  "ToteId",
+                  "RobotId"
+                ]
+              }
+            ],
+            "correlation_keys": [
+              "robot_id",
+              "tote_id"
+            ],
+            "freshness_field": "EntityLastUpdate",
+            "preferred_support_surface": "wcs_sql",
+            "approved_control_surfaces": [
+              "aveva_hmi",
+              "wcs_api",
+              "approved_system_hmi"
+            ]
+          }
+        ]
+      },
+      "backend_mappings": [],
+      "gaps": [
+        "Card assembled 2026-09-01 by lifting tote_lifecycle_state.support_contract.backend_mappings' tote_robot_association entry into its own card; needs SME confirmation of the scope boundary vs. tote_lifecycle_state."
+      ],
+      "source_refs": [
+        "docs/ontology/catalogs/capability_catalog.json (tote_lifecycle_state.support_contract.backend_mappings, tote_lifecycle_state.sql_model_links)",
+        "docs/ontology/catalogs/wcs_sql_catalog.json"
+      ]
+    }
+  ]
+}

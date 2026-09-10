@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cancel active exchanges after a manual bag out (purge/close recovery)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Cancel active exchanges after a manual bag out (purge/close recovery)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_cancel_active_exchanges_after_manual_bag_out_purge_close_recovery_v1</td></tr>
+<tr><th>Title</th><td>Cancel active exchanges after a manual bag out (purge/close recovery)</td></tr>
+<tr><th>Procedure Type</th><td>recovery</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>bag_out_or_closeout_state, wcs_api_responsiveness</td></tr>
+<tr><th>Access Surface</th><td>apidog, wcs_api</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>api_unresponsive, system_fault</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>After a manual bag out/back out was used because recovery took too long, and the system is back up and running, cancel the active exchanges that were marked by the bag out so operators don’t have to complete the remaining bag out exchange/tote processing.</p>
+<h2>When To Use</h2>
+<p>Use when a manual bag out/back out occurred as a fallback because recovery took too long, and the system is now back up and running; then cancel active exchanges that were marked to exchange by the bag out.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/a47b2c64a103b938.jpg" alt="artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500" /><figcaption>Training frame showing: manual back out due to slow recovery; once system is back up, cancel all active exchanges; bag out marks everything to exchange and cancel cancels those bag out requests.</figcaption></figure>
+<figure><img src="assets/8d1ae8b858eadecf.jpg" alt="artifact_training_video_training_video_day2_0028_so_we_have_open_all_shoots_primary_02_40_50_000" /><figcaption>Training frame listing related API system actions (e.g., Closeout/Purge) and describing bag out context; used here only as supporting context for the API action set.</figcaption></figure>
+<figure><img src="assets/54d41adfcf4b3f8f.jpg" alt="artifact_training_video_training_video_day2_0031_for_totes_we_have_exchange_sorter_primary_02_44_11_000" /><figcaption>Training frame describing tote/exchange-related API concepts (e.g., ExchangeTote / ExchangeLane / GetToteTask) that relate to exchange activity verification context.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Confirm manual bag out/back out occurred and the system is back up and running</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Confirm the situation matches a manual bag out/back out fallback (recovery took too long) and that the system is now back up and running before attempting to cancel active exchanges.</p>
+<p><strong>Expected result:</strong></p>
+<p>You have confirmation that (1) the event was a manual bag out/back out due to slow recovery and (2) the system is back up and running.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>System is not actually back up and running yet.</li>
+</ul>
+<hr>
+<h3>Step 2 — Locate the cancel function for active exchanges after bag out and identify required request parameters</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the live API surface (Apidog / API Dog on a primary server), locate the cancel function described for canceling active exchanges after bag out and identify the request parameters needed for the cancel action.</p>
+<p><strong>Expected result:</strong></p>
+<p>You have identified the specific cancel endpoint/function in Apidog and the request parameters required to execute it.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>You cannot identify the cancel request parameters needed for the cancel action.</li>
+</ul>
+<hr>
+<h3>Step 3 — Execute the cancel request for bag-out-marked active exchanges</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using Apidog on the primary server, execute the cancel request for the active exchanges created by the bag out event using the request parameters identified in the previous step.</p>
+<p><strong>Expected result:</strong></p>
+<p>The cancel request returns a successful response in Apidog.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Cancel request does not return a successful response.</li>
+</ul>
+<hr>
+<h3>Step 4 — Verify bag-out-marked exchanges are canceled (not remaining active)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Verify on the live exchange/exchange-request status view that active exchanges marked by the bag out are canceled after the cancel request.</p>
+<p><strong>Expected result:</strong></p>
+<p>Active exchanges that were marked by the bag out are canceled (i.e., they are no longer active).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Exchange requests remain active after the cancel attempt.</li>
+</ul>
+<hr>
+<h3>Step 5 — Stop and escalate if cancel fails or exchanges remain active</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the cancel request fails or if exchange requests remain active after the cancel attempt, stop and escalate.</p>
+<p><strong>Expected result:</strong></p>
+<p>Escalation is triggered when cancel response is not successful or when exchanges remain active.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Cancel request does not return a successful response.</li>
+<li>Exchange requests remain active after the cancel attempt.</li>
+<li>System is not actually back up and running yet.</li>
+</ul>
+<hr>
+</body>
+</html>

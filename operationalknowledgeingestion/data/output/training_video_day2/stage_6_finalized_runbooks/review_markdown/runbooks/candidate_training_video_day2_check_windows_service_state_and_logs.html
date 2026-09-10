@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check Windows Service State and Logs When the OptiSweep Gateway Is Unavailable</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check Windows Service State and Logs When the OptiSweep Gateway Is Unavailable</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_windows_service_state_and_logs_gateway_unavailable_v1</td></tr>
+<tr><th>Title</th><td>Check Windows Service State and Logs When the OptiSweep Gateway Is Unavailable</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>wcs_service_health</td></tr>
+<tr><th>Access Surface</th><td>event_viewer</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>service_crash_or_restart</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use Windows Event Viewer / services to inspect the relevant OptiSweep-related service, determine whether it is running or stopped, review available service or Event Viewer logs for crash or inactive-period evidence, and correlate the service state with gateway availability.</p>
+<h2>When To Use</h2>
+<p>Use this Windows Event Viewer / services diagnostic when the OptiSweep gateway is unavailable, does not open, or does not appear to be running, and a stopped service or service crash is suspected.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/4fbe27ac029a845c.jpg" alt="artifact_training_video_training_video_day2_0049_check_to_make_sure_that_tippers_primary_03_13_10_000" /><figcaption>Windows Services view showing the OptiSweep service and service status fields.</figcaption></figure>
+<figure><img src="assets/594db6d378d1227e.jpg" alt="artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500" /><figcaption>Windows Services view showing the OptiSweep service and the running-service state used when correlating service health with operation.</figcaption></figure>
+<figure><img src="assets/9a89aa0cb6b1fc56.jpg" alt="artifact_training_video_training_video_day2_0047_so_this_is_actually_pulled_premier_primary_03_12_33_000" /><figcaption>Service reference identifying Ignition, Stunnel, and OptiSweep as programs required for system operation.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Inspect the OptiSweep-related service in Windows Services</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Windows Event Viewer / services surface, open Windows Services MMC and inspect the relevant OptiSweep-related service. The source identifies OptiSweep as a service involved in coordinating system operation; it also identifies Ignition and Stunnel as primary services used by the system.</p>
+<p><strong>Expected result:</strong></p>
+<p>The relevant service entry is visible with an observable status such as Running or a stopped/inactive state.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The relevant service is stopped or inactive.</li>
+<li>The relevant service cannot be identified from the available Windows Services view.</li>
+</ul>
+<hr>
+<h3>Step 2 — Record the observed service state</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In Windows Services MMC, record whether the relevant OptiSweep-related service is Running, stopped, or otherwise inactive. Do not restart or reconfigure the service as part of this diagnostic.</p>
+<p><strong>Expected result:</strong></p>
+<p>The current service state is explicitly identified and can be compared with the reported gateway condition.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The service is stopped or inactive.</li>
+<li>The gateway does not open or run while the service is stopped or inactive.</li>
+</ul>
+<hr>
+<h3>Step 3 — Review service and Event Viewer logs</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Use Windows Event Viewer / services to review the available Windows service logs or Event Viewer entries for the relevant service and the reported outage period. Look for observable evidence of a crash, restart, or period in which service activity was absent.</p>
+<p><strong>Expected result:</strong></p>
+<p>Available log entries either correlate the outage with a service crash, restart, or inactive interval, or show that the available logs do not explain the outage.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>A crash, restart, or inactive interval is identified.</li>
+<li>The logs do not explain the observed gateway outage.</li>
+</ul>
+<hr>
+<h3>Step 4 — Correlate service state with gateway operation</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Confirm the current gateway condition while the relevant service state is known. Compare whether the gateway opens or runs when the service is Running with the reported condition when the service is stopped or inactive. Do not perform a service restart as part of this step.</p>
+<p><strong>Expected result:</strong></p>
+<p>The service state and gateway condition are correlated as either consistent or unexplained.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The gateway does not open or run while the service is stopped or inactive.</li>
+<li>The gateway remains unavailable while the relevant service is Running.</li>
+<li>The service state and available logs do not explain the outage.</li>
+</ul>
+<hr>
+</body>
+</html>

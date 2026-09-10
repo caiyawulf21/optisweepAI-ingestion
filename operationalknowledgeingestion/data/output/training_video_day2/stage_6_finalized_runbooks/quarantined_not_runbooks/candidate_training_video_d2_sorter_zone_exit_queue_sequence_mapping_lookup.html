@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Use sorter zone exit queue sequence ID and mapping file lookup to determine the target station/location</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Use sorter zone exit queue sequence ID and mapping file lookup to determine the target station/location</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_use_sorter_zone_exit_queue_sequence_id_and_mapping_lookup_v1</td></tr>
+<tr><th>Title</th><td>Use sorter zone exit queue sequence ID and mapping file lookup to determine the target station/location</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>sorter_item_or_scan_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>mapping_abnormal, sort_lifecycle_stuck</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>When an AGV is shut down and the system uses a zone + shutdown queue sequence number, it looks up a zone-to-sequence mapping (lookup table) to translate that zone/sequence into a specific sorter station/location. Use the observed zone and shutdown queue sequence ID to query the sorter-side mapping and read the mapped station/location.</p>
+<h2>When To Use</h2>
+<p>Use this when you need to determine which sorter station/location an AGV should target based on a shutdown queue sequence ID tied to a specific zone (e.g., zone 4 with sequence 4).</p>
+<h2>Visual References</h2>
+<figure><img src="assets/eedfe29104bb9440.jpg" alt="artifact_training_video_training_video_day2_0012_the_sense_to_me_yeah_if_primary_00_34_18_500" /><figcaption>RMS robotControl page frame with transcript describing: shutdown queue sequence number tied to zone; query for zone 4; mapping file lookup table; sequence 1–4 start from sorter entrance queue; compression keeps AGVs in order.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Identify the current zone and the shutdown queue sequence number</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>From the live shutdown queue context, identify the zone (example concept: zone 4) and the shutdown queue sequence number you are dealing with (example concept: sequence four).</p>
+<p><strong>Expected result:</strong></p>
+<p>You have a specific (zone, sequence) pair (e.g., zone 4 + sequence 4) that can be used as lookup keys.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the zone/sequence pair cannot be identified reliably, stop and escalate for deeper investigation.</li>
+</ul>
+<hr>
+<h3>Step 2 — Open/locate the sorter-side mapping file (lookup table)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Locate the sorter-side mapping file/lookup table referenced by the segment and prepare to query it using the identified zone value.</p>
+<p><strong>Expected result:</strong></p>
+<p>You have access to the mapping/lookup table that supports querying by zone and sequence.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the mapping file/lookup table cannot be found or does not support the required lookup keys, stop and escalate.</li>
+</ul>
+<hr>
+<h3>Step 3 — Use the zone value in the mapping file</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the mapping file/lookup table, select the entry for the identified zone value (example concept: use zone 4).</p>
+<p><strong>Expected result:</strong></p>
+<p>The mapping table context for the selected zone is active/selected so you can retrieve the sequence mapping for that zone.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the zone value is not found in the mapping file/lookup table, stop and escalate for deeper investigation.</li>
+</ul>
+<hr>
+<h3>Step 4 — Find the sequence entry for that zone</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Within the selected zone entry, locate the row/entry for the identified shutdown queue sequence number (example concept: “what is sequence four”).</p>
+<p><strong>Expected result:</strong></p>
+<p>You have identified the mapping row/entry corresponding to the (zone, sequence) pair.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the (zone, sequence) combination is not found in the mapping file/lookup table, stop and escalate for deeper investigation.</li>
+</ul>
+<hr>
+<h3>Step 5 — Read the mapped sorter station/location from the lookup table</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Read the mapped sorter station/location value from the mapping file/lookup table for the selected (zone, sequence) entry (examples from the segment include station 300; zone 3, station 301; zone 3, 2302).</p>
+<p><strong>Expected result:</strong></p>
+<p>You can state the mapped sorter station/location corresponding to the observed zone + sequence number using the mapping file/lookup table (example concept: zone 4 + sequence 4 → station/location as defined in the lookup table).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the mapped station/location is inconsistent with the source’s sequence ordering/compression concept, stop and escalate for deeper investigation.</li>
+</ul>
+<hr>
+<h3>Step 6 — Confirm mapping logic aligns with sequence ordering and compression behavior</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Verify that the mapping result you read is consistent with the concept that sequence values 1–4 start from the sorter entrance queue and that compression keeps AGVs in order by sequence (including the idea that AGVs need to move together when compressing).</p>
+<p><strong>Expected result:</strong></p>
+<p>The mapped station/location you report is consistent with the expected sequence ordering/compression logic described in the segment.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the mapping logic does not align with the sequence ordering/compression concept, stop and escalate for deeper investigation.</li>
+</ul>
+<hr>
+</body>
+</html>

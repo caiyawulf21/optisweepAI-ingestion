@@ -1,0 +1,304 @@
+{
+  "procedure_id": "proc_interpret_generic_robot_command_translation_to_vendor_rest_api_v1",
+  "candidate_id": "candidate_training_video_reference_interpret_vendor_agnostic_robot_command_translation_to_rest_api",
+  "title": "Interpret How Generic Robot Commands Are Translated to Vendor REST API via Geek Plus COM Module",
+  "procedure_type": "reference",
+  "summary": "Use the Robot Command Database model command names to understand how OptiSweep’s Robotics module issues generic internal robot commands to the Geek Plus COM module, and how that COM module translates those vendor-agnostic commands into the vendor-specific REST API POST requests (then converts responses back to what OptiSweep expects). This supports vendor-agnostic command modeling and helps interpret why command names remain generic.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "robot_command_or_task_state",
+    "wcs_api_responsiveness"
+  ],
+  "access_surface": [
+    "wcs_sql",
+    "wcs_api"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive"
+  ],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to interpret the vendor-agnostic internal robot command model (generic command names) and understand the translation layer that produces vendor REST API POST requests via the Geek Plus COM module.",
+  "not_for": [
+    "Do not use this runbook to verify a specific vendor REST endpoint URL, request payload fields, or response schema—those details are not provided in the source packet."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support: Interpret the Robot Command Database model command names and map them to the described translation path (Robotics module -> Geek Plus COM module -> vendor REST API POST request)."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Robot Command Database model table view (RobotCommandDatabaseModel) showing generic command names"
+  ],
+  "prerequisites": {
+    "access_required": [],
+    "system_preconditions": [],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_vendor_agnostic_robot_command_model_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+      "description": "RobotCommandDatabaseModel command names list (e.g., EmptyGoTo, PickupTote, MoveTote, DropOffTote, RemoveAgv, ReleaseAgv, GoCharge) and description that these are generic internal commands translated by Geek Plus COM module into REST API POST requests.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+      "description": "WCS creates several databases; OptiSweep only utilizes entity logs for logging; includes context about debugging/logging and related database models (Audit Geek, OPC Comms, Robotics, Sworder Sweeper).",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Review generic command names in RobotCommandDatabaseModel",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Identify the generic internal robot command names that the Robotics module issues and that the Geek Plus COM module translates.",
+      "instruction": "Open the Robot Command Database model table view (RobotCommandDatabaseModel) and review the listed generic command names shown in the artifact (e.g., EmptyGoTo, PickupTote, MoveTote, DropOffTote, RemoveAgv, ReleaseAgv, GoCharge).",
+      "expected_result": "You can point to the generic command names in RobotCommandDatabaseModel that represent internal actions (tote pickup/move/drop-off, AGV remove/release, and charging-related commands).",
+      "healthy_condition": "RobotCommandDatabaseModel shows the generic command names described as the commands sent to the Geek module for translation (not vendor-specific endpoint naming).",
+      "failure_condition": "You cannot locate the command names list in RobotCommandDatabaseModel, or the table does not show the generic command names referenced by the source artifact.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect RobotCommandDatabaseModel command names",
+          "exact_action": "Review the RobotCommandDatabaseModel table/list of command names (e.g., EmptyGoTo, PickupTote, MoveTote, DropOffTote, RemoveAgv, ReleaseAgv, GoCharge).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0014",
+          "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+          "quote_or_summary": "RobotCommandDatabaseModel table tracks the status of robot commands requested by the Robotics module for AGVs; the commands are generic and translated into the actual REST API POST request by the Geek Plus COM module."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Confirm the commands are internal/generic (not vendor-specific)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Validate that the command names you reviewed are intended to be vendor-agnostic internal commands, which explains why they remain generic.",
+      "instruction": "Using the source description, confirm that the RobotCommandDatabaseModel commands are described as generic internal commands between the Robotics module and the Geek Plus COM module (and that a different vendor would use a different translation module while keeping the internal command model generic).",
+      "expected_result": "You can state (based on the source) that these commands are “very generic” and “not vendor specific,” and that the Geek Plus COM module translates them into the vendor REST API POST requests.",
+      "healthy_condition": "The interpretation matches the source statement that internal commands are generic between Robotics module and Geek Plus COM module, and translation to REST API is performed by the COM module.",
+      "failure_condition": "You interpret the command names as vendor-specific REST endpoints or payload-specific commands (which the source does not provide).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Validate generic/internal intent",
+          "exact_action": "Confirm the source statement that these are generic internal commands between the Robotics module and the Geek Plus COM module (not vendor-specific).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you need endpoint/payload verification (URL, request body fields, response fields), stop—this packet does not provide those details."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0014",
+          "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+          "quote_or_summary": "The source describes the commands as “very generic” and “not vendor specific,” and says Geek Plus COM module translates them to the actual REST API."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0014",
+          "quote_or_summary": "If there is another AGV vendor, there would be a different translation module that translates the same internal generic commands into the way OptiSweep requires."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Interpret the translation path to vendor REST API POST requests",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Explain how the internal command model results in vendor-specific REST API POST requests via the Geek Plus COM module.",
+      "instruction": "Using the source description, interpret the translation path as: Robotics module issues generic internal commands -> Geek Plus COM module translates them into the actual vendor REST API POST request -> Geek Plus COM module converts it back to the way OptiSweep expects.",
+      "expected_result": "You can correctly describe the translation layer: Geek Plus COM module is the component that translates internal generic commands into the vendor REST API POST request (and then converts responses back to OptiSweep’s expected format).",
+      "healthy_condition": "Your interpretation aligns with the source statement that the Geek Plus COM module translates internal commands into the actual REST API POST request and supports vendor-agnostic modeling.",
+      "failure_condition": "You assume the Robotics module directly calls the vendor REST API POST request (the source attributes translation to the Geek Plus COM module).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Map internal command to translation layer",
+          "exact_action": "Interpret that Geek Plus COM module translates the internal generic commands into the actual REST API POST request.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you require REST endpoint/payload details, escalate—this packet only states “POST request” and “REST API” without endpoint/payload fields."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0014",
+          "quote_or_summary": "The source states: commands sent to the Geek module get translated into the POST request; Geek Plus COM module translates internal generic commands into the actual REST API."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0014",
+          "quote_or_summary": "The source also states Geek Plus COM module translates and then converts it back to the way OptiSweep expects."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "If troubleshooting vendor differences, note translation module swap while internal model stays generic",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Provide a grounded way to reason about vendor differences without inventing REST details not present in the packet.",
+      "instruction": "When troubleshooting requires understanding vendor differences, use the source statement that a different vendor would have a different translation module, while the internal command model remains generic.",
+      "expected_result": "You can explain that vendor-specific behavior is handled by the translation module (Geek Plus COM module for Geek Plus), while the internal command names remain generic in RobotCommandDatabaseModel.",
+      "healthy_condition": "Your reasoning attributes vendor-specific REST API behavior to the translation module rather than to changes in the internal command model.",
+      "failure_condition": "You attempt to change or rely on vendor-specific command names/endpoints in RobotCommandDatabaseModel (not supported by the packet).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Reason about vendor translation module",
+          "exact_action": "Use the source statement that another AGV vendor would have a different translation module translating the same generic internal commands.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you need API request/response fields (endpoint, payload, response schema), escalate because the packet does not include them."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0014",
+          "quote_or_summary": "The source states that if there is another ATV vendor, there would be a different translation module that translates the internal generic commands into the way OptiSweep requires."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You can identify generic command names in RobotCommandDatabaseModel (e.g., EmptyGoTo, PickupTote, MoveTote, DropOffTote, RemoveAgv, ReleaseAgv, GoCharge).",
+    "You can explain the translation path: Robotics module -> Geek Plus COM module -> vendor REST API POST request, with conversion back to OptiSweep expectations.",
+    "You do not claim endpoint/payload specifics that are not present in the packet."
+  ],
+  "healthy_conditions": [
+    "RobotCommandDatabaseModel shows generic internal command names described as “very generic” and “not vendor specific.”",
+    "Your interpretation attributes REST API POST request generation to the Geek Plus COM module (not directly to Robotics module)."
+  ],
+  "failure_conditions": [
+    "You interpret the command names as vendor-specific REST endpoints/payloads (not supported by the packet).",
+    "You attempt to verify REST endpoint/payload/response fields without source evidence."
+  ],
+  "escalation_guidance": [
+    "If deeper API-level verification is required (REST endpoint URL, request payload structure, response fields), escalate because the packet only states that the Geek Plus COM module translates commands into a REST API POST request without providing endpoint/payload details."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 14,
+      "section_id": "training_video_day2_segment_0014",
+      "timestamp_start": "01:11:39.000",
+      "timestamp_end": "01:26:19.000",
+      "segment_id": "training_video_0014",
+      "site_code": "",
+      "site_label": "",
+      "quote_or_summary": "Generic internal robot commands are sent to the Geek Plus COM module, which translates them into the actual REST API POST request; this makes the system vendor agnostic, with different translation modules for different vendors."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+      "what_to_look_at": "RobotCommandDatabaseModel command names list (e.g., EmptyGoTo, PickupTote, MoveTote, DropOffTote, RemoveAgv, ReleaseAgv, GoCharge) and description that these are generic internal commands translated by Geek Plus COM module into REST API POST requests."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+      "what_to_look_at": "WCS creates several databases; OptiSweep only utilizes entity logs for logging; includes context about debugging/logging and related database models (Audit Geek, OPC Comms, Robotics, Sworder Sweeper)."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_reference_interpret_vendor_agnostic_robot_command_translation_to_rest_api"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "No REST endpoint URL, request payload fields, or response schema details are provided in the packet (only “POST request” and “REST API”).",
+    "No explicit database column names/fields (e.g., command GUID field name) are provided in the packet for RobotCommandDatabaseModel; only the table is referenced as tracking command status."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "expected results are not concrete/observable on a live surface",
+    "missing verified live access surface in title/steps/tools"
+  ]
+}

@@ -1,0 +1,278 @@
+{
+  "procedure_id": "proc_verify_service_presence_running_state_windows_services_v1",
+  "candidate_id": "candidate_training_video_diagnostic_check_windows_services_service_running",
+  "title": "Verify Service Presence/Running State in Windows Services When Service Appears Gone",
+  "procedure_type": "diagnostic",
+  "summary": "When a crash/service stop is suspected and logs may be silent, verify whether the relevant service is actually running (or not present/running) by checking the Windows Services list on the Windows host where the gateway/service runs.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "windows_service_or_event_log",
+    "gateway_health"
+  ],
+  "access_surface": [
+    "event_viewer"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "service_crash_or_restart"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when the service appears to be gone during a suspected crash/service stop window and log visibility is limited or silent, so you need an OS-level confirmation of whether the service is running.",
+  "not_for": [
+    "Do not use this procedure as a recovery/change procedure (it is diagnostic only)."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support: Open the Windows Services view on the target Windows host and determine whether the expected service is running vs not running/present, then use that evidence to guide further investigation/escalation."
+  ],
+  "safety_notes": [
+    "This procedure is diagnostic only; do not perform mutating changes unless a separate recovery procedure is available."
+  ],
+  "access_or_tools_needed": [
+    "Windows Services console/view",
+    "Access to the Windows host running the gateway/service"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the Windows host running the gateway/service"
+    ],
+    "system_preconditions": [],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_windows_services_visibility_v1",
+    "ctx_training_video_service_stop_silent_logs_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0044_probably_understand_this_so_if_the_primary_03_07_17_500",
+      "description": "Training frame showing the discussion: check Windows service services; there are ~10 services; service must stop; logs may be silent.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open Windows Services view on the host where the gateway/service runs",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish an OS-level view of whether the service is running when logs may be silent.",
+      "instruction": "On the Windows host where the gateway/service runs, open the Windows Services view (the OS-level place to check service state).",
+      "expected_result": "You can view the list of Windows services (the source notes there are about 10 services) so you can determine whether the expected service is running vs not running.",
+      "healthy_condition": "The Windows Services list loads and shows service entries that can be checked for running/not running state.",
+      "failure_condition": "You cannot access the Windows Services view, or the list cannot be reliably interpreted to identify the relevant service entry.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open Windows Services",
+          "exact_action": "check the service services",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot access the Windows host or the Services list, stop and escalate for access/host guidance."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 44,
+          "section_id": "training_video_day2_segment_0044",
+          "quote_or_summary": "Transcript: “It’s a Windows… check the service services… there are 10 services,” in the context of a crash where the service must stop and logs may be silent."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "03:07:17.500",
+          "timestamp_end": "03:07:17.500",
+          "start_time_seconds": 11237.5,
+          "end_time_seconds": 11237.5,
+          "segment_id": "segment_training_video_0044",
+          "artifact_id": "artifact_training_video_training_video_day2_0044_probably_understand_this_so_if_the_primary_03_07_17_500"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Review the service list and determine whether the expected service is running",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm whether the service is present/running or has stopped/gone during the suspected silent period.",
+      "instruction": "In the Windows Services list, review the entries (source notes there are ~10 services) and identify whether the expected service is running vs not running (i.e., effectively “gone” during the period).",
+      "expected_result": "You determine from the Windows Services list whether the expected service is running or not running, matching the source expectation that a crash/service stop can make logs silent and the service appear gone.",
+      "healthy_condition": "The expected service entry shows a running state in Windows Services.",
+      "failure_condition": "The expected service entry is not running (or is effectively absent/not in a running state), supporting the hypothesis that the service stopped during the silent period.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check service state",
+          "exact_action": "check the service services",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If it is unclear which of the ~10 services is the one in question, stop and escalate for guidance on the specific service name to check."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 44,
+          "section_id": "training_video_day2_segment_0044",
+          "quote_or_summary": "Transcript includes: “there are 10 services” and the question “how will someone support… know that service is just gone… It’s a Windows… check the service services.”"
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 44,
+          "section_id": "training_video_day2_segment_0044",
+          "quote_or_summary": "Transcript context: “the service must stop” and “the log will be silent,” creating a need to verify service state via Windows Services."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "03:07:17.500",
+          "timestamp_end": "03:07:17.500",
+          "start_time_seconds": 11237.5,
+          "end_time_seconds": 11237.5,
+          "segment_id": "segment_training_video_0044",
+          "artifact_id": "artifact_training_video_training_video_day2_0044_probably_understand_this_so_if_the_primary_03_07_17_500"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Use the Windows Services state as evidence to guide further investigation (diagnostic only)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Translate the OS-level service state into actionable diagnostic evidence when logs are silent.",
+      "instruction": "If the expected service is not running, treat that as evidence the service likely stopped during the silent period described in the source, and proceed with further investigation using the appropriate next diagnostic steps (outside the scope of this candidate). If the service is running, use that to narrow the hypothesis away from a stopped service.",
+      "expected_result": "Your conclusion about whether the service is running vs not running is consistent with the source’s scenario where logs may be silent and the service may appear gone.",
+      "healthy_condition": "The diagnostic conclusion is directly supported by the Windows Services state you observed (running vs not running).",
+      "failure_condition": "You cannot form a reliable conclusion because the expected service cannot be identified or the Services list does not clearly show state.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Proceed with further investigation",
+          "exact_action": "proceed with further investigation beyond the chart/log silence described",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Do not perform mutating changes as part of this diagnostic; if recovery is needed, use a separate recovery procedure."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 44,
+          "section_id": "training_video_day2_segment_0044",
+          "quote_or_summary": "Transcript context: crash/service stop implies “service must stop” and “log will be silent,” so support needs an OS-level check to know the service is gone."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "From the Windows Services list, you can state whether the expected service is running or not running during the suspected silent period."
+  ],
+  "healthy_conditions": [
+    "Expected service shows a running state in Windows Services."
+  ],
+  "failure_conditions": [
+    "Expected service is not running (service appears gone) during the suspected crash/service stop window."
+  ],
+  "escalation_guidance": [
+    "If you cannot identify which specific service among the ~10 services is the one in question, escalate for guidance on the exact Windows service name to check."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0044_probably_understand_this_so_if_the_primary_03_07_17_500",
+      "what_to_look_at": "Transcript discussion around checking Windows service services; notes that there are ~10 services; context that service must stop and logs may be silent."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 44,
+      "section_id": "training_video_day2_segment_0044",
+      "quote_or_summary": "Transcript: “It’s a Windows… check the service services… there are 10 services,” in the context of a crash where the service must stop and logs may be silent."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0044_probably_understand_this_so_if_the_primary_03_07_17_500",
+      "what_to_look_at": "Training frame showing the discussion: check Windows service services; there are ~10 services; service must stop; logs may be silent."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_diagnostic_check_windows_services_service_running"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not name the specific Windows service name(s) to check; the procedure therefore cannot specify which of the ~10 services is the expected one."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

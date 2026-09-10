@@ -1,0 +1,377 @@
+{
+  "procedure_id": "proc_verify_shutdown_staging_mapping_shutdowndstaging_v1",
+  "candidate_id": "candidate_training_video_day2_shutdown_staging_table_check",
+  "title": "Verify Shutdown Staging Mapping for AGVs With Tote vs Without Tote Using the ShutDownStaging Table",
+  "procedure_type": "diagnostic",
+  "summary": "Use SSMS/Helix DB (WCS) to validate that the ShutDownStaging table maps shutdown destinations correctly based on whether an AGV has a tote (tote=true) versus no tote (tote=false), including the expected use of ShutdownOffTheEndId and center queue staging for tote-carrying AGVs, and the expected sorter-location/nearest-open-available shutdown queue behavior for non-tote AGVs. Also confirm that the ShutDownStaging Sequence values align with the zone/entrance sequence behavior used to select the correct shutdown queue destination.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "robot_dwell_or_shutdown_staging"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "mapping_abnormal"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to troubleshoot or confirm that AGVs stage correctly during shutdown, specifically validating that tote-carrying AGVs and non-tote AGVs are routed to the correct shutdown staging destinations per the ShutDownStaging table mapping rules (including off-the-end queue vs nearest open available shutdown queue behavior) and that Sequence mapping is consistent.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the SSMS/Helix DB (WCS) checks against the ShutDownStaging table and determine whether mappings for tote=true vs tote=false and Sequence behavior are consistent with expected shutdown staging logic."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "SSMS / Helix DB (WCS / Helix DB (SSMS)) access to the OptiSweep/WCS database that contains the shutdown staging model table"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "wcs_sql"
+    ],
+    "system_preconditions": [
+      "The OptiSweep/WCS database is reachable from SSMS/Helix DB and contains the shutdown staging model/table named ShutDownStaging (or the exact table/model name used in the database schema)."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_shutdown_staging_table_v1",
+    "ctx_training_video_shutdown_with_tote_vs_without_tote_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500",
+      "description": "Frame showing the ShutDownStaging database model fields including WithTote, ShutDownOffTheEndid, ShutDownQueueld, Sequence, and SorterSideDatabaseModelid, plus the tote vs without-tote mapping explanation.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+      "description": "Frame describing sorter-side location types/queues (including shutdown/off-the-end queue and related location types) used to interpret the 'mapped to sorter locations' expectation for tote=false rows.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open SSMS / Helix DB (WCS / Helix DB (SSMS)) and connect to the OptiSweep/WCS database",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Access the WCS database where the ShutDownStaging model/table is stored so you can validate tote vs non-tote shutdown staging mappings.",
+      "instruction": "Using SSMS / Helix DB (WCS / Helix DB (SSMS)) (surface: wcs_sql), connect to the OptiSweep/WCS database that contains the shutdown staging model table.",
+      "expected_result": "You are connected in SSMS/Helix DB to the OptiSweep/WCS database and can browse/query the database schema/models.",
+      "healthy_condition": "The database connection is successful and the schema is accessible for locating the ShutDownStaging model/table.",
+      "failure_condition": "You cannot connect to the OptiSweep/WCS database or cannot access the schema needed to locate the ShutDownStaging model/table.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Connect to WCS DB in SSMS/Helix",
+          "exact_action": "Open SSMS / Helix DB (WCS / Helix DB (SSMS)) and connect to the OptiSweep/WCS database that contains the shutdown staging model table.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0011",
+          "timestamp_start": "00:21:10.000",
+          "timestamp_end": "00:32:47.000",
+          "quote_or_summary": "Candidate step states to open SSMS/Helix DB (WCS / Helix DB (SSMS)) and connect to the OptiSweep/WCS database containing the shutdown staging model table."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Locate the ShutDownStaging model/table in the WCS database",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Find the exact ShutDownStaging model/table so you can inspect the tote vs non-tote mapping fields and Sequence behavior.",
+      "instruction": "In the WCS database schema, locate the shutdown staging database model/table named ShutDownStaging (or the exact table/model name used in the database schema).",
+      "expected_result": "You identify the ShutDownStaging table/model and can view its relevant fields/columns (including WithTote, ShutDownOffTheEndid, ShutDownQueueld, Sequence, and SorterSideDatabaseModelid as shown in the referenced model frame).",
+      "healthy_condition": "The ShutDownStaging model/table is present and exposes the expected mapping fields used for tote vs non-tote staging.",
+      "failure_condition": "The ShutDownStaging model/table cannot be found, or the expected mapping fields are not present/visible in the schema.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Find ShutDownStaging model/table",
+          "exact_action": "Locate the shutdown staging database model/table named ShutDownStaging (or the exact table/model name used in the database schema).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0011",
+          "timestamp_start": "00:26:58.500",
+          "timestamp_end": "00:26:58.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500",
+          "quote_or_summary": "OCR frame shows 'Robotics Database Shut Down Staging Database Model WithTote ShutDownOffTheEndid ShutDownQueueld Sequence SorterSideDatabaseModelid' indicating the model/table and key fields."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Validate tote=true rows map to ShutdownOffTheEndid and center queue staging (ShutdownQueueld)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm that AGVs carrying a tote (tote=true) are mapped to the expected shutdown off-the-end queue destination and center queue staging destination.",
+      "instruction": "In ShutDownStaging, review rows where WithTote / tote=true and confirm they map to a shutdown off-the-end queue destination (ShutdownOffTheEndid) and a center queue staging destination (ShutdownQueueld / center queue staging fields as shown in the table).",
+      "expected_result": "For tote=true rows, ShutdownOffTheEndid is populated with an off-the-end queue destination and ShutdownQueueld is populated with the center queue staging destination.",
+      "healthy_condition": "tote=true rows include mappings for both ShutdownOffTheEndid (off-the-end queue) and ShutdownQueueld (center queue staging).",
+      "failure_condition": "tote=true rows are missing ShutdownOffTheEndid mappings (off-the-end queue destination not mapped) or missing center queue staging mappings (ShutdownQueueld not mapped).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check tote=true mappings",
+          "exact_action": "Review rows that correspond to AGVs with tote (tote=true) and confirm they map to a shutdown off-the-end queue destination (ShutdownOffTheEndid) and a center queue staging destination (ShutdownQueueld / center queue staging fields as shown in the table).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the table shows tote=true rows missing ShutdownOffTheEndid mappings."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0011",
+          "timestamp_start": "00:26:58.500",
+          "timestamp_end": "00:26:58.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500",
+          "quote_or_summary": "OCR frame lists WithTote, ShutDownOffTheEndid, ShutDownQueueld, Sequence, and explains 'Agvs with totes have an off the end queue and a queue in the center to stage at.'"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Validate tote=false rows map to sorter locations / nearest open available shutdown queue behavior",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm that AGVs without a tote (tote=false) are mapped to sorter locations rather than the off-the-end queue path, matching the expected nearest open available shutdown queue behavior.",
+      "instruction": "In ShutDownStaging, review rows where WithTote / tote=false and confirm they map to sorter locations (i.e., the destination is mapped to sorter locations rather than the shutdown off-the-end queue path).",
+      "expected_result": "For tote=false rows, the mapped destination corresponds to sorter locations / nearest open available shutdown queue behavior rather than the off-the-end queue path used for tote=true.",
+      "healthy_condition": "tote=false rows are not routed through the off-the-end queue destination path; they map to sorter locations / nearest open available shutdown queue behavior.",
+      "failure_condition": "tote=false rows are mapped to the off-the-end queue path instead of sorter locations / nearest open available shutdown queue behavior.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check tote=false mappings",
+          "exact_action": "Review rows that correspond to AGVs without tote (tote=false) and confirm they map to sorter locations (i.e., the destination is mapped to sorter locations rather than the shutdown off-the-end queue path).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if tote=false rows are mapped to the off-the-end queue path instead of sorter locations / nearest open available shutdown queue behavior."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0011",
+          "timestamp_start": "00:26:58.500",
+          "timestamp_end": "00:26:58.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500",
+          "quote_or_summary": "OCR frame includes: 'AGVs without totes are mapped to sorter locations.' and 'If you don't have the tote, then you go to the nearest open available shutdown queue.'"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Check Sequence behavior aligns with zone/entrance sequence selection of shutdown queue destination",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure the ShutDownStaging Sequence values are consistent so the system can select the correct shutdown queue destination for a given zone/entrance sequence.",
+      "instruction": "In ShutDownStaging, check that the table uses a sequence value (Sequence / sequence #) that matches the AGV’s zone/entrance sequence so the system can select the correct shutdown queue destination.",
+      "expected_result": "Sequence values in ShutDownStaging are present and consistent such that a given zone/entrance sequence selects the corresponding shutdown queue destination.",
+      "healthy_condition": "Sequence values are populated and align with the described 'zone/sequence selects shutdown queue destination' behavior.",
+      "failure_condition": "Sequence values are missing or inconsistent such that zone/sequence cannot reliably select the correct shutdown queue destination.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify Sequence mapping",
+          "exact_action": "Check the sequence behavior: confirm that the table uses a sequence value (sequence #) that matches the AGV’s zone/entrance sequence so the system can select the correct shutdown queue destination for that sequence.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if sequence values do not align with the described “zone/sequence selects shutdown queue destination” behavior (e.g., sequence rows are missing or inconsistent)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0011",
+          "timestamp_start": "00:26:58.500",
+          "timestamp_end": "00:26:58.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500",
+          "quote_or_summary": "OCR frame lists 'Sequence' as a field in the ShutDownStaging database model and the segment describes sequence mapping behavior for selecting shutdown queue destinations."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Stop and escalate on mapping or sequence inconsistencies",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure incorrect shutdown staging mappings are promptly escalated when they violate the expected tote vs non-tote routing rules or sequence behavior.",
+      "instruction": "If any of the validation checks fail (tote=true missing ShutdownOffTheEndid, tote=false routed to off-the-end queue path, or Sequence behavior inconsistent), stop further analysis and escalate.",
+      "expected_result": "A clear escalation decision is made based on the specific failing condition(s).",
+      "healthy_condition": "All checks pass: tote=true rows include ShutdownOffTheEndid and center queue staging; tote=false rows map to sorter locations/nearest open available shutdown queue behavior; Sequence values align with zone/entrance selection behavior.",
+      "failure_condition": "Any of the specified mapping/sequence failures are present.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Escalate mapping/sequence issue",
+          "exact_action": "Stop and escalate if the table shows tote=true rows missing ShutdownOffTheEndid mappings, or if tote=false rows are mapped to the off-the-end queue path instead of sorter locations / nearest open available shutdown queue behavior.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "tote=true rows missing ShutdownOffTheEndid mappings",
+        "tote=false rows mapped to off-the-end queue path instead of sorter locations / nearest open available shutdown queue behavior",
+        "Sequence values do not align with zone/sequence selects shutdown queue destination behavior (missing or inconsistent sequence rows)"
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0011",
+          "timestamp_start": "00:21:10.000",
+          "timestamp_end": "00:32:47.000",
+          "quote_or_summary": "Candidate failure_or_escalation_notes specify escalation triggers for tote=true missing ShutdownOffTheEndid, tote=false mapped to off-the-end queue path, and Sequence misalignment."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "In ShutDownStaging, tote=true rows include a mapped ShutdownOffTheEndid (off-the-end queue destination) and a mapped center queue staging destination (ShutdownQueueld).",
+    "In ShutDownStaging, tote=false rows are mapped to sorter locations / nearest open available shutdown queue behavior rather than the off-the-end queue path.",
+    "ShutDownStaging Sequence values are present and align with the described zone/entrance sequence behavior used to select the correct shutdown queue destination."
+  ],
+  "healthy_conditions": [
+    "tote=true rows show both ShutdownOffTheEndid and ShutdownQueueld mappings.",
+    "tote=false rows map to sorter locations / nearest open available shutdown queue behavior (not the off-the-end queue path).",
+    "Sequence values support correct shutdown queue destination selection for the zone/entrance sequence."
+  ],
+  "failure_conditions": [
+    "tote=true rows missing ShutdownOffTheEndid mappings.",
+    "tote=false rows mapped to the off-the-end queue path instead of sorter locations / nearest open available shutdown queue behavior.",
+    "Sequence values missing or inconsistent with zone/sequence selection behavior."
+  ],
+  "escalation_guidance": [
+    "Escalate when ShutDownStaging violates tote=true vs tote=false mapping expectations (ShutdownOffTheEndid missing for tote=true; off-the-end queue path used for tote=false) or when Sequence behavior is inconsistent/missing."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500",
+      "what_to_look_at": "The ShutDownStaging database model frame showing fields WithTote, ShutDownOffTheEndid, ShutDownQueueld, Sequence, and SorterSideDatabaseModelid, and the explanation that AGVs with totes use off-the-end queue + center queue staging while AGVs without totes map to sorter locations / nearest open available shutdown queue."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+      "what_to_look_at": "Sorter-side location/queue types (including shutdown/off-the-end queue related location types) to interpret what 'mapped to sorter locations' means for tote=false rows."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "segment_id": "segment_training_video_0011",
+      "section_id": "training_video_day2_segment_0011",
+      "timestamp_start": "00:21:10.000",
+      "timestamp_end": "00:32:47.000",
+      "artifact_id": "artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500",
+      "quote_or_summary": "Segment explains ShutDownStaging mapping: AGVs with totes go to shutdown off-the-end queue and center queue staging; AGVs without totes map to sorter locations / nearest open available shutdown queue; includes Sequence mapping behavior."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500",
+      "what_to_look_at": "The ShutDownStaging database model frame showing fields WithTote, ShutDownOffTheEndid, ShutDownQueueld, Sequence, and SorterSideDatabaseModelid, and the explanation that AGVs with totes use off-the-end queue + center queue staging while AGVs without totes map to sorter locations / nearest open available shutdown queue."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+      "what_to_look_at": "Sorter-side location/queue types (including shutdown/off-the-end queue related location types) to interpret what 'mapped to sorter locations' means for tote=false rows."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_shutdown_staging_table_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide exact SSMS navigation steps (e.g., which specific database name/catalog to select) beyond 'OptiSweep/WCS database' and 'ShutDownStaging (or exact table/model name used in the database schema)'.",
+    "The packet does not provide explicit column names for 'tote=true' vs 'tote=false' beyond the model field name shown in the referenced frame (WithTote) and the candidate's 'tote=true/false' wording; exact SQL filter syntax is not provided."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

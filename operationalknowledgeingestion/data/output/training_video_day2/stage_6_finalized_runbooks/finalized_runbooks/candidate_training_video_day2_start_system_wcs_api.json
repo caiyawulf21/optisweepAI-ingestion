@@ -1,0 +1,366 @@
+{
+  "procedure_id": "proc_start_optisweep_system_through_wcs_api_v1",
+  "candidate_id": "candidate_training_video_day2_start_system_wcs_api",
+  "title": "Start OptiSweep System Through the WCS API",
+  "procedure_type": "recovery",
+  "summary": "Use the OptiSweep / WCS API through Apidog or an equivalent approved API client to start the system from a shutdown state, then verify the live system state is no longer shutdown.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "fleet_system_status"
+  ],
+  "access_surface": [
+    "wcs_api",
+    "apidog"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use the OptiSweep / WCS API when the live system state is shutdown and an authorized L2 or L3 support user needs to start the system through the System Startup operation.",
+  "not_for": [
+    "Do not use when GET System State does not report shutdown.",
+    "Do not use as a substitute for investigating an API request that cannot be executed or returns an unrecognized result.",
+    "Do not use this procedure to perform physical recovery, E-stop, or LOTO actions."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Use Apidog or an equivalent approved API client to inspect system state, execute POST System Startup, and verify the subsequent system state."
+    },
+    {
+      "role": "L3_support",
+      "responsibility": "May perform or review the WCS API startup diagnostic when L2 escalation or additional technical review is required."
+    }
+  ],
+  "safety_notes": [
+    "Confirm the live system state before issuing POST System Startup.",
+    "Stop and escalate if the system state does not change after the startup request."
+  ],
+  "access_or_tools_needed": [
+    "OptiSweep / WCS API",
+    "Apidog / WCS API client",
+    "GET System State",
+    "POST System Startup"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Authorized L2 or L3 support access to the OptiSweep / WCS API.",
+      "Access to Apidog or an equivalent approved API client."
+    ],
+    "system_preconditions": [
+      "GET System State must report shutdown before POST System Startup is used."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_system_api_operations_v1",
+    "ctx_training_video_system_state_reference_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+      "description": "OptiSweep / WCS API list showing GET System State and POST System Startup in the System API operations.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0028_so_we_have_open_all_shoots_primary_02_40_50_000",
+      "description": "System API list and live-operation descriptions showing System State and System Startup behavior.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Locate System Startup in the WCS API client",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Identify the approved API operation used to start OptiSweep from a shutdown state.",
+      "instruction": "Open the OptiSweep / WCS API in Apidog or an equivalent approved API client and locate POST System Startup in the System API list.",
+      "expected_result": "The System API list displays POST System Startup and GET System State.",
+      "healthy_condition": "Both named operations are available in the OptiSweep / WCS API client.",
+      "failure_condition": "POST System Startup or GET System State is not available, cannot be located, or cannot be executed.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open the System API list",
+          "exact_action": "Open the OptiSweep / WCS API in Apidog or an equivalent approved API client and locate POST System Startup.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The required API operation cannot be located or executed."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_document_id": "training_video_day2_video",
+          "page": 27,
+          "section_id": "training_video_day2_segment_0027",
+          "timestamp_start": "02:39:55.500",
+          "timestamp_end": "02:39:55.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+          "quote_or_summary": "OptiSweep provides APIs to get data and make requests; Apidog is installed on the primary servers, and the API list includes GET System State and POST System Startup."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_document_id": "training_video_day2_video",
+          "page": 28,
+          "section_id": "training_video_day2_segment_0028",
+          "timestamp_start": "02:40:06.000",
+          "timestamp_end": "02:41:34.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0028_so_we_have_open_all_shoots_primary_02_40_50_000",
+          "quote_or_summary": "The System API list includes GET System State and POST System Startup."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Confirm the system is shut down",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Verify that the startup operation is applicable to the current live system state.",
+      "instruction": "In the OptiSweep / WCS API client, execute GET System State and inspect the returned current system state. Continue only when the returned state is shutdown.",
+      "expected_result": "GET System State returns shutdown as the current system state.",
+      "healthy_condition": "The live API response reports shutdown, which is the state for which System Startup is defined.",
+      "failure_condition": "The response reports a state other than shutdown, or the response is unavailable or unrecognized.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Read current system state",
+          "exact_action": "Execute GET System State and confirm that the returned state is shutdown.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "GET System State does not report shutdown.",
+        "GET System State cannot be executed or returns an unrecognized result."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_document_id": "training_video_day2_video",
+          "page": 28,
+          "section_id": "training_video_day2_segment_0028",
+          "timestamp_start": "02:40:06.000",
+          "timestamp_end": "02:41:34.000",
+          "quote_or_summary": "System State gets the current state of the system. System Startup starts up the system if it is in a shutdown state."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Execute System Startup and recheck state",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Issue the supported startup request and obtain a current post-request system state.",
+      "instruction": "After confirming shutdown in the OptiSweep / WCS API, execute POST System Startup. Then execute GET System State again and inspect the returned state.",
+      "expected_result": "The startup request completes and the subsequent GET System State response returns the current post-startup state.",
+      "healthy_condition": "The post-request state is no longer shutdown.",
+      "failure_condition": "The request cannot be executed, returns an unrecognized result, or the subsequent state remains shutdown.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Start the system",
+          "exact_action": "Execute POST System Startup.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Retrieve post-startup state",
+          "exact_action": "Retrieve GET System State again.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The System Startup request cannot be executed.",
+        "The API returns an unrecognized result.",
+        "The subsequent system state remains shutdown."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_document_id": "training_video_day2_video",
+          "page": 28,
+          "section_id": "training_video_day2_segment_0028",
+          "timestamp_start": "02:40:06.000",
+          "timestamp_end": "02:41:34.000",
+          "quote_or_summary": "System Startup will start up the system if it is in a shutdown state."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify the system left shutdown",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the startup operation achieved the supported state transition.",
+      "instruction": "Compare the second GET System State result with the initial shutdown result in the OptiSweep / WCS API client.",
+      "expected_result": "The second GET System State result no longer reports shutdown, indicating that the system left the shutdown state.",
+      "healthy_condition": "The live system state is a running or other non-shutdown state returned by GET System State.",
+      "failure_condition": "The live system state still reports shutdown or the returned state cannot be interpreted.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Compare system states",
+          "exact_action": "Compare the returned state with the documented running or non-shutdown state.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The system state does not change after the startup request.",
+        "The returned state is unrecognized."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_document_id": "training_video_day2_video",
+          "page": 28,
+          "section_id": "training_video_day2_segment_0028",
+          "timestamp_start": "02:40:06.000",
+          "timestamp_end": "02:41:34.000",
+          "quote_or_summary": "System State gets the current state; System Startup starts the system from a shutdown state, while System Shutdown applies to a running state."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "GET System State initially reports shutdown.",
+    "POST System Startup executes successfully.",
+    "A subsequent GET System State no longer reports shutdown.",
+    "The returned post-startup state is recognized as running or another non-shutdown state."
+  ],
+  "healthy_conditions": [
+    "The OptiSweep / WCS API exposes GET System State and POST System Startup.",
+    "GET System State returns shutdown before the startup request.",
+    "After POST System Startup, GET System State returns a recognized non-shutdown state."
+  ],
+  "failure_conditions": [
+    "The API operation cannot be located or executed.",
+    "GET System State returns an unrecognized result.",
+    "POST System Startup returns an unrecognized result.",
+    "The system state remains shutdown after the startup request."
+  ],
+  "escalation_guidance": [
+    "Stop and escalate if the system state does not change after the startup request.",
+    "Escalate if the API request cannot be executed or returns an unrecognized result.",
+    "This source does not define additional API response handling or a detailed startup confirmation response."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 28,
+      "section_id": "training_video_day2_segment_0028",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "POST System Startup starts the system if it is in a shutdown state."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 27,
+      "section_id": "training_video_day2_segment_0027",
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+      "quote_or_summary": "OptiSweep provides APIs to get data and make requests; Apidog is installed on the primary servers."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "timestamp_start": "02:40:06.000",
+      "timestamp_end": "02:41:34.000",
+      "start_time_seconds": 9606.0,
+      "end_time_seconds": 9694.0,
+      "segment_id": "segment_training_video_0028",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0028"
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+      "what_to_look_at": "OptiSweep provides APIs to get data and make requests; Apidog is installed on the primary servers."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0028_so_we_have_open_all_shoots_primary_02_40_50_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_start_system_wcs_api"
+  ],
+  "source_lineage": [],
+  "missing_details": [
+    "The source does not define the exact successful API response or a complete list of valid running/non-shutdown state values.",
+    "The source does not define API authentication, request parameters, endpoint URLs, timeout handling, or retry behavior.",
+    "The source does not state whether a production stop or LOTO is required before using POST System Startup.",
+    "The source does not define additional recovery actions when the state remains shutdown."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

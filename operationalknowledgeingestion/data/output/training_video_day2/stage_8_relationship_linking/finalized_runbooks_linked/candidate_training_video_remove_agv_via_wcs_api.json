@@ -1,0 +1,356 @@
+{
+  "procedure_id": "proc_remove_specified_agv_through_optisweep_wcs_api_v1",
+  "candidate_id": "candidate_training_video_remove_agv_via_wcs_api",
+  "title": "Remove a Specified AGV Through the OptiSweep WCS API",
+  "procedure_type": "recovery",
+  "summary": "Use the OptiSweep / WCS API RemoveAgv operation in Apidog or an equivalent API client to request removal of one specified AGV from the system through Geek. The request requires the AGV's robot ID and must be verified using the AGV status response.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_active_errors"
+  ],
+  "access_surface": [
+    "wcs_api",
+    "apidog"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive"
+  ],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when an identified AGV must be removed from the OptiSweep system through the live OptiSweep / WCS API and the robot ID is confirmed.",
+  "not_for": [
+    "Do not use without a confirmed robot ID.",
+    "Do not use to add or recover an AGV; RecoverAgv is the separate operation described for adding the specified AGV to the system.",
+    "Do not use as a substitute for PauseAgvs or ResumeAgvs, which control movement for all AGVs."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Confirm the robot ID, submit the RemoveAgv request through the OptiSweep / WCS API, and verify the resulting AGV state."
+    },
+    {
+      "role": "L3_support",
+      "responsibility": "Provide deeper support if the request cannot be submitted or the specified AGV remains present after removal."
+    }
+  ],
+  "safety_notes": [
+    "Confirm the robot ID before submitting the removal request.",
+    "Removal changes the AGV's representation in the OptiSweep system; verify the live result after submission."
+  ],
+  "access_or_tools_needed": [
+    "OptiSweep / WCS API",
+    "Apidog or equivalent WCS API client",
+    "POST RemoveAgv operation",
+    "Confirmed robot ID",
+    "GET Get Agv Statuses operation or another available AGV status response"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2_support or L3_support access to the OptiSweep / WCS API",
+      "Access to Apidog or an equivalent WCS API client"
+    ],
+    "system_preconditions": [
+      "The AGV to be removed has a confirmed robot ID.",
+      "The OptiSweep / WCS API is available for submitting the request and checking AGV status."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_remove_recover_agv_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+      "description": "Apidog / WCS API overview showing the AGVS operation group and POST RemoveAgv and GET Get Agv Statuses operations.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0029_remove_agv_this_requires_the_robot_primary_02_42_03_000",
+      "description": "AGVS API view showing POST RemoveAgv and the requirement for a robot ID to request removal from the system.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0030_get_agv_status_shows_the_current_primary_02_43_04_500",
+      "description": "AGV status response showing fields including name, state, commandGuid, commandName, commandStatus, battery, voltage, status, errorCode, errorDescription, errorCause, system error fields, and errorAlert.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the AGVS RemoveAgv operation in Apidog",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Identify the live OptiSweep / WCS API operation used to request removal of one AGV.",
+      "instruction": "In Apidog or an equivalent OptiSweep / WCS API client, open the AGVS operation group and locate the POST RemoveAgv operation.",
+      "expected_result": "The AGVS operation list displays POST RemoveAgv and the request can be opened for input.",
+      "healthy_condition": "POST RemoveAgv is visible under AGVS and the API client is ready to accept the request input.",
+      "failure_condition": "The AGVS operation group or POST RemoveAgv is unavailable, or the API client cannot be opened.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate RemoveAgv",
+          "exact_action": "Open the AGVS operation group and select POST RemoveAgv.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the OptiSweep / WCS API client cannot be accessed.",
+        "Stop and escalate if POST RemoveAgv is not available."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0027",
+          "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+          "quote_or_summary": "The API overview lists the AGVS group with POST RemoveAgv and GET Get Agv Statuses; Apidog is installed on the primary servers."
+        },
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0029",
+          "artifact_id": "artifact_training_video_training_video_day2_0029_remove_agv_this_requires_the_robot_primary_02_42_03_000",
+          "quote_or_summary": "The AGVS API view identifies POST RemoveAgv."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Enter the confirmed robot ID",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Identify the specific AGV that the RemoveAgv request will target.",
+      "instruction": "Enter the confirmed robot ID in the input required by POST RemoveAgv. Do not continue if the robot ID has not been confirmed.",
+      "expected_result": "The RemoveAgv request contains the intended AGV robot ID.",
+      "healthy_condition": "The entered robot ID identifies the specified AGV and is ready for submission.",
+      "failure_condition": "The robot ID is missing, unconfirmed, or does not identify the intended AGV.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm robot ID",
+          "exact_action": "Provide the robot ID required by RemoveAgv.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop if the robot ID is not confirmed.",
+        "Stop and escalate if the API client rejects the robot ID input and the required format is not available in this source."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0029",
+          "artifact_id": "artifact_training_video_training_video_day2_0029_remove_agv_this_requires_the_robot_primary_02_42_03_000",
+          "quote_or_summary": "RemoveAgv requires the robot ID and sends a request to Geek to remove the specified AGV from the system."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Submit the POST RemoveAgv request",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Send the removal request for the specified AGV through the live OptiSweep / WCS API.",
+      "instruction": "Submit the POST RemoveAgv request after confirming that the request targets the intended robot ID.",
+      "expected_result": "The OptiSweep / WCS API submits a request to Geek to remove the specified AGV from the system.",
+      "healthy_condition": "The request can be submitted and the API client provides a submission result for the RemoveAgv operation.",
+      "failure_condition": "The request cannot be submitted or the API client does not provide a usable submission result.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Submit removal request",
+          "exact_action": "Submit the POST RemoveAgv request.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the POST RemoveAgv request cannot be submitted.",
+        "Do not retry against a different robot ID without confirming the intended target."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0029",
+          "artifact_id": "artifact_training_video_training_video_day2_0029_remove_agv_this_requires_the_robot_primary_02_42_03_000",
+          "quote_or_summary": "RemoveAgv sends a request to Geek to remove the specified AGV from the system."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify the AGV status after removal",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm from live AGV system state that the specified robot is no longer represented as an active AGV.",
+      "instruction": "Use GET Get Agv Statuses or the available live AGV status response in the OptiSweep / WCS API to locate the specified robot ID. Check the returned AGV identity and state/status fields, including name, state, status, errorCode, errorDescription, and errorAlert where present.",
+      "expected_result": "The specified robot is no longer represented as an active AGV in the returned system state, or its returned state/status indicates removal.",
+      "healthy_condition": "The specified robot ID is absent from the active AGV results, or the live response identifies it with a removed state/status rather than an active AGV state.",
+      "failure_condition": "The specified robot remains listed as an active AGV, or its live state/status does not reflect removal.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check AGV status",
+          "exact_action": "Use GET Get Agv Statuses to check the current state of the specified AGV.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the specified AGV remains present after the request.",
+        "Escalate if the status response is unavailable or does not identify the specified robot clearly."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0030",
+          "artifact_id": "artifact_training_video_training_video_day2_0030_get_agv_status_shows_the_current_primary_02_43_04_500",
+          "quote_or_summary": "Get Agv Statuses shows the current AGV state, current command, vitals, AGV errors, and system errors. The displayed response includes name, state, commandGuid, commandName, commandStatus, battery, voltage, status, errorCode, errorDescription, errorCause, system error fields, and errorAlert."
+        },
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0029",
+          "artifact_id": "artifact_training_video_training_video_day2_0029_remove_agv_this_requires_the_robot_primary_02_42_03_000",
+          "quote_or_summary": "RemoveAgv requests Geek to remove the specified AGV from the system."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The POST RemoveAgv operation is submitted with the confirmed robot ID.",
+    "The OptiSweep / WCS API sends the removal request to Geek.",
+    "The specified robot is no longer represented as an active AGV in the live AGV status response, or its state/status indicates removal."
+  ],
+  "healthy_conditions": [
+    "POST RemoveAgv is available in the AGVS API operation group.",
+    "The request contains the confirmed robot ID.",
+    "The live AGV status response no longer lists the specified robot as active or shows a removed state/status."
+  ],
+  "failure_conditions": [
+    "The API client or POST RemoveAgv operation is unavailable.",
+    "The robot ID is missing or unconfirmed.",
+    "The POST RemoveAgv request cannot be submitted.",
+    "The specified AGV remains present as an active AGV after submission.",
+    "The AGV status response is unavailable or does not provide enough information to verify the result."
+  ],
+  "escalation_guidance": [
+    "Escalate to L3_support if the API request cannot be submitted.",
+    "Escalate to L3_support if the specified AGV remains present after the RemoveAgv request.",
+    "Escalate when the robot ID or live AGV status cannot be confirmed."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+      "what_to_look_at": "AGVS operation group containing POST RemoveAgv and GET Get Agv Statuses."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0029_remove_agv_this_requires_the_robot_primary_02_42_03_000",
+      "what_to_look_at": "POST RemoveAgv operation and its robot ID requirement."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0030_get_agv_status_shows_the_current_primary_02_43_04_500",
+      "what_to_look_at": "Live AGV status fields used to identify the robot and verify state, status, commands, vitals, and errors."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 29,
+      "section_id": "training_video_day2_segment_0029",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "RemoveAgv requires the robot ID and sends a request to Geek to remove the specified AGV from the system; the API list identifies POST RemoveAgv.",
+      "site_code": null,
+      "site_label": null
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+      "what_to_look_at": "AGVS operation group containing POST RemoveAgv and GET Get Agv Statuses."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0029_remove_agv_this_requires_the_robot_primary_02_42_03_000",
+      "what_to_look_at": "POST RemoveAgv operation and its robot ID requirement."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0030_get_agv_status_shows_the_current_primary_02_43_04_500",
+      "what_to_look_at": "Live AGV status fields used to identify the robot and verify state, status, commands, vitals, and errors."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_remove_agv_via_wcs_api"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide an HTTP response code or detailed RemoveAgv response fields.",
+    "The source does not specify the exact request-body field syntax beyond requiring the robot ID.",
+    "The source does not define how long to wait before verifying the AGV status.",
+    "The source does not provide a definitive live response example showing the removed AGV; verification must use the available AGV status response."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+    "artifact_training_video_training_video_day2_0029_remove_agv_this_requires_the_robot_primary_02_42_03_000",
+    "artifact_training_video_training_video_day2_0030_get_agv_status_shows_the_current_primary_02_43_04_500"
+  ]
+}

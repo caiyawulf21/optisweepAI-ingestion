@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Windows Event Viewer / services check for OptiSweep and WCSWebApplication failures</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Windows Event Viewer / services check for OptiSweep and WCSWebApplication failures</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_windows_event_viewer_services_optisweep_wcs_failures_v1</td></tr>
+<tr><th>Title</th><td>Windows Event Viewer / services check for OptiSweep and WCSWebApplication failures</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>windows_service_or_event_log, wcs_service_health</td></tr>
+<tr><th>Access Surface</th><td>event_viewer</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>service_crash_or_restart, system_fault</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the Windows Event Viewer / services surface to inspect Application and System log entries around the reported 6:35-6:36 AM failure window, then verify the current OptiSweep service state. The check identifies WCSWebApplication database-command errors, OptiSweep termination events, and the live service status before further recovery action.</p>
+<h2>When To Use</h2>
+<p>Use the Windows Event Viewer / services surface when OptiSweep or WCSWebApplication behavior is abnormal, the RMS is blank or unavailable, the system has stopped, or a service failure is suspected. Inspect the reported 6:35:24-6:36:07 AM window when validating this incident pattern before further recovery action.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/abd43e133aa30f1d.jpeg" alt="artifact_incident_228086_page_027_embedded_image_01" /><figcaption>Windows Event Viewer / services Application log showing clustered WCSWebApplication and Application Error entries around 6:36:02 AM, with Windows Error Reporting Event 1001 at 6:36:07 AM.</figcaption></figure>
+<figure><img src="assets/d4f3abbd8bd09df2.jpeg" alt="artifact_incident_228086_page_028_embedded_image_01" /><figcaption>Windows Event Viewer / services Application log showing WCSWebApplication Event ID 20102 and the message &quot;Failed executing DbCommand (1,840ms)&quot; at 6:35:24 AM.</figcaption></figure>
+<figure><img src="assets/dabb6bbd62f07c7c.png" alt="artifact_incident_228086_page_029_embedded_image_01" /><figcaption>Windows Event Viewer / services System log showing Service Control Manager Event ID 7031 for unexpected OptiSweep termination and a configured restart after 60000 milliseconds.</figcaption></figure>
+<figure><img src="assets/3832c5ce44b05a86.png" alt="artifact_incident_228086_page_019_embedded_image_01" /><figcaption>Windows Services MMC on the Windows Event Viewer / services surface with OptiSweep selected, showing Status Running and Startup Type Automatic.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Inspect the Application log on Windows Event Viewer / services</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the Windows Event Viewer / services surface, open Windows Logs &gt; Application. Inspect entries around 6:35:24-6:36:07 AM, including WCSWebApplication Event ID 20102 with &quot;Failed executing DbCommand (1,840ms)&quot; and the nearby WCSWebApplication, Application Error, and Windows Error Reporting entries. Compare the source, event ID, timestamp, level, and message with the live entries.</p>
+<p><strong>Expected result:</strong></p>
+<p>The live Application log shows whether WCSWebApplication or Application Error entries are present in the selected time window, and the selected event exposes its source, event ID, timestamp, level, and message.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>WCSWebApplication errors continue after the OptiSweep service is available.</li>
+<li>The live entries indicate an active or recurring application failure that cannot be explained by inspection alone.</li>
+</ul>
+<hr>
+<h3>Step 2 — Inspect the System log on Windows Event Viewer / services</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the Windows Event Viewer / services surface, select Windows Logs &gt; System and inspect Service Control Manager Event ID 7031 for OptiSweep. Confirm whether the live event states that the service terminated unexpectedly and whether the recorded corrective action says Restart the service after 60000 milliseconds.</p>
+<p><strong>Expected result:</strong></p>
+<p>The live System log identifies whether Event ID 7031 exists for OptiSweep and displays the termination message and any recorded corrective action.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>OptiSweep Event ID 7031 repeats.</li>
+<li>The event shows an unexpected termination and the current service state cannot be confirmed as Running.</li>
+</ul>
+<hr>
+<h3>Step 3 — Verify OptiSweep in Windows Event Viewer / services</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the Windows Event Viewer / services surface, open Windows Services, select OptiSweep, and inspect Status and Startup Type. Compare the current values with the Event Viewer / services findings. The incident capture showed Status Running and Startup Type Automatic; do not treat the available Restart the service link as proof that a restart was performed.</p>
+<p><strong>Expected result:</strong></p>
+<p>The live Windows Services MMC displays the current OptiSweep Status and Startup Type so they can be compared with the termination event.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>OptiSweep is not Running.</li>
+<li>Event ID 7031 repeats or WCSWebApplication errors continue after the service is available.</li>
+<li>The service state cannot be reconciled with the Event Viewer / services findings.</li>
+</ul>
+<hr>
+</body>
+</html>

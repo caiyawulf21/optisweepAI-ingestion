@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check SQL Server Agent Status in SQL Server Configuration Manager</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check SQL Server Agent Status in SQL Server Configuration Manager</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_sql_server_agent_status_in_sql_server_configuration_manager_v1</td></tr>
+<tr><th>Title</th><td>Check SQL Server Agent Status in SQL Server Configuration Manager</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L1_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>wcs_service_health</td></tr>
+<tr><th>Access Surface</th><td>event_viewer, rms_ui</td></tr>
+<tr><th>Audience Roles</th><td>L1_support, L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>unplanned_restart, service_crash_or_restart</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the Windows Event Viewer / services surface to RDP to the identified WCS backup server, open SQL Server Configuration Manager, and verify that SQL Server Agent (MSSQLSERVER) shows State as Running and Start Mode as Automatic. Then check the RMS / fleet status UI to confirm that RMS is up and running.</p>
+<h2>When To Use</h2>
+<p>Use this diagnostic after an unplanned restart or while verifying WCS/RMS service health. Check SQL Server Agent on the Windows Event Viewer / services surface and corroborate availability in the RMS / fleet status UI.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/fe38915b99de4ce2.jpg" alt="artifact_training_video_training_video_day2_0054_and_then_check_rms_to_make_primary_03_14_29_500" /><figcaption>SQL Server Configuration Manager (Local) service view showing SQL Server Agent (MSSQLSERVER), State, and Start Mode columns.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open SQL Server Configuration Manager on the WCS backup server</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the Windows Event Viewer / services surface, RDP into the identified WCS backup server at fortna-wcs-backup.txrth.otnet.ups.com and open SQL Server Configuration Manager.</p>
+<p><strong>Expected result:</strong></p>
+<p>SQL Server Configuration Manager (Local) opens and exposes the SQL Server Services view.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if the identified WCS backup server is not reachable through the available RDP access.</li>
+<li>Escalate if SQL Server Configuration Manager is unavailable.</li>
+</ul>
+<hr>
+<h3>Step 2 — Locate SQL Server Agent (MSSQLSERVER)</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In SQL Server Configuration Manager on the Windows Event Viewer / services surface, open SQL Server Services and locate the row named SQL Server Agent (MSSQLSERVER).</p>
+<p><strong>Expected result:</strong></p>
+<p>The SQL Server Agent (MSSQLSERVER) row is visible in the SQL Server Services list.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if SQL Server Agent (MSSQLSERVER) is not listed.</li>
+</ul>
+<hr>
+<h3>Step 3 — Verify SQL Server Agent state and start mode</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the SQL Server Services view on the Windows Event Viewer / services surface, inspect the State and Start Mode fields for SQL Server Agent (MSSQLSERVER).</p>
+<p><strong>Expected result:</strong></p>
+<p>The SQL Server Agent (MSSQLSERVER) row shows State as Running and Start Mode as Automatic.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to the DBA/support owner if SQL Server Agent (MSSQLSERVER) is not Running.</li>
+<li>Escalate to the DBA/support owner if SQL Server Agent (MSSQLSERVER) does not show Automatic start mode.</li>
+<li>Do not change the service configuration or restart the service.</li>
+</ul>
+<hr>
+<h3>Step 4 — Check RMS availability</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the RMS / fleet status UI and check whether the RMS view is up and running.</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS is available for the corresponding operational check.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if RMS is unavailable or is not up and running.</li>
+<li>Record that the RMS-specific status fields are not defined by this procedure and require deeper support if further diagnosis is needed.</li>
+</ul>
+<hr>
+</body>
+</html>

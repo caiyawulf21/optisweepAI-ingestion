@@ -1,0 +1,304 @@
+{
+  "procedure_id": "proc_sorter_side_charger_assignment_check_v1",
+  "candidate_id": "candidate_training_video_sorter_side_charger_assignment_check",
+  "title": "Check Sorter-Side Charger Assignment in SSMS / Helix DB",
+  "procedure_type": "diagnostic",
+  "summary": "Use the WCS / Helix DB (SSMS) to inspect sorter-side and charger-assignment records. Confirm that the charger has a sorter-side model ID, that the charger is associated with the expected charging area or sorter side, and that its availability or disabled status is consistent with the investigation.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "agv_charging_state",
+    "device_roster_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "mapping_abnormal"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this read-only diagnostic when investigating whether a charger is assigned to the expected sorter side, whether the assignment is present, or whether charger availability or disabled status may explain charging behavior. Perform the inspection in the WCS / Helix DB (SSMS).",
+  "not_for": [
+    "Do not use this procedure to change sorter-side assignments, charging-area mappings, charger availability, or disabled status.",
+    "Do not use this procedure as a substitute for confirming an exact live table or column name; the supplied source does not provide the complete SSMS navigation path or schema."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support performs the read-only inspection in the WCS / Helix DB (SSMS).",
+    "L3_support may review or investigate discrepancies when the sorter-side identifier is missing, incorrect, or inconsistent with charger status."
+  ],
+  "safety_notes": [
+    "This is a read-only diagnostic. Do not modify sorter-side assignments or charger availability from SSMS.",
+    "The source describes assigned-side chargers as the normal charging relationship and another side's available charger as an emergency relationship; do not infer or change operational policy beyond the configured records."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS) — read-only access",
+    "The live sorter-side database model and charger-assignment or charging-location records"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2 or L3 access to the WCS / Helix DB through SSMS"
+    ],
+    "system_preconditions": [
+      "A specific charger or charging location is identified for investigation.",
+      "The expected sorter side or charging assignment is available for comparison."
+    ],
+    "external_references": [
+      "Live configuration or site information identifying the expected sorter-side assignment"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_training_video_sorter_side_charger_assignment_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0013_let_s_see_and_the_last_primary_00_53_44_500",
+      "description": "WCS database model view showing sorter-side identifiers as model IDs and charging-area, charger, tote-stand, and disabled-status relationships.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the WCS / Helix DB records in SSMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Locate the live database records needed to inspect the charger and its sorter-side association.",
+      "instruction": "In the WCS / Helix DB (SSMS), locate the sorter-side database model and the charging database model or charging-location records for the charger under investigation. Use the live model or record names available in the environment; the supplied source does not specify an exact database name, table name, or navigation path.",
+      "expected_result": "The relevant sorter-side and charger-related records are available for read-only inspection in SSMS.",
+      "healthy_condition": "The records can be opened and provide an identifiable charger or charging location together with sorter-side or charging-area association data.",
+      "failure_condition": "The required records cannot be located, the charger cannot be identified, or the available schema does not expose the association needed for the check.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate live database models",
+          "exact_action": "Open the WCS / Helix DB (SSMS) and locate the sorter-side database model or charger-assignment records.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L3 support or engineering if the live schema cannot be identified or the required charger-assignment records are unavailable."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0013",
+          "timestamp_start": "00:35:50.000",
+          "timestamp_end": "01:11:39.000",
+          "quote_or_summary": "The sorter-side database model identifies which sorter side a record belongs to, and charging database models contain charging areas and individual charger information.",
+          "site_code": null,
+          "site_label": null
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Inspect the charger and sorter-side model ID",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Determine which sorter-side identifier is associated with the charger and inspect related charging configuration.",
+      "instruction": "In the WCS / Helix DB (SSMS), find the investigated charger or charging location. Inspect the sorter-side identifier or model ID associated with it, along with the charging area, charger location or station, tote stand association, and any available or disabled status shown in the live records.",
+      "expected_result": "The charger record shows a sorter-side identifier or model ID and identifies its related charging-area or charger configuration.",
+      "healthy_condition": "A sorter-side identifier is present, the charger is associated with a charging area or location, and the record exposes an interpretable availability or disabled status.",
+      "failure_condition": "The sorter-side identifier is missing, the charger has no charging-area association, or the charger status is unavailable or disabled when the investigation expects it to be usable.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect charger assignment",
+          "exact_action": "Find the charger or charging location being investigated and inspect its sorter-side ID or model ID.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect charger status",
+          "exact_action": "Inspect the associated charging area, charger location, tote stand, and whether the charger or charging area is disabled.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the sorter-side identifier or model ID is missing.",
+        "Escalate if the charger has no identifiable charging-area or location association.",
+        "Do not edit the record when the charger is disabled or unavailable."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0013",
+          "timestamp_start": "00:35:50.000",
+          "timestamp_end": "01:11:39.000",
+          "quote_or_summary": "Sorter-side identifiers are model IDs. The charging database model stores charging areas and their entrance and exit locations; the charging-location database model stores individual chargers, their stations, tote stands, and associated charging areas, including disabled status.",
+          "site_code": null,
+          "site_label": null
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0013",
+          "timestamp_start": "00:53:44.500",
+          "timestamp_end": "00:53:44.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0013_let_s_see_and_the_last_primary_00_53_44_500",
+          "quote_or_summary": "The captured database model view shows sorter-side mapping and charger-related fields, including charger location, tote stand, charging area, and disabled status.",
+          "site_code": null,
+          "site_label": null
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Compare the assignment with the expected charging relationship",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Decide whether the configured charger assignment supports the expected normal or emergency charging relationship.",
+      "instruction": "In the WCS / Helix DB (SSMS), compare the recorded sorter-side model ID and charger status with the expected sorter side for the charger. Confirm whether the charger is assigned to the expected side for normal charging. If the records describe cross-side use, identify whether another side's charger is available for emergency charging without changing the configuration.",
+      "expected_result": "The recorded assignment either maps the charger to the expected sorter side for normal charging or clearly identifies a configured cross-side available charger relationship for emergency use.",
+      "healthy_condition": "The sorter-side identifier matches the expected side, the charger is not marked disabled for the intended use, and any emergency cross-side relationship is distinguishable from the normal assignment.",
+      "failure_condition": "The identifier maps to the wrong sorter side, the assignment is absent, the charger is disabled or unavailable contrary to the expected use, or the records conflict about the normal versus emergency relationship.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Compare sorter-side mapping",
+          "exact_action": "Compare the recorded sorter-side assignment with the expected side for the charger.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Identify emergency availability",
+          "exact_action": "Note whether an available charger associated with another sorter side is identified for emergency charging.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/engineering if the sorter-side identifier is missing or maps to the wrong side.",
+        "Escalate if the assignment conflicts with the charger's charging-area or disabled status.",
+        "Do not change sorter-side assignments or charger availability from this diagnostic."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0013",
+          "timestamp_start": "00:35:50.000",
+          "timestamp_end": "01:11:39.000",
+          "quote_or_summary": "Assigned chargers are used for the associated sorter side during normal charging; if a charger on that side is unavailable, an available charger associated with another sorter side may be used for an emergency charge.",
+          "site_code": null,
+          "site_label": null
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The investigated charger is identifiable in the WCS / Helix DB (SSMS).",
+    "A sorter-side identifier or model ID is present and maps to the expected sorter side.",
+    "The charger’s charging-area, location, and disabled or availability status are observable.",
+    "Normal assigned-side charging and any configured cross-side emergency relationship can be distinguished without modifying records."
+  ],
+  "healthy_conditions": [
+    "The charger has a present sorter-side model ID.",
+    "The sorter-side model ID matches the expected charging assignment.",
+    "The charger and charging area are available for the intended use and are not unexpectedly disabled.",
+    "Any cross-side charger is identifiable as an emergency availability relationship rather than the normal assignment."
+  ],
+  "failure_conditions": [
+    "Sorter-side identifier or model ID is missing.",
+    "The charger maps to the wrong sorter side.",
+    "The charger has an unexpected disabled or unavailable status.",
+    "The charger’s charging-area or location association conflicts with the expected assignment.",
+    "The live schema does not expose enough information to verify the assignment."
+  ],
+  "escalation_guidance": [
+    "Escalate to L3 support or engineering when the sorter-side identifier is missing, maps to the wrong side, or conflicts with the charger's charging-area or disabled status.",
+    "Include the investigated charger or charging location, observed sorter-side model ID, charging-area association, and observed availability or disabled status in the escalation.",
+    "Do not modify database records as part of this diagnostic."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0013",
+      "timestamp_start": "00:35:50.000",
+      "timestamp_end": "01:11:39.000",
+      "quote_or_summary": "Sorter-side identifiers are model IDs used to associate chargers with sorter sides; assigned chargers are used normally, with another side's available charger described for emergency use."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0013_let_s_see_and_the_last_primary_00_53_44_500"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_sorter_side_charger_assignment_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide the exact live database name, table name, column name, or complete SSMS navigation path for the charger-assignment records.",
+    "The source does not define a complete query or exact field-level rule for determining charger availability beyond the described disabled and available relationships.",
+    "The expected sorter side for a specific charger must be supplied by live configuration or site context.",
+    "The source describes emergency cross-side charger use but does not provide an exact live field that explicitly labels a charger as normal versus emergency."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0013_let_s_see_and_the_last_primary_00_53_44_500"
+  ]
+}

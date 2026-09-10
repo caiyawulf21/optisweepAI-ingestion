@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Recover a Faulted AGV Carrying a Tote (RMS stop → Hospital HMI remove → re-add → resume RMS)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Recover a Faulted AGV Carrying a Tote (RMS stop → Hospital HMI remove → re-add → resume RMS)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_recover_faulted_agv_carrying_tote_rms_hospital_resume_v1</td></tr>
+<tr><th>Title</th><td>Recover a Faulted AGV Carrying a Tote (RMS stop → Hospital HMI remove → re-add → resume RMS)</td></tr>
+<tr><th>Procedure Type</th><td>recovery</td></tr>
+<tr><th>Primary Role</th><td>operator</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>agv_physical_recovery</td></tr>
+<tr><th>Access Surface</th><td>rms_ui, hospital_hmi</td></tr>
+<tr><th>Audience Roles</th><td>operator</td></tr>
+<tr><th>Failure Pattern Tags</th><td>None</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>When an AGV is faulted while carrying a tote, stop RMS, remove the faulted AGV from RMS, remove the AGV via the Hospital HMI, add the AGV back into RMS, press E-stop again, and resume RMS.</p>
+<h2>When To Use</h2>
+<p>Use this recovery procedure when an AGV is faulted while carrying a tote and you need to restore normal RMS operation by removing the faulted AGV from RMS, removing it at the Hospital HMI, re-adding it to RMS, and resuming RMS.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/d87070d22301b81d.jpeg" alt="artifact_fig_5_4_faulted_agv_with_tote_screen" /><figcaption>Figure 5-4: Faulted AGV with Tote Screen (fault recovery sequence reference).</figcaption></figure>
+<figure><img src="assets/2c21ae93aa1bc610.png" alt="artifact_fig_4_37_hospital_hmi_add_remove_agv_screen" /><figcaption>Figure 4-37: Hospital HMI Add/Remove AGV Screen (used to remove/add an AGV via Hospital HMI).</figcaption></figure>
+<figure><img src="assets/4f58f8bb3f0f6aea.jpeg" alt="artifact_fig_4_12_agv_api_controls" /><figcaption>Figure 4-12: AGV API Controls (Remove AGV / Recover AGV / Pause All AGVs / Resume All AGVs controls).</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — E-stop RMS</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS / fleet status UI, perform an E-stop for RMS.</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS is in an E-stopped state (E-stop RMS action is applied on the RMS UI).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you cannot place RMS into the E-stop state, stop and escalate.</li>
+</ul>
+<hr>
+<h3>Step 2 — Remove the faulted AGV from RMS</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS / fleet status UI, use the “AGV API Controls” controls to remove the faulted AGV from RMS (enter the AGV ID and use the Remove AGV action).</p>
+<p><strong>Expected result:</strong></p>
+<p>The faulted AGV is removed from the system via the AGV API Controls Remove AGV action.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the faulted AGV cannot be removed from RMS.</li>
+</ul>
+<hr>
+<h3>Step 3 — Remove the AGV at the Hospital HMI</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Take the tote to the Hospital and remove the AGV via the Hospital HMI using the “Add/Remove AGV” screen.</p>
+<p><strong>Expected result:</strong></p>
+<p>The AGV is removed from the system at the Hospital via the Hospital HMI Add/Remove AGV screen.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the Hospital HMI does not successfully remove the AGV.</li>
+</ul>
+<hr>
+<h3>Step 4 — Add the AGV back into RMS</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS / fleet status UI, use the “AGV API Controls” controls to add the AGV back into RMS (enter the AGV ID and use the Recover AGV action).</p>
+<p><strong>Expected result:</strong></p>
+<p>The AGV is added back into the system via the AGV API Controls Recover AGV action.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if RMS cannot be resumed after re-adding the AGV.</li>
+</ul>
+<hr>
+<h3>Step 5 — Press E-stop again on RMS</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS / fleet status UI, press E-stop again on RMS.</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS E-stop is pressed again (E-stop RMS action applied a second time).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you cannot apply the second E-stop, stop and escalate.</li>
+</ul>
+<hr>
+<h3>Step 6 — Resume RMS</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS / fleet status UI, resume RMS using the “Starting the System” procedure controls.</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS resumes after the faulted AGV has been removed from RMS, removed at the Hospital HMI, and re-added into RMS.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if RMS cannot be resumed after re-adding the AGV.</li>
+</ul>
+<hr>
+</body>
+</html>

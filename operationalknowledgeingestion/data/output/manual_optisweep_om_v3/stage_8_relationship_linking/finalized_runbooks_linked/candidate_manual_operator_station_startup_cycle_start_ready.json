@@ -1,0 +1,452 @@
+{
+  "procedure_id": "proc_start_the_operator_station_verify_agvs_main_disconnect_reset_flashing_estop_home_axes_cycle_start_v1",
+  "candidate_id": "candidate_manual_operator_station_startup_cycle_start_ready",
+  "title": "Start the Operator Station: verify AGVs/main disconnect, reset flashing ESTOP, home axes, and press CYCLE START",
+  "procedure_type": "operation",
+  "summary": "Bring the operator station from an off/faulted state to the tipper “ready” state by verifying AGVs are powered and the main disconnect is ON, clearing flashing ESTOP faults via HMI RESET, homing all tipper axes (Z1/A1 and Z2/A2) using AUTO REF, then pressing CYCLE START to move from “home” to “ready” and placing the tipper into AUTO mode so it waits for WCS instructions.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_physical_recovery",
+    "robot_command_or_task_state"
+  ],
+  "access_surface": [
+    "tipper_hmi",
+    "physical_floor"
+  ],
+  "audience_roles": [
+    "operator"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when the operator station has been turned off or is in a faulted/off state and you need to start it so the tipper can home and then wait for WCS instructions in AUTO mode.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "Operator: performs the operator station startup actions (verify AGVs/main disconnect, reset flashing ESTOP, home axes via AUTO REF, press CYCLE START, set tipper to AUTO)."
+  ],
+  "safety_notes": [
+    "If the ESTOP is flashing, pull out the ESTOP and press RESET on the HMI screen to clear any faults before continuing with homing and cycle start."
+  ],
+  "access_or_tools_needed": [
+    "Operator station control panel",
+    "Operator station HMI screen (RESET, AUTO REF, CYCLE START, and mode/status indicators)"
+  ],
+  "prerequisites": {
+    "access_required": [],
+    "system_preconditions": [
+      "System has been turned off (or is not yet started): follow the startup procedure to start the system.",
+      "Verify the AGVs are powered on.",
+      "Verify the main disconnect is ON."
+    ],
+    "external_references": [
+      "Reference P40A (V2.0) user manual, Document version: V1.1 (20231206) for instructions on starting the AGVs."
+    ]
+  },
+  "related_context_ids": [
+    "ctx_manual_operator_station_startup_prerequisites_v1",
+    "ctx_manual_operator_station_estop_reset_v1",
+    "ctx_manual_tipper_axis_homing_v1",
+    "ctx_manual_tipper_cycle_start_ready_v1",
+    "ctx_manual_tipper_auto_mode_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_page_82_image_2",
+      "description": "Operator station main screen image used for the startup flow (includes CYCLE STOP and references the startup steps on page 82).",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_19_operator_station_control_panel",
+      "description": "Operator Station Control Panel (Visu_MCP_Dual screen) showing AUTO, JOG, REF, CYCLE START, and CYCLE STOP; active buttons indicated by illuminated green bars.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_84_image_10",
+      "description": "HMI screen capture showing MCP_Dual manual mode fault display with RESET and axis status indicators (used as visual support for RESET/fault context).",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_page_85_image_10",
+      "description": "Operator Station HMI screen during manual jog mode showing axis fault indicators and RESET (visual support for fault/reset behavior).",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_page_83_image_10",
+      "description": "HMI screen for jogging the tipper (Visu_Dual_MCP) showing Z1/Z2/A1/A2 axis controls and Manual Mode indicator (visual support for axis naming).",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_page_103_image_2",
+      "description": "HMI screen for referencing axes (Visu_Dual_MCP) showing AUTO REF referencing completion behavior and CYCLE START restart context.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Verify AGVs are powered on",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Ensure the fleet/AGVs are available before starting the operator station.",
+      "instruction": "Verify the AGVs are powered on.",
+      "expected_result": "AGVs are powered on (observable at the site’s AGV power status indicators).",
+      "healthy_condition": "AGVs show powered-on status.",
+      "failure_condition": "AGVs are not powered on.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check AGV power status",
+          "exact_action": "Verify the AGVs are powered on.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 82,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_3_starting_the_operator_station",
+          "quote_or_summary": "1. Verify the AGVs are powered on."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Verify main disconnect is ON",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm the operator station power path is enabled before resetting ESTOP and homing axes.",
+      "instruction": "Verify the main disconnect is ON.",
+      "expected_result": "Main disconnect is ON (observable at the main disconnect indicator/label).",
+      "healthy_condition": "Main disconnect indicator shows ON.",
+      "failure_condition": "Main disconnect is not ON.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check main disconnect",
+          "exact_action": "Verify the main disconnect is ON.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 82,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_3_starting_the_operator_station",
+          "quote_or_summary": "2. Verify the main disconnect is ON."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Reset flashing ESTOP faults via HMI RESET",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Clear any ESTOP-related faults so homing and cycle start can proceed.",
+      "instruction": "At the operator station control panel, if the ESTOP is flashing: pull out the ESTOP, then press RESET on the HMI screen to clear any faults.",
+      "expected_result": "Flashing ESTOP fault is cleared after pulling out ESTOP and pressing RESET on the HMI.",
+      "healthy_condition": "ESTOP is no longer flashing and faults clear on the HMI.",
+      "failure_condition": "ESTOP remains flashing and faults do not clear after pulling out ESTOP and pressing HMI RESET.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Pull out ESTOP",
+          "exact_action": "pull out the ESTOP",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "hmi_action",
+          "label": "Press HMI RESET",
+          "exact_action": "press RESET on the HMI screen to clear any faults",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the ESTOP is flashing and faults do not clear after pulling out ESTOP and pressing HMI RESET, stop and escalate to support rather than continuing homing/cycle start."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 82,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_3_starting_the_operator_station",
+          "quote_or_summary": "3. At the operator station control panel, if the ESTOP is flashing, pull out the ESTOP and press RESET on the HMI screen to clear any faults."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Home all tipper axes using AUTO REF (Z1/A1 and Z2/A2)",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Reference the tipper axes to the “home” position before starting the cycle.",
+      "instruction": "Home every axis (Z1 and A1 for the left tipper; Z2 and A2 for the right tipper) by pressing AUTO REF. Watch the axis button color change from green to yellow while it is moving; the tipper motor moves until it senses the “home” proximity switch, then stops.",
+      "expected_result": "All axes home successfully: axis button changes green → yellow while moving, then the tipper motor stops when the “home” proximity switch is sensed.",
+      "healthy_condition": "Axis buttons show green-to-yellow transition during motion and then stop at the home proximity switch.",
+      "failure_condition": "Axis buttons do not change green→yellow when AUTO REF is pressed, or the tipper motor does not stop at the “home” proximity switch.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Press AUTO REF",
+          "exact_action": "Press AUTO REF.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If axis buttons do not change green→yellow when AUTO REF is pressed, or if the tipper motor does not stop at the “home” proximity switch, stop and escalate."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 82,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_3_starting_the_operator_station",
+          "quote_or_summary": "4. \"Home\" every axis: Z1 and A1 (left tipper) and Z2 and A2 (right tipper): a. Press AUTO REF. The axis button changes from green to yellow to indicate it is moving. The tipper motor moves until it senses the \"home\" proximity switch, then stops."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Press CYCLE START to move from home to ready",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Start the tipper operation cycle after homing so it reaches the “ready” state.",
+      "instruction": "Press CYCLE START. Confirm the motor moves from “home” to “ready.”",
+      "expected_result": "Motor moves from “home” to “ready” after pressing CYCLE START.",
+      "healthy_condition": "After CYCLE START, the displayed state transitions from home to ready and motor movement corresponds to that transition.",
+      "failure_condition": "CYCLE START does not move the motor from “home” to “ready.”",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Press CYCLE START",
+          "exact_action": "Press CYCLE START.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If CYCLE START does not move the motor from “home” to “ready”, stop and escalate."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 82,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_3_starting_the_operator_station",
+          "quote_or_summary": "5. Press CYCLE START. The motor moves from \"home\" to \"ready.\""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Place tipper in AUTO mode to wait for WCS instructions",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Ensure the tipper is in the correct operating mode to receive instructions from WCS.",
+      "instruction": "Place the tipper in AUTO mode. Confirm the tipper will wait for the WCS to send instructions.",
+      "expected_result": "Tipper is in AUTO mode and is waiting for WCS instructions.",
+      "healthy_condition": "Tipper mode/status indicates AUTO mode (and no manual-only fault/jog context is active).",
+      "failure_condition": "Tipper is not in AUTO mode or does not wait for WCS instructions.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Set AUTO mode",
+          "exact_action": "Place the tipper in AUTO mode.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 82,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_3_starting_the_operator_station",
+          "quote_or_summary": "6. Place the tipper in AUTO mode. The tipper will wait for the WCS to send instructions."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "If ESTOP was flashing, it is cleared after pulling out ESTOP and pressing HMI RESET.",
+    "All axes home successfully: axis button changes green → yellow while moving and then stops when the “home” proximity switch is sensed.",
+    "Pressing CYCLE START moves the motor from “home” to “ready.”",
+    "Tipper is placed in AUTO mode and waits for WCS instructions."
+  ],
+  "healthy_conditions": [
+    "ESTOP is not flashing and HMI faults are cleared.",
+    "AUTO REF homing shows axis button green → yellow transition and then stops at the home proximity switch.",
+    "CYCLE START transitions the motor from home to ready.",
+    "Tipper mode indicates AUTO and is waiting for WCS instructions."
+  ],
+  "failure_conditions": [
+    "ESTOP remains flashing and faults do not clear after pulling out ESTOP and pressing HMI RESET.",
+    "AUTO REF does not produce the expected green → yellow axis button movement indication, or the motor does not stop at the home proximity switch.",
+    "CYCLE START does not move the motor from home to ready.",
+    "Tipper is not in AUTO mode / does not wait for WCS instructions."
+  ],
+  "escalation_guidance": [
+    "If ESTOP faults do not clear after pulling out ESTOP and pressing HMI RESET, stop and escalate to support rather than continuing homing/cycle start.",
+    "If homing via AUTO REF does not show the expected axis button color change or the motor does not stop at the home proximity switch, stop and escalate.",
+    "If CYCLE START does not move the motor from home to ready, stop and escalate."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_page_82_image_2",
+      "what_to_look_at": "Operator station main screen context for the startup flow (CYCLE STOP shown; startup steps referenced on page 82)."
+    },
+    {
+      "artifact_id": "artifact_fig_4_19_operator_station_control_panel",
+      "what_to_look_at": "Visu_MCP_Dual operator control panel buttons: AUTO, REF, CYCLE START (and CYCLE STOP). Active buttons illuminate green bars."
+    },
+    {
+      "artifact_id": "artifact_page_84_image_10",
+      "what_to_look_at": "MCP_Dual screen (F3) showing Manual Mode Fault indicator and RESET button (fault reset visual support)."
+    },
+    {
+      "artifact_id": "artifact_page_85_image_10",
+      "what_to_look_at": "Manual Mode fault indicator and RESET button on the operator station HMI (fault/reset visual support)."
+    },
+    {
+      "artifact_id": "artifact_page_83_image_10",
+      "what_to_look_at": "Visu_Dual_MCP jogging screen showing Z1/Z2/A1/A2 axis controls and Manual Mode indicator (axis naming visual support)."
+    },
+    {
+      "artifact_id": "artifact_page_103_image_2",
+      "what_to_look_at": "Visu_Dual_MCP referencing axes screen showing AUTO REF referencing completion behavior and CYCLE START restart context."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+      "page": 82,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_3_starting_the_operator_station",
+      "quote_or_summary": "Starting the operator station: verify AGVs powered on; verify main disconnect ON; if ESTOP flashing pull out ESTOP and press RESET on HMI; home Z1/A1 and Z2/A2 via AUTO REF (axis button green→yellow while moving until home proximity switch, then stops); press CYCLE START (home→ready); place tipper in AUTO mode to wait for WCS instructions."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_page_82_image_2",
+      "what_to_look_at": "Operator station main screen context for the startup flow (CYCLE STOP shown; startup steps referenced on page 82)."
+    },
+    {
+      "artifact_id": "artifact_fig_4_19_operator_station_control_panel",
+      "what_to_look_at": "Visu_MCP_Dual operator control panel buttons: AUTO, REF, CYCLE START (and CYCLE STOP). Active buttons illuminate green bars."
+    },
+    {
+      "artifact_id": "artifact_page_84_image_10",
+      "what_to_look_at": "MCP_Dual screen (F3) showing Manual Mode Fault indicator and RESET button (fault reset visual support)."
+    },
+    {
+      "artifact_id": "artifact_page_85_image_10",
+      "what_to_look_at": "Manual Mode fault indicator and RESET button on the operator station HMI (fault/reset visual support)."
+    },
+    {
+      "artifact_id": "artifact_page_83_image_10",
+      "what_to_look_at": "Visu_Dual_MCP jogging screen showing Z1/Z2/A1/A2 axis controls and Manual Mode indicator (axis naming visual support)."
+    },
+    {
+      "artifact_id": "artifact_page_103_image_2",
+      "what_to_look_at": "Visu_Dual_MCP referencing axes screen showing AUTO REF referencing completion behavior and CYCLE START restart context."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_manual_operator_station_startup_cycle_start_ready"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The candidate requested specific photos/figures for AGV power status and main disconnect indicator location; those specific visuals were not provided as artifacts in this packet for those exact items. Use the site’s available indicators for AGV power and main disconnect ON status."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_fig_4_19_operator_station_control_panel",
+    "artifact_page_103_image_2",
+    "artifact_page_82_image_2",
+    "artifact_page_83_image_10",
+    "artifact_page_84_image_10",
+    "artifact_page_85_image_10"
+  ]
+}

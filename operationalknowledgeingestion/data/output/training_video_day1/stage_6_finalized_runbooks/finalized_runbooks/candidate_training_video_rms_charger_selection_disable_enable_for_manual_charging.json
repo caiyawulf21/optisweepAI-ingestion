@@ -1,0 +1,483 @@
+{
+  "procedure_id": "proc_disable_enable_charger_location_rms_charger_selection_manual_charge_v1",
+  "candidate_id": "candidate_training_video_rms_charger_selection_disable_enable_for_manual_charging",
+  "title": "Disable/Enable a Charging Location From RMS Charger Selection to Manually Charge a Low-Power AGV",
+  "procedure_type": "recovery",
+  "summary": "Use RMS Charger Selection to logically disable a specific charging location (by charger ID) so RMS will not route AGVs to it. Physically place a low-power AGV onto that disabled charger for a charging boost, then re-enable the charger so RMS/WCS can resume charging allocation from the charging queue.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_charging_state"
+  ],
+  "access_surface": [
+    "rms_ui"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When an AGV’s power is extremely low (e.g., stuck in an error state too long) and you need to manually place it onto a charger for a charging boost by preventing RMS from routing other AGVs to that charger.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the RMS Charger Selection disable/enable actions and verify the charger status changes as expected."
+  ],
+  "safety_notes": [
+    "Disabling a charger is a logical allocation control (it does not “kill” the charger hardware)."
+  ],
+  "access_or_tools_needed": [
+    "RMS / fleet status UI (rms_ui) with Charger Selection view"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "rms_ui"
+    ],
+    "system_preconditions": [
+      "The target charging station has a unique charger ID visible in RMS Charger Selection."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_charger_selection_screen_v1",
+    "ctx_training_video_disabled_charger_status_v1",
+    "ctx_training_video_manual_charging_use_case_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000",
+      "description": "RMS Charger Selection frame showing charger selection by charger ID and the concept of enabled/disabled charger status for logical allocation control.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open RMS Charger Selection view",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Access the charger list and charger details needed to disable/enable a specific charging location by charger ID.",
+      "instruction": "In the RMS / fleet status UI (rms_ui), navigate to the Charger Selection view.",
+      "expected_result": "The Charger Selection view is open and shows charging stations with unique charger IDs available for selection.",
+      "healthy_condition": "You can see charger IDs in Charger Selection and select a charger to view its status (enabled vs disabled).",
+      "failure_condition": "Charger IDs or charger status (enabled/disabled) are not visible, or the Charger Selection view cannot be accessed.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Navigate to Charger Selection",
+          "exact_action": "Open the RMS / fleet status UI and navigate to the Charger Selection view.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "page": 47,
+          "section_id": "training_video_day1_segment_0047",
+          "timestamp_start": "01:45:37.000",
+          "timestamp_end": "01:51:09.000",
+          "quote_or_summary": "Charger Selection: click charger ID to view charger status (enabled/disabled) and associated robot."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Select the target charger by charger ID",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Identify the exact charging location to logically disable/enable.",
+      "instruction": "In Charger Selection, click/select the target charging station using its unique charger ID.",
+      "expected_result": "The selected charger’s details are displayed for the chosen charger ID.",
+      "healthy_condition": "The charger details panel updates to show the selected charger and its associated information (including which robot is on that charger).",
+      "failure_condition": "Selecting a charger does not update the charger details, or the wrong charger ID appears selected.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Click charger ID",
+          "exact_action": "click on the charger ID",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "page": 47,
+          "section_id": "training_video_day1_segment_0047",
+          "timestamp_start": "01:45:37.000",
+          "timestamp_end": "01:51:09.000",
+          "quote_or_summary": "Each charging station will have a unique ID; click on the charger ID to view charger status (enabled or disabled) and what robot is on that charger."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Verify charger status is enabled or disabled",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the current logical allocation state before changing it.",
+      "instruction": "Check the selected charger’s status field/label to determine whether it is currently enabled or disabled.",
+      "expected_result": "The selected charger shows a status indicating enabled vs disabled.",
+      "healthy_condition": "The status clearly indicates whether the charger is enabled or disabled for allocation.",
+      "failure_condition": "The status does not show enabled/disabled, or the status is unclear/unresponsive.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check enabled/disabled status",
+          "exact_action": "you can see the status of the charger. Is that charger enabled or disabled",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "page": 47,
+          "section_id": "training_video_day1_segment_0047",
+          "timestamp_start": "01:45:37.000",
+          "timestamp_end": "01:51:09.000",
+          "quote_or_summary": "In Charger Selection, you can see the status of the charger: enabled or disabled."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Disable the charger allocation (logical disable) for manual charging",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Prevent RMS from routing other AGVs to this charging location while you manually place the low-power AGV.",
+      "instruction": "If the charger is currently enabled and you need to manually charge the low-power AGV, click Disable for that charging location in the Charger Selection details panel.",
+      "expected_result": "The charger allocation is logically disabled (status changes to disabled).",
+      "healthy_condition": "After clicking Disable, the selected charger’s status indicates disabled (logical allocation unavailable).",
+      "failure_condition": "After clicking Disable, the charger status does not change to disabled.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Disable charging location",
+          "exact_action": "click Disable for that charging location (logical disable)",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the charger status does not change to disabled after clicking Disable."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "page": 47,
+          "section_id": "training_video_day1_segment_0047",
+          "timestamp_start": "01:48:23.000",
+          "timestamp_end": "01:48:23.000",
+          "artifact_id": "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000",
+          "quote_or_summary": "“you'll see a disabled function… it doesn't kill the charger itself. It logically disables a charger… when you click disable, RMS will not route any AGVs to charge in that charging location.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Confirm charger status shows disabled",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure the logical allocation control took effect before physically placing the AGV.",
+      "instruction": "In Charger Selection details for the selected charger, confirm the status now indicates disabled.",
+      "expected_result": "The selected charger status shows disabled.",
+      "healthy_condition": "Status is visibly disabled in the Charger Selection details panel.",
+      "failure_condition": "Status remains enabled after the Disable action.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Verify disabled status",
+          "exact_action": "Confirm the charger allocation is now disabled in the Charger Selection details (status should indicate disabled).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the charger status does not change to disabled after clicking Disable."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "page": 47,
+          "section_id": "training_video_day1_segment_0047",
+          "timestamp_start": "01:45:37.000",
+          "timestamp_end": "01:51:09.000",
+          "quote_or_summary": "Disable logically disables a charger so RMS will not route AGVs to that charging location."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Physically push/position the low-power AGV into the disabled charging station",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Place the low-power AGV onto the logically disabled charger so it can receive a charging boost.",
+      "instruction": "Physically push/position the low-power AGV into the disabled charging station (the charger remains physically present; it is logically unavailable for routing).",
+      "expected_result": "The low-power AGV is physically placed into the disabled charging station.",
+      "healthy_condition": "The AGV is positioned in the charging station that is currently marked disabled in Charger Selection.",
+      "failure_condition": "The AGV cannot be positioned into the charging station, or it is placed into a different charger than the one disabled in RMS.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Place AGV on disabled charger",
+          "exact_action": "AGV can be pushed in to the disabled charging station",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "page": 47,
+          "section_id": "training_video_day1_segment_0047",
+          "timestamp_start": "01:45:37.000",
+          "timestamp_end": "01:51:09.000",
+          "quote_or_summary": "Once the charger is disable, the AGV can be pushed into the disabled charging station for manual charging/boost."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Wait for the AGV to pick up a task and proceed via the described flow",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the manual charging placement resulted in the AGV resuming normal tasking.",
+      "instruction": "After the AGV is placed on the disabled charger, remove the AGV from the disabled charger once it has picked up a task and is going to the hospital in that tote (as described in the use case flow).",
+      "expected_result": "The AGV picks up a task and proceeds to the hospital in that tote; then the AGV is removed from the disabled charger.",
+      "healthy_condition": "You observe the AGV has transitioned to tasking (picked up a task) and is moving toward the hospital in the tote associated with the flow.",
+      "failure_condition": "The AGV does not pick up a task after being placed on the disabled charging station.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Remove AGV after task pickup",
+          "exact_action": "remove the AGV from the disabled charger once it has picked up a task",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the AGV does not pick up a task after being placed on the disabled charging station (the source describes that it should pick up a task and go to the hospital in that tote)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "page": 47,
+          "section_id": "training_video_day1_segment_0047",
+          "timestamp_start": "01:45:37.000",
+          "timestamp_end": "01:51:09.000",
+          "quote_or_summary": "After that’s done, you can remove the AGV. The AGV should pick up a task and go to the hospital in that tote."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 8,
+      "title": "Re-enable the charging location (logical enable)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Allow RMS/WCS to resume charging allocation for AGVs in the charging queue to use that charger.",
+      "instruction": "In Charger Selection, click Enable for that charger in the Charger Selection details panel.",
+      "expected_result": "The charger allocation is logically re-enabled (status changes back to enabled).",
+      "healthy_condition": "After clicking Enable, the selected charger status indicates enabled.",
+      "failure_condition": "After clicking Enable, the charger status does not return to enabled.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Enable charging location",
+          "exact_action": "re enable this charging location",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the charger status does not change back to enabled after clicking Enable."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "page": 47,
+          "section_id": "training_video_day1_segment_0047",
+          "timestamp_start": "01:45:37.000",
+          "timestamp_end": "01:51:09.000",
+          "quote_or_summary": "Then you can re enable this charging location that will allow RMS and WCS to again assigning AGVs that are in the charging queue to use that charger."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 9,
+      "title": "Confirm charger status returns to enabled",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Verify the logical allocation control is fully restored.",
+      "instruction": "Confirm the selected charger’s status in Charger Selection now indicates enabled.",
+      "expected_result": "The selected charger status shows enabled.",
+      "healthy_condition": "Status is visibly enabled in Charger Selection details.",
+      "failure_condition": "Status remains disabled after the Enable action.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Verify enabled status",
+          "exact_action": "Confirm the charger status returns to enabled in Charger Selection.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the charger status does not change back to enabled after clicking Enable."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "page": 47,
+          "section_id": "training_video_day1_segment_0047",
+          "timestamp_start": "01:45:37.000",
+          "timestamp_end": "01:51:09.000",
+          "quote_or_summary": "Re-enable the charging location so RMS and WCS can again assign AGVs from the charging queue to that charger."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The selected charger status transitions to disabled after Disable is clicked.",
+    "The selected charger status transitions back to enabled after Enable is clicked.",
+    "After placing the low-power AGV on the disabled charger, the AGV picks up a task and proceeds via the described flow (to the hospital in that tote)."
+  ],
+  "healthy_conditions": [
+    "Charger Selection shows the selected charger as enabled/disabled accurately.",
+    "Disabled charger is used only for the manually placed AGV (RMS will not route other AGVs to that charging location).",
+    "After re-enable, RMS/WCS can again assign AGVs from the charging queue to that charger."
+  ],
+  "failure_conditions": [
+    "Charger status does not change to disabled after clicking Disable.",
+    "Charger status does not change back to enabled after clicking Enable.",
+    "AGV does not pick up a task after being placed on the disabled charging station."
+  ],
+  "escalation_guidance": [
+    "If charger status does not change as expected after Disable/Enable, stop and escalate.",
+    "If the AGV does not pick up a task after being placed on the disabled charger, stop and escalate."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000",
+      "what_to_look_at": "Charger Selection area showing charger selection by charger ID and the enabled/disabled concept used for logical allocation control."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "page": 47,
+      "section_id": "training_video_day1_segment_0047",
+      "timestamp_start": "01:45:37.000",
+      "timestamp_end": "01:51:09.000",
+      "quote_or_summary": "Charger Selection: click charger ID to view charger status (enabled/disabled) and associated robot; Disable logically disables allocation so RMS will not route AGVs to that charger; use it to manually place a low-power AGV for charging boost; then re-enable so RMS/WCS can assign AGVs from charging queue."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000",
+      "what_to_look_at": "Charger Selection area showing charger selection by charger ID and the enabled/disabled concept used for logical allocation control."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_rms_charger_selection_disable_enable_for_manual_charging"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The packet does not specify the exact UI label text for the Enable/Disable controls beyond the concepts “Disable” and “Enable” in Charger Selection details.",
+    "The packet does not provide a specific observable UI indicator for “AGV picked up a task” (e.g., which RMS field/status to watch)."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

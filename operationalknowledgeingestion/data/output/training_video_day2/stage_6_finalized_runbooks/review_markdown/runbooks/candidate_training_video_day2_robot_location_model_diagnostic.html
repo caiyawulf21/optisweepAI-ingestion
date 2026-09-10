@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Inspect Robot Location Attributes in the Robotics Database</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Inspect Robot Location Attributes in the Robotics Database</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_inspect_robot_location_attributes_in_the_robotics_database_v1</td></tr>
+<tr><th>Title</th><td>Inspect Robot Location Attributes in the Robotics Database</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>fleet_system_status, zone_config_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql, rms_ui</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>None</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>A read-only WCS / Helix DB (SSMS) diagnostic for inspecting Robot Location records in the OptiSweep Robotics database and comparing the record with the corresponding RMS / fleet status UI location cue. Review station number, occupied state, zone, closeout zone, location type, maximum AGVs allowed, and dwell-time tracking.</p>
+<h2>When To Use</h2>
+<p>Use this diagnostic when L2/L3 support needs to interpret a station or location in the live WCS / Helix DB (SSMS) and associate it with a location shown in the RMS / fleet status UI.</p>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the Robotics database in WCS / Helix DB (SSMS)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In WCS / Helix DB (SSMS), select the OptiSweep Robotics database. Use read-only inspection and do not edit or execute changes against database records.</p>
+<p><strong>Expected result:</strong></p>
+<p>The OptiSweep Robotics database is selected and available for inspection in WCS / Helix DB (SSMS).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop if the database cannot be accessed read-only.</li>
+<li>Escalate to L3_support if the Robotics database is unavailable or access cannot be established.</li>
+</ul>
+<hr>
+<h3>Step 2 — Locate the Robot Location record</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In WCS / Helix DB (SSMS), locate the Robot Location database model/table and inspect the record for the relevant station or location. Use the available station or location identity to select the record; do not infer an unprovided table path or SQL query.</p>
+<p><strong>Expected result:</strong></p>
+<p>A Robot Location record corresponding to the investigated station or location is present and readable.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L2/L3 support if the expected Robot Location record is missing.</li>
+<li>Escalate if the record cannot be associated with the investigated location.</li>
+</ul>
+<hr>
+<h3>Step 3 — Inspect Robot Location attributes</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In WCS / Helix DB (SSMS), inspect the Robot Location record fields for station number, occupied state, zone, closeout zone, location type, maximum number of AGVs allowed, and dwell-time tracking.</p>
+<p><strong>Expected result:</strong></p>
+<p>The live Robot Location record exposes readable values for station or location identity, occupied state, zone, closeout zone, location type, maximum AGVs allowed, and dwell-time tracking.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L2/L3 support if identifying fields are blank or inconsistent.</li>
+<li>Do not modify the record to correct a value during this diagnostic.</li>
+</ul>
+<hr>
+<h3>Step 4 — Compare the record with the RMS location cue</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the RMS / fleet status UI, locate the corresponding orange location or workstation ID and compare that live location cue with the station or location identity from the WCS / Helix DB (SSMS) Robot Location record. Use the RMS location cue for association; do not assume that color alone proves a field value.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Robot Location record can be associated with the corresponding RMS / fleet status UI location cue, including an orange location or visible workstation ID when present.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L2/L3 support if the database record cannot be associated with the RMS location.</li>
+<li>Escalate if the RMS cue and database identifying fields are inconsistent.</li>
+</ul>
+<hr>
+</body>
+</html>

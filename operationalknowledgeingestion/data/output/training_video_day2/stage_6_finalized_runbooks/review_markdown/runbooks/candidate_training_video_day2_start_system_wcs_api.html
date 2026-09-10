@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Start OptiSweep System Through the WCS API</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Start OptiSweep System Through the WCS API</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_start_optisweep_system_through_wcs_api_v1</td></tr>
+<tr><th>Title</th><td>Start OptiSweep System Through the WCS API</td></tr>
+<tr><th>Procedure Type</th><td>recovery</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>fleet_system_status</td></tr>
+<tr><th>Access Surface</th><td>wcs_api, apidog</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>None</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the OptiSweep / WCS API through Apidog or an equivalent approved API client to start the system from a shutdown state, then verify the live system state is no longer shutdown.</p>
+<h2>When To Use</h2>
+<p>Use the OptiSweep / WCS API when the live system state is shutdown and an authorized L2 or L3 support user needs to start the system through the System Startup operation.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/adfdc59640e17900.jpg" alt="artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500" /><figcaption>OptiSweep / WCS API list showing GET System State and POST System Startup in the System API operations.</figcaption></figure>
+<figure><img src="assets/8d1ae8b858eadecf.jpg" alt="artifact_training_video_training_video_day2_0028_so_we_have_open_all_shoots_primary_02_40_50_000" /><figcaption>System API list and live-operation descriptions showing System State and System Startup behavior.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Locate System Startup in the WCS API client</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the OptiSweep / WCS API in Apidog or an equivalent approved API client and locate POST System Startup in the System API list.</p>
+<p><strong>Expected result:</strong></p>
+<p>The System API list displays POST System Startup and GET System State.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The required API operation cannot be located or executed.</li>
+</ul>
+<hr>
+<h3>Step 2 — Confirm the system is shut down</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the OptiSweep / WCS API client, execute GET System State and inspect the returned current system state. Continue only when the returned state is shutdown.</p>
+<p><strong>Expected result:</strong></p>
+<p>GET System State returns shutdown as the current system state.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>GET System State does not report shutdown.</li>
+<li>GET System State cannot be executed or returns an unrecognized result.</li>
+</ul>
+<hr>
+<h3>Step 3 — Execute System Startup and recheck state</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>After confirming shutdown in the OptiSweep / WCS API, execute POST System Startup. Then execute GET System State again and inspect the returned state.</p>
+<p><strong>Expected result:</strong></p>
+<p>The startup request completes and the subsequent GET System State response returns the current post-startup state.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The System Startup request cannot be executed.</li>
+<li>The API returns an unrecognized result.</li>
+<li>The subsequent system state remains shutdown.</li>
+</ul>
+<hr>
+<h3>Step 4 — Verify the system left shutdown</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Compare the second GET System State result with the initial shutdown result in the OptiSweep / WCS API client.</p>
+<p><strong>Expected result:</strong></p>
+<p>The second GET System State result no longer reports shutdown, indicating that the system left the shutdown state.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The system state does not change after the startup request.</li>
+<li>The returned state is unrecognized.</li>
+</ul>
+<hr>
+</body>
+</html>

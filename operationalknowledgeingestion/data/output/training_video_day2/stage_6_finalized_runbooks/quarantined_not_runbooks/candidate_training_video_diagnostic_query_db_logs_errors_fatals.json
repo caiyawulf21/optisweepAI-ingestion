@@ -1,0 +1,259 @@
+{
+  "procedure_id": "proc_query_db_logs_errors_fatals_v1",
+  "candidate_id": "candidate_training_video_diagnostic_query_db_logs_errors_fatals",
+  "title": "Query DB logs for errors/fatals using database scripts (select top 100 + filter) to support troubleshooting",
+  "procedure_type": "diagnostic",
+  "summary": "Use database-resident logs and database scripts to retrieve recent log entries limited to “errors and fatals only,” then use the resulting records as evidence for support diagnosis and subsequent troubleshooting/resolution steps.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "windows_service_or_event_log",
+    "wcs_api_responsiveness"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need evidence from database-resident server logs to identify relevant error/fatal patterns for troubleshooting and support handoff.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Runs the database-resident log query/script approach to retrieve recent “errors and fatals only” entries and provides the resulting records as evidence for diagnosis."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Database scripts used for support",
+    "DB logs in the DB database (as referenced by the source)",
+    "Server log view that shows “right click logs” (as referenced by the source)"
+  ],
+  "prerequisites": {
+    "access_required": [],
+    "system_preconditions": [
+      "Database-resident logs are available in the DB database referenced by the support workflow."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_support_database_logs_v1",
+    "ctx_training_video_server_logs_errors_fatals_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Use the database scripts and server log view to inspect DB logs for support",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish the correct log source (server “right click logs” backed by DB logs) and the script-based approach for support troubleshooting.",
+      "instruction": "Using the database scripts referenced by the support workflow, open/locate the server log view described as “right click logs,” where the logs are stored in the DB database.",
+      "expected_result": "You have access to a server log view backed by DB logs that can be queried/filtered for support troubleshooting.",
+      "healthy_condition": "The log view you are using is the one described as “right click logs” and is associated with DB logs in the DB database.",
+      "failure_condition": "You are viewing a log source that is not the server “right click logs” view or is not tied to the DB database logs.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open server log view (right click logs) tied to DB logs",
+          "exact_action": "Use the “right click logs” on the server, where the logs are in the DB logs in the DB database we have.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Limit results to recent entries using a “select top 100” query pattern",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Reduce the query scope to recent log entries to make troubleshooting evidence manageable and relevant.",
+      "instruction": "Run the database query pattern described as “select top 100 and filter if I want something” to limit results to recent entries.",
+      "expected_result": "A result set/list of log records is returned with a “top 100” style limit (recent entries).",
+      "healthy_condition": "The query returns a bounded list of recent records (top 100) rather than an unbounded/full log history.",
+      "failure_condition": "The query returns too many records (not limited to a “top 100” style subset) or does not return a recent-entry list.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Run “select top 100” query pattern",
+          "exact_action": "“I mean I just select top 100 and filter if I want something.”",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Apply filtering to narrow results to relevant entries",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Narrow the recent log results to the relevant subset needed for diagnosis.",
+      "instruction": "Apply the described filter step (“filter if I want something”) to narrow the “top 100” results to the relevant entries you are investigating.",
+      "expected_result": "The result set is narrowed to only the entries matching your chosen filter criteria.",
+      "healthy_condition": "The filtered result set contains fewer, more relevant log records than the initial “top 100” list.",
+      "failure_condition": "Filtering is not applied (results remain unfiltered) or filtering produces an empty/irrelevant set when you expect matches.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Filter the “top 100” results",
+          "exact_action": "“filter if I want something.”",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Confirm the log view is restricted to “errors and fatals only”",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure the evidence set contains only the intended severity levels for the troubleshooting workflow.",
+      "instruction": "Verify that the log output you are using is restricted to “errors and fatals only,” consistent with the described server log view behavior.",
+      "expected_result": "The displayed/returned log records are limited to errors and fatals only.",
+      "healthy_condition": "No non-error/non-fatal log activity appears in the result set you are using for diagnosis.",
+      "failure_condition": "The log output includes broader log activity beyond “errors and fatals only.”",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify severity restriction",
+          "exact_action": "Confirm “Those are like right? Those are errors and fatals only.”",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the logs are not restricted to errors/fatals, adjust the query/filter so only errors and fatals are shown."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Use the resulting error/fatal records as evidence for diagnosis and next steps",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Convert the retrieved error/fatal records into actionable evidence for support diagnosis and resolution steps.",
+      "instruction": "Use the filtered error/fatal records returned from the DB logs as the evidence set to match against the expected error type/patterns and to support subsequent diagnosis and resolution steps.",
+      "expected_result": "You have a filtered list of recent error/fatal log entries that can be used as evidence for the troubleshooting workflow.",
+      "healthy_condition": "The evidence set consists of recent entries limited to errors/fatals and is suitable for identifying the relevant expected error type/pattern.",
+      "failure_condition": "No relevant error/fatal records appear for the issue you are investigating.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Collect evidence from filtered records",
+          "exact_action": "Use the “errors and fatals only” DB log records as evidence for support diagnosis and resolution steps.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If no relevant error/fatal records appear, stop and escalate to the support handoff/RCA process described in the source."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "A filtered list of recent DB log entries is produced that is restricted to “errors and fatals only.”",
+    "The resulting records are usable as evidence for matching an expected error type/pattern and supporting subsequent diagnosis/resolution steps."
+  ],
+  "healthy_conditions": [
+    "The log output used for troubleshooting contains only errors and fatals (not all log activity).",
+    "The query is limited to recent entries (described as “select top 100”)."
+  ],
+  "failure_conditions": [
+    "The log output includes non-error/non-fatal activity (not restricted to “errors and fatals only”).",
+    "No relevant error/fatal records appear for the investigation, requiring escalation."
+  ],
+  "escalation_guidance": [
+    "If no relevant error/fatal records appear, stop and escalate to the support handoff/RCA process described in the source."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "timestamp_start": "03:20:42.000",
+      "timestamp_end": "03:23:50.000",
+      "start_time_seconds": 12042.0,
+      "end_time_seconds": 12230.0,
+      "segment_id": "training_video_0056",
+      "site_code": "",
+      "site_label": "",
+      "artifact_id": "artifact_training_video_training_video_day2_0056_so_just_as_they_you_will_primary_03_22_16_000"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_training_video_diagnostic_query_db_logs_errors_fatals"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide explicit DB name, table name, or exact SQL/script text beyond the pattern “select top 100 and filter.”",
+    "The packet does not provide the exact UI steps/controls for the “right click logs” server view (only that it exists and is used).",
+    "The packet does not specify the exact filter criteria/fields used to narrow results beyond the general “filter if I want something” guidance."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source",
+    "missing verified live access surface in title/steps/tools"
+  ]
+}

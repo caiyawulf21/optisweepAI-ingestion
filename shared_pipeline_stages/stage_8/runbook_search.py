@@ -11,10 +11,13 @@ from shared_pipeline_stages.stage_8.link_scoring import (
     anchor_overlap,
     boost_combined_score,
     build_retrieval_query_text,
+    capability_overlap_adjustment,
+    surface_hint_adjustment,
     canonical_source_adjustment,
     normalize_placeholder_text,
     procedure_type_boost,
     runbook_match_text,
+    USE_CAPABILITY_TAG_CONSTRAINTS,
 )
 from shared_pipeline_stages.stage_8.normalize import procedure_type_compatible
 from shared_pipeline_stages.stage_8.schemas import RunbookSearchMatch
@@ -138,14 +141,49 @@ class RunbookCatalogSearch:
         affected_systems: list[str] | None = None,
     ) -> list[RunbookSearchMatch]:
         query_text = build_retrieval_query_text(node, affected_systems=affected_systems)
-        return self.search(
+        matches = self.search(
             query_text,
             query_vector=query_vector,
-            top_k=top_k,
+            top_k=max(top_k * 2, top_k),
             min_score=min_score,
             case_id=case_id,
             node_type=str(node.get("node_type") or ""),
         )
+        rescored: list[RunbookSearchMatch] = []
+        for match in matches:
+            runbook = self.runbooks_by_id.get(match.procedure_id)
+            card = next((item for item in self.cards if item.finalized_runbook_id == match.procedure_id), None)
+            tagged = dict(runbook or {})
+            if card is not None:
+                if not tagged.get("capability_tags"):
+                    tagged["capability_tags"] = list(card.capability_tags)
+                if not tagged.get("access_surface"):
+                    tagged["access_surface"] = list(card.access_surface)
+                if not tagged.get("audience_roles"):
+                    tagged["audience_roles"] = list(card.audience_roles)
+                if not tagged.get("role_required") and card.role_required:
+                    tagged["role_required"] = card.role_required
+            adjustment = (
+                capability_overlap_adjustment(node, tagged)
+                if USE_CAPABILITY_TAG_CONSTRAINTS
+                else surface_hint_adjustment(node, tagged)
+            )
+            adjusted = round(min(max(match.combined_score + adjustment, 0.0), 1.0), 4)
+            rescored.append(
+                RunbookSearchMatch(
+                    procedure_id=match.procedure_id,
+                    title=match.title,
+                    procedure_type=match.procedure_type,
+                    cosine_score=match.cosine_score,
+                    jaccard_score=match.jaccard_score,
+                    combined_score=adjusted,
+                    preferred_incident_source=match.preferred_incident_source,
+                    source_type=match.source_type,
+                    source_id=match.source_id,
+                )
+            )
+        rescored.sort(key=lambda item: (-item.combined_score, item.procedure_id))
+        return self._apply_incident_preference(rescored[:top_k], case_id)
 
     def _apply_incident_preference(
         self,

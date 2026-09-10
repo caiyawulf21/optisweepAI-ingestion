@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Verify OptiSweep/WCS Windows service health when RMS/logs appear silent</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Verify OptiSweep/WCS Windows service health when RMS/logs appear silent</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_verify_optsweep_wcs_windows_service_health_v1</td></tr>
+<tr><th>Title</th><td>Verify OptiSweep/WCS Windows service health when RMS/logs appear silent</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>wcs_service_health</td></tr>
+<tr><th>Access Surface</th><td>event_viewer</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>service_crash_or_restart</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>When the system appears to have a crash/restart period and logs may be silent, verify whether the relevant OptiSweep/WCS Windows service(s) are actually Running vs Stopped in the Windows Services MMC. Use the service state as the primary observable when log activity is missing.</p>
+<h2>When To Use</h2>
+<p>Use when RMS and/or other log-based signals appear silent during a suspected OptiSweep/WCS crash/restart window, and you need host-level evidence that the service is Running vs Stopped.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/0f6cee71bf142dce.jpg" alt="artifact_training_video_training_video_day2_0044_probably_understand_this_so_if_the_primary_03_07_17_500" /><figcaption>Training frame showing the segment discussion that during a crash the service must stop and logs may be silent; it also mentions checking Windows Services and that there are about 10 services.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open Windows Services MMC on the OptiSweep/WCS host</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the OptiSweep/WCS host, open the Windows Services MMC / Windows Services view (the Services list).</p>
+<p><strong>Expected result:</strong></p>
+<p>The Services list is visible with a Status column that can show Running vs Stopped for services.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>You cannot access the Windows Services MMC on the OptiSweep/WCS host</li>
+</ul>
+<hr>
+<h3>Step 2 — Locate OptiSweep/WCS-related service(s) and check Running vs Stopped</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Services list, locate the OptiSweep/WCS-related service(s) (the segment notes there are about 10 services) and check the Status column for Running vs Stopped.</p>
+<p><strong>Expected result:</strong></p>
+<p>You identify the relevant OptiSweep/WCS-related service(s) and observe their Status as Running or Stopped.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>You cannot identify the relevant OptiSweep/WCS service(s) in the Services list</li>
+<li>The Services view does not show clear Running/Stopped status</li>
+</ul>
+<hr>
+<h3>Step 3 — Interpret Stopped/restarting service state as evidence consistent with the silent crash window</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the relevant OptiSweep/WCS service(s) are Stopped (or show restart behavior), treat that as evidence consistent with the segment’s “service must stop” / “service was just like … gone” period during the suspected crash window.</p>
+<p><strong>Expected result:</strong></p>
+<p>Your conclusion matches the observed Status: Stopped/restarting supports the suspected crash/restart period; Running supports normal operation.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>You cannot map which of the ~10 services corresponds to the affected component</li>
+</ul>
+<hr>
+<h3>Step 4 — Stop and escalate when service identification/status is unclear</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If you cannot identify the relevant OptiSweep/WCS service(s) in the Services list, or if the Services view does not show clear Running/Stopped status, stop and escalate.</p>
+<p><strong>Expected result:</strong></p>
+<p>Escalation is initiated with the evidence that the relevant service(s) could not be identified or status was unclear.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Cannot identify the relevant OptiSweep/WCS service(s) among the ~10 services</li>
+<li>Services view does not show clear Running/Stopped status</li>
+</ul>
+<hr>
+</body>
+</html>

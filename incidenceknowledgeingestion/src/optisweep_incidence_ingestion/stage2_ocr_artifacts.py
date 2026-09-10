@@ -17,6 +17,7 @@ import os
 import re
 
 from optisweep_incidence_ingestion.ocr import (
+    AzureComputerVisionOCRClient,
     TesseractOCRClient,
     normalize_ocr_text,
     normalize_whitespace,
@@ -25,6 +26,7 @@ from optisweep_incidence_ingestion.ocr import (
 from optisweep_incidence_ingestion.services.ids import make_artifact_id
 from optisweep_incidence_ingestion.stage1_source_package import build_incident_source_ref
 from optisweep_incidence_ingestion.utils.json_utils import read_json, write_json
+from shared_pipeline_stages.azure_computer_vision import AzureComputerVisionDescriptionClient
 
 
 @dataclass(frozen=True)
@@ -43,22 +45,49 @@ class ArtifactGateDecision:
     raw_response: str | None = None
 
 
-class QwenArtifactGate:
-    """Optional local Qwen VLM gate for Stage 2 candidate artifact images."""
+class AzureComputerVisionArtifactGate:
+    """Stage 2 candidate artifact gate driven by Azure Computer Vision Image
+    Analysis (caption, tags, objects) instead of a local vision-language
+    model. Company policy requires Azure Computer Vision to be the only
+    vision model used anywhere in this repository, so this gate scores
+    Azure CV's structured signals with a deterministic rule engine rather
+    than asking a model to make the keep/suppress judgment directly."""
 
-    def __init__(
-        self,
-        model_name: str = "Qwen/Qwen2.5-VL-3B-Instruct",
-        device: str | None = None,
-        max_new_tokens: int = 180,
-        local_files_only: bool = False,
-    ) -> None:
-        self.model_name = model_name
-        self.device = device
-        self.max_new_tokens = max_new_tokens
-        self.local_files_only = local_files_only
-        self._model: Any | None = None
-        self._processor: Any | None = None
+    gate_name = "azure_cv"
+
+    NOISE_TAGS = {
+        "text",
+        "screenshot",
+        "web page",
+        "website",
+        "software",
+        "graphics",
+        "font",
+        "document",
+        "line",
+        "multimedia",
+        "electronics",
+        "display",
+    }
+    EVIDENCE_TAGS = {
+        "screenshot",
+        "computer",
+        "monitor",
+        "diagram",
+        "table",
+        "chart",
+        "graph",
+        "control panel",
+        "engineering",
+        "control room",
+        "machine",
+    }
+
+    def __init__(self, vision_client: Any | None = None, min_confidence: float = 0.55) -> None:
+        self.vision_client = vision_client or AzureComputerVisionDescriptionClient(
+            features=("caption", "tags", "objects"),
+        )
+        self.min_confidence = min_confidence
 
     def decide(
         self,
@@ -69,72 +98,79 @@ class QwenArtifactGate:
         ocr: dict[str, Any],
         parent_ocr: dict[str, Any] | None = None,
     ) -> ArtifactGateDecision:
-        self._ensure_loaded()
-        assert self._model is not None
-        assert self._processor is not None
         try:
-            from PIL import Image  # type: ignore
-        except ImportError as exc:
-            raise RuntimeError("Pillow is required for --stage2-artifact-gate qwen.") from exc
-
-        image = Image.open(image_path).convert("RGB")
-        prompt = _qwen_gate_prompt(candidate_kind=candidate_kind, page_number=page_number, ocr=ocr, parent_ocr=parent_ocr)
-        messages = [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "image", "image": image},
-                    {"type": "text", "text": prompt},
-                ],
-            }
-        ]
-        text = self._processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        inputs = self._processor(text=[text], images=[image], return_tensors="pt")
-        if self.device:
-            inputs = inputs.to(self.device)
-        generated = self._model.generate(**inputs, max_new_tokens=self.max_new_tokens)
-        generated_trimmed = generated[:, inputs.input_ids.shape[1] :]
-        response = self._processor.batch_decode(generated_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
-        return _parse_gate_response(response)
-
-    def _ensure_loaded(self) -> None:
-        if self._model is not None and self._processor is not None:
-            return
-        try:
-            from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration  # type: ignore
-            import torch  # type: ignore
-        except ImportError as exc:
-            raise RuntimeError(
-                "Qwen Stage 2 gate requires transformers, torch, and Pillow. "
-                "Install them and download the selected Qwen2.5-VL model before using --stage2-artifact-gate qwen."
-            ) from exc
-        dtype = torch.float16 if torch.cuda.is_available() else torch.float32
-        previous_offline = os.environ.get("HF_HUB_OFFLINE")
-        if self.local_files_only:
-            os.environ["HF_HUB_OFFLINE"] = "1"
-        try:
-            self._processor = AutoProcessor.from_pretrained(self.model_name, local_files_only=self.local_files_only)
-            self._model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-                self.model_name,
-                torch_dtype=dtype,
-                device_map="auto" if self.device is None else None,
-                local_files_only=self.local_files_only,
+            description = self.vision_client.describe(image_path)
+        except Exception as exc:  # noqa: BLE001
+            return ArtifactGateDecision(
+                keep=True,
+                category="gate_unavailable",
+                confidence=None,
+                reason=f"Azure Computer Vision gate call failed; defaulting to keep. ({exc})",
+                raw_response=None,
             )
-        except Exception as exc:
-            if self.local_files_only:
-                raise RuntimeError(
-                    f"Qwen model '{self.model_name}' is not available in the local Hugging Face cache. "
-                    "Download/cache it first or run without --stage2-qwen-local-files-only."
-                ) from exc
-            raise
-        finally:
-            if self.local_files_only:
-                if previous_offline is None:
-                    os.environ.pop("HF_HUB_OFFLINE", None)
-                else:
-                    os.environ["HF_HUB_OFFLINE"] = previous_offline
-        if self.device:
-            self._model.to(self.device)
+        return _score_azure_cv_gate_decision(
+            description=description,
+            candidate_kind=candidate_kind,
+            ocr=ocr,
+            parent_ocr=parent_ocr,
+            min_confidence=self.min_confidence,
+        )
+
+
+def _score_azure_cv_gate_decision(
+    *,
+    description: Any,
+    candidate_kind: str,
+    ocr: dict[str, Any],
+    parent_ocr: dict[str, Any] | None,
+    min_confidence: float,
+) -> ArtifactGateDecision:
+    tag_names = {tag.name.strip().lower() for tag in description.tags if tag.name}
+    object_names = {obj.name.strip().lower() for obj in description.objects if obj.name}
+    caption_text = (description.caption_text or "").strip().lower()
+
+    evidence_terms = {
+        term
+        for term in AzureComputerVisionArtifactGate.EVIDENCE_TAGS
+        if term in tag_names or term in object_names or term in caption_text
+    }
+    raw_response = json.dumps(description.raw_response) if description.raw_response else None
+
+    if evidence_terms:
+        return ArtifactGateDecision(
+            keep=True,
+            category="attached_evidence_image",
+            confidence=description.caption_confidence,
+            reason=f"Azure Computer Vision detected evidence-like signal: {', '.join(sorted(evidence_terms))}.",
+            raw_response=raw_response,
+        )
+
+    word_count = int(ocr.get("word_count") or 0)
+    if word_count >= 30:
+        return ArtifactGateDecision(
+            keep=False,
+            category="plain_text_update",
+            confidence=min_confidence,
+            reason="High OCR word count with no evidence-like Azure Computer Vision signal.",
+            raw_response=raw_response,
+        )
+
+    if not tag_names and not object_names and not caption_text:
+        return ArtifactGateDecision(
+            keep=False,
+            category="not_evidence",
+            confidence=min_confidence,
+            reason="Azure Computer Vision returned no caption, tags, or objects for this image.",
+            raw_response=raw_response,
+        )
+
+    return ArtifactGateDecision(
+        keep=True,
+        category="ambiguous_default_keep",
+        confidence=None,
+        reason="No strong suppress signal from Azure Computer Vision; keeping by default.",
+        raw_response=raw_response,
+    )
 
 
 def prepare_generated_image_dir(path: Path) -> None:
@@ -143,57 +179,6 @@ def prepare_generated_image_dir(path: Path) -> None:
     for child in path.iterdir():
         if child.is_file():
             child.unlink()
-
-
-def _qwen_gate_prompt(
-    *,
-    candidate_kind: str,
-    page_number: int,
-    ocr: dict[str, Any],
-    parent_ocr: dict[str, Any] | None,
-) -> str:
-    candidate_text = normalize_whitespace(ocr.get("clean_text") or ocr.get("text") or "")[:900]
-    parent_text = normalize_whitespace((parent_ocr or {}).get("clean_text") or (parent_ocr or {}).get("text") or "")[:900]
-    return f"""You are filtering incident evidence image candidates for a reusable ingestion pipeline.
-
-Decide whether the shown image should become a source artifact.
-
-Keep only attached operational evidence images such as application screenshots, dashboards, forms, tables, logs, error panels, command windows, photos, or diagrams.
-Reject outer feed/wrapper UI, plain text updates, status/timeline entries, email/chat text, partial fragments, duplicate-looking crops, and crops that are only surrounding context.
-
-Judge primarily from the visible pixels, not from OCR quality. Keep the candidate if the image visibly contains an attached screenshot, table, application window, form, dashboard, or operational panel, even when it also includes a short caption, actor/timestamp text, or surrounding feed chrome. Reject only when the candidate is mainly text feed/status/comment UI with no substantive embedded visual evidence.
-The parent/wrapper OCR is context only; do not reject a visible attached screenshot just because the parent OCR is a case feed or chat feed.
-
-Return only compact JSON with:
-{{"keep": true|false, "category": "attached_evidence_image|outer_wrapper_text|plain_text_update|partial_or_duplicate_crop|not_evidence", "confidence": 0.0-1.0, "reason": "short reason"}}
-
-Candidate kind: {candidate_kind}
-Source page: {page_number}
-Candidate OCR: {candidate_text or "[none]"}
-Parent/wrapper OCR excerpt: {parent_text or "[none]"}
-"""
-
-
-def _parse_gate_response(response: str) -> ArtifactGateDecision:
-    match = re.search(r"\{.*\}", response, flags=re.DOTALL)
-    payload_text = match.group(0) if match else response
-    try:
-        payload = json.loads(payload_text)
-    except json.JSONDecodeError:
-        return ArtifactGateDecision(
-            keep=False,
-            category="unparseable_gate_response",
-            confidence=None,
-            reason="Qwen response was not valid JSON.",
-            raw_response=response,
-        )
-    return ArtifactGateDecision(
-        keep=bool(payload.get("keep")),
-        category=str(payload.get("category") or "unknown"),
-        confidence=float(payload["confidence"]) if isinstance(payload.get("confidence"), int | float) else None,
-        reason=str(payload.get("reason") or ""),
-        raw_response=response,
-    )
 
 
 def _apply_artifact_gate(
@@ -216,11 +201,11 @@ def _apply_artifact_gate(
     )
 
 
-def _gate_metadata(decision: ArtifactGateDecision | None) -> dict[str, Any]:
+def _gate_metadata(decision: ArtifactGateDecision | None, gate_name: str = "azure_cv") -> dict[str, Any]:
     if decision is None:
         return {"artifact_gate": "none"}
     return {
-        "artifact_gate": "qwen",
+        "artifact_gate": gate_name,
         "artifact_gate_decision": {
             "keep": decision.keep,
             "category": decision.category,
@@ -293,6 +278,7 @@ def extract_incident_ocr_artifacts(
                     source_title=package["source_title"],
                     ingestion_batch_id=package["ingestion_batch_id"],
                     case_id=package["source_case_id"],
+                    site_location=package.get("site_location"),
                     page_number=page_number,
                     quote_or_summary=_source_summary_from_ocr(page_ocr["text"]),
                 )
@@ -311,12 +297,42 @@ def extract_incident_ocr_artifacts(
             artifacts.extend(embedded_artifacts)
             warnings.extend(embedded_warnings)
 
+            rendered_nested_artifacts: list[dict[str, Any]] = []
+            if not embedded_artifacts and is_likely_evidence_wrapper(page_ocr):
+                rendered_nested_artifacts = extract_nested_media_artifacts(
+                    wrapper_image_path=page_image_path,
+                    page_number=page_number,
+                    package=package,
+                    embedded_dir=embedded_dir,
+                    ocr_client=ocr_client,
+                    image_hashes=image_hashes,
+                    warnings=warnings,
+                    parent_image_index=0,
+                    parent_ocr=page_ocr,
+                    artifact_gate=artifact_gate,
+                )
+                if rendered_nested_artifacts:
+                    artifacts.extend(rendered_nested_artifacts)
+                    warnings.append(
+                        f"Promoted nested media from rendered page {page_number} after embedded wrapper yielded no crops."
+                    )
+
             crop_artifacts: list[dict[str, Any]] = []
+            page_has_promoted_visuals = bool(embedded_artifacts or rendered_nested_artifacts)
+            wrapper_without_nested = (
+                not page_has_promoted_visuals
+                and bool(page_image_infos)
+                and is_likely_evidence_wrapper(page_ocr)
+            )
             should_try_fallback_crops = (
-                not embedded_artifacts
-                and not page_image_infos
-                and page_type != "unknown_incident_evidence"
+                not page_has_promoted_visuals
                 and page_ocr["word_count"] >= 20
+                and (
+                    include_detected_crops
+                    or not page_image_infos
+                    or wrapper_without_nested
+                )
+                and (include_detected_crops or page_type != "unknown_incident_evidence" or wrapper_without_nested)
             )
             if include_detected_crops or should_try_fallback_crops:
                 crop_artifacts = extract_crop_artifacts(
@@ -346,7 +362,10 @@ def extract_incident_ocr_artifacts(
                     "ocr_lines": page_ocr.get("lines") or [],
                     "ocr_attempts": page_ocr.get("attempts") or [],
                     "detected_page_type": page_type,
-                    "embedded_artifact_ids": [artifact["artifact_id"] for artifact in embedded_artifacts],
+                    "embedded_artifact_ids": [
+                        artifact["artifact_id"]
+                        for artifact in (embedded_artifacts + rendered_nested_artifacts)
+                    ],
                     "crop_artifact_ids": [artifact["artifact_id"] for artifact in crop_artifacts],
                     "reviewable_text_artifact_ids": [],
                     "stage2_status": "ocr_complete",
@@ -421,7 +440,7 @@ def extract_embedded_image_artifacts(
     page_number: int,
     package: dict[str, Any],
     embedded_dir: Path,
-    ocr_client: TesseractOCRClient | None,
+    ocr_client: TesseractOCRClient | AzureComputerVisionOCRClient | None,
     image_hashes: dict[str, ImageHash],
     artifact_gate: Any | None = None,
 ) -> tuple[list[dict[str, Any]], list[str]]:
@@ -477,7 +496,7 @@ def extract_embedded_image_artifacts(
         )
         if _gate_should_suppress(gate_decision, visual_candidate=False):
             warnings.append(
-                f"Qwen artifact gate suppressed embedded image on page {page_number}: {gate_decision.category} - {gate_decision.reason}"
+                f"Azure Computer Vision artifact gate suppressed embedded image on page {page_number}: {gate_decision.category} - {gate_decision.reason}"
             )
             file_path.unlink(missing_ok=True)
             continue
@@ -488,6 +507,7 @@ def extract_embedded_image_artifacts(
                 source_title=package["source_title"],
                 ingestion_batch_id=package["ingestion_batch_id"],
                 case_id=package["source_case_id"],
+                site_location=package.get("site_location"),
                 page_number=page_number,
                 artifact_id=artifact_id,
                 quote_or_summary=_source_summary_from_ocr(ocr["text"]),
@@ -512,7 +532,7 @@ def extract_embedded_image_artifacts(
                     "height": height,
                     "file_size_bytes": len(data),
                     "promotion_reason": _promotion_reason(ocr["text"], image_type),
-                    **_gate_metadata(gate_decision),
+                    **_gate_metadata(gate_decision, getattr(artifact_gate, "gate_name", "azure_cv")),
                 },
             )
         )
@@ -525,7 +545,7 @@ def extract_nested_media_artifacts(
     page_number: int,
     package: dict[str, Any],
     embedded_dir: Path,
-    ocr_client: TesseractOCRClient | None,
+    ocr_client: TesseractOCRClient | AzureComputerVisionOCRClient | None,
     image_hashes: dict[str, ImageHash],
     warnings: list[str],
     parent_image_index: int,
@@ -640,7 +660,7 @@ def extract_nested_media_artifacts(
                 )
                 if _gate_should_suppress(gate_decision, visual_candidate=True):
                     warnings.append(
-                        f"Qwen artifact gate suppressed nested tile on page {page_number}: {gate_decision.category} - {gate_decision.reason}"
+                        f"Azure Computer Vision artifact gate suppressed nested tile on page {page_number}: {gate_decision.category} - {gate_decision.reason}"
                     )
                     tile_output_path.unlink(missing_ok=True)
                     continue
@@ -651,6 +671,7 @@ def extract_nested_media_artifacts(
                         source_title=package["source_title"],
                         ingestion_batch_id=package["ingestion_batch_id"],
                         case_id=package["source_case_id"],
+                        site_location=package.get("site_location"),
                         page_number=page_number,
                         artifact_id=tile_artifact_id,
                         quote_or_summary=_source_summary_from_ocr(tile_ocr["text"]),
@@ -689,7 +710,7 @@ def extract_nested_media_artifacts(
                             },
                             "area_ratio": round(((abs_right - abs_left) * (abs_bottom - abs_top)) / image_area, 4),
                             "promotion_reason": "Promoted thumbnail image from Teams/chat text strip; surrounding chat OCR remains in page_inventory.",
-                            **_gate_metadata(gate_decision),
+                            **_gate_metadata(gate_decision, getattr(artifact_gate, "gate_name", "azure_cv")),
                         },
                     )
                 )
@@ -711,7 +732,7 @@ def extract_nested_media_artifacts(
         )
         if _gate_should_suppress(gate_decision, visual_candidate=True):
             warnings.append(
-                f"Qwen artifact gate suppressed nested image on page {page_number}: {gate_decision.category} - {gate_decision.reason}"
+                f"Azure Computer Vision artifact gate suppressed nested image on page {page_number}: {gate_decision.category} - {gate_decision.reason}"
             )
             output_path.unlink(missing_ok=True)
             continue
@@ -723,6 +744,7 @@ def extract_nested_media_artifacts(
                 source_title=package["source_title"],
                 ingestion_batch_id=package["ingestion_batch_id"],
                 case_id=package["source_case_id"],
+                site_location=package.get("site_location"),
                 page_number=page_number,
                 artifact_id=artifact_id,
                 quote_or_summary=_source_summary_from_ocr(ocr["text"]),
@@ -757,7 +779,7 @@ def extract_nested_media_artifacts(
                         if visual_screenshot
                         else "Promoted nested image from Teams/chat wrapper; wrapper image suppressed from source_artifacts."
                     ),
-                    **_gate_metadata(gate_decision),
+                    **_gate_metadata(gate_decision, getattr(artifact_gate, "gate_name", "azure_cv")),
                 },
             )
         )
@@ -770,7 +792,7 @@ def extract_crop_artifacts(
     page_number: int,
     package: dict[str, Any],
     crops_dir: Path,
-    ocr_client: TesseractOCRClient | None,
+    ocr_client: TesseractOCRClient | AzureComputerVisionOCRClient | None,
     image_hashes: dict[str, ImageHash],
     min_crop_area_ratio: float,
     artifact_gate: Any | None = None,
@@ -834,7 +856,7 @@ def extract_crop_artifacts(
         )
         if _gate_should_suppress(gate_decision, visual_candidate=False):
             warnings.append(
-                f"Qwen artifact gate suppressed detected crop on page {page_number}: {gate_decision.category} - {gate_decision.reason}"
+                f"Azure Computer Vision artifact gate suppressed detected crop on page {page_number}: {gate_decision.category} - {gate_decision.reason}"
             )
             file_path.unlink(missing_ok=True)
             continue
@@ -845,6 +867,7 @@ def extract_crop_artifacts(
                 source_title=package["source_title"],
                 ingestion_batch_id=package["ingestion_batch_id"],
                 case_id=package["source_case_id"],
+                site_location=package.get("site_location"),
                 page_number=page_number,
                 artifact_id=artifact_id,
                 quote_or_summary=_source_summary_from_ocr(ocr["text"]),
@@ -866,7 +889,7 @@ def extract_crop_artifacts(
                     "crop_box": {"left": left, "top": top, "right": right, "bottom": bottom, "width": right - left, "height": bottom - top},
                     "area_ratio": round(area_ratio, 4),
                     "promotion_reason": _promotion_reason(ocr["text"], image_type),
-                    **_gate_metadata(gate_decision),
+                    **_gate_metadata(gate_decision, getattr(artifact_gate, "gate_name", "azure_cv")),
                 },
             )
         )
@@ -1168,24 +1191,24 @@ def is_likely_evidence_wrapper(ocr: dict[str, Any]) -> bool:
 
 def looks_like_nested_screenshot(crop: Any, cv2: Any) -> bool:
     height, width = crop.shape[:2]
-    if width < 160 or height < 90:
+    if width < 140 or height < 80:
         return False
     aspect_ratio = width / max(height, 1)
-    if aspect_ratio < 1.35 or aspect_ratio > 8:
+    if aspect_ratio < 0.85 or aspect_ratio > 8:
         return False
     gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
     non_white_ratio = float((gray < 245).sum()) / float(width * height)
-    if non_white_ratio < 0.18 or non_white_ratio > 0.75:
+    if non_white_ratio < 0.12 or non_white_ratio > 0.92:
         return False
     edges = cv2.Canny(gray, 50, 150)
     edge_ratio = float((edges > 0).sum()) / float(width * height)
-    if edge_ratio < 0.01:
+    if edge_ratio < 0.008:
         return False
     dark_ratio = float((gray < 80).sum()) / float(width * height)
     blue_channel = crop[:, :, 0]
     red_channel = crop[:, :, 2]
     blue_ui_ratio = float(((blue_channel > red_channel + 15) & (blue_channel > 100)).sum()) / float(width * height)
-    return dark_ratio > 0.003 or blue_ui_ratio > 0.01
+    return dark_ratio > 0.002 or blue_ui_ratio > 0.008 or edge_ratio > 0.02
 
 def _timestamp_like_count(text: str) -> int:
     patterns = [
@@ -1545,13 +1568,17 @@ def build_missing_evidence_report(page_inventory: list[dict[str, Any]], artifact
     }
 
 
-def _build_ocr_client(ocr_backend: str, tesseract_command: str | None) -> TesseractOCRClient | None:
+def _build_ocr_client(
+    ocr_backend: str, tesseract_command: str | None
+) -> TesseractOCRClient | AzureComputerVisionOCRClient | None:
     backend = (ocr_backend or "none").strip().lower()
     if backend == "none":
         return None
     if backend == "tesseract":
         return TesseractOCRClient(command=tesseract_command)
-    raise ValueError("Unsupported OCR backend. Use 'none' or 'tesseract'.")
+    if backend == "azure_cv":
+        return AzureComputerVisionOCRClient()
+    raise ValueError("Unsupported OCR backend. Use 'none', 'tesseract', or 'azure_cv'.")
 
 
 def _ocr_preprocess_variants(image_path: Path) -> list[dict[str, Any]]:
@@ -1704,7 +1731,7 @@ def _clean_ocr_text(text: str) -> str:
 
 
 def _run_ocr_attempt(
-    ocr_client: TesseractOCRClient,
+    ocr_client: TesseractOCRClient | AzureComputerVisionOCRClient,
     image_path: Path,
     *,
     variant: str,
@@ -1767,7 +1794,7 @@ def _finalize_ocr_result(best: dict[str, Any], attempts: list[dict[str, Any]], i
 
 
 def _ocr_image(
-    ocr_client: TesseractOCRClient | None,
+    ocr_client: TesseractOCRClient | AzureComputerVisionOCRClient | None,
     image_path: Path,
     warnings: list[str],
     page_number: int,

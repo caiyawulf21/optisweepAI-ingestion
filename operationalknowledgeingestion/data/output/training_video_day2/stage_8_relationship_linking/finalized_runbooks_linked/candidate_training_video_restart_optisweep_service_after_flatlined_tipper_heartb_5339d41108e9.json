@@ -1,0 +1,370 @@
+{
+  "procedure_id": "proc_restart_optisweep_service_flatlined_tipper_heartbeats_v1",
+  "candidate_id": "candidate_training_video_restart_optisweep_service_after_flatlined_tipper_heartbeats",
+  "title": "Restart the OptiSweep Windows Service in Windows Services After Flatlined Tipper Heartbeats in the Ignition Gateway",
+  "procedure_type": "recovery",
+  "summary": "Use the Ignition gateway to verify that a tipper heartbeat is flat-lined, then use Windows Services to locate and restart the OptiSweep service. Confirm that the service returns to Running and that the Ignition gateway heartbeat is no longer flat-lined.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [
+    "L2_support"
+  ],
+  "capability_tags": [
+    "opc_connection_or_tipper_heartbeat",
+    "wcs_service_health"
+  ],
+  "access_surface": [
+    "ignition_gateway",
+    "event_viewer"
+  ],
+  "audience_roles": [
+    "L1_support",
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "opc_connection_faulted",
+    "gateway_unhealthy",
+    "service_crash_or_restart"
+  ],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this Ignition gateway and Windows Services procedure when a live tipper heartbeat is flat-lined or missing, including after an unplanned restart where Ignition may have started later than WCS and the OptiSweep service did not reestablish OPC-related heartbeat communication.",
+  "not_for": [
+    "Do not use this procedure as a general database, API, or broader system restart procedure.",
+    "Do not use it when a flat-lined or missing tipper heartbeat has not been verified in the Ignition gateway."
+  ],
+  "roles_and_responsibilities": [
+    "L1_support may inspect the Ignition gateway and Windows Services and perform the documented OptiSweep service restart.",
+    "L2_support may assist with Ignition gateway and Windows Services diagnostics or take over if the service cannot be restarted or the heartbeat remains flat-lined."
+  ],
+  "safety_notes": [
+    "Restart the OptiSweep service only after confirming the flat-lined tipper heartbeat in the Ignition gateway.",
+    "The source associates this condition with Ignition, OPC, and service startup timing after an unplanned restart; do not infer additional corrective actions from that association."
+  ],
+  "access_or_tools_needed": [
+    "Ignition gateway",
+    "Windows Services MMC",
+    "OptiSweep Windows service"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the Ignition gateway.",
+      "Access to Windows Services MMC on the relevant system.",
+      "Permission to restart the OptiSweep Windows service."
+    ],
+    "system_preconditions": [
+      "A tipper heartbeat can be viewed in the Ignition gateway.",
+      "The Windows Services console is available."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_tipper_heartbeat_metric_v1",
+    "ctx_training_video_optisweep_service_reference_v1",
+    "ctx_training_video_heartbeat_ignition_opc_relationship_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0049_check_to_make_sure_that_tippers_primary_03_13_10_000",
+      "description": "Windows Services view showing the OptiSweep entry, its status, and the Restart the service control in the context of a flat-lined tipper heartbeat.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500",
+      "description": "Windows Services view supporting the OptiSweep restart after checking a tipper heartbeat in the Ignition gateway.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0034_the_tippers_ignition_we_save_it_primary_02_56_53_000",
+      "description": "Ignition gateway view showing tipper-related communications and faulted communication status.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Check the tipper heartbeat in the Ignition gateway",
+      "responsible_role": "L1_support",
+      "supporting_role": "L2_support",
+      "purpose": "Verify that the recovery trigger is present before restarting the OptiSweep service.",
+      "instruction": "In the Ignition gateway, inspect the live heartbeat indication for the affected tipper and determine whether heartbeat communication is being received or is flat-lined.",
+      "expected_result": "The affected tipper's live heartbeat indication is identified as either active or flat-lined, providing the basis for the service-restart decision.",
+      "healthy_condition": "The tipper heartbeat indication is not flat-lined and heartbeat communication is being received.",
+      "failure_condition": "The tipper heartbeat indication is flat-lined or heartbeat communication is not being received.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Inspect tipper heartbeat",
+          "exact_action": "Check to make sure that tippers are getting heartbeats.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the heartbeat is not flat-lined, do not perform this service-restart procedure.",
+        "If the affected tipper or heartbeat indication cannot be identified in the Ignition gateway, escalate for L2 support."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0049",
+          "timestamp_start": "03:12:56.000",
+          "timestamp_end": "03:13:24.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0049_check_to_make_sure_that_tippers_primary_03_13_10_000",
+          "quote_or_summary": "Check whether tippers are getting heartbeats; flat-lined heartbeats indicate that heartbeat communication is not being received."
+        },
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0034",
+          "timestamp_start": "02:56:53.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0034_the_tippers_ignition_we_save_it_primary_02_56_53_000",
+          "quote_or_summary": "The Ignition gateway can show active tipper communications and, in the example, tipper communications that are powered off and faulted."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Locate OptiSweep in Windows Services",
+      "responsible_role": "L1_support",
+      "supporting_role": "L2_support",
+      "purpose": "Confirm the Windows service entry and inspect its current status before restarting it.",
+      "instruction": "Open Windows Services MMC, locate the service named \"OptiSweep,\" and review its Status.",
+      "expected_result": "The Windows Services console displays the OptiSweep service entry and its current Status.",
+      "healthy_condition": "The OptiSweep entry is present and its Status is Running.",
+      "failure_condition": "The OptiSweep entry is absent, or its Status is not Running.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect OptiSweep service",
+          "exact_action": "Locate the service named \"OptiSweep\" and review its Status.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the OptiSweep service cannot be located, escalate to L2 support.",
+        "If Windows Services cannot be opened or the service status cannot be read, escalate to L2 support."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0049",
+          "timestamp_start": "03:12:56.000",
+          "timestamp_end": "03:13:24.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0049_check_to_make_sure_that_tippers_primary_03_13_10_000",
+          "quote_or_summary": "The Windows Services screen displays an OptiSweep service entry with a Status field."
+        },
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0047",
+          "timestamp_start": "03:12:33.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0047_so_this_is_actually_pulled_premier_primary_03_12_33_000",
+          "quote_or_summary": "OptiSweep is identified as one of the primary programs that must be running for the system to run."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Restart the OptiSweep service in Windows Services",
+      "responsible_role": "L1_support",
+      "supporting_role": "L2_support",
+      "purpose": "Reestablish the OptiSweep service path associated with the flat-lined tipper heartbeat.",
+      "instruction": "In Windows Services, use the OptiSweep service's \"Restart the service\" control.",
+      "expected_result": "Windows Services accepts the restart request for the OptiSweep service.",
+      "healthy_condition": "The restart action completes without an error and the service can be observed returning to an operational state.",
+      "failure_condition": "The restart control is unavailable, the restart request fails, or the service does not return to an operational state.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Restart OptiSweep",
+          "exact_action": "Use the Windows Services \"Restart the service\" control for the OptiSweep service.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the OptiSweep service cannot be restarted.",
+        "Escalate if the restart request reports an error."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0049",
+          "timestamp_start": "03:12:56.000",
+          "timestamp_end": "03:13:24.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0049_check_to_make_sure_that_tippers_primary_03_13_10_000",
+          "quote_or_summary": "If tipper heartbeats are flat-lined, restart OptiSweep; the Windows Services view shows a Restart the service control."
+        },
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0051",
+          "timestamp_start": "03:13:45.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500",
+          "quote_or_summary": "After checking the heartbeat, restart the service when OptiSweep is delayed during startup."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Confirm service state and tipper heartbeat recovery",
+      "responsible_role": "L1_support",
+      "supporting_role": "L2_support",
+      "purpose": "Verify recovery on both the Windows Services and Ignition gateway surfaces.",
+      "instruction": "In Windows Services, verify that the OptiSweep service returns to a Running state. Then return to the Ignition gateway and recheck the affected tipper's live heartbeat indication.",
+      "expected_result": "The OptiSweep service shows Running and the affected tipper heartbeat is no longer flat-lined.",
+      "healthy_condition": "Windows Services shows OptiSweep as Running, and the Ignition gateway shows heartbeat communication for the affected tipper.",
+      "failure_condition": "OptiSweep does not return to Running, or the tipper heartbeat remains flat-lined after the restart.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify service state",
+          "exact_action": "Verify that the OptiSweep service returns to a Running state.",
+          "role_required": "L1_support"
+        },
+        {
+          "action_type": "hmi_inspection",
+          "label": "Recheck tipper heartbeat",
+          "exact_action": "Recheck the tipper heartbeat in the Ignition gateway for a non-flat-lined indication.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the OptiSweep service does not return to Running.",
+        "Escalate if the tipper heartbeat remains flat-lined after the service restart."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0049",
+          "timestamp_start": "03:12:56.000",
+          "timestamp_end": "03:13:24.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0049_check_to_make_sure_that_tippers_primary_03_13_10_000",
+          "quote_or_summary": "The expected recovery is that the OptiSweep service is running and tipper heartbeat communication is restored after a flat-lined heartbeat."
+        },
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0051",
+          "timestamp_start": "03:13:45.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500",
+          "quote_or_summary": "The segment instructs support to check the heartbeat and restart OptiSweep when startup timing leaves the service delayed."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The OptiSweep entry in Windows Services shows Running after the restart.",
+    "The affected tipper's live heartbeat indication in the Ignition gateway is no longer flat-lined.",
+    "Heartbeat communication is observable again for the affected tipper."
+  ],
+  "healthy_conditions": [
+    "The OptiSweep Windows service is present and shows Running.",
+    "The Ignition gateway shows a non-flat-lined heartbeat for the affected tipper.",
+    "Tipper heartbeat communication is being received."
+  ],
+  "failure_conditions": [
+    "The OptiSweep service cannot be restarted.",
+    "The OptiSweep service does not return to Running.",
+    "The affected tipper heartbeat remains flat-lined after the restart.",
+    "The affected heartbeat indication cannot be identified in the Ignition gateway."
+  ],
+  "escalation_guidance": [
+    "Escalate to L2 support if the OptiSweep service cannot be located or restarted.",
+    "Escalate if the OptiSweep service does not return to Running.",
+    "Escalate if the tipper heartbeat remains flat-lined after the service restart.",
+    "The source associates the condition with Ignition, OPC, and startup ordering after an unplanned restart; no additional corrective action is established by this procedure."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 49,
+      "section_id": "training_video_day2_segment_0049",
+      "timestamp_start": "03:12:56.000",
+      "timestamp_end": "03:13:24.000",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "Check whether tippers are getting heartbeats; if the heartbeat is flat-lined, the OptiSweep service needs to be restarted. The displayed Windows Services screen includes an OptiSweep service and a \"Restart the service\" control."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0049_check_to_make_sure_that_tippers_primary_03_13_10_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0034_the_tippers_ignition_we_save_it_primary_02_56_53_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_restart_optisweep_service_after_flatlined_tipper_heartbeats"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not identify the exact Ignition gateway page, heartbeat field, tag name, or tipper-selection control.",
+    "The source does not define how long to wait after the restart before judging the heartbeat recovery.",
+    "The source does not specify the service host name or a precise Windows Services navigation path.",
+    "The source does not define production-impact, change-control, or authorization requirements for restarting OptiSweep.",
+    "The source does not provide additional corrective actions when the heartbeat remains flat-lined after the restart."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0034_the_tippers_ignition_we_save_it_primary_02_56_53_000",
+    "artifact_training_video_training_video_day2_0049_check_to_make_sure_that_tippers_primary_03_13_10_000",
+    "artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500"
+  ]
+}

@@ -1,0 +1,290 @@
+{
+  "procedure_id": "proc_confirm_login_based_access_and_warning_before_geek_ag_agv_removal_v1",
+  "candidate_id": "candidate_training_video_day1_geek_removal_actions_require_login_and_warning",
+  "title": "Confirm login-based access and warning behavior before attempting AG/AGV removal actions in Geek",
+  "procedure_type": "diagnostic",
+  "summary": "Verify that Geek removal actions (e.g., removing an AGV/AG) are gated by username/password credentials and that initiating a removal action triggers a warning dialog rather than silently proceeding.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_active_errors"
+  ],
+  "access_surface": [
+    "apidog"
+  ],
+  "audience_roles": [
+    "L1_support"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when you need to confirm that the Geek application enforces login-based authorization for sensitive removal actions and that the UI provides a warning when a removal is attempted.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L1_support: Perform the login/role check in Geek and initiate the relevant removal action only far enough to observe whether the warning appears (do not complete the removal if not authorized)."
+  ],
+  "safety_notes": [
+    "Do not attempt to remove an AGV/AG unless your Geek account is authorized; the source indicates operators do not have the credentials for removal actions."
+  ],
+  "access_or_tools_needed": [
+    "Geek application login (username/password)",
+    "Ability to initiate the relevant removal action far enough to observe the warning (without completing the action if your role is not authorized)"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Geek application access with username/password"
+    ],
+    "system_preconditions": [
+      "Geek application is reachable and you can access the UI for the removal action workflow"
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_role_access_agv_removal_permissions_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0045_i_i_would_say_like_the_primary_01_37_38_000",
+      "description": "Training frame showing the statement that Geek requires login credentials (operators lack credentials; supervisors have them) and that removal actions come with a warning dialog.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Check whether you are logged in with a username/password in Geek",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Confirm that the Geek application is using login-based access (username/password) before testing removal behavior.",
+      "instruction": "In the Geek application, verify your session is authenticated using a username/password login.",
+      "expected_result": "You are logged into Geek using a username/password session.",
+      "healthy_condition": "Geek accepts your credentials and you can access the UI elements needed to attempt a removal action workflow.",
+      "failure_condition": "You cannot authenticate (no valid login session) or you are not able to access the removal workflow due to lack of credentials.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify login session",
+          "exact_action": "Confirm you are logged in with a username/password in the Geek application.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot log in, stop and escalate because you cannot validate warning/authorization behavior."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "page": 45,
+          "section_id": "training_video_day1_segment_0045",
+          "quote_or_summary": "The application has a username and a password; not everybody has credentials."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Verify your role/user has credentials to perform removal actions",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Ensure you are using an account that is authorized for removal actions; the source indicates operators do not have credentials for removal.",
+      "instruction": "Determine whether your current Geek user role/account is authorized for removal actions (the source indicates operators do not have the credentials; supervisors do).",
+      "expected_result": "Your account is authorized for removal actions (i.e., you have the credentials expected to perform removal).",
+      "healthy_condition": "Your account can initiate the removal workflow without being blocked immediately due to missing credentials.",
+      "failure_condition": "Your account is not authorized for removal actions (e.g., removal initiation is blocked due to lack of credentials).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm authorization expectation",
+          "exact_action": "Use your current Geek login identity/role to confirm you have the credentials expected for removal actions.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you are not authorized (e.g., you are acting like an operator without credentials), stop and escalate; do not proceed with removal testing."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "page": 45,
+          "section_id": "training_video_day1_segment_0045",
+          "quote_or_summary": "Operators don’t have the credentials; supervisors do."
+        },
+        {
+          "context_id": "ctx_training_video_role_access_agv_removal_permissions_v1",
+          "context_type": "role_or_access_reference",
+          "title": "Access control for AGV removal actions",
+          "quote_or_summary": "Operators lack credentials while supervisors do; sensitive actions such as AGV removal are restricted by login-based access."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Initiate a removal action and observe whether a warning is shown",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Confirm the UI behavior: removal actions should present a warning dialog rather than silently removing.",
+      "instruction": "In Geek, initiate the relevant removal action (e.g., removing an AGV/AG) and observe whether a warning dialog appears. Do not complete the removal if your role is not authorized.",
+      "expected_result": "A warning is shown when the removal action is initiated.",
+      "healthy_condition": "A warning dialog appears as part of the removal workflow (the source indicates it “will come with a warning”).",
+      "failure_condition": "Removal proceeds without showing a warning, or the system allows removal without the expected credentials.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Attempt removal to trigger warning",
+          "exact_action": "Initiate the removal action in Geek and observe the resulting warning behavior.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If removal is possible without the expected credentials, stop and escalate.",
+        "If no warning appears when removal is initiated, stop and escalate."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_title": "UPSFORTNA OptiSweep Training Day 1",
+          "page": 45,
+          "section_id": "training_video_day1_segment_0045",
+          "quote_or_summary": "The removal action “will come with a warning.”"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You confirm Geek uses username/password login for access.",
+    "You confirm your account is authorized for removal actions (operators do not have credentials; supervisors do).",
+    "When a removal action is initiated, a warning dialog is shown."
+  ],
+  "healthy_conditions": [
+    "Geek requires login credentials for sensitive removal actions.",
+    "Removal initiation triggers a warning dialog."
+  ],
+  "failure_conditions": [
+    "Removal actions can be performed without the expected credentials.",
+    "No warning dialog appears when removal is initiated."
+  ],
+  "escalation_guidance": [
+    "If removal is possible without the expected credentials or if no warning appears, stop and escalate. The source does not provide further diagnostic steps beyond this observation."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0045_i_i_would_say_like_the_primary_01_37_38_000",
+      "description": "Training frame evidence for login gating and warning behavior for removal actions in Geek.",
+      "required_level": "recommended"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "page": 45,
+      "section_id": "training_video_day1_segment_0045",
+      "timestamp_start": "01:36:20.000",
+      "timestamp_end": "01:38:56.000",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0045_i_i_would_say_like_the_primary_01_37_38_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0033_yeah_because_it_has_front_sensors_primary_01_19_57_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0022_rms_is_the_robot_management_system_primary_00_52_41_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0046_all_right_the_next_object_is_primary_01_42_16_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day1_geek_removal_actions_require_login_and_warning"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide the exact warning text or the specific UI location/label of the warning dialog.",
+    "The source does not provide step-by-step UI navigation for the specific removal action (e.g., exact button/menu names) beyond the general concept of initiating removal."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+    "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+    "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000",
+    "artifact_training_video_training_video_day1_0022_rms_is_the_robot_management_system_primary_00_52_41_500",
+    "artifact_training_video_training_video_day1_0033_yeah_because_it_has_front_sensors_primary_01_19_57_000",
+    "artifact_training_video_training_video_day1_0045_i_i_would_say_like_the_primary_01_37_38_000",
+    "artifact_training_video_training_video_day1_0046_all_right_the_next_object_is_primary_01_42_16_500",
+    "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000"
+  ]
+}

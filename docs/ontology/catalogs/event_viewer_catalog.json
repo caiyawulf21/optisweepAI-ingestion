@@ -1,0 +1,281 @@
+{
+  "schema_version": "0.4",
+  "catalog_id": "event_viewer",
+  "access_surface": "event_viewer",
+  "title": "Windows Event Viewer / Services MMC",
+  "aliases": [
+    "windows_services",
+    "services",
+    "Event Viewer",
+    "Services",
+    "SCM",
+    "7031",
+    "OptiSweep service",
+    "Windows Event Viewer / services",
+    "event_viewer"
+  ],
+  "purpose": "Host Windows logs and Services MMC for OptiSweep / WCSWebApplication crashes, 7031, restart storms, and confirming OptiSweep running after unplanned restart (with SQL Agent on backup).",
+  "when_to_use": [
+    "Blank RMS / suspected service down",
+    "Crash loops / 7031",
+    "After Ignition lag — confirm OptiSweep restarted",
+    "SQL Server Agent on backup after unplanned restart"
+  ],
+  "not_for": [
+    "AGV active-error triage when service is healthy",
+    "Operator access"
+  ],
+  "architecture_notes": [
+    "Unplanned restart path: Ignition → Stunnel → OptiSweep service (+ tipper heartbeat, RMS loads).",
+    "Few dedicated runbooks historically — allow honest unresolved in playbooks."
+  ],
+  "audience_roles_typical": [
+    "L2_support",
+    "L3_support"
+  ],
+  "role_paths": {
+    "L1_support": "No Event Viewer how-to; escalate.",
+    "L2_support": "Services + Event Viewer primary.",
+    "L3_support": "Same + RCA.",
+    "operator": "No access."
+  },
+  "screens_or_views": [
+    {
+      "id": "services_mmc",
+      "title": "Services MMC",
+      "purpose": "OptiSweep / related service Running vs Stopped.",
+      "aliases": [
+        "services.msc"
+      ],
+      "key_points": [
+        "Running",
+        "Stopped",
+        "restart storm"
+      ]
+    },
+    {
+      "id": "event_viewer_app",
+      "title": "Event Viewer Application/System",
+      "purpose": "Crash and service control events.",
+      "aliases": [
+        "eventvwr"
+      ],
+      "key_points": [
+        "7031",
+        "unexpected restarts"
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "optisweep_service",
+      "label": "OptiSweep Windows service",
+      "capability_hints": [
+        "wcs_service_health"
+      ]
+    },
+    {
+      "id": "wcs_web_app",
+      "label": "WCSWebApplication",
+      "capability_hints": [
+        "windows_service_or_event_log"
+      ]
+    },
+    {
+      "id": "sql_agent_backup",
+      "label": "SQL Server Agent on backup",
+      "capability_hints": [
+        "wcs_service_health"
+      ]
+    }
+  ],
+  "activities": [
+    {
+      "id": "services_mmc",
+      "label": "Services MMC — OptiSweep / related",
+      "observables": [
+        "Running",
+        "Stopped",
+        "restart required after Ignition lag"
+      ],
+      "capability_hints": [
+        "wcs_service_health",
+        "windows_service_or_event_log"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "event_log_crash",
+      "label": "Event Viewer crash / 7031",
+      "observables": [
+        "service crash events",
+        "7031"
+      ],
+      "capability_hints": [
+        "windows_service_or_event_log"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    }
+  ],
+  "related_capabilities": [
+    "fleet_system_status",
+    "gateway_health",
+    "wcs_service_health",
+    "windows_service_or_event_log",
+    "ups_chat_or_stunnel_health",
+    "opc_connection_or_tipper_heartbeat"
+  ],
+  "related_failure_patterns": [
+    "site_stoppage",
+    "gateway_unhealthy",
+    "unplanned_restart",
+    "service_crash_or_restart",
+    "web_app_fault",
+    "stunnel_or_chat_down",
+    "opc_connection_faulted"
+  ],
+  "distinguish_from": {
+    "ignition_gateway": "OPC/gateway — often the reason OptiSweep must be restarted.",
+    "rms_ui": "Symptom surface when blank; not the host log."
+  },
+  "gaps": [
+    "Dedicated crash runbook catalog still thin."
+  ],
+  "evidence": [
+    {
+      "source": "training_video_day2",
+      "kind": "ocr",
+      "snippet": "FORTNA OptiSweep Training - Day 2 [NOTE: Morning Location is Different]"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Oh, we'll start going through everything. We'll go through message flow, database API, Ignition and kind of the services. We'll probably provide Confluence pages so that broken out so you can better view if you'd like. Oops."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "So we kind of started this yesterday. This is kind of like the overview of the architecture. You've got, you know, UPSI don't know if that's kind of blurry. So you have, you know, the scanner. What? So yeah, I did too. So on the UPS side, of course you have the scanner, ASX, XLE printers, sort of PLCS. We kind of talke"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "we use for this database. When we made this, it was easier for us to compartmentalize. So there's quite a bit of tables, so bear with me. As an overview, we have the WCS, which was made by a different team. They have data containers, entity logs, PLC communication. Then we have our databases, which is Audit Geek, OPC C"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "The Robot Location database model table contains all the information about the locations, including the station number, whether it's occupied or not, zone, it's closeout zone, the location type, the Max number of Agvs allowed at that location, and whether the location should be tracked for dwell time there. Listed belo"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Let's see and the last one sorted side database module I what's the damage? That's just which sort of side it's on. You know, you have remember the past one we had solar side 1A1B2A2B. So those all associate with one or two or three or four. Oh, it's a model ID. It's just a model ID. OK, it's names and all right. The c"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "The Robot Command Database model table tracks the status of the robot commands requested by the Robotics module for AG VS. When commands are complete, they're archived to robot command activity. Some of the commands. So this is the commands we send to the geek module that gets translated into the POST request or geek f"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "The Items model, so items are parcels on the sorter packages. We listen to Scan Data 2, sort and sort confirm from UPS. We update the items as we receive messages and remove them when they divert to their final destination. Scan Data 2 provides us with the package unique ID, tracking number, length with height, weight "
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Maintenance Support Contacts: For maintenance related to P40 (V2.0) robots, reference the P40A (V2.0) user manual (Document version: V1.1, 20231206). For maintenance related to the tipper, contact Lifecycle Performance Services (LPS) at 888-444-4647."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Aviva characterized primarily as an HMI interface: The speaker says Aviva is an HMI and mostly an interface. It is described as showing status of services and allowing certain startup actions through APIs, while also emphasizing that it does not manage the system in the same way as the underlying control components."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Windows Service and Log Visibility: The discussion refers to checking Windows Services to determine whether a service is running and to reviewing logs associated with an inactive or stopped service. The source mentions multiple services, including a reference to ten services, but does not identify their names or provide a confirmed monitoring interface."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Primary services required for OptiSweep system operation: Ignition is used for OPC connections, Stunnel provides secure encryption for communication to the UPS Xle chat, and OptiSweep is Fortna's service that coordinates all operations."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep Windows service: The captured Services screen lists an OptiSweep service. The OCR identifies the service as related to managing AGVs in the OptiSweep solution and shows an OptiSweep entry with a Running status and Automatic startup type."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Heartbeat relationship to Ignition, OPC, and OptiSweep: The transcript says that flat-lined heartbeats relate back to Ignition and refers to OPC and the OptiSweep service. The explanation also states that Ignition may come up later than WCS in an unplanned-restart scenario."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep Windows service reference: The Services console lists an OptiSweep service. The captured view includes the standard service fields Name, Description, Status, Startup Type, and Log On As. The slide also shows OptiSweep with Running status and Automatic startup in the displayed service list."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Services screen and Open stunnel entry: The artifact OCR identifies the visible labels \"Services,\" \"Unplanned restart,\" and \"Open stunnel.\" The screen also includes a menu instruction referring to connections under File."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "RMS screen as the initial system fault check during support calls: In this segment, the speaker says the first step on a phone call is to go to the RMS screen and check for system faults. This is presented as a stable support orientation point for understanding current system condition before deeper diagnosis."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Support emphasis on observation capture and restoring operation under SLA pressure: The speaker explains that the goal of support is not necessarily to completely diagnose what happened during the live incident. Instead, support should take enough notes about what was observed so the issue can be diagnosed later, while immediate effort is directed toward restoring operation."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Historical sort data is retained in the database: The presenter distinguishes between the current sort display and historical retention. While the active statistics view resets with a new sort GUID, the database keeps prior entries so historical performance can be reviewed."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "System faults and AGV system faults are separated on the RMS page: According to the presenter, the software checks whether commanded actions are progressing as expected. If the system tells an AGV to move and does not receive an in-progress indication, that condition is described as a system fault."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "SQL Server Agent service: The transcript refers to checking SQL Server Configuration Manager to confirm that the SQL Server Agent is running. The captured service view shows SQL Server Agent (MSSQLSERVER) with state Running and start mode Automatic."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "SQL Server Configuration Manager service view: The captured screen is titled SQL Server Configuration Manager (Local). Its service list includes SQL Server (MSSQLSERVER), SQL Server Browser, and SQL Server Agent (MSSQLSERVER), with columns for Name, State, Start Mode, Log On As, Process ID, and Service Type."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Database Logs and Error Visibility: The logs are described as being available in the database and as showing errors and fatal events. The discussion also references selecting a top-100 set of records and filtering when searching the logs."
+    }
+  ],
+  "source_refs": [
+    {
+      "source": "training_video_day2"
+    },
+    {
+      "source": "training_video_day1"
+    },
+    {
+      "source": "support_roles_components_and_adjacency.md"
+    },
+    {
+      "source": "docs/ontology/catalogs/capability_catalog.json"
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Identify AIO One Not Sending Sort Or Dimension Data From Sort Confirmation View</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Identify AIO One Not Sending Sort Or Dimension Data From Sort Confirmation View</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_identify_aio1_not_sending_sort_or_dimension_data_from_sort_confirmation_view_v1</td></tr>
+<tr><th>Title</th><td>Identify AIO One Not Sending Sort Or Dimension Data From Sort Confirmation View</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L1_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>sorter_item_or_scan_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L1_support, L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>miss_scan_or_dimension_fallback</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the MDI Support chat sort confirmation table to inspect package-level SortConf records and determine whether the affected source matches the source-described AIO one pattern: rows associated with Al01Chat show Width, Height, and Weight as 1, with MissingDimensionData visible in the same view. This procedure supports a support-side conclusion that AIO one is not sending sort data or dimension data; it does not establish a deeper root cause.</p>
+<h2>When To Use</h2>
+<p>Use when site or support reports overflowing, suspected missing dimension data, or suspected missing sort data, and you need to verify from the live sort confirmation support table whether Al01Chat/AIO one records match the pattern shown in the source: SortConf rows with Width, Height, and Weight all equal to 1.</p>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the sort confirmation support table with package and dimension columns visible</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the live MDI Support chat support table used for lane activity review and confirm the table shows the package-level columns visible in the source, including Zone, LaneName, PackageUid, TrackingNumber, Length, Width, Height, Weight, Cube, ToteId, Message, PackageClassification, MissingDimensionData, MissingInduct, ToteNotfound, Diverted, OffTheEnd, and Recirc.</p>
+<p><strong>Expected result:</strong></p>
+<p>The live table is open and the named columns are visible for package-level records.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/a359db66d5e12322.jpg" alt="artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000" /><figcaption>Header row showing Zone, LaneName, PackageUid, TrackingNumber, Length, Width, Height, Weight, Cube, ToteId, Message, PackageClassification, MissingDimensionData, MissingInduct, ToteNotfound, Diverted, OffTheEnd, and Recirc.</figcaption></figure>
+<figure><img src="assets/c02be26d0fda2a25.jpg" alt="artifact_training_video_training_video_day2_0057_but_this_is_it_not_for_primary_03_23_52_500" /><figcaption>Example of the support table with IgnitionLaneActivityModel and dimension-related columns visible.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The live support view cannot be opened.</li>
+<li>The required columns are not available in the live view.</li>
+<li>There is no visible field that can be used to correlate rows to Al01Chat or AIO one.</li>
+</ul>
+<hr>
+<h3>Step 2 — Filter the live table to sort confirmation records</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Apply a filter on the Message column so the live table shows only sort confirmation records (SortConf / sort confirmation) as described in the source.</p>
+<p><strong>Expected result:</strong></p>
+<p>The table is filtered to SortConf rows only.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/a359db66d5e12322.jpg" alt="artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000" /><figcaption>Rows where the Message column shows SortConf / SortCort / SotCorf OCR variants after filtering.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The Message column is not available for filtering.</li>
+<li>The live view does not support filtering to sort confirmation records.</li>
+</ul>
+<hr>
+<h3>Step 3 — Identify rows associated with Al01Chat or the affected source</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Within the filtered SortConf rows, inspect the package-level identifiers and locate rows associated with the affected source. Use the visible row values shown in the source, including PackageUid entries ending in Al01Chat, to correlate the records to AIO one.</p>
+<p><strong>Expected result:</strong></p>
+<p>A set of SortConf rows associated with Al01Chat / AIO one is identified for review.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/a359db66d5e12322.jpg" alt="artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000" /><figcaption>PackageUid values such as 000094672_Al01Chat and other rows ending in Al01Chat.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The live rows cannot be correlated to Al01Chat or AIO one.</li>
+<li>The available fields do not support source attribution.</li>
+</ul>
+<hr>
+<h3>Step 4 — Inspect Width, Height, Weight, and MissingDimensionData across the Al01Chat SortConf rows</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Review the Al01Chat SortConf rows and compare the dimension-related fields across those rows. Check whether Width, Height, and Weight repeat as 1 across the affected rows, and review the MissingDimensionData field in the same rows.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can determine whether the live Al01Chat SortConf rows match the source-described pattern of Width, Height, and Weight all being 1, with MissingDimensionData visible in the same table.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/a359db66d5e12322.jpg" alt="artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000" /><figcaption>Repeated Width, Height, and Weight values of 1 in Al01Chat rows; MissingDimensionData column visible in the same table.</figcaption></figure>
+<figure><img src="assets/44d937dbe3eba2e0.jpg" alt="artifact_training_video_training_video_day2_0024_the_items_model_so_items_are_primary_02_10_19_000" /><figcaption>Context that MissingDimensionData becomes true when default dimensions are picked up because data is missing.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The dimension fields do not match the source-described pattern but the upstream issue is still suspected.</li>
+<li>The live rows are too limited or inconsistent to determine whether the pattern is present.</li>
+</ul>
+<hr>
+<h3>Step 5 — Conclude and communicate the support finding without extending root cause</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the live SortConf view matches the source-described evidence pattern for Al01Chat, record and communicate that AIO one appears not to be sending sort data or dimension data based on the live table evidence. If the pattern does not match, do not make that conclusion from this procedure alone.</p>
+<p><strong>Expected result:</strong></p>
+<p>The support finding is limited to what is observable in the live SortConf table: either the Al01Chat rows match the missing sort or dimension data pattern, or they do not.</p>
+<p><strong>Screens / Images:</strong></p>
+<figure><img src="assets/d3061ef3fe825a42.jpg" alt="artifact_training_video_training_video_day2_0060_they_they_had_a_power_flicker_primary_03_28_33_000" /><figcaption>Support-side framing that the database view supports telling the site that expected dimension data is not being received, without directing equipment actions.</figcaption></figure>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>AIO one cannot be correlated in the live view from the available fields.</li>
+<li>The dimension values do not match the source-described pattern but the upstream data issue is still suspected.</li>
+<li>Additional root cause analysis or corrective action is requested beyond the live table evidence.</li>
+</ul>
+<hr>
+</body>
+</html>

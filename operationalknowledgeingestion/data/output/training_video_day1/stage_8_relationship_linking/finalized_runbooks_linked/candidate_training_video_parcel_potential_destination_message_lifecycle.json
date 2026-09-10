@@ -1,0 +1,336 @@
+{
+  "procedure_id": "proc_verify_parcel_potential_destination_data_flow_during_sorter_induction_chat_messages_v1",
+  "candidate_id": "candidate_training_video_parcel_potential_destination_message_lifecycle",
+  "title": "Verify Parcel Potential Destination Data Flow During Sorter Induction (Chat messages)",
+  "procedure_type": "diagnostic",
+  "summary": "Trace the two-step Chat messaging sequence used during sorter induction to confirm how OptiSweep receives parcel data (tracking ID, dimensions, package type; then barcode data, dimensional data, and potential destination data). Confirm that “potential destination” represents a sortable/sorted destination set (not a ZIP code) and that default dimensions are assigned when the first message fails for an unknown inducted parcel.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "wcs_api_responsiveness"
+  ],
+  "access_surface": [
+    "wcs_api",
+    "apidog"
+  ],
+  "audience_roles": [
+    "L1_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when you need to explain or troubleshoot the parcel induction messaging lifecycle—specifically whether OptiSweep is receiving the first and second Chat messages and whether “potential destination” is being interpreted as a sortable destination set (not a ZIP code).",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L1_support: Perform first-pass verification that the expected two-step induction Chat message content is present and that the fallback behavior (default dimensions for unknown inducted parcels when the first message fails) is occurring."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Access to the “Chat” messaging/data surfaces referenced by the source (exact live tool/screen not specified in the packet)."
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the live “Chat” messaging/data surfaces used for parcel induction (tool/screen not specified in the packet)."
+    ],
+    "system_preconditions": [
+      "A parcel is being inducted to the sorter (so the two-step induction messaging sequence can occur)."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_parcel_lifecycle_messages_v1",
+    "ctx_training_video_default_dimensions_unknown_inducted_v1",
+    "ctx_training_video_potential_destination_concept_v1",
+    "ctx_training_video_zip_to_destination_mapping_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0013_so_why_is_this_potential_and_primary_00_20_02_000",
+      "description": "Parcel lifecycle slide frame showing: first Chat message fields (tracking ID, dimensions, package type), fallback to default dimensions when first message fails for unknown inducted parcels, second Chat message fields (tracking ID, barcode data, dimensional data, potential destination data), and the definition of potential destination as a sorted destination set (not a ZIP code).",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Identify the sorter induction lifecycle and the two Chat messages",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Establish the expected two-step induction messaging sequence so you can verify whether the correct data is arriving at the right time.",
+      "instruction": "On the live “Chat” messaging/data surface you use for induction, confirm you are looking for the two-step sequence tied to sorter induction: (1) first Chat message triggered before parcels reach the system, and (2) second Chat message triggered after the first message (including the fallback behavior).",
+      "expected_result": "You can describe the expected two-step sequence for a parcel at sorter induction: first message includes tracking ID, dimensions, and package type; second message includes tracking ID, barcode data, dimensional data, and potential destination data.",
+      "healthy_condition": "The induction lifecycle you are troubleshooting matches the source’s described flow: parcels are unloaded onto belts leading to sorter induction, and the first then second Chat messages occur as described.",
+      "failure_condition": "You cannot align the live induction messaging you are seeing with the expected two-step sequence (e.g., only one message appears, or the message content does not match the expected fields).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate induction Chat message sequence for a parcel",
+          "exact_action": "Identify the two-step Chat message lifecycle for sorter induction (first message: tracking ID, dimensions, package type; second message: tracking ID, barcode data, dimensional data, potential destination data).",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Confirm the first Chat message contains tracking ID, dimensions, and package type",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Verify the first induction message is present and includes the required fields used to seed parcel data.",
+      "instruction": "For the parcel you are investigating, check the first Chat message content on the live “Chat” messaging/data surface and confirm it includes: tracking ID, dimensions, and package type.",
+      "expected_result": "The first Chat message for the parcel includes tracking ID, dimensions, and package type.",
+      "healthy_condition": "The first message fields are present for the parcel during sorter induction.",
+      "failure_condition": "The first Chat message is missing or does not include one or more of: tracking ID, dimensions, package type.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify first message fields",
+          "exact_action": "Confirm the first Chat message includes “tracking Id, dimensions, and package type.”",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the first Chat message is missing or does not include the fields described in the source (tracking ID, dimensions, package type)."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "If the first message fails for an unknown inducted parcel, confirm OptiSweep assigns default dimensions",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Validate the documented fallback behavior so the parcel can still proceed with usable dimensional data.",
+      "instruction": "If you observe a failure of the first Chat message and the parcel is inducted as “unknown,” verify that OptiSweep assigns default dimensions for that parcel.",
+      "expected_result": "When the first message fails for an unknown inducted parcel, OptiSweep assigns default dimensions.",
+      "healthy_condition": "Default dimensions are present/used for the unknown inducted parcel after the first message failure condition.",
+      "failure_condition": "Default dimensions are not applied when the source conditions occur (first message fails and an unknown parcel is inducted).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify default dimensions fallback",
+          "exact_action": "Confirm the fallback behavior: “If this message fails and we see something unknown inducted, it is assigned default dimensions by OptiSweep.”",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if default dimensions are not applied when the first message fails and an unknown parcel is inducted."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Confirm the second Chat message contains tracking ID, barcode data, dimensional data, and potential destination data",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Verify the second induction message arrives with the data needed for sorter-side routing decisions, including potential destination options.",
+      "instruction": "For the same parcel, check the second Chat message content on the live “Chat” messaging/data surface and confirm it includes: tracking ID, barcode data, dimensional data, and potential destination data.",
+      "expected_result": "The second Chat message includes tracking ID, barcode data, dimensional data, and potential destination data.",
+      "healthy_condition": "The second message fields are present for the parcel after induction.",
+      "failure_condition": "The second Chat message is missing or does not include one or more of: tracking ID, barcode data, dimensional data, potential destination data.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify second message fields",
+          "exact_action": "Confirm the second Chat message includes “tracking Id, barcode data, dimensional onto the sorter data, and potential destination data.”",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the second Chat message (with potential destination data) is missing or does not include the fields described in the source."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Interpret “potential destination” as a sortable destination set (not a ZIP code)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Ensure correct interpretation during troubleshooting and customer/support explanations.",
+      "instruction": "When explaining or validating the parcel’s “potential destination” data, confirm you treat it as a sorted/sortable destination set (multiple destinations may be provided), not as a ZIP code.",
+      "expected_result": "Potential destination is understood and communicated as a sorted destination set (sortable destination options), not a ZIP code.",
+      "healthy_condition": "Your explanation matches the source contrast: “It’s not a zip code… It’s a sorted destination… It’s a sorted destination.”",
+      "failure_condition": "You interpret potential destination as a ZIP code or as a single postal value rather than a destination set.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check interpretation against source definition",
+          "exact_action": "Use the source definition: “It’s not a zip code… It’s sorted to go to that is the destination… It’s a sorted destination.”",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "If needed, explain upstream ZIP-to-destination mapping vs local destination knowledge",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Provide a correct upstream/downstream explanation when a customer asks why multiple destinations appear or how ZIP codes relate to potential destination.",
+      "instruction": "If you need to explain the relationship between ZIP codes and potential destination, use the source-backed mapping concept: UPS internally maps a ZIP code to one or multiple destinations via an upstream mapping file/system (ASX), while the local system “only knows destinations.”",
+      "expected_result": "You can explain that ZIP-to-destination mapping is upstream (ASX mapping file) and that the local system uses destination values rather than ZIP code logic.",
+      "healthy_condition": "Your explanation aligns with the source: “UPS internally they have a mapping file where a zip code can be mapped to a single destination or multiple destinations… comes from the ASX system… Local system only knows… destinations.”",
+      "failure_condition": "You claim the local system derives potential destination directly from ZIP code values rather than using destination information provided upstream.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Use upstream mapping explanation",
+          "exact_action": "Explain: “UPS internally… mapping file where a zip code can be mapped to a single destination or multiple destinations… comes from the ASX system… Local system only knows… destinations.”",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "For the investigated parcel, the first Chat message is present and contains tracking ID, dimensions, and package type.",
+    "If the first message fails for an unknown inducted parcel, default dimensions are assigned by OptiSweep.",
+    "The second Chat message is present and contains tracking ID, barcode data, dimensional data, and potential destination data.",
+    "Potential destination is interpreted as a sorted/sortable destination set (not a ZIP code)."
+  ],
+  "healthy_conditions": [
+    "First Chat message includes tracking ID, dimensions, and package type.",
+    "Fallback default dimensions occur when the first message fails and an unknown parcel is inducted.",
+    "Second Chat message includes tracking ID, barcode data, dimensional data, and potential destination data.",
+    "Potential destination is treated as a sorted destination set rather than a ZIP code."
+  ],
+  "failure_conditions": [
+    "First Chat message is missing or lacks tracking ID, dimensions, or package type.",
+    "Default dimensions are not assigned when the first message fails for an unknown inducted parcel.",
+    "Second Chat message is missing or lacks tracking ID, barcode data, dimensional data, or potential destination data.",
+    "Potential destination is misinterpreted as a ZIP code."
+  ],
+  "escalation_guidance": [
+    "Escalate if the second Chat message (with potential destination data) is missing or does not include the fields described in the source.",
+    "Escalate if default dimensions are not applied when the first message fails and an unknown parcel is inducted."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0013_so_why_is_this_potential_and_primary_00_20_02_000",
+      "what_to_look_at": "Parcel lifecycle slide frame showing the two Chat messages, the default-dimensions fallback for unknown inducted parcels when the first message fails, and the definition/contrast of potential destination as a sorted destination set (not a ZIP code)."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1",
+      "timestamp_start": "00:19:12.000",
+      "timestamp_end": "00:20:52.000",
+      "segment_id": "segment_training_video_0013",
+      "section_id": "training_video_day1_segment_0013",
+      "source_document_id": "training_video_day1_video",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0013_so_why_is_this_potential_and_primary_00_20_02_000",
+      "what_to_look_at": "Parcel lifecycle slide frame showing the two Chat messages, the default-dimensions fallback for unknown inducted parcels when the first message fails, and the definition/contrast of potential destination as a sorted destination set (not a ZIP code)."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0011_so_before_a_parcel_reaches_our_primary_00_17_45_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0004_so_right_so_i_don_t_primary_00_04_19_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0009_software_we_have_of_course_our_primary_00_12_23_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0074_what_s_this_so_this_is_primary_02_26_01_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_parcel_potential_destination_message_lifecycle"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The packet does not specify the exact live tool/screen where “Chat” messages are viewed, so step instructions reference the live “Chat” messaging/data surface without naming a specific UI/API endpoint."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day1_0004_so_right_so_i_don_t_primary_00_04_19_500",
+    "artifact_training_video_training_video_day1_0009_software_we_have_of_course_our_primary_00_12_23_000",
+    "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500",
+    "artifact_training_video_training_video_day1_0011_so_before_a_parcel_reaches_our_primary_00_17_45_500",
+    "artifact_training_video_training_video_day1_0013_so_why_is_this_potential_and_primary_00_20_02_000",
+    "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+    "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000",
+    "artifact_training_video_training_video_day1_0074_what_s_this_so_this_is_primary_02_26_01_500"
+  ]
+}

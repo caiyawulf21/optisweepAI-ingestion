@@ -101,6 +101,40 @@ def test_build_operational_finalization_packet_selects_related_records() -> None
     assert len(packet["source_sections"]) == 1
 
 
+def test_normalize_runbook_strips_step_images_already_on_runbook() -> None:
+    candidate = _candidate()
+    artifact_id = "artifact_manual_fig_4_19_operator_station_control_panel"
+    response = {
+        "runbook": {
+            "title": candidate["title"],
+            "candidate_id": candidate["candidate_id"],
+            "procedure_type": "operation",
+            "role_required": "operator",
+            "summary": candidate["summary"],
+            "screens_or_images": [{"artifact_id": artifact_id, "what_to_look_at": "MCP dual"}],
+            "steps": [
+                {
+                    "step_id": "step_1",
+                    "title": "Open panel",
+                    "instruction": "Open the control panel.",
+                    "screens_or_images": [{"artifact_id": artifact_id, "what_to_look_at": "same image"}],
+                },
+                {
+                    "step_id": "step_2",
+                    "title": "Other",
+                    "instruction": "Do something else.",
+                    "screens_or_images": [{"artifact_id": "artifact_other_only_on_step", "what_to_look_at": "other"}],
+                },
+            ],
+            "metadata": {"merge_status": "source_finalized"},
+        }
+    }
+    runbook = normalize_runbook(response, candidate, _Lineage())
+    assert runbook["steps"][0]["screens_or_images"] == []
+    assert runbook["steps"][1]["screens_or_images"][0]["artifact_id"] == "artifact_other_only_on_step"
+    assert any(ref.get("artifact_id") == artifact_id for ref in runbook.get("image_refs") or [])
+
+
 def test_normalize_runbook_applies_defaults() -> None:
     candidate = _candidate()
     response = {
@@ -229,3 +263,110 @@ def test_write_runbook_review_markdown_embeds_step_images(tmp_path) -> None:
     assert copied
     assert copied[0].name == hashlib.sha1(b"artifact_test_panel").hexdigest()[:16] + ".png"
     assert "*Operator panel power button in the upper-right corner.*" in markdown
+
+
+def test_write_runbook_review_markdown_embeds_runbook_level_images(tmp_path) -> None:
+    image_path = tmp_path / "artifacts" / "artifact_day2_frame.png"
+    image_path.parent.mkdir(parents=True)
+    image_path.write_bytes(b"png")
+    review_path = tmp_path / "review" / "runbook.md"
+    review_path.parent.mkdir(parents=True)
+    artifact_id = "artifact_day2_frame"
+    artifact_index = {
+        artifact_id: {
+            "artifact_id": artifact_id,
+            "storage_path": str(image_path),
+            "short_description": "Training frame",
+        }
+    }
+    runbook = {
+        "title": "Cancel Active Exchanges",
+        "procedure_id": "proc_cancel_active_exchanges_v1",
+        "procedure_type": "operation",
+        "role_required": "support",
+        "supporting_roles": [],
+        "support_safe": True,
+        "validation_status": "needs_sme_review",
+        "metadata": {"merge_status": "source_finalized"},
+        "summary": "Cancel exchanges after bag-out.",
+        "when_to_use": "Use after bag-out when exchanges remain active.",
+        "screens_or_images": [
+            {
+                "artifact_id": artifact_id,
+                "description": "Manual back out context and cancel-all statement.",
+            }
+        ],
+        "visual_references": [
+            {
+                "artifact_id": artifact_id,
+                "what_to_look_at": "Cancel-all-active exchanges control.",
+            }
+        ],
+        "steps": [
+            {
+                "step_number": 1,
+                "title": "Cancel exchanges",
+                "instruction": "Cancel all active exchanges.",
+                "expected_result": "Exchanges are cancelled.",
+                "screens_or_images": [],
+            }
+        ],
+    }
+
+    markdown = write_runbook_review_markdown(
+        runbook,
+        artifact_index=artifact_index,
+        review_markdown_path=review_path,
+        repo_root=tmp_path,
+    )
+
+    assert "## Visual References" in markdown
+    assert "assets/" in markdown
+    assert f"![{artifact_id}](" in markdown
+    assert "*Cancel-all-active exchanges control.*" in markdown
+    copied = list((review_path.parent / "assets").glob("*"))
+    assert copied
+    assert copied[0].name == hashlib.sha1(artifact_id.encode("utf-8")).hexdigest()[:16] + ".png"
+
+
+def test_normalize_runbook_drops_weak_evidence_and_skips_related_artifact_backfill() -> None:
+    candidate = _candidate()
+    candidate["related_artifact_ids"] = [
+        "artifact_manual_fig_4_19_operator_station_control_panel",
+        "artifact_training_video_questions_comments_lunch",
+        "artifact_unrelated_db_model",
+    ]
+    response = {
+        "runbook": {
+            "title": candidate["title"],
+            "candidate_id": candidate["candidate_id"],
+            "procedure_type": "operation",
+            "role_required": "operator",
+            "summary": candidate["summary"],
+            "visual_references": [
+                {
+                    "artifact_id": "artifact_manual_fig_4_19_operator_station_control_panel",
+                    "what_to_look_at": "MCP dual",
+                },
+                {
+                    "artifact_id": "artifact_training_video_questions_comments_lunch",
+                    "what_to_look_at": "Q&A tip",
+                },
+            ],
+            "steps": [
+                {
+                    "step_id": "step_1",
+                    "title": "Open panel",
+                    "instruction": "Open the control panel.",
+                }
+            ],
+            "metadata": {"merge_status": "source_finalized"},
+        }
+    }
+    runbook = normalize_runbook(response, candidate, _Lineage())
+    visual_ids = [ref.get("artifact_id") for ref in runbook.get("visual_references") or []]
+    image_ids = [ref.get("artifact_id") for ref in runbook.get("image_refs") or []]
+    assert visual_ids == ["artifact_manual_fig_4_19_operator_station_control_panel"]
+    assert "artifact_training_video_questions_comments_lunch" not in image_ids
+    assert "artifact_unrelated_db_model" not in image_ids
+    assert "artifact_manual_fig_4_19_operator_station_control_panel" in image_ids

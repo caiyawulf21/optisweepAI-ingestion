@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hospital station cannot add or induct totes</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+.warn { color: #8a4b00; }
+details.linked-runbook { border: 1px solid #ddd; border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0; }
+details.linked-runbook > summary { cursor: pointer; font-size: 1.05rem; margin-bottom: 0.5rem; }
+details.linked-runbook-group { border: 1px solid #e0e0e0; border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0; background: #fafafa; }
+details.linked-runbook-group > summary { cursor: pointer; font-weight: 600; margin-bottom: 0.5rem; }
+details.linked-runbook-operator { border-left: 4px solid #2f6f4e; }
+details.linked-runbook-support { border-left: 4px solid #2f4f7f; }
+.missing-image { border: 1px dashed #bbb; padding: 1rem; background: #fafafa; }
+.missing-image-label { font-family: monospace; font-weight: 600; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Hospital station cannot add or induct totes</h1>
+<h2>Playbook Header</h2>
+<table>
+<tr><th>Playbook ID</th><td>playbook_incident_223554_hospital_tote_induction</td></tr>
+<tr><th>Case ID</th><td>223554</td></tr>
+<tr><th>Extraction Mode</th><td>one_or_more_playbook_candidates_when_separable</td></tr>
+<tr><th>Confidence</th><td>high</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+</table>
+<h2>Entry Symptoms</h2>
+<ul>
+<li>The hospital station cannot add or induct totes.</li>
+<li>Totes can be removed but cannot be added at the hospital.</li>
+<li>A robot or AGV is reported in a shut down state.</li>
+<li>An AGV appears not to belong in the displayed location, or two AGVs appear under the same rack or in the same zone.</li>
+<li>Hospital backlog or tote flow disruption is reported.</li>
+</ul>
+<h2>Nodes</h2>
+<h3>1 — Confirm the hospital induction symptom and current AGV/tote context (diagnostic_decision)</h3>
+<p><strong>Objective:</strong> Confirm whether the reported failure is specifically inability to add or induct totes at the hospital station and whether an affected AGV, rack position, or associated tote appears abnormal.</p>
+<p><strong>Why this check is next:</strong> The source reports that the site could remove totes but could not add them, and shows an annotated HMI-style layout in a discussion of an AGV being in the wrong location.</p>
+<p><strong>Action:</strong> Interview the site/operator about whether hospital tote removal works while tote add/induct fails, then verify on the hospital HMI whether the affected station shows any unexpected AGV/rack/zone occupancy pattern.</p>
+<p><strong>Healthy:</strong> Hospital tote add/induct works at the affected station and hospital HMI shows no unexpected AGV occupancy or duplicate rack/zone association.</p>
+<p><strong>Unhealthy:</strong> Hospital tote add/induct remains unavailable (especially while removal works) and hospital HMI shows an unexpected AGV/rack/zone occupancy pattern or duplicate occupancy.</p>
+<p><strong>Inconclusive:</strong> The site cannot reproduce the symptom, or station/HMI labels/identifiers are unreadable, or operator and displayed state cannot be reconciled with available evidence.</p>
+<p><strong>Suggested database check:</strong></p>
+<ul>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> HospitalDatabaseModel</li>
+<li><strong>Inspect:</strong> Hospital entrance and exit queue locations.</li>
+<li><strong>Inspect:</strong> Hospital tote drop-off location.</li>
+</ul></li>
+<li><strong>Database:</strong> sorter_sweeper
+<ul><li><strong>Model:</strong> HospitalTagsModel</li>
+<li><strong>Inspect:</strong> Whether tag is in or out; drives action.</li>
+<li><strong>Inspect:</strong> List of hospital controller tags.</li>
+<li><strong>Inspect:</strong> Modular typed value columns (string/bool) selected by variable type.</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> RobotDatabaseModel</li>
+<li><strong>Inspect:</strong> Robot state enum (Tipper/Hospital/Charger/Sorter/GLD/ShutDown family).</li>
+<li><strong>Inspect:</strong> Tote currently associated with robot.</li>
+<li><strong>Inspect:</strong> Assigned sorter side.</li>
+</ul></li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L1_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>They can remove totes but cannot add; chat also says an AGV does not belong in the shown location and two AGVs are under the rack in the same zone.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_2</code> when Hospital tote induction fails (with or without AGV/tote anomaly)</li>
+<li><code>healthy</code> → <code>node_5</code> when Hospital add/remove works; no relevant anomaly observed</li>
+</ul>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h3>2 — Determine whether AGV and tote state is inconsistent (diagnostic_decision)</h3>
+<p><strong>Objective:</strong> Determine whether an AGV removal, unexpected location, duplicate rack occupancy, or disconnected tote association is present and plausibly connected to the hospital induction symptom.</p>
+<p><strong>Why this check is next:</strong> The packet repeatedly discusses an AGV in the wrong location, multiple AGVs under a rack, a disconnected tote, and use of API dog or Aveva to correct AGV and tote state.</p>
+<p><strong>Action:</strong> Verify whether the hospital AGV roster/location state is inconsistent with the expected rack/zone layout and whether a disconnected/orphaned tote association exists, using hospital HMI for what is visible and authorized backend reads when available.</p>
+<p><strong>Healthy:</strong> AGV position and station/rack association match the expected layout and no disconnected/orphaned tote association is observed.</p>
+<p><strong>Unhealthy:</strong> An AGV is displayed in an unexpected location; duplicate occupancy under one rack/zone is shown; and/or a tote appears associated with a removed/disconnected AGV.</p>
+<p><strong>Inconclusive:</strong> Hospital view identifiers cannot be read (low resolution); the association cannot be confirmed; or the anomaly is based only on second-hand discussion.</p>
+<p><strong>Suggested database check:</strong></p>
+<ul>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> RobotDatabaseModel</li>
+<li><strong>Inspect:</strong> Robot state enum (Tipper/Hospital/Charger/Sorter/GLD/ShutDown family).</li>
+<li><strong>Inspect:</strong> Tote currently associated with robot.</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> RobotLocationDatabaseModel</li>
+<li><strong>Inspect:</strong> Station / workstation number for the location.</li>
+<li><strong>Inspect:</strong> Whether the location is currently occupied.</li>
+<li><strong>Inspect:</strong> Zone associated with the location (sorter-side zones).</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> AgvActiveErrorDatabaseModel</li>
+<li><strong>Inspect:</strong> Robot code.</li>
+<li><strong>Inspect:</strong> Active error code.</li>
+<li><strong>Inspect:</strong> Error description.</li>
+</ul></li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> L1_support, L2_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>Summary describes an AGV with a disconnected tote, removal of an inducted tote through API dog, and removal of additional AGVs to restore flow.</li>
+<li>Chat says Aveva hits the same endpoints as API dog and was used to remove an AGV from a zone and add a tote to a station.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_3</code> when AGV location/roster/tote association inconsistency indicated</li>
+<li><code>inconclusive</code> → <code>node_5</code> when AGV/tote state appears consistent or anomaly cannot be confirmed</li>
+</ul>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h3>3 — Apply authorized correction for supported AGV or tote-state mismatch (procedure_reference)</h3>
+<p><strong>Objective:</strong> Use an authorized, source-supported recovery procedure to correct the affected AGV or tote state when the diagnostic evidence identifies a supported mismatch.</p>
+<p><strong>Why this check is next:</strong> The source reports high-level use of API dog and Aveva to remove totes, remove an AGV from a zone, and add a tote to a station; it does not provide the exact procedure.</p>
+<p><strong>Action:</strong> Use the authorized Aveva/API interface to correct the supported AGV or tote-state mismatch, then obtain evidence that the stale/disconnected association is removed and the expected hospital association is restored.</p>
+<p><strong>Healthy:</strong> Authorized interface reflects the intended AGV/tote association after correction, allowing hospital tote-flow validation to proceed.</p>
+<p><strong>Unhealthy:</strong> The interface rejects the correction, or the state remains inconsistent, leaving the hospital induction target ambiguous.</p>
+<p><strong>Inconclusive:</strong> The interface does not provide reliable confirmation, or required role/safety preconditions are unavailable.</p>
+<p><strong>Procedure Reference:</strong></p>
+<ul>
+<li><strong>Trigger condition:</strong> The authorized operator or support role observes that the targeted AGV or tote state has been corrected in the approved interface. Progress signal: the stale or disconnected association is removed or the expected station association is restored. Unhealthy signal: the interface rejects the correction, the state remains inconsistent, or the action would require an unapproved physical or database change. Inconclusive: the source interface does not show a reliable post-action state.</li>
+<li><strong>Selected procedure:</strong> Use AGV API Controls to Remove/Recover an AGV and Pause/Resume All AGVs (`proc_use_agv_api_controls_remove_recover_pause_resume_v1`)</li>
+<li><strong>Selection rationale:</strong> Retrieval match (0.6619, boosted 0.8619).</li>
+<li><strong>Success confirmation:</strong> Remove AGV is followed by physical removal of the AGV from the system; if a tote is present, the tote is taken to the hospital where the tote is removed.</li>
+<li><strong>Failure boundary:</strong> Cannot physically remove/recover the AGV/tote as required after using Remove AGV.</li>
+</ul>
+<p><strong>Prerequisites:</strong></p>
+<ul>
+<li>You have the target AGV ID to enter into the Remove AGV and Recover AGV fields.</li>
+<li>Access to the System HMI API screen with the AGVs section (AGV API Controls)</li>
+</ul>
+<p><strong>Safety checks:</strong></p>
+<ul>
+<li>If the AGV has a tote, take the tote to the hospital where the tote is removed; the tote is recovered when it is put back in the system.</li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L1_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li><code>proc_use_agv_api_controls_remove_recover_pause_resume_v1</code> (medium, operator, score=0.6619) — Use AGV API Controls to Remove/Recover an AGV and Pause/Resume All AGVs</li>
+<li><code>proc_start_optsweep_agv_system_reset_metrics_start_closeout_bagout_verify_running_shutdown_v1</code> (high, operator, score=0.573) — Start OptiSweep AGV System (Reset Metrics → Start System → Close Out/Bag Out → Verify Running → Shut Down)</li>
+<li><code>proc_start_optisweep_agv_system_from_shutdown_reset_metrics_start_closeout_running_v1</code> (high, operator, score=0.5605) — Start OptiSweep AGV System From Shut-down Mode (Reset Metrics → Start → Close out/Bag Out → Running)</li>
+</ul>
+<p><strong>Evidence Collection Procedures:</strong></p>
+<ul>
+<li><code>proc_use_agv_api_controls_remove_recover_pause_resume_v1</code> — Use AGV API Controls to Remove/Recover an AGV and Pause/Resume All AGVs (operator): Use the System HMI API screen’s AGVs section to remove a problematic AGV by ID, recover (add back) the AGV by ID after physical recovery, and pause/resume all AGV movement fleet-wide.</li>
+<li><code>proc_start_optsweep_agv_system_reset_metrics_start_closeout_bagout_verify_running_shutdown_v1</code> — Start OptiSweep AGV System (Reset Metrics → Start System → Close Out/Bag Out → Verify Running → Shut Down) (operator): Perform the required AGV start-up prerequisites (nine empty AGVs: five under the north rack and four under the south rack), start the OptiSweep system 15 minutes before the sort, run the documented start sequence (Reset Metrics → Start System → Close Out/Bag Out), verify the system returns to the &quot;Running&quot; state after Bag Out, and then shut down.</li>
+<li><code>proc_start_optisweep_agv_system_from_shutdown_reset_metrics_start_closeout_running_v1</code> — Start OptiSweep AGV System From Shut-down Mode (Reset Metrics → Start → Close out/Bag Out → Running) (operator): Use the OptiSweep system screen to bring the AGV system from Shut-down Mode into the normal “Running” state by verifying the required number of empty AGVs, resetting metrics, starting the system, performing close out (Bag Out) until the system returns to “Running,” and then shutting down when finished.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>API dog was used to remove an inducted tote and a disconnected tote, and additional AGVs were taken out during recovery.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Decision Outcomes:</strong></p>
+<ul>
+<li><code>healthy</code> (observer=remote; tool=Apidog — OptiSweep / WCS API client): Authorized correction completed and intended association restored.</li>
+<li><code>unhealthy</code> (observer=remote; tool=Apidog — OptiSweep / WCS API client): Correction fails or leaves association ambiguous.</li>
+<li><code>inconclusive</code> (observer=remote; tool=Apidog — OptiSweep / WCS API client): Post-action state confirmation is not reliable.</li>
+</ul>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>healthy</code> → <code>node_4</code> when Authorized correction completed</li>
+<li><code>unhealthy</code> → <code>node_5</code> when Correction rejected/unsafe/unauthorized or leaves association ambiguous</li>
+</ul>
+<details class="linked-runbook-group linked-runbook-operator" open><summary><strong>Operator runbooks</strong> (3)</summary>
+<details class="linked-runbook linked-runbook-operator" open><summary><strong>Operator runbook:</strong> Use AGV API Controls to Remove/Recover an AGV and Pause/Resume All AGVs (<code>proc_use_agv_api_controls_remove_recover_pause_resume_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> operation</li>
+<li><strong>Role:</strong> operator</li>
+<li><strong>Audience:</strong> operator</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use the System HMI API screen’s AGVs section to remove a problematic AGV by ID, recover (add back) the AGV by ID after physical recovery, and pause/resume all AGV movement fleet-wide.</p>
+<p><strong>When To Use:</strong></p>
+<p>When an AGV needs to be removed from the system (e.g., it has an issue) and later recovered after physical removal/recovery, and you need to pause/resume all AGV movement using the AGV API Controls.</p>
+<p><strong>Safety Notes:</strong></p><ul>
+<li>If the AGV has a tote, take the tote to the hospital where the tote is removed; the tote is recovered when it is put back in the system.</li>
+</ul>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>Remove AGV is followed by physical removal of the AGV from the system; if a tote is present, the tote is taken to the hospital where the tote is removed.</td><td><code></code></td></tr>
+<tr><td><code>unhealthy</code></td><td>Cannot physically remove/recover the AGV/tote as required after using Remove AGV.</td><td><code></code></td></tr>
+<tr><td><code>unknown</code></td><td>State cannot be confirmed from available runbook evidence.</td><td><code></code></td></tr>
+</table>
+<p><strong>Source:</strong> manual / manual_optisweep_om_v3</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Open the System HMI API screen and navigate to the AGVs section</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the System HMI API screen and navigate to the AGVs section (AGV API Controls).</p>
+<p><strong>Healthy condition:</strong></p>
+<p>AGV API Controls are visible and ready for input (Remove AGV / Recover AGV fields and Pause/Resume buttons are present).</p>
+<p><strong>Expected result:</strong></p>
+<p>The AGVs section is visible with controls including Remove AGV, Recover AGV, Pause All AGVs, and Resume All AGVs.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/4f58f8bb3f0f6aea.jpeg" alt="artifact_fig_4_12_agv_api_controls"><figcaption>AGV API Controls screen showing Remove AGV, Recover AGV, Pause All AGVs, Resume All AGVs (and related controls).</figcaption></figure>
+<figure><img src="assets/236b090cc9e88151.jpeg" alt="artifact_fig_4_13_get_agv_status_pop_up_screen"><figcaption>Get AGV Status pop-up used to view AGV details (battery status, command status, error codes, and AGV state).</figcaption></figure>
+<figure><img src="assets/d87070d22301b81d.jpeg" alt="artifact_fig_5_4_faulted_agv_with_tote_screen"><figcaption>Example HMI state for a faulted AGV with a tote; recovery guidance references removing the AGV via API controls and taking the tote to the hospital.</figcaption></figure>
+<hr>
+<h5>Step 2 — Remove an AGV from the system by AGV ID</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>In the AGVs section, enter the target AGV ID in the Remove AGV input field, then click the Remove AGV control/button.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>After clicking Remove AGV, you can proceed with physical removal of the AGV from the system (and tote handling if applicable).</p>
+<p><strong>Expected result:</strong></p>
+<p>The Remove AGV action is accepted for the entered AGV ID, and the AGV is removed from the system after the required physical removal step.</p>
+<hr>
+<h5>Step 3 — Recover (add back) the AGV by AGV ID after physical recovery</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>After the physical recovery/add-back step, enter the same (or correct) AGV ID in the Recover AGV input field, then click the Recover AGV control/button.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The AGV is successfully re-added to the system and you can proceed to fleet pause/resume actions as needed.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Recover AGV action is accepted for the entered AGV ID, and the AGV is added back into the system after physical recovery.</p>
+<hr>
+<h5>Step 4 — Pause all AGV movement</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Click Pause All AGVs in the AGVs section of the API screen.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>AGV movement is stopped fleet-wide (pause state is in effect).</p>
+<p><strong>Expected result:</strong></p>
+<p>Fleet-wide AGV movement is paused after clicking Pause All AGVs.</p>
+<hr>
+<h5>Step 5 — Resume all AGV movement</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Click Resume All AGVs in the AGVs section of the API screen.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>AGV movement is running fleet-wide (resume state is in effect).</p>
+<p><strong>Expected result:</strong></p>
+<p>Fleet-wide AGV movement resumes after clicking Resume All AGVs.</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>Remove AGV is followed by physical removal of the AGV from the system; if a tote is present, the tote is taken to the hospital where the tote is removed.</li>
+<li>Recover AGV is performed after physical recovery/add-back, resulting in the AGV being added back into the system.</li>
+<li>Pause All AGVs stops fleet-wide AGV movement, and Resume All AGVs resumes fleet-wide AGV movement.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>Cannot physically remove/recover the AGV/tote as required after using Remove AGV.</li>
+<li>System does not reflect expected fleet behavior after Pause All AGVs (verify AGV state using Get AGV Status pop-up).</li>
+</ul>
+</details>
+<details class="linked-runbook linked-runbook-operator"><summary><strong>Operator runbook:</strong> Start OptiSweep AGV System (Reset Metrics → Start System → Close Out/Bag Out → Verify Running → Shut Down) (<code>proc_start_optsweep_agv_system_reset_metrics_start_closeout_bagout_verify_running_shutdown_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> operation</li>
+<li><strong>Role:</strong> operator</li>
+<li><strong>Audience:</strong> operator</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Perform the required AGV start-up prerequisites (nine empty AGVs: five under the north rack and four under the south rack), start the OptiSweep system 15 minutes before the sort, run the documented start sequence (Reset Metrics → Start System → Close Out/Bag Out), verify the system returns to the &quot;Running&quot; state after Bag Out, and then shut down.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use to start the OptiSweep AGV system for an upcoming sort, ensuring the system is properly prepared (nine empty AGVs) and that the system transitions back to the &quot;Running&quot; state after close out (Bag Out).</p>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>Nine empty AGVs prerequisite is satisfied (5 under north rack, 4 under south rack), with any moved empty AGV added to RMS.</td><td><code></code></td></tr>
+<tr><td><code>unhealthy</code></td><td>System does not return to &quot;Running&quot; after close out (Bag Out).</td><td><code></code></td></tr>
+<tr><td><code>unknown</code></td><td>State cannot be confirmed from available runbook evidence.</td><td><code></code></td></tr>
+</table>
+<p><strong>Source:</strong> manual / manual_optisweep_om_v3</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Verify nine empty AGVs are present (5 north / 4 south)</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Verify there are nine (9) AGVs without totes in the system: five (5) under the north rack and four (4) under the south rack.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>North rack has 5 AGVs without totes and south rack has 4 AGVs without totes.</p>
+<p><strong>Expected result:</strong></p>
+<p>You confirm five (5) empty AGVs under the north rack and four (4) empty AGVs under the south rack.</p>
+<hr>
+<h5>Step 2 — Move an empty AGV into the missing zone and add it to RMS (if needed)</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>If fewer than nine empty AGVs are present, move an AGV without a tote into the zone that is missing an empty AGV, then add that AGV to the RMS after moving it.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>After adding the moved AGV in RMS, the AGV is successfully registered (per the RMS add screen procedure, the AGV turns blue and its status is verified as &quot;szonestaging&quot;).</p>
+<p><strong>Expected result:</strong></p>
+<p>The missing zone now has an empty AGV, and the moved AGV has been added to RMS.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/ec83d895fff08cd8.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen"><figcaption>RMS screen for adding an AGV to a zone when no empty AGV is present (includes steps to E-stop RMS, move an AGV into the zone, add AGV in RMS, wait for AGV to turn blue, and verify AGV status is &quot;szonestaging&quot;).</figcaption></figure>
+<hr>
+<h5>Step 3 — Confirm start timing (15 minutes before sort starts)</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Confirm the system start will occur 15 minutes before the sort starts.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>System start is initiated at the required lead time (15 minutes before sort starts).</p>
+<p><strong>Expected result:</strong></p>
+<p>You confirm the start time is set to occur 15 minutes before the sort begins.</p>
+<hr>
+<h5>Step 4 — Reset metrics</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the system control surface (System API Controls), perform the Reset Metrics step.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Reset Metrics is executed as the first step in the sequence before starting the system.</p>
+<p><strong>Expected result:</strong></p>
+<p>Metrics have been reset (Reset Metrics action completed on the System API Controls screen).</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/2a4d007ef9ff9ec1.jpeg" alt="artifact_fig_4_9_system_api_controls"><figcaption>System API Controls screen showing controls for Get System State, System Startup, System Shutdown, System Close Out, System Purge, and Reset Metrics.</figcaption></figure>
+<hr>
+<h5>Step 5 — Start the system</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the system control surface (System API Controls), start the system using the System Startup control.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>System Startup is executed after Reset Metrics and before Close Out (Bag Out).</p>
+<p><strong>Expected result:</strong></p>
+<p>The system is placed into the running state via the System Startup control.</p>
+<hr>
+<h5>Step 6 — Perform close out (Bag Out)</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the system control surface (System API Controls), perform Close Out (Bag Out) as the next step in the sequence.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Close Out (Bag Out) completes as the third step in the sequence.</p>
+<p><strong>Expected result:</strong></p>
+<p>Close out (Bag Out) is completed.</p>
+<hr>
+<h5>Step 7 — Verify system returns to &quot;Running&quot; after Bag Out</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>After close out (Bag Out) is completed, verify the system state returns to &quot;Running&quot;.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>System state shows &quot;Running&quot;.</p>
+<p><strong>Expected result:</strong></p>
+<p>System state is &quot;Running&quot; after Bag Out completes.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/597651fff1a13999.jpeg" alt="artifact_fig_5_1_system_in_shut_down_mode"><figcaption>System screen showing the shut-down state used during the AGV system start-up procedure (includes the documented sequence: Reset metrics → Start system → Close out (Bag Out) → Running → Shut down).</figcaption></figure>
+<hr>
+<h5>Step 8 — Shut down the system</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the system control surface (System API Controls), shut down the system using the System Shutdown control.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Shutdown is performed as the final step after Bag Out and verification of &quot;Running&quot;.</p>
+<p><strong>Expected result:</strong></p>
+<p>System shutdown is initiated/completed via the System Shutdown control.</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>Nine empty AGVs prerequisite is satisfied (5 under north rack, 4 under south rack), with any moved empty AGV added to RMS.</li>
+<li>System is started 15 minutes before the sort starts.</li>
+<li>After close out (Bag Out) is completed, the system state returns to &quot;Running&quot;.</li>
+<li>System shutdown is completed as the final step.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>System does not return to &quot;Running&quot; after close out (Bag Out).</li>
+<li>Nine empty AGV prerequisite cannot be met (not 5 north / 4 south) without moving an empty AGV and adding it to RMS.</li>
+</ul>
+</details>
+<details class="linked-runbook linked-runbook-operator"><summary><strong>Operator runbook:</strong> Start OptiSweep AGV System From Shut-down Mode (Reset Metrics → Start → Close out/Bag Out → Running) (<code>proc_start_optisweep_agv_system_from_shutdown_reset_metrics_start_closeout_running_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> operation</li>
+<li><strong>Role:</strong> operator</li>
+<li><strong>Audience:</strong> operator</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use the OptiSweep system screen to bring the AGV system from Shut-down Mode into the normal “Running” state by verifying the required number of empty AGVs, resetting metrics, starting the system, performing close out (Bag Out) until the system returns to “Running,” and then shutting down when finished.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use this procedure when the OptiSweep AGV system is in Shut-down Mode and you need to start it into normal “Running” operation using the documented start-up sequence (Reset metrics → Start → Close out/Bag Out → Running).</p>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>After close out (Bag Out) is completed, the system status returns to “Running”.</td><td><code></code></td></tr>
+<tr><td><code>unhealthy</code></td><td>System does not return to “Running” after Bag Out (Step 5).</td><td><code></code></td></tr>
+<tr><td><code>unknown</code></td><td>State cannot be confirmed from available runbook evidence.</td><td><code></code></td></tr>
+</table>
+<p><strong>Source:</strong> manual / manual_optisweep_om_v3</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Verify nine (9) empty AGVs are present (5 north, 4 south)</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Confirm there are nine (9) AGVs without totes in the system: five (5) under the north rack and four (4) under the south rack. If not, move an AGV into the zone missing an empty AGV, then add that AGV to RMS after moving it.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The empty-AGV counts match the required distribution: 5 north and 4 south.</p>
+<p><strong>Expected result:</strong></p>
+<p>You have five (5) empty AGVs under the north rack and four (4) empty AGVs under the south rack (total nine (9) empty AGVs).</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/ec83d895fff08cd8.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen"><figcaption>Figure 5-3: Add AGV to Zone with No Empty AGV Screen used when the system is started without nine empty AGVs and you must move an AGV into the missing zone and add it to RMS.</figcaption></figure>
+<hr>
+<h5>Step 2 — Open the System in Shut-down Mode screen and verify Shut-down Mode</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the system screen shown as “System in Shut-down Mode” (Figure 5-1) and verify the system mode indicates Shut-down.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>System mode is displayed as Shut-down on the referenced system screen.</p>
+<p><strong>Expected result:</strong></p>
+<p>The system mode indicator on the “System in Shut-down Mode” screen shows Shut-down.</p>
+<hr>
+<h5>Step 3 — Reset metrics</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the “System in Shut-down Mode” screen (Figure 5-1), use the control option to Reset metrics.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Reset metrics control is executed as part of the start-up sequence.</p>
+<p><strong>Expected result:</strong></p>
+<p>Metrics are reset using the Reset metrics control on the system screen.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/597651fff1a13999.jpeg" alt="artifact_fig_5_1_system_in_shut_down_mode"><figcaption>Figure 5-1: System in Shut-down Mode screen referenced for verifying Shut-down Mode and using the start-up controls (Reset metrics / Start / Close out/Bag Out / Shut down).</figcaption></figure>
+<figure><img src="assets/2a4d007ef9ff9ec1.jpeg" alt="artifact_fig_4_9_system_api_controls"><figcaption>Figure 4-9: System API Controls screen showing System Startup, System Shutdown, System Close Out, Reset Metrics, and Get System State.</figcaption></figure>
+<hr>
+<h5>Step 4 — Start the system</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the “System in Shut-down Mode” screen (Figure 5-1), use the control to Start the system.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>System Startup is initiated from the Shut-down Mode screen.</p>
+<p><strong>Expected result:</strong></p>
+<p>The system start control is executed as part of the start-up sequence.</p>
+<hr>
+<h5>Step 5 — Perform close out (Bag Out) until system returns to Running</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Perform close out (Bag Out) and continue until the system status returns to “Running.”</p>
+<p><strong>Healthy condition:</strong></p>
+<p>System status transitions back to “Running” after Bag Out completes.</p>
+<p><strong>Expected result:</strong></p>
+<p>After close out (Bag Out) is completed, the system status returns to “Running.”</p>
+<hr>
+<h5>Step 6 — Shut down when the start-up process is complete and you are done</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>When the start-up process is complete and you are done with the procedure, shut down using the documented shut down step/control.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>System Shutdown is executed after the system has returned to Running and you are done with the procedure.</p>
+<p><strong>Expected result:</strong></p>
+<p>System shutdown is initiated using the documented shut down control/step.</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>After close out (Bag Out) is completed, the system status returns to “Running”.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>System does not return to “Running” after Bag Out (Step 5).</li>
+<li>Precondition not met: fewer than nine (9) empty AGVs (5 north, 4 south) before starting (Step 1).</li>
+</ul>
+</details>
+</details>
+<hr>
+<h3>4 — Validate hospital tote flow and AGV recovery (validation_gate)</h3>
+<p><strong>Objective:</strong> Confirm that the hospital station accepts totes again and that the affected AGV and tote state no longer prevents normal flow.</p>
+<p><strong>Why this check is next:</strong> The source reports restoration of adding and removing totes and that all robots were re-added and running.</p>
+<p><strong>Validate:</strong> Validate hospital tote flow by confirming that the hospital station can add and remove totes again, and that affected robots/AGVs are back up and operating normally without immediate recurrence.</p>
+<p><strong>Success:</strong> Hospital can add and remove totes; affected robots/AGVs are back up and running; movement resumes; backlog does not immediately recur.</p>
+<p><strong>Failure:</strong> Hospital cannot accept/induct totes; AGVs remain shut down/misplaced or associated with disconnected totes; backlog continues to grow.</p>
+<p><strong>Inconclusive:</strong> Only a general statement that the system is running is available; validation is not performed at the hospital station.</p>
+<p><strong>Validation Gate:</strong></p>
+<p><strong>Validation checklist:</strong></p>
+<ul>
+<li>Confirm the owning service remains running and stable.</li>
+<li>Confirm the supported API or control endpoint responds.</li>
+<li>Confirm the source-observed HMI state and ask the site to repeat the affected workflow.</li>
+<li>Observe the affected workflow for recurrence during the stated observation window.</li>
+</ul>
+<p><strong>Required evidence sources:</strong> a site interview</p>
+<p><strong>Stable-operation observation:</strong> Observe the affected workflow for recurrence during the defined observation window; a reachable screen or successful request alone is not recovery.</p>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L1_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>Site was able to add and remove totes and all robots were re-added and back up and running.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>healthy</code> → <code>node_5</code> when Hospital adds/removes totes and robots operating as expected</li>
+<li><code>unhealthy</code> → <code>node_5</code> when Hospital still cannot induct/add totes or inconsistency persists</li>
+</ul>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h3>5 — Stop if hospital-state correction is unsupported or validation fails (escalation_gate)</h3>
+<p><strong>Objective:</strong> Hand off when the hospital tote or AGV state cannot be safely identified or the approved correction does not restore hospital tote flow.</p>
+<p><strong>Why this check is next:</strong> The packet documents uncertain cause, unreadable artifacts, and high-level state-correction actions without a complete supported procedure.</p>
+<p><strong>Action:</strong> Stop and prepare an escalation handoff only after confirming that hospital tote/AGV state cannot be safely identified or that the supported correction did not restore hospital tote flow.</p>
+<p><strong>Healthy:</strong> Gate condition is met as a stop/handoff event with sufficient evidence for the next role; no additional unapproved state changes should be performed here.</p>
+<p><strong>Unhealthy:</strong> Attempting additional unapproved physical/database/config changes would be required to continue without evidence or authorization.</p>
+<p><strong>Inconclusive:</strong> Affected AGV/tote/station cannot be uniquely identified or evidence is limited to second-hand/unreadable artifacts.</p>
+<p><strong>Escalation Gate:</strong></p>
+<ul>
+<li><strong>Reason:</strong> Hand off when the hospital tote or AGV state cannot be safely identified or the approved correction does not restore hospital tote flow.</li>
+<li><strong>Required next team:</strong> The owning L2/L3 service or controls team</li>
+</ul>
+<p><strong>Evidence package:</strong></p>
+<ul>
+<li>Hospital HMI/layout evidence of the attempted/observed induction failure context</li>
+<li>AGV and tote association observations (what is known vs unknown)</li>
+<li>Results of any attempted authorized corrections via Apidog/WCS API (success/reject/uncertain post-action state)</li>
+<li>Validation results from hospital tote add/remove behavior</li>
+<li>Stop criteria justification: why further state-changing or physical actions would be unsafe or unapproved</li>
+<li>{&#x27;page_ref&#x27;: &#x27;case_223554:page_11&#x27;, &#x27;chunk_id&#x27;: &#x27;stage4_page_chunk_004&#x27;, &#x27;site_code&#x27;: &#x27;ups_haslet_tx&#x27;, &#x27;site_label&#x27;: &#x27;UPS Haslet TX (TXRTH)&#x27;, &#x27;quote_or_summary&#x27;: &#x27;Incident summary states the exact cause was not known and lists several recovery actions.&#x27;}</li>
+</ul>
+<p><strong>Actions attempted:</strong></p>
+<ul>
+<li>None</li>
+</ul>
+<p><strong>Unresolved questions:</strong></p>
+<ul>
+<li>None</li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> L2_support, L3_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>Incident summary states the exact cause was not known and lists several recovery actions.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Decision Outcomes:</strong></p>
+<ul>
+<li><code>healthy</code> (observer=remote; tool=Hospital HMI / lane UI): Stop condition satisfied: sufficient evidence exists for an escalation handoff; no further state changes performed here.</li>
+<li><code>unhealthy</code> (observer=remote; tool=Hospital HMI / lane UI): Unapproved continuation risk: further state-changing or physical actions would be required without safe identification.</li>
+<li><code>inconclusive</code> (observer=remote; tool=Hospital HMI / lane UI): Insufficient evidence prevents safe handoff completeness.</li>
+</ul>
+<p><strong>Branches:</strong> no branch outcomes — proceed / escalate (procedure or escalation node).</p>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h2>Branch Graph</h2>
+<table>
+<tr><th>From Node</th><th>Outcome</th><th>Condition</th><th>Next Node</th></tr>
+<tr><td><code>node_1</code></td><td><code>unhealthy</code></td><td>Hospital tote induction fails (with or without AGV/tote anomaly)</td><td><code>node_2</code></td></tr>
+<tr><td><code>node_1</code></td><td><code>healthy</code></td><td>Hospital add/remove works; no relevant anomaly observed</td><td><code>node_5</code></td></tr>
+<tr><td><code>node_2</code></td><td><code>unhealthy</code></td><td>AGV location/roster/tote association inconsistency indicated</td><td><code>node_3</code></td></tr>
+<tr><td><code>node_2</code></td><td><code>inconclusive</code></td><td>AGV/tote state appears consistent or anomaly cannot be confirmed</td><td><code>node_5</code></td></tr>
+<tr><td><code>node_3</code></td><td><code>healthy</code></td><td>Authorized correction completed</td><td><code>node_4</code></td></tr>
+<tr><td><code>node_3</code></td><td><code>unhealthy</code></td><td>Correction rejected/unsafe/unauthorized or leaves association ambiguous</td><td><code>node_5</code></td></tr>
+<tr><td><code>node_4</code></td><td><code>healthy</code></td><td>Hospital adds/removes totes and robots operating as expected</td><td><code>node_5</code></td></tr>
+<tr><td><code>node_4</code></td><td><code>unhealthy</code></td><td>Hospital still cannot induct/add totes or inconsistency persists</td><td><code>node_5</code></td></tr>
+</table>
+</body>
+</html>

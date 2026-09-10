@@ -5,21 +5,16 @@ from __future__ import annotations
 import json
 import os
 import re
-import urllib.error
-import urllib.parse
-import urllib.request
 from pathlib import Path
 from typing import Any, Protocol
 
 from dotenv import load_dotenv
 
+from shared_pipeline_stages.llm_pacing import default_azure_api_version, request_azure_chat_json
 from operationalknowledgeingestion.src.optisweep_ingestion.schemas.operational_context import ALLOWED_CONTEXT_TYPES, FORBIDDEN_FIELDS
 from operationalknowledgeingestion.src.optisweep_ingestion.tools.artifact_linker import enrich_context_records
 from operationalknowledgeingestion.src.optisweep_ingestion.services.source_ref_service import apply_lineage, build_source_ref, lineage_from_bundle
 from operationalknowledgeingestion.src.optisweep_ingestion.utils.json_utils import read_json, write_json
-
-FOUNDRY_API_VERSION = "2025-04-01-preview"
-CLASSIC_AZURE_OPENAI_API_VERSION = "2024-10-21"
 
 MAX_SECTION_TEXT_CHARS = 6000
 MAX_ARTIFACT_RETRIEVAL_TEXT_CHARS = 400
@@ -35,8 +30,10 @@ IMPORTANT_SECTION_KEYWORDS = [
     "screen",
     "alarm",
     "fault",
+    "error",
     "operation",
     "agv",
+    "agc",
     "hospital",
     "operator station",
     "tipper",
@@ -48,6 +45,7 @@ IMPORTANT_SECTION_KEYWORDS = [
     "api",
     "wcs",
     "rms",
+    "query",
     "subsystem",
 ]
 
@@ -71,8 +69,8 @@ class AzureOpenAIContextClient:
         self.api_key = _clean_env_value(api_key or os.getenv("AZURE_OPENAI_API_KEY"))
         self.deployment = _clean_env_value(deployment or os.getenv("AZURE_OPENAI_DEPLOYMENT"))
         env_api_version = _clean_env_value(os.getenv("AZURE_OPENAI_API_VERSION"))
-        self.api_version = _clean_env_value(api_version) or self._default_api_version(env_api_version)
-        default_prompt = Path(__file__).resolve().parents[1] / "prompts" / "stage4_operational_context_extraction_prompt.md"
+        self.api_version = _clean_env_value(api_version) or default_azure_api_version(self.endpoint, env_api_version)
+        default_prompt = Path(__file__).resolve().parent / "prompts" / "stage4_operational_context_extraction_prompt.md"
         self.prompt = Path(prompt_path or default_prompt).read_text(encoding="utf-8")
         missing = [
             name
@@ -91,64 +89,17 @@ class AzureOpenAIContextClient:
             )
 
     def extract(self, packet: dict[str, Any]) -> list[dict[str, Any]]:
-        body = {
-            "messages": [
-                {"role": "system", "content": self.prompt},
-                {"role": "user", "content": json.dumps(packet, ensure_ascii=False)},
-            ],
-            "temperature": 0.1,
-            "response_format": {"type": "json_object"},
-        }
-        errors: list[str] = []
-        for url, headers, include_model in self._candidate_requests(self.api_version):
-            request_body = body | ({"model": self.deployment} if include_model else {})
-            request = urllib.request.Request(
-                url,
-                data=json.dumps(request_body).encode("utf-8"),
-                headers=headers,
-                method="POST",
-            )
-            try:
-                with urllib.request.urlopen(request, timeout=120) as response:
-                    payload = json.loads(response.read().decode("utf-8"))
-                return parse_context_response(payload["choices"][0]["message"]["content"])
-            except urllib.error.HTTPError as exc:
-                details = exc.read().decode("utf-8", errors="replace")
-                errors.append(f"HTTP {exc.code}: {details}")
-                if exc.code not in {400, 404}:
-                    raise RuntimeError(f"Azure OpenAI request failed with HTTP {exc.code}: {details}") from exc
-            except urllib.error.URLError as exc:
-                raise RuntimeError(f"Azure OpenAI request failed: {exc.reason}") from exc
-        raise RuntimeError("Azure OpenAI request failed for endpoint patterns tried: " + " | ".join(errors))
-
-    def _candidate_requests(self, api_version: str) -> list[tuple[str, dict[str, str], bool]]:
-        encoded_deployment = urllib.parse.quote(self.deployment, safe="")
-        query = urllib.parse.urlencode({"api-version": api_version})
-        headers = {"Content-Type": "application/json", "api-key": self.api_key}
-        candidates: list[tuple[str, dict[str, str], bool]] = []
-        parsed = urllib.parse.urlparse(self.endpoint)
-        if self._is_foundry_project_endpoint():
-            foundry_base = urllib.parse.urlunparse((parsed.scheme, parsed.netloc, "", "", "", "")).rstrip("/")
-            candidates.append((f"{foundry_base}/models/chat/completions?{query}", headers, True))
-        else:
-            candidates.append(
-                (
-                    f"{self.endpoint}/openai/deployments/{encoded_deployment}/chat/completions?{query}",
-                    headers,
-                    False,
-                )
-            )
-        return candidates
-
-    def _is_foundry_project_endpoint(self) -> bool:
-        parsed = urllib.parse.urlparse(self.endpoint)
-        return parsed.netloc.endswith(".services.ai.azure.com") and "/api/projects/" in parsed.path
-
-    def _default_api_version(self, env_api_version: str = "") -> str:
-        parsed = urllib.parse.urlparse(self.endpoint)
-        if parsed.netloc.endswith(".services.ai.azure.com") and "/api/projects/" in parsed.path:
-            return FOUNDRY_API_VERSION
-        return env_api_version or CLASSIC_AZURE_OPENAI_API_VERSION
+        parsed = request_azure_chat_json(
+            endpoint=self.endpoint,
+            api_key=self.api_key,
+            deployment=self.deployment,
+            api_version=self.api_version,
+            system_prompt=self.prompt,
+            user_content=json.dumps(packet, ensure_ascii=False),
+            label="Stage 4",
+            timeout=120,
+        )
+        return parse_context_response(parsed)
 
 
 def extract_operational_context(
@@ -216,7 +167,41 @@ def extract_operational_context(
     output_path = Path(output_dir)
     write_json(output_path / "operational_context.json", deduped)
     write_json(output_path / "operational_context_extraction_report.json", report)
+
+    _ingest_operational_context_into_brain(deduped, lineage.source_id)
+
     return deduped, report
+
+
+def _ingest_operational_context_into_brain(contexts: list[dict[str, Any]], source_id: str) -> None:
+    """Fires the in-tandem Brain hook on this stage's own new operational
+    context records. Gated by BRAIN_INGESTION_ENABLED (default on) -- same
+    pattern as the incidence pipeline's stage hooks
+    (stage4_canonical_incident_record._ingest_timeline_events_into_brain)."""
+    from brain_service.pipeline_hook import brain_enabled
+
+    if not brain_enabled():
+        return
+
+    source_id = str(source_id or "").strip()
+    if not source_id:
+        return
+
+    from brain_service.adapters.operational_stage4 import operational_context_records_to_records
+    from brain_service.pipeline_hook import ingest_stage_output
+    from providers.azure_openai_llm import AzureOpenAILLMProvider
+    from providers.local_storage import LocalStorageProvider
+
+    ingest_stage_output(
+        llm=AzureOpenAILLMProvider(),
+        storage=LocalStorageProvider(),
+        pipeline="operational",
+        stage_name="stage4_operational_context",
+        source_id=source_id,
+        scope=f"operational_sources/{source_id}",
+        records=operational_context_records_to_records(contexts),
+        record_kind="operational_context_record",
+    )
 
 
 def build_source_packets(
@@ -321,13 +306,30 @@ def parse_context_response(content: str | dict[str, Any]) -> list[dict[str, Any]
     return [c for c in contexts if isinstance(c, dict)]
 
 
+def _coerce_artifact_id_list(values: Any) -> list[str]:
+    ids: list[str] = []
+    seen: set[str] = set()
+    for value in values or []:
+        if isinstance(value, dict):
+            candidate = value.get("artifact_id") or value.get("id") or value.get("figure_id")
+        else:
+            candidate = value
+        artifact_id = str(candidate or "").strip()
+        if not artifact_id or artifact_id in seen:
+            continue
+        seen.add(artifact_id)
+        ids.append(artifact_id)
+    return ids
+
+
 def finalize_context_record(record: dict[str, Any]) -> dict[str, Any]:
     updated = dict(record)
-    artifact_ids = list(updated.get("related_artifact_ids") or [])
-    image_refs = list(updated.get("image_refs") or [])
+    artifact_ids = _coerce_artifact_id_list(updated.get("related_artifact_ids"))
+    image_refs = _coerce_artifact_id_list(updated.get("image_refs"))
     for artifact_id in artifact_ids:
         if artifact_id not in image_refs:
             image_refs.append(artifact_id)
+    updated["related_artifact_ids"] = artifact_ids
     updated["image_refs"] = image_refs
     updated.setdefault("related_runbook_candidate_ids", [])
     return updated
@@ -352,11 +354,11 @@ def validate_context_record(record: dict[str, Any], known_artifact_ids: set[str]
     if not source_refs or not isinstance(source_refs, list) or len(source_refs) == 0:
         errors.append("source_refs must contain at least one entry")
 
-    for artifact_id in record.get("related_artifact_ids") or []:
+    for artifact_id in _coerce_artifact_id_list(record.get("related_artifact_ids")):
         if artifact_id not in known_artifact_ids:
             errors.append(f"related_artifact_id not found: '{artifact_id}'")
 
-    for artifact_id in record.get("image_refs") or []:
+    for artifact_id in _coerce_artifact_id_list(record.get("image_refs")):
         if artifact_id not in known_artifact_ids:
             errors.append(f"image_ref not found: '{artifact_id}'")
 

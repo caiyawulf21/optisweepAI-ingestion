@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bag-out stoppage with unresponsive or out-of-sequence AGVs</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+.warn { color: #8a4b00; }
+details.linked-runbook { border: 1px solid #ddd; border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0; }
+details.linked-runbook > summary { cursor: pointer; font-size: 1.05rem; margin-bottom: 0.5rem; }
+details.linked-runbook-group { border: 1px solid #e0e0e0; border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0; background: #fafafa; }
+details.linked-runbook-group > summary { cursor: pointer; font-weight: 600; margin-bottom: 0.5rem; }
+details.linked-runbook-operator { border-left: 4px solid #2f6f4e; }
+details.linked-runbook-support { border-left: 4px solid #2f4f7f; }
+.missing-image { border: 1px dashed #bbb; padding: 1rem; background: #fafafa; }
+.missing-image-label { font-family: monospace; font-weight: 600; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Bag-out stoppage with unresponsive or out-of-sequence AGVs</h1>
+<h2>Playbook Header</h2>
+<table>
+<tr><th>Playbook ID</th><td>playbook_incident_218550_bagout_agv_sequence</td></tr>
+<tr><th>Case ID</th><td>218550</td></tr>
+<tr><th>Extraction Mode</th><td>one_playbook_candidate_per_incident</td></tr>
+<tr><th>Confidence</th><td>medium</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+</table>
+<h2>Entry Symptoms</h2>
+<ul>
+<li>Automated bag-out stops after sorting or starts and then stops before completion.</li>
+<li>Manual bagging out is required because the automated process does not progress.</li>
+<li>One or more AGVs or robots appear not to be moving.</li>
+<li>The site reports that a robot may be out of sequence or out of position.</li>
+<li>An HMI associated with the hospital area shows a fault or a task-related condition.</li>
+</ul>
+<h2>Nodes</h2>
+<h3>1 — Confirm automated bag-out stoppage and affected operating scope (diagnostic_decision)</h3>
+<p><strong>Objective:</strong> Confirm that automated bag-out is stopped or only partially progressing and determine whether the condition is site-wide, localized to a zone or pair, or limited to a tote or task.</p>
+<p><strong>Why this check is next:</strong> The case and chat evidence describe a bag-out stoppage after sorting, manual bagging, and a need to identify the affected robot or exchange pair.</p>
+<p><strong>Action:</strong> Confirm the bag-out stoppage (stopped vs partially progressing) and identify the affected operating scope (site-wide vs zone/pair vs specific tote/task).</p>
+<p><strong>Healthy:</strong> Automated bag-out is progressing normally and the site does not need manual bagging; the affected scope is either not reproducible or limited to a resolved transient condition.</p>
+<p><strong>Unhealthy:</strong> Automated bag-out is stopped or starts but stops before completion; manual bagging out is required; a specific zone/pair/tote/task is identified as unable to progress.</p>
+<p><strong>Inconclusive:</strong> The site cannot clearly identify automated vs manual bag-out behavior, or the available RMS/operational view does not provide enough detail to determine scope.</p>
+<p><strong>Suggested database check:</strong></p>
+<ul>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> AgvActiveErrorDatabaseModel</li>
+<li><strong>Inspect:</strong> Name</li>
+<li><strong>Inspect:</strong> Error code</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> SystemActiveErrorModel</li>
+<li><strong>Inspect:</strong> Id</li>
+<li><strong>Inspect:</strong> EntityInserted</li>
+<li><strong>Inspect:</strong> EntityLastUpdate</li>
+</ul></li>
+<li><strong>Database:</strong> sorter_sweeper
+<ul><li><strong>Model:</strong> ActiveBagOutModel</li>
+<li><strong>Inspect:</strong> Entry while bag-out in progress; closes once tote tipped.</li>
+</ul></li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L1_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li><code>proc_check_rms_fleet_status_agvs_exchange_waiting_startup_delay_v1</code> (medium, support, score=0.4963) — Check RMS / fleet status UI for AGVs waiting to exchange during shutdown or startup delay waiting on charger</li>
+<li><code>proc_diagnose_agv_exchange_backfill_gap_v1</code> (high, support, score=0.4802) — Diagnose AGV exchange/backfill gap when an AGV moves out without a replacement</li>
+</ul>
+<p><strong>Evidence Collection Procedures:</strong></p>
+<ul>
+<li><code>proc_check_rms_fleet_status_agvs_exchange_waiting_startup_delay_v1</code> — Check RMS / fleet status UI for AGVs waiting to exchange during shutdown or startup delay waiting on charger (L1_support): Use the RMS / fleet status UI to determine whether AGVs are not progressing due to state-transition failure visibility patterns: (1) AGVs waiting to do an exchange during shutdown, and/or (2) startup delay while waiting for an AGV on the charger. The system is described as exposing this via system faults and visible waiting conditions.</li>
+<li><code>proc_diagnose_agv_exchange_backfill_gap_v1</code> — Diagnose AGV exchange/backfill gap when an AGV moves out without a replacement (L2_support): Diagnose why a front AGV moved out without a replacement/backfill by checking (1) whether the trailing AGV had a fault (including the case where it was reported ready for a new task and faulted at the same time) and (2) whether chute closure/fullness and exchange timing targets indicate exchanges were not completed before chute closure.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>The system stopped at bag-out after sorting.</li>
+<li>System is not going into bagout. Manual bagging out reported.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_2</code> when Stoppage confirmed; scope identified</li>
+<li><code>healthy</code> → <code></code> when No confirmed ongoing stoppage</li>
+<li><code>inconclusive</code> → <code></code> when Scope unclear</li>
+</ul>
+<details class="linked-runbook-group linked-runbook-support" open><summary><strong>Support runbooks</strong> (2)</summary>
+<details class="linked-runbook linked-runbook-support" open><summary><strong>Support runbook:</strong> Check RMS / fleet status UI for AGVs waiting to exchange during shutdown or startup delay waiting on charger (<code>proc_check_rms_fleet_status_agvs_exchange_waiting_startup_delay_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> L1_support</li>
+<li><strong>Audience:</strong> support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use the RMS / fleet status UI to determine whether AGVs are not progressing due to state-transition failure visibility patterns: (1) AGVs waiting to do an exchange during shutdown, and/or (2) startup delay while waiting for an AGV on the charger. The system is described as exposing this via system faults and visible waiting conditions.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use when lifecycle progression appears delayed during shutdown/startup and you need to check whether RMS is showing AGVs in the documented waiting/fault visibility patterns (exchange-waiting during shutdown; charger-waiting startup delay).</p>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>Automated bag-out is progressing normally, no manual bagging required; scope does not reproduce.</td><td><code></code></td></tr>
+<tr><td><code>unhealthy</code></td><td>Bag-out is stopped or only partially progressing; manual bagging out is required; affected scope is identified (zone/pair or tote/task).</td><td><code>node_2</code></td></tr>
+<tr><td><code>inconclusive</code></td><td>Automated vs manual bag-out unclear or RMS/operational view unavailable/unhelpful to determine scope.</td><td><code></code></td></tr>
+</table>
+<p><strong>Source:</strong> training_video / training_video_day1</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Open RMS / fleet status UI and navigate to AGV status/errors overview</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the RMS / fleet status UI (rms_ui) and navigate to the AGV status/errors overview area.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The RMS AGV status/errors overview area is populated and ready for inspection (not blank/unreachable).</p>
+<p><strong>Expected result:</strong></p>
+<p>You are viewing the RMS AGV status/errors overview area where AGV waiting conditions and system fault/alert visibility can be checked.</p>
+<hr>
+<h5>Step 2 — Check for AGVs waiting to do an exchange during shutdown</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the RMS AGV status/errors overview, look for AGVs showing a waiting condition consistent with “waiting to do an exchange” during shutdown.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>No widespread exchange-waiting indications are present when shutdown is expected to complete normally.</p>
+<p><strong>Expected result:</strong></p>
+<p>At least one AGV is indicated in RMS as waiting to do an exchange during shutdown (or you determine none are indicated).</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/5959536fcd85fc0f.jpg" alt="artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500"><figcaption>Training segment frame used as evidence that the system will show faults/visible waiting conditions for (a) AGV waiting to do an exchange during shutdown and (b) startup delay waiting for an AGV on the charger.</figcaption></figure>
+<hr>
+<h5>Step 3 — Check for startup delay waiting for an AGV on the charger</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the RMS AGV status/errors overview, look for startup delay evidence consistent with “waiting … for an AGV on the charger.”</p>
+<p><strong>Healthy condition:</strong></p>
+<p>No charger-waiting startup delay indications are present when startup proceeds normally.</p>
+<p><strong>Expected result:</strong></p>
+<p>At least one AGV is indicated in RMS as contributing to startup delay by waiting for an AGV on the charger (or you determine none are indicated).</p>
+<hr>
+<h5>Step 4 — Confirm system faults/alerts align with the waiting conditions</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the RMS AGV status/errors overview, confirm whether system faults/alerts are visible and align with the exchange-waiting and/or charger-waiting conditions you observed.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Fault/alert visibility is consistent with normal operation (no fault entries that match the described waiting patterns).</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS shows visible system fault/alert entries that align with the waiting conditions (or you determine there are no aligning fault/alert entries).</p>
+<hr>
+<h5>Step 5 — Stop and escalate on repeated or widespread waiting/fault indications</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If you see repeated or widespread waiting/fault indications that prevent lifecycle progression (e.g., multiple AGVs stuck in exchange-waiting or charger-waiting states), stop and escalate for deeper investigation.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>No repeated/widespread waiting/fault indications are present; lifecycle progression is not blocked by the described patterns.</p>
+<p><strong>Expected result:</strong></p>
+<p>Escalation is initiated when the RMS evidence shows repeated/widespread waiting/fault indications consistent with the described patterns.</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>RMS / fleet status UI shows either (a) AGVs indicated as waiting to do an exchange during shutdown and/or (b) startup delay evidence consistent with waiting for an AGV on the charger.</li>
+<li>RMS also shows visible system faults/alerts that align with the observed waiting conditions (when present).</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>RMS shows repeated/widespread AGVs waiting to do an exchange during shutdown.</li>
+<li>RMS shows repeated/widespread startup delay evidence consistent with waiting for an AGV on the charger.</li>
+<li>RMS shows system faults/alerts that align with the above waiting conditions.</li>
+</ul>
+</details>
+<details class="linked-runbook linked-runbook-support"><summary><strong>Support runbook:</strong> Diagnose AGV exchange/backfill gap when an AGV moves out without a replacement (<code>proc_diagnose_agv_exchange_backfill_gap_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> L2_support</li>
+<li><strong>Audience:</strong> support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Diagnose why a front AGV moved out without a replacement/backfill by checking (1) whether the trailing AGV had a fault (including the case where it was reported ready for a new task and faulted at the same time) and (2) whether chute closure/fullness and exchange timing targets indicate exchanges were not completed before chute closure.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use when you observe or are told that an AGV moved out without another AGV backfilling/replacing it during an exchange, and you need live evidence to confirm whether the trailing AGV fault/ready+fault timing and/or chute fullness/closure and exchange timing targets contributed.</p>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>Automated bag-out is progressing normally, no manual bagging required; scope does not reproduce.</td><td><code></code></td></tr>
+<tr><td><code>unhealthy</code></td><td>Bag-out is stopped or only partially progressing; manual bagging out is required; affected scope is identified (zone/pair or tote/task).</td><td><code>node_2</code></td></tr>
+<tr><td><code>inconclusive</code></td><td>Automated vs manual bag-out unclear or RMS/operational view unavailable/unhelpful to determine scope.</td><td><code></code></td></tr>
+</table>
+<p><strong>Source:</strong> training_video / training_video_day1</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Open RMS / fleet status UI and identify the AGV pair for the exchange event</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the RMS / fleet status UI (rms_ui), locate the AGV pair involved in the exchange event: the AGV that moved out (front) and the AGV that should have backfilled (trailing).</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The RMS view clearly shows the relevant AGVs and their status/error context for the exchange event you are investigating.</p>
+<p><strong>Expected result:</strong></p>
+<p>You have identified the specific trailing AGV associated with the exchange event time window (so you can check whether it faulted when the front AGV moved out).</p>
+<hr>
+<h5>Step 2 — Check trailing AGV status for fault at the time the front AGV moved out</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In RMS / fleet status UI (rms_ui), check the trailing (behind) AGV’s status/error indicators around the time the front AGV moved out. Confirm whether the trailing AGV is faulted, or shows a fault coincident with being reported ready for a new task.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Trailing AGV shows no fault at the relevant time (or fault timing does not coincide with the front AGV move-out), suggesting the gap may be explained by other factors (e.g., chute fullness/exchange timing).</p>
+<p><strong>Expected result:</strong></p>
+<p>You find live evidence that the trailing AGV had an active fault at (or coincident with) the time the front AGV moved out, consistent with the described pairing/backfill failure mechanism.</p>
+<hr>
+<h5>Step 3 — If RMS is inconclusive, query WCS / Helix DB (SSMS) for trailing AGV fault/backfill failure evidence</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using WCS / Helix DB (SSMS) (wcs_sql), query the OptiSweep DB for the same time window to find evidence of a fault/backfill failure for the trailing AGV (e.g., AGV state/error records).</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Database records show no fault/backfill failure for the trailing AGV in the relevant time window, shifting focus to chute fullness/closure and exchange timing.</p>
+<p><strong>Expected result:</strong></p>
+<p>You identify live database evidence that the trailing AGV faulted (or otherwise failed to support backfill) during the exchange window corresponding to the front AGV move-out.</p>
+<hr>
+<h5>Step 4 — Check chute fullness/closure and exchange timing targets around the event</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using WCS / Helix DB (SSMS) (wcs_sql), review live system data available for chute fullness and exchange timing metrics around the event time window. Look for conditions consistent with chute closure when the chute is full and exchange not completing before the 80% threshold (with exchange timing deviating from the median ~8 seconds and floor ~6.7 seconds).</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Chute fullness/closure did not occur before exchanges completed, and exchange timing aligns with the described targets (median ~8s, floor ~6.7s).</p>
+<p><strong>Expected result:</strong></p>
+<p>You find live evidence that chute fullness/closure occurred (or was imminent) such that exchanges were not completed before the 80% threshold, and/or exchange timing deviated from the described targets (median ~8s, floor ~6.7s).</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/abc7a5228ea55d27.jpg" alt="artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500"><figcaption>Training frame describing the mechanism: front AGV will not move until trailing AGV is present; software sends both commands together; gap can occur if trailing AGV faults (possibly while also being ready); chute gets closed when full; exchange timing targets (median ~8s, floor ~6.7s).</figcaption></figure>
+<figure><img src="assets/af90ff3e77701e85.jpg" alt="artifact_training_video_training_video_day1_0015_so_the_exchange_so_like_i_primary_00_27_50_500"><figcaption>Training frame describing exchange thresholds and that exchanges are staged with strict quick KPI targets (context for exchange timing/threshold behavior).</figcaption></figure>
+<hr>
+<h5>Step 5 — Stop and escalate based on confirmed evidence (or lack of evidence)</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Based on your findings from RMS and WCS/Helix DB, decide whether to escalate. Escalate when you confirm the trailing AGV fault/ready+fault timing mechanism or confirm chute fullness/insufficient exchange timing mechanism, or when you cannot confirm either mechanism with live evidence.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Evidence supports one or both mechanisms described (trailing AGV fault timing and/or fullness-driven chute closure with exchange timing deviation).</p>
+<p><strong>Expected result:</strong></p>
+<p>A clear diagnostic conclusion is produced: (1) trailing AGV fault/ready+fault timing explains the missing backfill, and/or (2) chute fullness/closure and exchange timing targets indicate exchanges were not completed before 80%. If neither is supported by live evidence, escalation occurs due to unconfirmed cause.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/7f20b9d1dd84615e.jpg" alt="artifact_training_video_training_video_day1_0066_so_kind_of_what_i_was_primary_02_18_32_000"><figcaption>Training frame describing system-level API page concepts (context only; not specific to this diagnostic’s live checks).</figcaption></figure>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>You confirm (with live RMS and/or WCS/Helix DB evidence) that the trailing AGV fault/ready+fault timing explains why the front AGV moved out without replacement/backfill.</li>
+<li>OR you confirm (with live WCS/Helix DB evidence) that chute fullness/closure occurred such that exchanges were not completed before the 80% threshold, with exchange timing deviating from the described targets (median ~8s, floor ~6.7s).</li>
+<li>If neither mechanism is supported by live evidence, you escalate rather than assuming the cause.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>Trailing AGV fault/ready+fault timing is present at the time the front AGV moved out, consistent with missing backfill.</li>
+<li>Chute fullness/closure occurs (or is imminent) such that exchanges were not completed before reaching 80%, with exchange timing deviating from median ~8s and floor ~6.7s.</li>
+<li>RMS and WCS/Helix DB show no trailing AGV fault/backfill failure evidence and no chute fullness/exchange timing evidence consistent with the described mechanisms.</li>
+</ul>
+</details>
+</details>
+<hr>
+<h3>2 — Check for AGV inactivity or active fault evidence (diagnostic_decision)</h3>
+<p><strong>Objective:</strong> Determine whether one or more AGVs show abnormal inactivity, active error, or a related sequence or pairing indication that correlates with the bag-out stoppage.</p>
+<p><strong>Why this check is next:</strong> The source explicitly records an RMS-style observation that an AGV did not move for three hours and preserves a discussion about checking system active error.</p>
+<p><strong>Action:</strong> Check whether one or more AGVs show abnormal inactivity (not moving) and/or active fault evidence, and determine whether this correlates with the bag-out stoppage.</p>
+<p><strong>Healthy:</strong> Affected AGVs show normal movement/activity, and there is no relevant active fault or sequence/pairing indication that correlates with the bag-out stoppage.</p>
+<p><strong>Unhealthy:</strong> One or more AGVs show prolonged inactivity and/or an active robot fault exists, and the evidence correlates with the bag-out stoppage scope.</p>
+<p><strong>Inconclusive:</strong> AGV identifiers/status details cannot be read, RMS evidence is stale/unavailable, or correlation to bag-out cannot be established.</p>
+<p><strong>Suggested database check:</strong></p>
+<ul>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> AgvActiveErrorDatabaseModel</li>
+<li><strong>Inspect:</strong> Name</li>
+<li><strong>Inspect:</strong> Error code</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> SystemActiveErrorModel</li>
+<li><strong>Inspect:</strong> Id</li>
+<li><strong>Inspect:</strong> EntityInserted</li>
+<li><strong>Inspect:</strong> EntityLastUpdate</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> RobotDatabaseModel</li>
+<li><strong>Inspect:</strong> Robot state enum (Tipper/Hospital/Charger/Sorter/GLD/ShutDown family).</li>
+<li><strong>Inspect:</strong> Tote currently associated with robot.</li>
+<li><strong>Inspect:</strong> Assigned sorter side.</li>
+</ul></li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L1_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li><code>proc_check_rms_fleet_status_agvs_exchange_waiting_startup_delay_v1</code> (medium, support, score=0.6048) — Check RMS / fleet status UI for AGVs waiting to exchange during shutdown or startup delay waiting on charger</li>
+</ul>
+<p><strong>Evidence Collection Procedures:</strong></p>
+<ul>
+<li><code>proc_check_rms_fleet_status_agvs_exchange_waiting_startup_delay_v1</code> — Check RMS / fleet status UI for AGVs waiting to exchange during shutdown or startup delay waiting on charger (L1_support): Use the RMS / fleet status UI to determine whether AGVs are not progressing due to state-transition failure visibility patterns: (1) AGVs waiting to do an exchange during shutdown, and/or (2) startup delay while waiting for an AGV on the charger. The system is described as exposing this via system faults and visible waiting conditions.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>An AGV did not move for 3 hours.</li>
+<li>You can check system active error.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_4</code> when AGV inactivity/active fault/sequence anomaly indicated</li>
+<li><code>inconclusive</code> → <code>node_3</code> when No relevant AGV abnormality or evidence inconclusive</li>
+</ul>
+<details class="linked-runbook-group linked-runbook-support" open><summary><strong>Support runbooks</strong> (1)</summary>
+<details class="linked-runbook linked-runbook-support" open><summary><strong>Support runbook:</strong> Check RMS / fleet status UI for AGVs waiting to exchange during shutdown or startup delay waiting on charger (<code>proc_check_rms_fleet_status_agvs_exchange_waiting_startup_delay_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> L1_support</li>
+<li><strong>Audience:</strong> support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use the RMS / fleet status UI to determine whether AGVs are not progressing due to state-transition failure visibility patterns: (1) AGVs waiting to do an exchange during shutdown, and/or (2) startup delay while waiting for an AGV on the charger. The system is described as exposing this via system faults and visible waiting conditions.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use when lifecycle progression appears delayed during shutdown/startup and you need to check whether RMS is showing AGVs in the documented waiting/fault visibility patterns (exchange-waiting during shutdown; charger-waiting startup delay).</p>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>No relevant AGV abnormality indicated; RMS evidence suggests normal activity with no correlation.</td><td><code>node_3</code></td></tr>
+<tr><td><code>inconclusive</code></td><td>RMS view unreadable/unavailable or AGV identifiers/status cannot be read; correlation cannot be proven.</td><td><code>node_3</code></td></tr>
+<tr><td><code>unhealthy</code></td><td>RMS shows repeated/widespread AGVs waiting to do an exchange during shutdown.</td><td><code>node_3</code></td></tr>
+</table>
+<p><strong>Source:</strong> training_video / training_video_day1</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Open RMS / fleet status UI and navigate to AGV status/errors overview</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the RMS / fleet status UI (rms_ui) and navigate to the AGV status/errors overview area.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The RMS AGV status/errors overview area is populated and ready for inspection (not blank/unreachable).</p>
+<p><strong>Expected result:</strong></p>
+<p>You are viewing the RMS AGV status/errors overview area where AGV waiting conditions and system fault/alert visibility can be checked.</p>
+<hr>
+<h5>Step 2 — Check for AGVs waiting to do an exchange during shutdown</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the RMS AGV status/errors overview, look for AGVs showing a waiting condition consistent with “waiting to do an exchange” during shutdown.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>No widespread exchange-waiting indications are present when shutdown is expected to complete normally.</p>
+<p><strong>Expected result:</strong></p>
+<p>At least one AGV is indicated in RMS as waiting to do an exchange during shutdown (or you determine none are indicated).</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/5959536fcd85fc0f.jpg" alt="artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500"><figcaption>Training segment frame used as evidence that the system will show faults/visible waiting conditions for (a) AGV waiting to do an exchange during shutdown and (b) startup delay waiting for an AGV on the charger.</figcaption></figure>
+<hr>
+<h5>Step 3 — Check for startup delay waiting for an AGV on the charger</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the RMS AGV status/errors overview, look for startup delay evidence consistent with “waiting … for an AGV on the charger.”</p>
+<p><strong>Healthy condition:</strong></p>
+<p>No charger-waiting startup delay indications are present when startup proceeds normally.</p>
+<p><strong>Expected result:</strong></p>
+<p>At least one AGV is indicated in RMS as contributing to startup delay by waiting for an AGV on the charger (or you determine none are indicated).</p>
+<hr>
+<h5>Step 4 — Confirm system faults/alerts align with the waiting conditions</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the RMS AGV status/errors overview, confirm whether system faults/alerts are visible and align with the exchange-waiting and/or charger-waiting conditions you observed.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Fault/alert visibility is consistent with normal operation (no fault entries that match the described waiting patterns).</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS shows visible system fault/alert entries that align with the waiting conditions (or you determine there are no aligning fault/alert entries).</p>
+<hr>
+<h5>Step 5 — Stop and escalate on repeated or widespread waiting/fault indications</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If you see repeated or widespread waiting/fault indications that prevent lifecycle progression (e.g., multiple AGVs stuck in exchange-waiting or charger-waiting states), stop and escalate for deeper investigation.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>No repeated/widespread waiting/fault indications are present; lifecycle progression is not blocked by the described patterns.</p>
+<p><strong>Expected result:</strong></p>
+<p>Escalation is initiated when the RMS evidence shows repeated/widespread waiting/fault indications consistent with the described patterns.</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>RMS / fleet status UI shows either (a) AGVs indicated as waiting to do an exchange during shutdown and/or (b) startup delay evidence consistent with waiting for an AGV on the charger.</li>
+<li>RMS also shows visible system faults/alerts that align with the observed waiting conditions (when present).</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>RMS shows repeated/widespread AGVs waiting to do an exchange during shutdown.</li>
+<li>RMS shows repeated/widespread startup delay evidence consistent with waiting for an AGV on the charger.</li>
+<li>RMS shows system faults/alerts that align with the above waiting conditions.</li>
+</ul>
+</details>
+</details>
+<hr>
+<h3>3 — Check HMI-visible task, tote, or lane fault (diagnostic_decision)</h3>
+<p><strong>Objective:</strong> Determine whether an HMI-visible fault, stuck task, tote association, or hospital-area workflow condition is preventing bag-out from progressing.</p>
+<p><strong>Why this check is next:</strong> The source reports a hospital HMI fault, a tote read at an unexpected location, a stuck task visible only on that HMI, and guidance to acknowledge and try again.</p>
+<p><strong>Action:</strong> Inspect the hospital-area HMI for the displayed fault/task/tote condition and determine whether it is blocking bag-out progress (or whether HMI evidence is unavailable/uninterpretable).</p>
+<p><strong>Healthy:</strong> The HMI shows no relevant fault or stuck task; the tote/task is correctly identified and the workflow request progresses; and the site confirms the HMI-related condition is no longer blocking operation.</p>
+<p><strong>Unhealthy:</strong> The HMI shows a fault; a stuck task is visible only on that HMI; and/or a tote location discrepancy is displayed, and the request enters a state but does not progress.</p>
+<p><strong>Inconclusive:</strong> The HMI screen is unavailable/unreadable/unreachable or the fault relationship to bag-out stoppage cannot be established from the evidence provided.</p>
+<p><strong>Suggested database check:</strong></p>
+<ul>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> HospitalDatabaseModel</li>
+<li><strong>Inspect:</strong> Hospital entrance and exit queue locations.</li>
+<li><strong>Inspect:</strong> Hospital tote drop-off location.</li>
+</ul></li>
+<li><strong>Database:</strong> sorter_sweeper
+<ul><li><strong>Model:</strong> HospitalTagsModel</li>
+<li><strong>Inspect:</strong> Whether tag is in or out; drives action.</li>
+<li><strong>Inspect:</strong> List of hospital controller tags.</li>
+<li><strong>Inspect:</strong> Modular typed value columns (string/bool) selected by variable type.</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> RobotDatabaseModel</li>
+<li><strong>Inspect:</strong> Robot state enum (Tipper/Hospital/Charger/Sorter/GLD/ShutDown family).</li>
+<li><strong>Inspect:</strong> Tote currently associated with robot.</li>
+<li><strong>Inspect:</strong> Assigned sorter side.</li>
+</ul></li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L1_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li><code>proc_check_hospital_hmi_operations_menu_induct_extract_status_v1</code> (medium, operator, score=0.6566) — Check Hospital HMI Operations Screen Induct/Extract Position Read-Only Data and WCS Status Messages</li>
+</ul>
+<p><strong>Evidence Collection Procedures:</strong></p>
+<ul>
+<li><code>proc_check_hospital_hmi_operations_menu_induct_extract_status_v1</code> — Check Hospital HMI Operations Screen Induct/Extract Position Read-Only Data and WCS Status Messages (operator): Use the Hospital HMI / lane UI Operations Menu screen to read the WCS-fed induct and extract position fields (AGV#, Tote ID, Bar Code, Status). Confirm the Status messages explain why the tote is there and what station operator menu/action to use.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>The HMI at the hospital is showing a fault.</li>
+<li>One of last night&#x27;s errors, a stuck task, is only visible on that HMI.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_4</code> when HMI fault/stuck task/tote inconsistency indicated</li>
+<li><code>inconclusive</code> → <code></code> when No interpretable HMI condition</li>
+</ul>
+<details class="linked-runbook-group linked-runbook-operator" open><summary><strong>Operator runbooks</strong> (1)</summary>
+<details class="linked-runbook linked-runbook-operator" open><summary><strong>Operator runbook:</strong> Check Hospital HMI Operations Screen Induct/Extract Position Read-Only Data and WCS Status Messages (<code>proc_check_hospital_hmi_operations_menu_induct_extract_status_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> operator</li>
+<li><strong>Audience:</strong> operator</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use the Hospital HMI / lane UI Operations Menu screen to read the WCS-fed induct and extract position fields (AGV#, Tote ID, Bar Code, Status). Confirm the Status messages explain why the tote is there and what station operator menu/action to use.</p>
+<p><strong>When To Use:</strong></p>
+<p>When a tote arrives at the hospital station and you need to determine what tote/AGV is at the induct and extract positions and what the WCS status message requires the station operator to do next.</p>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>unhealthy</code></td><td>Hospital HMI fault/stuck task/tote mismatch is indicated and blocking progress.</td><td><code>node_4</code></td></tr>
+<tr><td><code>healthy</code></td><td>No relevant HMI condition is indicated; HMI task/tote progression is normal.</td><td><code></code></td></tr>
+<tr><td><code>inconclusive</code></td><td>HMI evidence is unavailable/unreadable/uninterpretable or fault-to-bag-out correlation cannot be established.</td><td><code></code></td></tr>
+</table>
+<p><strong>Source:</strong> manual / manual_optisweep_om_v3</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Open Hospital HMI Operations Menu and locate Induct Position / Extract Position sections</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the Hospital HMI / lane UI, navigate to the Operations Menu screen that contains the &quot;Induct Position&quot; and &quot;Extract Position&quot; sections.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>&quot;Induct Position&quot; and &quot;Extract Position&quot; sections are visible on the Operations Menu screen.</p>
+<p><strong>Expected result:</strong></p>
+<p>The screen shows both &quot;Induct Position&quot; and &quot;Extract Position&quot; sections.</p>
+<hr>
+<h5>Step 2 — Read Induct Position read-only fields (AGV#, Tote ID, Bar Code, Status)</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>In the &quot;Induct Position&quot; section, read the four read-only fields: AGV#, Tote ID, Bar Code, and Status.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>AGV#, Tote ID, Bar Code, and Status are present in the &quot;Induct Position&quot; section as read-only WCS data.</p>
+<p><strong>Expected result:</strong></p>
+<p>The &quot;Induct Position&quot; section displays values for AGV#, Tote ID, Bar Code, and a Status message.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/58e2c340dd4fc6cc.png" alt="artifact_fig_4_30_hospital_hmi_operations_screen"><figcaption>Hospital HMI Operations Menu screen showing read-only Induct Position and Extract Position panels (AGV#, Tote ID, Bar Code, Status).</figcaption></figure>
+<hr>
+<h5>Step 3 — Read Extract Position read-only fields (AGV#, Tote ID, Bar Code, Status)</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>In the &quot;Extract Position&quot; section, read the four read-only fields: AGV#, Tote ID, Bar Code, and Status.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>AGV#, Tote ID, Bar Code, and Status are present in the &quot;Extract Position&quot; section as read-only WCS data.</p>
+<p><strong>Expected result:</strong></p>
+<p>The &quot;Extract Position&quot; section displays values for AGV#, Tote ID, Bar Code, and a Status message.</p>
+<hr>
+<h5>Step 4 — Confirm both Status messages are present and provide WCS explanation/action guidance</h5>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Verify that the &quot;Induct Position&quot; Status and &quot;Extract Position&quot; Status messages are present and written as messages received from the WCS that explain why the tote is there and what menu/action the station operator needs to use.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Induct Position Status and Extract Position Status each provide a clear WCS message describing why the tote is there and what menu/action to perform.</p>
+<p><strong>Expected result:</strong></p>
+<p>Both Status fields contain non-blank WCS messages that provide explanation and action/menu guidance.</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>Induct Position shows read-only AGV#, Tote ID, Bar Code, and a non-blank Status message.</li>
+<li>Extract Position shows read-only AGV#, Tote ID, Bar Code, and a non-blank Status message.</li>
+<li>Both Status messages explain why the tote is there and what menu/action the station operator needs to use.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>Induct Position Status is blank/missing.</li>
+<li>Extract Position Status is blank/missing.</li>
+<li>Either Status message does not provide explanation/action guidance (why the tote is there and what menu/action to use).</li>
+</ul>
+</details>
+</details>
+<hr>
+<h3>4 — Restore the affected AGV sequence or pairing state through an authorized recovery path (procedure_reference)</h3>
+<p><strong>Objective:</strong> Use an approved, role-authorized recovery procedure to restore the affected AGV or pair to a valid operating sequence when the diagnostic evidence supports that direction.</p>
+<p><strong>Why this check is next:</strong> Support asked the site to remove and add AGV pairs; the source also states that a removed AGV without a tote must be replaced and later reports robots in proper sequence.</p>
+<p><strong>Action:</strong> Restore the affected AGV sequence/pairing state using an authorized recovery path consistent with the diagnostic evidence; ensure removed AGVs are appropriately replaced and operations are resumed within role/safety limits.</p>
+<p><strong>Healthy:</strong> Authorized personnel confirm the affected AGV or pair is in expected sequence; robots remain on and available after recovery; and recovery completion did not introduce a new fault.</p>
+<p><strong>Unhealthy:</strong> Affected AGV/pair remains out of sequence/unavailable; robots turn off again or cannot support bag-out; bag-out starts but stops again after recovery attempt.</p>
+<p><strong>Inconclusive:</strong> The exact decisive recovery action and resulting sequence/pairing state cannot be verified; required authorized role is unavailable.</p>
+<p><strong>Procedure Reference:</strong></p>
+<ul>
+<li><strong>Trigger condition:</strong> L2 support or another authorized role records that the approved recovery path was completed. Progress evidence is that affected robots remain on, the relevant sequence or pairing state is restored, and bag-out can proceed; failure evidence is continued inactivity, repeated stopping, or an unresolved sequence or pairing condition; inconclusive evidence is that the exact recovery action or resulting state cannot be verified.</li>
+<li><strong>Selected procedure:</strong> unresolved</li>
+<li><strong>Selection rationale:</strong> n/a</li>
+<li><strong>Success confirmation:</strong> n/a</li>
+<li><strong>Failure boundary:</strong> Stop at the documented failure condition and escalate; do not invent a recovery path.</li>
+</ul>
+<p><strong>Prerequisites:</strong></p>
+<ul>
+<li>None</li>
+<li>None</li>
+</ul>
+<p><strong>Safety checks:</strong></p>
+<ul>
+<li>None</li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> L2_support, L3_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>Asked the site to remove and add AGV pairs; bag-out started, processed most, then stopped.</li>
+<li>When all robots were in proper sequence, the customer confirmed they were functional.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Decision Outcomes:</strong></p>
+<ul>
+<li><code>healthy</code> (observer=remote; tool=rms_ui (and physical_floor evidence as applicable)): Authorized recovery completed and affected state restored to a valid operating sequence.</li>
+<li><code>unhealthy</code> (observer=remote; tool=rms_ui; site confirmation): Recovery cannot complete safely or affected state remains unresolved; repeated inactivity or repeated bag-out stop observed.</li>
+<li><code>inconclusive</code> (observer=site_or_remote; tool=rms_ui; site_interview): Exact decisive recovery action or resulting sequence/pairing state cannot be verified.</li>
+</ul>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>healthy</code> → <code>node_5</code> when Authorized recovery completed</li>
+<li><code>unhealthy</code> → <code>node_6</code> when Recovery cannot be completed or state unresolved</li>
+</ul>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h3>5 — Validate stable AGV operation and automated bag-out (validation_gate)</h3>
+<p><strong>Objective:</strong> Confirm that the recovery restored the affected workflow and that AGVs remain functional rather than merely showing a temporary improvement.</p>
+<p><strong>Why this check is next:</strong> The source records customer confirmation that robots were functional in proper sequence and a later all-good response after HMI-related troubleshooting.</p>
+<p><strong>Validate:</strong> Validate sustained AGV functionality and stable automated bag-out behavior (not just a temporary improvement), including checking recurrence on RMS and the relevant hospital-area HMI.</p>
+<p><strong>Success:</strong> AGVs remain functional and automated bag-out continues or completes without recurrence; relevant HMI condition is cleared and does not reappear.</p>
+<p><strong>Failure:</strong> AGV inactivity returns, bag-out stops again after partial progress, or HMI fault/stuck-task recurs; affected sequence/pairing state is not maintained.</p>
+<p><strong>Inconclusive:</strong> Only a temporary &#x27;all good&#x27; verbal report is available, or RMS/HMI views cannot be observed/checked; continued operation cannot be confirmed.</p>
+<p><strong>Validation Gate:</strong></p>
+<p><strong>Validation checklist:</strong></p>
+<ul>
+<li>Confirm the owning service remains running and stable.</li>
+<li>Confirm the supported API or control endpoint responds.</li>
+<li>Compare database or fleet state with the live HMI or site-observed state.</li>
+<li>Observe the affected workflow for recurrence during the stated observation window.</li>
+</ul>
+<p><strong>Required evidence sources:</strong> RMS</p>
+<p><strong>Stable-operation observation:</strong> Observe the affected workflow for recurrence during the defined observation window; a reachable screen or successful request alone is not recovery.</p>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L1_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li><code>proc_use_rms_map_monitor_message_panel_agv_faults_v1</code> (medium, support, score=0.5327) — Use RMS Map Monitor Message Panel to view AGV fault list, fault details, and locate a faulted AGV</li>
+</ul>
+<p><strong>Evidence Collection Procedures:</strong></p>
+<ul>
+<li><code>proc_use_rms_map_monitor_message_panel_agv_faults_v1</code> — Use RMS Map Monitor Message Panel to view AGV fault list, fault details, and locate a faulted AGV (L1_support): Use the RMS / fleet status UI Map Monitor message panel to identify faulted/disconnected AGVs, view the selected fault’s details, and use the “Locate Faulted AGV” control to bring up the corresponding location cue.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>With all robots in proper sequence, the customer confirmed they were functional.</li>
+<li>Yes, the tote at hospital is 28. Yes Sir, all good.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>healthy</code> → <code></code> when Stable AGV operation + automated bag-out continues/completes</li>
+<li><code>unhealthy</code> → <code>node_6</code> when Validation failure / recurrence observed</li>
+</ul>
+<details class="linked-runbook-group linked-runbook-support" open><summary><strong>Support runbooks</strong> (1)</summary>
+<details class="linked-runbook linked-runbook-support" open><summary><strong>Support runbook:</strong> Use RMS Map Monitor Message Panel to view AGV fault list, fault details, and locate a faulted AGV (<code>proc_use_rms_map_monitor_message_panel_agv_faults_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> L1_support</li>
+<li><strong>Audience:</strong> support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use the RMS / fleet status UI Map Monitor message panel to identify faulted/disconnected AGVs, view the selected fault’s details, and use the “Locate Faulted AGV” control to bring up the corresponding location cue.</p>
+<p><strong>When To Use:</strong></p>
+<p>When you need to determine which AGVs are faulted and/or disconnected and then inspect the fault details and locate the affected AGV using the RMS Map Monitor message panel.</p>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>Sustained recovery: AGVs functional and automated bag-out continues/completes without recurrence; HMI fault/stuck task does not return.</td><td><code></code></td></tr>
+<tr><td><code>unhealthy</code></td><td>Validation failure: renewed inactivity or repeated bag-out stoppage or HMI fault recurrence.</td><td><code>node_6</code></td></tr>
+<tr><td><code>inconclusive</code></td><td>Only temporary improvement/acknowledgement; continued operation cannot be observed or views are unavailable.</td><td><code>node_6</code></td></tr>
+</table>
+<p><strong>Source:</strong> training_video / training_video_day1</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Open the RMS / fleet status UI and navigate to the Map Monitor message panel</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the RMS / fleet status UI (rms_ui) and navigate to the Map Monitor message panel on the right side of the interface.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>All labeled panel sections are present and readable in the Map Monitor message panel.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Map Monitor message panel is visible on the right side and shows the labeled items: “Count of active Robots”, “Count of Robots charging”, “Drop down to show AGV faults”, “Count of AGVs disconnected”, “Inspection to view details of fault”, and “Locate Faulted AGV”.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/c0e2b74f80320155.jpg" alt="artifact_training_video_training_video_day1_0025_ok_so_on_the_right_side_primary_00_57_51_000"><figcaption>RMS Map Monitor Message Panel on the right side showing: “Count of active Robots”, “Count of Robots charging”, “Drop down to show AGV faults”, “Count of AGVs disconnected”, “Inspection to view details of fault”, and “Locate Faulted AGV”.</figcaption></figure>
+<figure><img src="assets/f39715fd83a18208.jpg" alt="artifact_training_video_training_video_day1_0027_so_let_s_see_number_the_primary_01_04_37_000"><figcaption>Map Monitor Message Panel count metrics and AGV fault/disconnect panel items (active robots count, robots charging count, AGV faults dropdown, disconnected count, fault inspection, locate faulted AGV).</figcaption></figure>
+<hr>
+<h5>Step 2 — Verify the active robot and charging count metrics</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the Map Monitor message panel, locate and verify the fields labeled “Count of active Robots” and “Count of Robots charging”.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The panel shows numeric values for “Count of active Robots” and “Count of Robots charging”.</p>
+<p><strong>Expected result:</strong></p>
+<p>Both count fields are displayed on the panel.</p>
+<hr>
+<h5>Step 3 — Open the AGV faults dropdown to display the fault list</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Use the dropdown labeled “Drop down to show AGV faults” to display the AGV fault list.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Fault entries are visible in the dropdown list.</p>
+<p><strong>Expected result:</strong></p>
+<p>The AGV faults dropdown expands and shows fault entries.</p>
+<hr>
+<h5>Step 4 — Check the count of AGVs disconnected</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the same Map Monitor message panel, locate and check the field labeled “Count of AGVs disconnected”.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The “Count of AGVs disconnected” field displays a current numeric count.</p>
+<p><strong>Expected result:</strong></p>
+<p>A numeric value is shown for “Count of AGVs disconnected”.</p>
+<hr>
+<h5>Step 5 — Select a fault entry and confirm fault details update</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the AGV faults list, select a fault entry and use the “Inspection to view details of fault” area to confirm the fault details update for the selected entry.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Fault details change when you select different fault entries.</p>
+<p><strong>Expected result:</strong></p>
+<p>The “Inspection to view details of fault” area updates to show details for the selected fault entry.</p>
+<hr>
+<h5>Step 6 — Locate the faulted AGV using the “Locate Faulted AGV” control</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Use “Locate Faulted AGV” to bring up the faulted AGV location cue (e.g., map highlight/selection) and confirm the located AGV corresponds to the selected fault.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The map/location cue highlights/selects the AGV associated with the selected fault.</p>
+<p><strong>Expected result:</strong></p>
+<p>A location cue appears for the faulted AGV after using “Locate Faulted AGV”, and it corresponds to the selected fault entry.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/5ffd5d9071f8b918.jpg" alt="artifact_training_video_training_video_day1_0029_all_right_so_the_robot_selection_primary_01_15_18_000"><figcaption>Robot selection overview cues (robot selection and robot details; includes robot colors such as purple for disconnected and red for fault/low battery) that can help visually confirm the located robot corresponds to the selected fault.</figcaption></figure>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>The Map Monitor message panel shows “Count of active Robots” and “Count of Robots charging”.</li>
+<li>The “Drop down to show AGV faults” displays fault entries.</li>
+<li>Selecting a fault entry updates the “Inspection to view details of fault” area.</li>
+<li>Using “Locate Faulted AGV” produces a location cue that corresponds to the selected faulted AGV.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>AGV faults dropdown shows no fault entries while AGV issues are reported.</li>
+<li>Fault details do not update after selecting a fault entry.</li>
+<li>Locate Faulted AGV location cue does not correspond to the selected fault.</li>
+</ul>
+</details>
+</details>
+<hr>
+<h3>6 — Stop and escalate when the supported path cannot establish stable recovery (escalation_gate)</h3>
+<p><strong>Objective:</strong> Hand off when the available evidence does not identify a supported recovery path, authorized recovery cannot be completed safely, or validation fails after recovery.</p>
+<p><strong>Why this check is next:</strong> The source states that available troubleshooting options were exhausted, additional technical assistance was requested, and the exact decisive recovery was not isolated.</p>
+<p><strong>Action:</strong> Stop and escalate by preparing an evidence package that includes bag-out behavior, RMS evidence, hospital/HMI fault evidence, recovery attempts, and validation results; do not continue unsupported recovery actions.</p>
+<p><strong>Healthy:</strong> Not applicable as a terminal handoff; escalation package is complete and condition is beyond supported resolution within this path.</p>
+<p><strong>Unhealthy:</strong> Condition persists or recurs and stable recovery cannot be established from supported/authorized actions; evidence remains ambiguous.</p>
+<p><strong>Inconclusive:</strong> Required evidence surfaces are unavailable/unreadable, decisive recovery action cannot be identified, or fault-to-bag-out relationship remains ambiguous.</p>
+<p><strong>Escalation Gate:</strong></p>
+<ul>
+<li><strong>Reason:</strong> Hand off when the available evidence does not identify a supported recovery path, authorized recovery cannot be completed safely, or validation fails after recovery.</li>
+<li><strong>Required next team:</strong> The owning L2/L3 service or controls team</li>
+</ul>
+<p><strong>Evidence package:</strong></p>
+<ul>
+<li>Bag-out behavior timeline (stopped/partial, manual bagging used, whether it repeated)</li>
+<li>RMS evidence used (AGV inactivity/active fault evidence or evidence of absence/inconclusiveness)</li>
+<li>Hospital HMI fault/stuck-task evidence (or explicit inability/unreadable condition)</li>
+<li>Which recovery actions were attempted and by which authorized role</li>
+<li>Validation outcomes (healthy/unhealthy/inconclusive) after recovery attempt</li>
+<li>Stop criteria reached (supported path boundary reached; options exhausted)</li>
+<li>{&#x27;page_ref&#x27;: &#x27;case_218550:page_10&#x27;, &#x27;site_code&#x27;: &#x27;ups_haslet_tx&#x27;, &#x27;site_label&#x27;: &#x27;UPS Haslet TX (TXRTH)&#x27;, &#x27;quote_or_summary&#x27;: &#x27;They had run out of options to try.&#x27;}</li>
+<li>{&#x27;page_ref&#x27;: &#x27;case_218550:page_3&#x27;, &#x27;site_code&#x27;: &#x27;ups_haslet_tx&#x27;, &#x27;site_label&#x27;: &#x27;UPS Haslet TX (TXRTH)&#x27;, &#x27;quote_or_summary&#x27;: &#x27;FORTNA Technical Support requested assistance on the case.&#x27;}</li>
+</ul>
+<p><strong>Actions attempted:</strong></p>
+<ul>
+<li>None</li>
+</ul>
+<p><strong>Unresolved questions:</strong></p>
+<ul>
+<li>None</li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> L2_support, L3_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>They had run out of options to try.</li>
+<li>FORTNA Technical Support requested assistance on the case.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Decision Outcomes:</strong></p>
+<ul>
+<li><code>escalate</code> (observer=remote; tool=RMS / AGV status UI; hospital_hmi; site interview): Supported path cannot establish stable recovery, authorized recovery cannot be completed safely, or validation fails after recovery.</li>
+</ul>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>escalate</code> → <code></code> when Stop and escalate</li>
+</ul>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h2>Branch Graph</h2>
+<table>
+<tr><th>From Node</th><th>Outcome</th><th>Condition</th><th>Next Node</th></tr>
+<tr><td><code>node_1</code></td><td><code>unhealthy</code></td><td>Stoppage confirmed; scope identified</td><td><code>node_2</code></td></tr>
+<tr><td><code>node_1</code></td><td><code>healthy</code></td><td>No confirmed ongoing stoppage</td><td><code></code></td></tr>
+<tr><td><code>node_1</code></td><td><code>inconclusive</code></td><td>Scope unclear</td><td><code></code></td></tr>
+<tr><td><code>node_2</code></td><td><code>unhealthy</code></td><td>AGV inactivity/active fault/sequence anomaly indicated</td><td><code>node_4</code></td></tr>
+<tr><td><code>node_2</code></td><td><code>inconclusive</code></td><td>No relevant AGV abnormality or evidence inconclusive</td><td><code>node_3</code></td></tr>
+<tr><td><code>node_3</code></td><td><code>unhealthy</code></td><td>HMI fault/stuck task/tote inconsistency indicated</td><td><code>node_4</code></td></tr>
+<tr><td><code>node_3</code></td><td><code>inconclusive</code></td><td>No interpretable HMI condition</td><td><code></code></td></tr>
+<tr><td><code>node_4</code></td><td><code>healthy</code></td><td>Authorized recovery completed</td><td><code>node_5</code></td></tr>
+<tr><td><code>node_4</code></td><td><code>unhealthy</code></td><td>Recovery cannot be completed or state unresolved</td><td><code>node_6</code></td></tr>
+<tr><td><code>node_5</code></td><td><code>healthy</code></td><td>Stable AGV operation + automated bag-out continues/completes</td><td><code></code></td></tr>
+<tr><td><code>node_5</code></td><td><code>unhealthy</code></td><td>Validation failure / recurrence observed</td><td><code>node_6</code></td></tr>
+<tr><td><code>node_6</code></td><td><code>escalate</code></td><td>Stop and escalate</td><td><code></code></td></tr>
+</table>
+</body>
+</html>

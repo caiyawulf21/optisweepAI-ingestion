@@ -1,0 +1,404 @@
+{
+  "procedure_id": "proc_load_new_tipper_firmware_v1",
+  "candidate_id": "candidate_manual_tipper_hmi_load_firmware",
+  "title": "Load New Tipper Firmware via Tipper HMI (VISU) USB Install",
+  "procedure_type": "recovery",
+  "summary": "Update the tipper controller firmware using the Tipper HMI (VISU) USB install flow, then power-cycle the controller and confirm the HMI returns to the expected default screen state (\"Visu_Default\" with IP and subnet mask settings) and that F3 navigates to \"Visu_MCP_Dual\".",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "capability_tags": [
+    "tipper_station_fault"
+  ],
+  "access_surface": [
+    "tipper_hmi"
+  ],
+  "audience_roles": [
+    "operator"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when you need to load new firmware onto a tipper controller using the HMI USB install flow and then verify the HMI returns to the expected default screen state.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "Operator: Perform the HMI button sequence, USB firmware install, and controller power-cycle; verify the HMI screen state after reboot."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Tipper HMI / WebVisu / VISU access (physical access to the HMI on the tipper)",
+    "Tipper power disconnect access",
+    "USB drive containing the new firmware version",
+    "USB dongle on the HMI"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Tipper HMI / WebVisu / VISU access (physical access to the HMI on the tipper)",
+      "Tipper power disconnect access"
+    ],
+    "system_preconditions": [
+      "USB drive containing the new firmware version is available",
+      "USB dongle on the HMI is accessible"
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_page_200_image_2",
+      "description": "HMI screenshot showing the \"Visu_Default\" screen with IP and subnet mask settings during tipper commissioning (used to verify expected default screen state).",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_197_image_2",
+      "description": "Tipper commissioning step image showing the gray screen appearance after holding the top buttons during power-on (used to confirm firmware-load mode entry).",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_207_image_2",
+      "description": "HMI screenshot showing the \"Visu_MCP_Dual\" screen (used to confirm F3 navigation result).",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Turn off power to the tipper using the disconnect",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Ensure the tipper controller is powered down before initiating the firmware-load button/power-on sequence.",
+      "instruction": "Turn off power to the tipper using the disconnect.",
+      "expected_result": "The tipper controller is powered off (HMI is not in normal operation).",
+      "healthy_condition": "Power is fully off prior to the next step’s power-on sequence.",
+      "failure_condition": "Power remains on (HMI does not behave as expected for a power-on sequence).",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Power off tipper via disconnect",
+          "exact_action": "Turn off power to the tipper using the disconnect.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Hold the top three buttons on the tipper HMI",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Enter the firmware-load mode during the subsequent power-on.",
+      "instruction": "On the tipper HMI, press and hold the top three buttons.",
+      "expected_result": "The top three buttons are held continuously in preparation for powering on.",
+      "healthy_condition": "Buttons remain held through the power-on in the next step.",
+      "failure_condition": "You release the buttons before or during power-on.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Hold top three buttons",
+          "exact_action": "On the tipper HMI, press and hold the top three buttons.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Power on the tipper while continuing to hold the top three buttons",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Trigger the controller into the firmware-load mode.",
+      "instruction": "While continuing to hold the top three buttons, power on the tipper.",
+      "expected_result": "The controller begins booting into the firmware-load mode.",
+      "healthy_condition": "The gray screen appears in the next step while the buttons are still held.",
+      "failure_condition": "The gray screen does not appear (indicating the firmware-load mode was not entered).",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Power on tipper",
+          "exact_action": "While continuing to hold the top three buttons, power on the tipper.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the gray screen does not appear after holding the top three buttons during power-on, stop and re-check that the correct buttons are held through power-on before proceeding."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Wait for the gray screen",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm the controller is in the firmware-load mode before starting the USB install.",
+      "instruction": "Keep holding the buttons until a gray screen appears.",
+      "expected_result": "A gray screen appears on the tipper HMI.",
+      "healthy_condition": "Gray screen is visible while buttons are still held.",
+      "failure_condition": "No gray screen appears.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Confirm gray screen",
+          "exact_action": "Keep holding the buttons until a gray screen appears.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the gray screen does not appear, stop and re-check that the correct buttons are held through power-on before proceeding."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Insert the USB drive into the HMI USB dongle",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Provide the firmware file to the controller for installation.",
+      "instruction": "Plug the USB drive containing the new firmware version into the USB dongle on the HMI.",
+      "expected_result": "The USB drive is physically connected to the HMI USB dongle.",
+      "healthy_condition": "USB is inserted and ready for the install action.",
+      "failure_condition": "USB is not inserted correctly (install option cannot proceed).",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Insert firmware USB",
+          "exact_action": "Plug the USB drive containing the new firmware version into the USB dongle on the HMI.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Press INSTALL FROM FILE",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Start the firmware installation from the USB drive.",
+      "instruction": "Press the \"INSTALL FROM FILE\" button.",
+      "expected_result": "The HMI begins the firmware install flow from the USB.",
+      "healthy_condition": "The install flow proceeds to loading/progress or completion.",
+      "failure_condition": "The install flow does not start or does not progress.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Start install from USB",
+          "exact_action": "Press the \"INSTALL FROM FILE\" button.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Load the firmware from the USB until the install completes",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Complete the firmware update process.",
+      "instruction": "Load the firmware from the USB (continue the on-screen install flow until it completes).",
+      "expected_result": "The on-screen install flow reaches completion.",
+      "healthy_condition": "Install/load progress completes successfully and the flow ends.",
+      "failure_condition": "Install does not complete or appears stuck/failed.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Run install flow to completion",
+          "exact_action": "Load the firmware from the USB (continue the on-screen install flow until it completes).",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 8,
+      "title": "Power-cycle the controller and boot normally",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Ensure the new firmware is applied and the controller returns to normal operation.",
+      "instruction": "Power the controller off and back on, then allow it to boot normally without pressing any buttons.",
+      "expected_result": "Controller reboots normally without entering the firmware-load mode.",
+      "healthy_condition": "No button-hold sequence is active during boot.",
+      "failure_condition": "Controller re-enters firmware-load mode due to button presses during boot.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Power-cycle controller",
+          "exact_action": "Power the controller off and back on, then allow it to boot normally without pressing any buttons.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 9,
+      "title": "Verify Visu_Default screen appears with IP and subnet mask settings",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm the controller is in the expected post-install default screen state.",
+      "instruction": "Verify the \"Visu_Default\" screen appears on the HMI displaying the IP and subnet mask settings.",
+      "expected_result": "The HMI shows the \"Visu_Default\" screen and displays IP and subnet mask fields.",
+      "healthy_condition": "\"Visu_Default\" is visible with IP and subnet mask settings shown.",
+      "failure_condition": "\"Visu_Default\" does not appear or IP/subnet mask fields are not shown after reboot.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check default screen state",
+          "exact_action": "Verify the \"Visu_Default\" screen appears on the HMI displaying the IP and subnet mask settings.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If \"Visu_Default\" does not appear or IP/subnet mask fields are not shown after reboot, stop and escalate for support rather than continuing with further HMI navigation."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 10,
+      "title": "Press F3 to navigate to Visu_MCP_Dual",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm the HMI navigation works after firmware load and reboot.",
+      "instruction": "Press F3 to go to the \"Visu_MCP_Dual\" screen.",
+      "expected_result": "The HMI displays the \"Visu_MCP_Dual\" screen after pressing F3.",
+      "healthy_condition": "\"Visu_MCP_Dual\" screen is visible.",
+      "failure_condition": "Pressing F3 does not navigate to \"Visu_MCP_Dual\".",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Navigate to Visu_MCP_Dual",
+          "exact_action": "Press F3 to go to the \"Visu_MCP_Dual\" screen.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "After the power cycle, the HMI shows the \"Visu_Default\" screen displaying IP and subnet mask settings.",
+    "Pressing F3 navigates to the \"Visu_MCP_Dual\" screen."
+  ],
+  "healthy_conditions": [
+    "HMI displays \"Visu_Default\" with IP and subnet mask settings after reboot.",
+    "F3 navigation leads to \"Visu_MCP_Dual\"."
+  ],
+  "failure_conditions": [
+    "Gray screen does not appear after holding the top three buttons during power-on.",
+    "\"Visu_Default\" does not appear or IP/subnet mask fields are not shown after reboot.",
+    "F3 does not navigate to \"Visu_MCP_Dual\"."
+  ],
+  "escalation_guidance": [
+    "If \"Visu_Default\" does not appear or IP/subnet mask fields are not shown after reboot, stop and escalate for support rather than continuing with further HMI navigation."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "site_code": "",
+      "site_label": "",
+      "page_or_section": "7.3.23.12 LOAD FIRMWARE (page 209)",
+      "quote_or_summary": "7.3.23.12 LOAD FIRMWARE steps include: power off via disconnect; hold top three buttons; power on while holding until gray screen; plug USB into USB dongle; press \"INSTALL FROM FILE\"; load firmware until completes; power off/on and boot normally without pressing buttons; verify \"Visu_Default\" with IP and subnet mask; press F3 to \"Visu_MCP_Dual\"."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_page_200_image_2"
+    },
+    {
+      "artifact_id": "artifact_page_197_image_2"
+    },
+    {
+      "artifact_id": "artifact_page_207_image_2"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_manual_tipper_hmi_load_firmware"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "Exact button labels/positions for the \"top three buttons\" are not provided in the packet text (only the instruction to hold the top three buttons).",
+    "The packet does not include the specific expected on-screen progress/completion indicators for the \"INSTALL FROM FILE\" flow (only that the on-screen install flow should complete)."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_page_197_image_2",
+    "artifact_page_200_image_2",
+    "artifact_page_207_image_2"
+  ]
+}

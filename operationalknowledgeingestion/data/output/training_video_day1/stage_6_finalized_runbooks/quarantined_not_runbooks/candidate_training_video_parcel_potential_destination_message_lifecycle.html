@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Verify Parcel Potential Destination Data Flow During Sorter Induction (Chat messages)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Verify Parcel Potential Destination Data Flow During Sorter Induction (Chat messages)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_verify_parcel_potential_destination_data_flow_during_sorter_induction_chat_messages_v1</td></tr>
+<tr><th>Title</th><td>Verify Parcel Potential Destination Data Flow During Sorter Induction (Chat messages)</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L1_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>wcs_api_responsiveness</td></tr>
+<tr><th>Access Surface</th><td>wcs_api, apidog</td></tr>
+<tr><th>Audience Roles</th><td>L1_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>api_unresponsive</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Trace the two-step Chat messaging sequence used during sorter induction to confirm how OptiSweep receives parcel data (tracking ID, dimensions, package type; then barcode data, dimensional data, and potential destination data). Confirm that “potential destination” represents a sortable/sorted destination set (not a ZIP code) and that default dimensions are assigned when the first message fails for an unknown inducted parcel.</p>
+<h2>When To Use</h2>
+<p>Use when you need to explain or troubleshoot the parcel induction messaging lifecycle—specifically whether OptiSweep is receiving the first and second Chat messages and whether “potential destination” is being interpreted as a sortable destination set (not a ZIP code).</p>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Identify the sorter induction lifecycle and the two Chat messages</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the live “Chat” messaging/data surface you use for induction, confirm you are looking for the two-step sequence tied to sorter induction: (1) first Chat message triggered before parcels reach the system, and (2) second Chat message triggered after the first message (including the fallback behavior).</p>
+<p><strong>Expected result:</strong></p>
+<p>You can describe the expected two-step sequence for a parcel at sorter induction: first message includes tracking ID, dimensions, and package type; second message includes tracking ID, barcode data, dimensional data, and potential destination data.</p>
+<hr>
+<h3>Step 2 — Confirm the first Chat message contains tracking ID, dimensions, and package type</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>For the parcel you are investigating, check the first Chat message content on the live “Chat” messaging/data surface and confirm it includes: tracking ID, dimensions, and package type.</p>
+<p><strong>Expected result:</strong></p>
+<p>The first Chat message for the parcel includes tracking ID, dimensions, and package type.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the first Chat message is missing or does not include the fields described in the source (tracking ID, dimensions, package type).</li>
+</ul>
+<hr>
+<h3>Step 3 — If the first message fails for an unknown inducted parcel, confirm OptiSweep assigns default dimensions</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If you observe a failure of the first Chat message and the parcel is inducted as “unknown,” verify that OptiSweep assigns default dimensions for that parcel.</p>
+<p><strong>Expected result:</strong></p>
+<p>When the first message fails for an unknown inducted parcel, OptiSweep assigns default dimensions.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if default dimensions are not applied when the first message fails and an unknown parcel is inducted.</li>
+</ul>
+<hr>
+<h3>Step 4 — Confirm the second Chat message contains tracking ID, barcode data, dimensional data, and potential destination data</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>For the same parcel, check the second Chat message content on the live “Chat” messaging/data surface and confirm it includes: tracking ID, barcode data, dimensional data, and potential destination data.</p>
+<p><strong>Expected result:</strong></p>
+<p>The second Chat message includes tracking ID, barcode data, dimensional data, and potential destination data.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the second Chat message (with potential destination data) is missing or does not include the fields described in the source.</li>
+</ul>
+<hr>
+<h3>Step 5 — Interpret “potential destination” as a sortable destination set (not a ZIP code)</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>When explaining or validating the parcel’s “potential destination” data, confirm you treat it as a sorted/sortable destination set (multiple destinations may be provided), not as a ZIP code.</p>
+<p><strong>Expected result:</strong></p>
+<p>Potential destination is understood and communicated as a sorted destination set (sortable destination options), not a ZIP code.</p>
+<hr>
+<h3>Step 6 — If needed, explain upstream ZIP-to-destination mapping vs local destination knowledge</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If you need to explain the relationship between ZIP codes and potential destination, use the source-backed mapping concept: UPS internally maps a ZIP code to one or multiple destinations via an upstream mapping file/system (ASX), while the local system “only knows destinations.”</p>
+<p><strong>Expected result:</strong></p>
+<p>You can explain that ZIP-to-destination mapping is upstream (ASX mapping file) and that the local system uses destination values rather than ZIP code logic.</p>
+<hr>
+</body>
+</html>

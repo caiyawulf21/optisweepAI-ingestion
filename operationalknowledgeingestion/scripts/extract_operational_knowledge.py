@@ -23,6 +23,7 @@ from optisweep_ingestion.stage_paths import STAGE_DIR_NAMES, normalize_stage, st
 from optisweep_ingestion.stage3_artifact_enrichment import AzureOpenAIArtifactClient, enrich_source_artifacts
 from optisweep_ingestion.stage2_source_artifacts import extract_source_artifacts
 from optisweep_ingestion.stage6_runbook_finalization import AzureOpenAIRunbookFinalizationClient, finalize_operational_runbooks
+from optisweep_ingestion.stage8_relationship_linking import link_source_relationships
 from optisweep_ingestion.stage4_operational_context import AzureOpenAIContextClient, extract_operational_context
 from optisweep_ingestion.stage5_runbook_candidates import AzureOpenAIRunbookCandidateClient, extract_runbook_candidates
 from optisweep_ingestion.stage1_source_bundle import build_source_bundle
@@ -32,7 +33,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Extract operational knowledge from a source PDF.")
     parser.add_argument("--source-pdf", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--stages", default="1,2", help="Comma-separated stages to run. Supports 1,2,3,4,5,6,6.5.")
+    parser.add_argument("--stages", default="1,2", help="Comma-separated stages to run. Supports 1,2,3,4,5,6,6.5,8.")
     parser.add_argument("--llm", action="store_true", help="Use Azure OpenAI for LLM-backed stages 3, 4, and 5.")
     parser.add_argument("--max-workers", type=int, default=4, help="Concurrent LLM calls for stages that support it.")
     parser.add_argument("--backfill-missing-sections", action="store_true", help="Stage 5: add conservative candidates for missed procedural sections.")
@@ -43,6 +44,8 @@ def main() -> None:
     parser.add_argument("--source-title", default=None)
     parser.add_argument("--source-version", default=None)
     parser.add_argument("--ingestion-batch-id", default=None)
+    parser.add_argument("--ocr-backend", default="none", choices=["none", "tesseract", "azure_cv"])
+    parser.add_argument("--tesseract-command", default=None)
     args = parser.parse_args()
 
     stages = {_normalize_supported_stage(stage) for stage in args.stages.split(",") if stage.strip()}
@@ -54,6 +57,7 @@ def main() -> None:
     stage5_dir = stage_dir(args.output_dir, "5")
     stage6_dir = stage_dir(args.output_dir, "6")
     stage6_5_dir = stage_dir(args.output_dir, "6.5")
+    stage8_dir = stage_dir(args.output_dir, "8")
 
     if "1" in stages:
         bundle = build_source_bundle(
@@ -77,7 +81,13 @@ def main() -> None:
             stage1_dir / "source_bundle.json",
             args.output_dir / "source_bundle.json",
         )
-        artifacts, report = extract_source_artifacts(source_bundle_path, args.source_pdf, stage2_dir)
+        artifacts, report = extract_source_artifacts(
+            source_bundle_path,
+            args.source_pdf,
+            stage2_dir,
+            ocr_backend=args.ocr_backend,
+            tesseract_command=args.tesseract_command,
+        )
         print(f"Stage 2 source artifacts written: {stage2_dir / 'source_artifacts.json'}")
         print(f"Stage 2 artifact report written: {stage2_dir / 'artifact_extraction_report.json'}")
         print(f"Stage 2 artifacts created: {len(artifacts)}")
@@ -237,11 +247,20 @@ def main() -> None:
         print(f"Stage 6.5 merge clusters generated: {pool.merge_cluster_count}")
         print(f"Stage 6.5 pass-through runbooks: {pool.pass_through_count}")
 
+    if "8" in stages:
+        report = link_source_relationships(output_dir=args.output_dir)
+        print(f"Stage 8 relationship links written: {stage8_dir / 'relationship_links.json'}")
+        print(f"Stage 8 linked artifacts written: {stage8_dir / 'source_artifacts_linked.json'}")
+        print(f"Stage 8 linked context written: {stage8_dir / 'operational_context_linked.json'}")
+        print(f"Stage 8 linked runbooks written: {stage8_dir / 'finalized_runbooks_linked'}")
+        print(f"Stage 8 linking report written: {stage8_dir / 'relationship_linking_report.json'}")
+        print(f"Stage 8 link count: {report['link_stats']['link_count']}")
+
 
 def _normalize_supported_stage(value: str) -> str:
     stage = normalize_stage(value)
-    if stage not in {"1", "2", "3", "4", "5", "6", "6.5"}:
-        raise ValueError("Implemented operational extraction stages are 1,2,3,4,5,6,6.5.")
+    if stage not in {"1", "2", "3", "4", "5", "6", "6.5", "8"}:
+        raise ValueError("Implemented operational extraction stages are 1,2,3,4,5,6,6.5,8.")
     return stage
 
 

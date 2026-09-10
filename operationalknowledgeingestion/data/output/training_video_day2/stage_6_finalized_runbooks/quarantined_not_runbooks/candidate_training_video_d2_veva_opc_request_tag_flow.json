@@ -1,0 +1,355 @@
+{
+  "procedure_id": "proc_verify_aveva_request_to_response_tag_flow_opc_v1",
+  "candidate_id": "candidate_training_video_d2_veva_opc_request_tag_flow",
+  "title": "Verify the AVEVA request-to-response tag flow via OPC-generated tags (Tag app / real-time tags)",
+  "procedure_type": "diagnostic",
+  "summary": "Use the Tag app to verify that an AVEVA-bound request is issued via an OPC tag, produces a response, and results in tags being created/updated that AVEVA can read. Confirm the mapping context that metrics are converted into AVEVA-readable tags in SYS1.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "wcs_api_responsiveness"
+  ],
+  "access_surface": [
+    "apidog",
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to confirm the end-to-end AVEVA request/response/tag-creation flow that is driven by an OPC tag, and you want to validate the real-time tags visible in the Tag app and the SYS1 metrics-to-tags mapping context.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the diagnostic by issuing the request associated with the OPC tag, observing for a response, and validating that AVEVA-readable tags appear/are updated in the Tag app real-time tags view; confirm SYS1 is the metrics-to-tags conversion location for AVEVA reads."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Tag app (for checking real-time tags)",
+    "Ability to locate the OPC tag entry point used for the request",
+    "Visibility into SYS1 tag namespace/entries where metrics are converted into tags for AVEVA to read"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the Tag app used for checking real-time tags"
+    ],
+    "system_preconditions": [
+      "An OPC tag exists that is used as the request trigger for the AVEVA-bound flow"
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_aveva_api_tag_mapping_v1",
+    "ctx_training_video_tag_app_realtime_tags_v1",
+    "ctx_training_video_sys1_metrics_to_tags_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0038_this_is_how_veva_is_mapped_primary_03_01_43_000",
+      "description": "Frame showing the AVEVA request/response/tag-creation mapping via OPC tags and the SYS1 metrics-to-tags conversion context; also states real-time tags are checked through the tag app (not a Perspective project).",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Tag app used for checking real-time tags",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish the correct live view for validating that tags are created/updated after the OPC-driven request.",
+      "instruction": "Open the Tag app that is used to check real-time tags (the source states the tags are checked through the tag app, not a Perspective project).",
+      "expected_result": "The Tag app real-time tags view is open and ready to observe tag creation/updates.",
+      "healthy_condition": "You can view the real-time tags list/namespace in the Tag app (the view is the one used for real-time tag checking).",
+      "failure_condition": "You cannot access the Tag app real-time tags view, or you are viewing a different project type than the one used for real-time tag checking.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Open Tag app real-time tags view",
+          "exact_action": "Open the tag app and check the real time tags.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 38,
+          "section_id": "training_video_day2_segment_0038",
+          "quote_or_summary": "“For the tags, it's not a perspective project, right? So we we just go through the tag app and then check the real time tags.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Locate the OPC tag entry point used to issue the request",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Identify the specific OPC tag that acts as the request trigger for the AVEVA-bound flow.",
+      "instruction": "In the relevant OPC tag area, locate the OPC tag that is used as the request trigger (the source describes the request as “a tag in OPC” and then “they hit request”).",
+      "expected_result": "You have identified the OPC tag entry point that will be used to trigger the request.",
+      "healthy_condition": "The OPC tag you selected is the one associated with the AVEVA request trigger described in the flow.",
+      "failure_condition": "You cannot identify the OPC tag entry point used for the request trigger.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Identify OPC request tag",
+          "exact_action": "Locate the “tag in OPC” that is used to trigger the request.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 38,
+          "section_id": "training_video_day2_segment_0038",
+          "quote_or_summary": "“So they hit that it's A tag in OPC, they hit request…”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Trigger/issue the request associated with the OPC tag",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Initiate the request so you can observe the response and subsequent tag creation/updates.",
+      "instruction": "Trigger the “request” action/control associated with the identified OPC tag (the source states “they hit request”).",
+      "expected_result": "The request has been issued from the OPC tag request trigger.",
+      "healthy_condition": "The request action is successfully executed (i.e., it proceeds to generate a response in the next step).",
+      "failure_condition": "The request action cannot be executed, or it does not proceed to generate a response.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Hit request",
+          "exact_action": "Hit request.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 38,
+          "section_id": "training_video_day2_segment_0038",
+          "quote_or_summary": "“they hit request, it generates…”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Observe that a response is generated",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the request/response portion of the flow completes.",
+      "instruction": "After issuing the request, observe whether the system generates a response (the source states “it gets a response”).",
+      "expected_result": "A response is observed after the request is issued.",
+      "healthy_condition": "The request results in a response being generated as part of the flow.",
+      "failure_condition": "No response is observed after the request.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check for response",
+          "exact_action": "Observe whether it “gets a response.”",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "No response is observed after the request (stop and escalate for deeper API/OPC/tag-provider troubleshooting)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 38,
+          "section_id": "training_video_day2_segment_0038",
+          "quote_or_summary": "“it generates, it gets a response…”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Verify AVEVA-readable tags are created/updated in the Tag app real-time tags",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the tag-creation portion of the flow completes so AVEVA can read the data.",
+      "instruction": "In the Tag app real-time tags view, check that tags are created/updated after the response, specifically the tags that AVEVA can read (the source states “tags are created that AVEVA can read”).",
+      "expected_result": "After the request/response, the Tag app shows newly created or updated tags that AVEVA can read.",
+      "healthy_condition": "You see tag creation/updates in the Tag app real-time tags view following the request.",
+      "failure_condition": "Expected AVEVA-readable tags are not created/updated in the Tag app after the response.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check real-time tags for AVEVA-readable updates",
+          "exact_action": "Check the real time tags in the tag app.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the expected AVEVA-readable tags are not created/updated in the tag app, stop and escalate for deeper API/OPC/tag-provider troubleshooting."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 38,
+          "section_id": "training_video_day2_segment_0038",
+          "quote_or_summary": "“...it gets a response and tags are created that AVEVA can read.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Confirm SYS1 is the metrics-to-tags conversion location for AVEVA reads",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Validate the mapping context that explains where metrics are converted into AVEVA-readable tags.",
+      "instruction": "Confirm the SYS1 mapping context in the tag namespace/entries shown in the source: SYS1 is where all metrics are converted into tags for AVEVA to read.",
+      "expected_result": "SYS1 is identified as the location where metrics are converted into tags for AVEVA to read.",
+      "healthy_condition": "The SYS1 tag namespace/entries you are validating align with the SYS1 metrics-to-tags conversion context.",
+      "failure_condition": "SYS1 cannot be confirmed as the metrics-to-tags conversion location for the AVEVA-readable tags you are validating.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Validate SYS1 metrics-to-tags context",
+          "exact_action": "Confirm “SYS1 is where all metrics are converted to tags for Aveva to read.”",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 38,
+          "section_id": "training_video_day2_segment_0038",
+          "quote_or_summary": "OCR text: “SYS1 is where all metrics are converted to tags for Aveva to read.”"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "After issuing the request via the OPC tag, a response is observed.",
+    "After the response, the Tag app real-time tags show newly created/updated tags that AVEVA can read.",
+    "SYS1 is confirmed as the metrics-to-tags conversion location for AVEVA reads."
+  ],
+  "healthy_conditions": [
+    "Tag app real-time tags reflect tag creation/updates following the OPC-tag-triggered request.",
+    "A response is generated after the request is issued.",
+    "SYS1 is the identified conversion context for metrics into AVEVA-readable tags."
+  ],
+  "failure_conditions": [
+    "No response is observed after the request.",
+    "Expected AVEVA-readable tags are not created/updated in the Tag app real-time tags view.",
+    "SYS1 metrics-to-tags conversion context cannot be confirmed."
+  ],
+  "escalation_guidance": [
+    "If no response is observed after the request, or if AVEVA-readable tags are not created/updated in the Tag app, stop and escalate for deeper API/OPC/tag-provider troubleshooting."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0038_this_is_how_veva_is_mapped_primary_03_01_43_000",
+      "what_to_look_at": "The frame/transcript that states: (1) request is triggered via an OPC tag and “hit request… it generates… gets a response,” (2) “tags are created that AVEVA can read,” (3) real-time tags are checked through the tag app (not a Perspective project), and (4) “SYS1 is where all metrics are converted to tags for Aveva to read.”"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 38,
+      "section_id": "training_video_day2_segment_0038",
+      "quote_or_summary": "“it’s a tag in OPC… hit request… it generates, it gets a response and tags are created that AVEVA can read… we just go through the tag app and then check the real time tags… SYS1 is where all metrics are converted to tags for Aveva to read.”",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0038_this_is_how_veva_is_mapped_primary_03_01_43_000",
+      "what_to_look_at": "Frame showing the AVEVA request/response/tag-creation mapping via OPC tags and the SYS1 metrics-to-tags conversion context; also states real-time tags are checked through the tag app (not a Perspective project)."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_d2_veva_opc_request_tag_flow"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not name specific Tag app UI controls/buttons for issuing the request or for selecting the exact real-time tag namespace/filters to observe.",
+    "The source does not provide the exact OPC tag name/path or the exact request control label used to trigger the request."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

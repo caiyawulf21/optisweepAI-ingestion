@@ -1,0 +1,375 @@
+{
+  "procedure_id": "proc_recover_non_recoverable_fault_agv_stuck_hmi_cellio_status_out_w1_forced_value_v1",
+  "candidate_id": "candidate_manual_optisweep_agv_stuck_hmi_cellio_status_recovery",
+  "title": "Recover Non-Recoverable Fault: AGV Stuck Using Operator Station HMI (Visu_ManControl → CellIO Status → OUT W1 forced value)",
+  "procedure_type": "recovery",
+  "summary": "On the operator station HMI, verify the non-recoverable AGV-stuck fault by confirming the selected tipper shows OUT Fault Status = 82 on the CellIO Status screen. Then force OUT W1 to either 3 (continue work) or 32771 (send the AGV to the hospital) by entering the value, checking the enable checkbox, waiting 10 seconds, and unchecking. Finally, press CYCLE START to restart operation.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_physical_recovery",
+    "tipper_station_fault",
+    "hospital_diversion"
+  ],
+  "access_surface": [
+    "tipper_hmi"
+  ],
+  "audience_roles": [
+    "operator"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when an AGV remains at the tipper after tote-tipping is complete (non-recoverable fault), and the operator station HMI indicates the AGV-stuck condition that requires forcing OUT W1 via the CellIO Status screen.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "Operator: Perform the HMI verification (Visu_ManControl → CellIO Status), select the stuck tipper, apply the documented OUT W1 forced value (3 or 32771) with the enable checkbox for 10 seconds, then uncheck and press CYCLE START."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Operator station HMI access",
+    "HMI screen: \"Visu_ManControl\"",
+    "HMI control: \"CellIO Status\" button",
+    "HMI controls/fields: tipper selection, \"OUT Fault Status\", \"OUT W1\" forced value box, checkbox enabling the forced value, \"CYCLE START\" button"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Operator station HMI access"
+    ],
+    "system_preconditions": [
+      "An AGV remains at the tipper after tote-tipping is complete (AGV stuck non-recoverable fault condition)."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_manual_agv_stuck_fault_v1",
+    "ctx_manual_hmi_visu_mancontrol_v1",
+    "ctx_manual_hmi_cellio_status_v1",
+    "ctx_manual_agv_stuck_fault_status_82_v1",
+    "ctx_manual_out_w1_forced_values_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_page_87_image_2",
+      "description": "Operator station HMI screen for resolving the non-recoverable AGV stuck fault (Visu_ManControl → CellIO Status), including OUT Fault Status and OUT W1 forced value/checkbox.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_page_87_image_3",
+      "description": "Operator station HMI screen image for the non-recoverable AGV stuck recovery procedure (OUT Fault Status expected 82; OUT W1 forced value box and enable checkbox).",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_4_23_operator_station_hmi_manual_control_screen",
+      "description": "Operator Station HMI Manual Control Screen showing the \"CellIO STATUS\" button used to reach the CellIO Status screen.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Navigate to Visu_ManControl",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Open the operator station HMI screen that provides access to the CellIO Status screen for tipper I/O verification and forced-value recovery.",
+      "instruction": "On the operator station HMI, navigate to the \"Visu_ManControl\" screen.",
+      "expected_result": "The \"Visu_ManControl\" screen is displayed on the operator station HMI.",
+      "healthy_condition": "The HMI is on the \"Visu_ManControl\" screen and the \"CellIO Status\" button is available for selection.",
+      "failure_condition": "You cannot access the \"CellIO Status\" button because the HMI is not on the \"Visu_ManControl\" screen.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Open Visu_ManControl",
+          "exact_action": "Navigate to the \"Visu_ManControl\" screen.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Open CellIO Status",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Access the tipper-specific I/O status and forced-value controls needed to recover the AGV stuck fault.",
+      "instruction": "Press the \"CellIO Status\" button on the \"Visu_ManControl\" screen.",
+      "expected_result": "The CellIO Status screen (cell control input/output values per tipper) is opened.",
+      "healthy_condition": "The CellIO Status screen shows tipper selection and the OUT Fault Status / OUT W1 forced value controls for the selected tipper.",
+      "failure_condition": "The CellIO Status screen does not open or the OUT Fault Status / OUT W1 forced value controls are not visible.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Press CellIO Status",
+          "exact_action": "Press the \"CellIO Status\" button.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Select the stuck tipper",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Ensure the OUT Fault Status and OUT W1 forced value controls apply to the specific tipper where the AGV is stuck.",
+      "instruction": "Select the tipper where the AGV is stuck.",
+      "expected_result": "The selected tipper on the CellIO Status screen corresponds to the tipper where the AGV is currently stuck.",
+      "healthy_condition": "The tipper selection reflects the correct stuck tipper, and the OUT Fault Status field updates for that tipper.",
+      "failure_condition": "A different tipper than the one with the stuck AGV is selected (leading to an incorrect OUT Fault Status value).",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Select stuck tipper",
+          "exact_action": "Select the tipper where the AGV is stuck.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify OUT Fault Status = 82",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Confirm the fault condition matches the documented non-recoverable AGV stuck fault before applying the forced OUT W1 value.",
+      "instruction": "Verify the \"OUT Fault Status\" field shows value 82 for the selected stuck tipper.",
+      "expected_result": "\"OUT Fault Status\" shows value 82 for the selected tipper.",
+      "healthy_condition": "\"OUT Fault Status\" equals 82 on the CellIO Status screen for the selected tipper.",
+      "failure_condition": "\"OUT Fault Status\" is not 82 for the selected tipper.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check OUT Fault Status",
+          "exact_action": "The OUT Fault Status should have a value of 82.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop if \"OUT Fault Status\" does not show value 82 for the selected stuck tipper."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Enter OUT W1 forced value (3 or 32771)",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Apply the documented forced value to OUT W1 to either continue work or send the AGV to the hospital, depending on the required outcome.",
+      "instruction": "Ensure the correct tipper is selected, then enter a forced value in the \"OUT W1\" forced value box: use 3 if the tote and AGV are ready to continue working, or 32771 if the AGV needs to go to the hospital.",
+      "expected_result": "The \"OUT W1\" forced value box contains either 3 or 32771 as selected for the recovery outcome.",
+      "healthy_condition": "The forced value entered matches the intended recovery path: 3 for continue work, 32771 for hospital routing.",
+      "failure_condition": "The wrong forced value is entered for the intended outcome (e.g., 3 when the AGV must go to the hospital).",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Enter OUT W1 forced value",
+          "exact_action": "Enter a value of 3 in the OUT W1 forced value box if the tote and AGV are ready to continue working. If the AGV needs to go to the hospital, enter a value of 32771.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Enable the forced OUT W1 value",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Apply the forced OUT W1 value by enabling it via the checkbox next to the introduced forced value.",
+      "instruction": "Check the box next to the value introduced in the forced value box.",
+      "expected_result": "The checkbox enabling the forced OUT W1 value is checked (enabled).",
+      "healthy_condition": "The forced-value enable checkbox is checked for the entered OUT W1 value.",
+      "failure_condition": "The checkbox is not checked (forced value not enabled).",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Check enable checkbox",
+          "exact_action": "Check the box next to the value introduced in the forced value box.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Wait 10 seconds, then uncheck OUT W1 forced value",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Apply the forced OUT W1 value for the documented duration, then remove the forced enable to complete the recovery action.",
+      "instruction": "Wait 10 seconds, then uncheck the box for value OUT W1.",
+      "expected_result": "After 10 seconds, the OUT W1 forced-value enable checkbox is unchecked.",
+      "healthy_condition": "The forced-value checkbox transitions from checked to unchecked after the 10-second wait.",
+      "failure_condition": "The checkbox remains checked beyond 10 seconds, or it is unchecked too early.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Uncheck after 10 seconds",
+          "exact_action": "Wait 10 seconds, then uncheck the box for value OUT W1.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 8,
+      "title": "Press CYCLE START to restart operation",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Restart operation after applying the forced OUT W1 value to recover from the non-recoverable AGV stuck fault.",
+      "instruction": "Press \"CYCLE START\" to restart operation.",
+      "expected_result": "\"CYCLE START\" is pressed and operation restart is initiated.",
+      "healthy_condition": "The system proceeds with the restart sequence after CYCLE START (operator can observe the restart behavior on the operator station HMI).",
+      "failure_condition": "Operation does not restart as expected after pressing CYCLE START.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Restart operation",
+          "exact_action": "Press CYCLE START to restart operation.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the fault does not clear after applying the forced value and restarting, escalate to Fortna support for further troubleshooting (do not continue repeated forced-value toggling without guidance)."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "For the selected stuck tipper, OUT Fault Status shows value 82 on the CellIO Status screen.",
+    "OUT W1 forced value is applied by checking the enable checkbox for 10 seconds, then the checkbox is unchecked.",
+    "After pressing CYCLE START, the AGV-stuck fault clears (operator observes the fault condition resolved as part of the restart behavior)."
+  ],
+  "healthy_conditions": [
+    "On CellIO Status for the selected tipper: OUT Fault Status = 82 prior to forcing.",
+    "OUT W1 forced value enable checkbox is checked for 10 seconds and then unchecked.",
+    "After CYCLE START, the system restarts operation without the AGV remaining stuck at the tipper."
+  ],
+  "failure_conditions": [
+    "OUT Fault Status is not 82 for the selected tipper.",
+    "The fault does not clear after applying the forced value and restarting."
+  ],
+  "escalation_guidance": [
+    "If the fault does not clear after applying the forced value and restarting, escalate to Fortna support for further troubleshooting (do not continue repeated forced-value toggling without guidance)."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_page_87_image_2",
+      "what_to_look_at": "Visu_ManControl → CellIO Status screen layout for the non-recoverable AGV stuck recovery, including OUT Fault Status (expected 82) and OUT W1 forced value/checkbox."
+    },
+    {
+      "artifact_id": "artifact_page_87_image_3",
+      "what_to_look_at": "CellIO Status screen controls: OUT Fault Status value (82), OUT W1 forced value box, and the checkbox enabling the forced value."
+    },
+    {
+      "artifact_id": "artifact_fig_4_23_operator_station_hmi_manual_control_screen",
+      "what_to_look_at": "Operator Station HMI Manual Control Screen showing the \"CELLIO STATUS\" button used to reach the CellIO Status screen."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "page": 87,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_7_2_non_recoverable_fault_agv_stuck",
+      "quote_or_summary": "Navigate to \"Visu_ManControl\" → press \"CellIO Status\" → select stuck tipper → verify \"OUT Fault Status\" = 82 → enter OUT W1 forced value (3 to continue or 32771 to send to hospital) → check enable box → wait 10 seconds → uncheck OUT W1 → press \"CYCLE START\" to restart operation."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_page_87_image_2",
+      "what_to_look_at": "Visu_ManControl → CellIO Status screen layout for the non-recoverable AGV stuck recovery, including OUT Fault Status (expected 82) and OUT W1 forced value/checkbox."
+    },
+    {
+      "artifact_id": "artifact_page_87_image_3",
+      "what_to_look_at": "CellIO Status screen controls: OUT Fault Status value (82), OUT W1 forced value box, and the checkbox enabling the forced value."
+    },
+    {
+      "artifact_id": "artifact_fig_4_23_operator_station_hmi_manual_control_screen",
+      "what_to_look_at": "Operator Station HMI Manual Control Screen showing the \"CELLIO STATUS\" button used to reach the CellIO Status screen."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_manual_optisweep_agv_stuck_hmi_cellio_status_recovery"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_fig_4_23_operator_station_hmi_manual_control_screen",
+    "artifact_page_87_image_2",
+    "artifact_page_87_image_3"
+  ]
+}

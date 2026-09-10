@@ -45,6 +45,8 @@ class PoolBuildConfig:
     use_mock_embedder: bool = False
     experiment_name: str = ""
     reuse_embeddings_from: str | Path | None = None
+    include_source_ids: frozenset[str] = frozenset()
+    include_source_types: frozenset[str] = frozenset()
 
 
 def build_runbook_pool(
@@ -68,6 +70,21 @@ def build_runbook_pool(
     output_path.mkdir(parents=True, exist_ok=True)
 
     runbooks, load_warnings = load_finalized_runbooks(source_roots)
+    if build_config.include_source_ids or build_config.include_source_types:
+        runbooks = [
+            runbook
+            for runbook in runbooks
+            if (
+                not build_config.include_source_ids
+                or str((runbook.get("metadata") or {}).get("source_id") or "")
+                in build_config.include_source_ids
+            )
+            and (
+                not build_config.include_source_types
+                or str((runbook.get("metadata") or {}).get("source_type") or "")
+                in build_config.include_source_types
+            )
+        ]
     cards = [build_retrieval_card(runbook) for runbook in runbooks]
     index_path = output_path / "runbook_retrieval_index.json"
     reuse_index_path = Path(build_config.reuse_embeddings_from) / "runbook_retrieval_index.json" if build_config.reuse_embeddings_from else None

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Use hospital tag variable type to determine which value column to read/write (string vs boolean via lookup)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Use hospital tag variable type to determine which value column to read/write (string vs boolean via lookup)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_use_hospital_tag_variable_type_lookup_v1</td></tr>
+<tr><th>Title</th><td>Use hospital tag variable type to determine which value column to read/write (string vs boolean via lookup)</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>wcs_api_responsiveness</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>None</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>When troubleshooting hospital-controller tag behavior, confirm that the hospital tag table’s “variable type” drives which value column the system should use. The source describes a modular design where each hospital tag row has zeros/ones across value columns, and a lookup table maps “value variable type” to the correct value column for that tag.</p>
+<h2>When To Use</h2>
+<p>Use this when you need to determine which hospital tag value column (e.g., string vs boolean representation) should be active for a specific hospital station/tag row, based on the row’s “variable type” and the lookup table mapping described in the source.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/4b2d26c738220b4e.jpg" alt="artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000" /><figcaption>Training frame showing hospital tags model processing and the concept of “value variable type” and a lookup table that indicates which column to look at; also describes hospital tag table rows having zeros/ones with only one column having a ones.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the hospital tag table configuration/view used for hospital controller communication</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the hospital tag table configuration/view that the system uses to communicate with the hospital controller (hospital tags model).</p>
+<p><strong>Expected result:</strong></p>
+<p>You can view hospital tag table rows where each hospital station ID has a row containing a “variable type” field and multiple value columns represented with zeros/ones.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop if the live system does not expose the “variable type” field in the hospital tag table view.</li>
+<li>Stop if the live system does not expose the value columns/zero-one representation needed to identify the active value column.</li>
+</ul>
+<hr>
+<h3>Step 2 — Locate the “variable type” field for the specific hospital station/tag row</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the hospital tag table, select the row for the specific hospital station ID/tag you are investigating, then locate the “value variable type” / “variable type” field in that row.</p>
+<p><strong>Expected result:</strong></p>
+<p>The selected row shows a “variable type” value (described as indicating what type of string/value the tag represents).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop if the live system does not expose the “variable type” field for the hospital tag table row.</li>
+</ul>
+<hr>
+<h3>Step 3 — Use the lookup table to map variable type to the expected value column</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the lookup table referenced by the hospital tags model and use the row’s “value variable type” to determine which value column should be used for that specific tag.</p>
+<p><strong>Expected result:</strong></p>
+<p>You identify the specific value column that the lookup table indicates should be used for the tag’s variable type.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If variable type does not map to the expected value column (or the lookup table is inconsistent), escalate for configuration/data model review.</li>
+<li>Stop if the live system does not expose the lookup table needed to map variable type to value column.</li>
+</ul>
+<hr>
+<h3>Step 4 — Confirm the hospital tag row’s zero/one pattern matches the mapped value column</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the same hospital tag table row, check the value columns and confirm that zeros/ones are present with only one column having a ones value—specifically the column identified by the lookup-table mapping.</p>
+<p><strong>Expected result:</strong></p>
+<p>The mapped value column is the one column set to ones for that hospital tag row; other value columns are zeros.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If variable type does not map to the expected value column (or the lookup table is inconsistent), escalate for configuration/data model review.</li>
+</ul>
+<hr>
+<h3>Step 5 — Record the expected active value column for the tag based on variable type</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Record which value column is expected to hold the active value for the tag based on the variable type and the lookup-table mapping you applied.</p>
+<p><strong>Expected result:</strong></p>
+<p>A clear mapping is documented for the investigated hospital station/tag row: variable type -&gt; lookup mapping -&gt; expected active value column.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the expected value column does not match the observed active column, escalate for configuration/data model review.</li>
+</ul>
+<hr>
+</body>
+</html>

@@ -1,0 +1,566 @@
+[
+  {
+    "id": "procedure:confirm_tote_lifecycle_state:case_223554_proc_recover_hospital_tote_flow_apidog_wcs_api_v1",
+    "type": "procedure",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+    ],
+    "constraints": {
+      "sites": [],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T16:59:38.916810Z",
+    "updated_at": "2026-09-08T16:59:38.916810Z",
+    "capability_id": "capability:confirm_tote_lifecycle_state",
+    "procedure_type": "verification",
+    "title": "Recover hospital tote flow using Apidog / WCS API and validate AGV operation",
+    "summary": "For the UPS Haslet TX (TXRTH) hospital-station tote-induction condition, use the Tipper HMI / WebVisu / VISU to pause the station when operators are not present at the tippers, then use Apidog / WCS API to remove the inducted or disconnected tote state and recover affected AGV state. Validate tote add/remove operation on the Hospital HMI / lane UI, confirm affected robots are re-added and operating, and confirm the system is running. The incident did not establish a single definitive root cause or provide exact API request names, parameters, or AGV control names.",
+    "when_to_use": [
+      "Use for a hospital-station condition where totes cannot be added or inducted, especially when an inducted tote or disconnected tote association is present and Apidog / WCS API recovery actions are identifiable on the live system. Coordinate the recovery with the Tipper HMI / WebVisu / VISU and validate the result on the Hospital HMI / lane UI."
+    ],
+    "not_for": [
+      "Do not use for an undocumented API request, parameter, AGV control, or tote mutation that cannot be identified on the live Apidog / WCS API surface.",
+      "Do not treat the AGV/tote association as the confirmed root cause; the incident recorded multiple possible contributing conditions.",
+      "Do not use as a physical AGV handling or E-stop procedure; the supplied incident evidence does not define physical handling steps.",
+      "Do not continue recovery if tote operations remain unavailable, robots cannot be re-added, or the required Apidog / WCS API action is not identifiable."
+    ],
+    "allowed_role_entity_ids": [
+      "entity:role:l2_support",
+      "entity:role:operator"
+    ],
+    "steps": [
+      {
+        "step_number": 1,
+        "title": "Pause the hospital feed at the tippers",
+        "instruction": "On the Tipper HMI / WebVisu / VISU, place the station on pause before recovery when operators are not present at the tippers.",
+        "responsible_role_entity_id": "entity:role:operator",
+        "supporting_role_entity_id": "entity:role:l2_support",
+        "purpose": "Prevent additional totes from being sent to the hospital while the recovery is performed.",
+        "expected_result": "The Tipper HMI / WebVisu / VISU shows the station in a paused state while recovery is in progress.",
+        "healthy_condition": "The station remains paused and no additional tote flow to the hospital is observed during the recovery actions.",
+        "failure_condition": "The station is not shown as paused or totes continue going to the hospital while recovery is in progress.",
+        "stop_or_escalate_if": [
+          "Operators are present at the tippers and the station state cannot be coordinated safely.",
+          "The Tipper HMI / WebVisu / VISU does not identify a pause state."
+        ],
+        "actions": [
+          {
+            "label": "Pause station",
+            "exact_action": "Place the station on pause on the Tipper HMI / WebVisu / VISU when operators are not present at the tippers.",
+            "role_entity_id": "entity:role:operator"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      },
+      {
+        "step_number": 2,
+        "title": "Remove the inducted tote through Apidog / WCS API",
+        "instruction": "On the Apidog / WCS API client, identify the inducted tote associated with the hospital flow condition and use the source-supported tote-removal action. Use only the live request or action that is explicitly identifiable; the incident does not provide a request name or parameters.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Clear the inducted-tote condition that is preventing hospital tote flow.",
+        "expected_result": "The Apidog / WCS API response or live tote state shows that the identified inducted tote has been removed or is no longer blocking the hospital flow.",
+        "healthy_condition": "The affected inducted tote is absent from the blocking state on Apidog / WCS API and the hospital tote condition can proceed to validation.",
+        "failure_condition": "The tote remains in the blocking inducted state, the API action fails, or the required tote-removal action cannot be identified.",
+        "stop_or_escalate_if": [
+          "The required tote-removal action or affected tote is not identifiable on Apidog / WCS API.",
+          "The API response does not show a successful removal or the tote remains in the blocking state."
+        ],
+        "actions": [
+          {
+            "label": "Remove inducted tote",
+            "exact_action": "Use the source-supported API dog / Apidog tote-removal action to remove the inducted tote and move the system forward.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      },
+      {
+        "step_number": 3,
+        "title": "Address the disconnected tote association in Apidog / WCS API",
+        "instruction": "On the Apidog / WCS API client, inspect the affected AGV and tote association. For the documented tote 51 condition, use the source-supported API action when the tote cannot be removed from the hospital through the normal live operation. Do not infer or invent an API request name.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Clear a disconnected tote association when the affected tote cannot be removed from the hospital normally.",
+        "expected_result": "The Apidog / WCS API live state no longer shows the targeted disconnected tote association as blocking the hospital flow, or the API returns the supported removal result.",
+        "healthy_condition": "The affected tote association is cleared or the tote is shown as removed, with no unresolved disconnected association for the targeted AGV and tote.",
+        "failure_condition": "Tote 51 or the applicable live tote remains associated as disconnected, cannot be removed, or the supported API action is unavailable.",
+        "stop_or_escalate_if": [
+          "The affected AGV or tote association cannot be identified on Apidog / WCS API.",
+          "The disconnected tote remains after the supported API action.",
+          "The live state does not match the documented tote condition and no supported action is identifiable."
+        ],
+        "actions": [
+          {
+            "label": "Remove disconnected tote",
+            "exact_action": "For the documented tote 51 condition, use API dog / Apidog to remove the tote when it cannot be removed from the hospital normally.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      },
+      {
+        "step_number": 4,
+        "title": "Recover affected AGVs through Apidog / WCS API",
+        "instruction": "On Apidog / WCS API, identify the affected AGVs and use only the source-supported AGV recovery action to remove them from the obstructed state or location and re-add them as required by the live system state. The incident identified AGVs 1542188, 1555028, and 1555012, but the current live identifiers must be confirmed before any change.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": "entity:role:operator",
+        "purpose": "Remove affected AGVs from the obstructed or incorrect system state and restore the robot roster needed for hospital flow.",
+        "expected_result": "The affected AGVs are no longer shown in the obstructed or incorrect association state on Apidog / WCS API, and the required robots are re-added to the live system roster.",
+        "healthy_condition": "The affected AGVs appear in the expected live system state and are available for operation without the reported duplicate or misplaced AGV condition.",
+        "failure_condition": "An AGV remains in the obstructed or incorrect state, cannot be re-added, or the supported AGV recovery action cannot be identified.",
+        "stop_or_escalate_if": [
+          "The live AGV identifier or supported recovery action is not identifiable on Apidog / WCS API.",
+          "An AGV cannot be re-added after the supported recovery action.",
+          "The AGV remains in an unexpected location or duplicate-zone condition."
+        ],
+        "actions": [
+          {
+            "label": "Recover affected AGVs",
+            "exact_action": "Use the source-supported AGV recovery action to take affected AGVs out of the obstructed state or location and re-add the robots as required by the live system state.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      },
+      {
+        "step_number": 5,
+        "title": "Validate tote add and remove on the Hospital HMI / lane UI",
+        "instruction": "On the Hospital HMI / lane UI, verify that the hospital station can add a tote and remove a tote again. Have L2 support observe the live result as needed.",
+        "responsible_role_entity_id": "entity:role:operator",
+        "supporting_role_entity_id": "entity:role:l2_support",
+        "purpose": "Confirm that the hospital station's tote workflow has been restored after the API and AGV recovery actions.",
+        "expected_result": "The Hospital HMI / lane UI accepts both a tote-add operation and a tote-remove operation without the reported hospital induction restriction.",
+        "healthy_condition": "The hospital station visibly permits tote additions and removals, matching the restored state reported in the incident.",
+        "failure_condition": "The Hospital HMI / lane UI still permits removal but does not permit addition, or either tote operation remains unavailable.",
+        "stop_or_escalate_if": [
+          "Totes cannot be added after the recovery actions.",
+          "Totes cannot be removed or the Hospital HMI / lane UI remains unavailable."
+        ],
+        "actions": [
+          {
+            "label": "Test tote operations",
+            "exact_action": "Verify on the Hospital HMI / lane UI that the hospital station can add and remove totes again.",
+            "role_entity_id": "entity:role:operator"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      },
+      {
+        "step_number": 6,
+        "title": "Confirm robots and system are running",
+        "instruction": "On the Hospital HMI / lane UI and the live Apidog / WCS API state, confirm that the affected robots have been re-added and are operating. Confirm that the system is running after recovery.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": "entity:role:operator",
+        "purpose": "Verify that the hospital recovery restored robot availability and overall system operation.",
+        "expected_result": "The affected robots are shown as re-added and operating, and the live system state is running.",
+        "healthy_condition": "The Hospital HMI / lane UI supports ongoing tote flow, the affected robots are back up and running, and the system is reported as running.",
+        "failure_condition": "A robot cannot be re-added or remains unavailable, tote flow is not restored, or the system is not running.",
+        "stop_or_escalate_if": [
+          "Tote operations remain unavailable.",
+          "Robots cannot be re-added or are not back up and running.",
+          "The system is not running after the supported recovery actions."
+        ],
+        "actions": [
+          {
+            "label": "Verify robot and system state",
+            "exact_action": "Confirm that the robots are re-added and back up and running, and confirm that the system is running.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "procedure:recover_agv_physically:case_223554_proc_recover_hospital_tote_flow_apidog_wcs_api_v1",
+    "type": "procedure",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+    ],
+    "constraints": {
+      "sites": [],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T16:59:38.916810Z",
+    "updated_at": "2026-09-08T16:59:38.916810Z",
+    "capability_id": "capability:recover_agv_physically",
+    "procedure_type": "recovery",
+    "title": "Recover hospital tote flow using Apidog / WCS API and validate AGV operation",
+    "summary": "For the UPS Haslet TX (TXRTH) hospital-station tote-induction condition, use the Tipper HMI / WebVisu / VISU to pause the station when operators are not present at the tippers, then use Apidog / WCS API to remove the inducted or disconnected tote state and recover affected AGV state. Validate tote add/remove operation on the Hospital HMI / lane UI, confirm affected robots are re-added and operating, and confirm the system is running. The incident did not establish a single definitive root cause or provide exact API request names, parameters, or AGV control names.",
+    "when_to_use": [
+      "Use for a hospital-station condition where totes cannot be added or inducted, especially when an inducted tote or disconnected tote association is present and Apidog / WCS API recovery actions are identifiable on the live system. Coordinate the recovery with the Tipper HMI / WebVisu / VISU and validate the result on the Hospital HMI / lane UI."
+    ],
+    "not_for": [
+      "Do not use for an undocumented API request, parameter, AGV control, or tote mutation that cannot be identified on the live Apidog / WCS API surface.",
+      "Do not treat the AGV/tote association as the confirmed root cause; the incident recorded multiple possible contributing conditions.",
+      "Do not use as a physical AGV handling or E-stop procedure; the supplied incident evidence does not define physical handling steps.",
+      "Do not continue recovery if tote operations remain unavailable, robots cannot be re-added, or the required Apidog / WCS API action is not identifiable."
+    ],
+    "allowed_role_entity_ids": [
+      "entity:role:l2_support",
+      "entity:role:operator"
+    ],
+    "steps": [
+      {
+        "step_number": 1,
+        "title": "Pause the hospital feed at the tippers",
+        "instruction": "On the Tipper HMI / WebVisu / VISU, place the station on pause before recovery when operators are not present at the tippers.",
+        "responsible_role_entity_id": "entity:role:operator",
+        "supporting_role_entity_id": "entity:role:l2_support",
+        "purpose": "Prevent additional totes from being sent to the hospital while the recovery is performed.",
+        "expected_result": "The Tipper HMI / WebVisu / VISU shows the station in a paused state while recovery is in progress.",
+        "healthy_condition": "The station remains paused and no additional tote flow to the hospital is observed during the recovery actions.",
+        "failure_condition": "The station is not shown as paused or totes continue going to the hospital while recovery is in progress.",
+        "stop_or_escalate_if": [
+          "Operators are present at the tippers and the station state cannot be coordinated safely.",
+          "The Tipper HMI / WebVisu / VISU does not identify a pause state."
+        ],
+        "actions": [
+          {
+            "label": "Pause station",
+            "exact_action": "Place the station on pause on the Tipper HMI / WebVisu / VISU when operators are not present at the tippers.",
+            "role_entity_id": "entity:role:operator"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      },
+      {
+        "step_number": 2,
+        "title": "Remove the inducted tote through Apidog / WCS API",
+        "instruction": "On the Apidog / WCS API client, identify the inducted tote associated with the hospital flow condition and use the source-supported tote-removal action. Use only the live request or action that is explicitly identifiable; the incident does not provide a request name or parameters.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Clear the inducted-tote condition that is preventing hospital tote flow.",
+        "expected_result": "The Apidog / WCS API response or live tote state shows that the identified inducted tote has been removed or is no longer blocking the hospital flow.",
+        "healthy_condition": "The affected inducted tote is absent from the blocking state on Apidog / WCS API and the hospital tote condition can proceed to validation.",
+        "failure_condition": "The tote remains in the blocking inducted state, the API action fails, or the required tote-removal action cannot be identified.",
+        "stop_or_escalate_if": [
+          "The required tote-removal action or affected tote is not identifiable on Apidog / WCS API.",
+          "The API response does not show a successful removal or the tote remains in the blocking state."
+        ],
+        "actions": [
+          {
+            "label": "Remove inducted tote",
+            "exact_action": "Use the source-supported API dog / Apidog tote-removal action to remove the inducted tote and move the system forward.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      },
+      {
+        "step_number": 3,
+        "title": "Address the disconnected tote association in Apidog / WCS API",
+        "instruction": "On the Apidog / WCS API client, inspect the affected AGV and tote association. For the documented tote 51 condition, use the source-supported API action when the tote cannot be removed from the hospital through the normal live operation. Do not infer or invent an API request name.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Clear a disconnected tote association when the affected tote cannot be removed from the hospital normally.",
+        "expected_result": "The Apidog / WCS API live state no longer shows the targeted disconnected tote association as blocking the hospital flow, or the API returns the supported removal result.",
+        "healthy_condition": "The affected tote association is cleared or the tote is shown as removed, with no unresolved disconnected association for the targeted AGV and tote.",
+        "failure_condition": "Tote 51 or the applicable live tote remains associated as disconnected, cannot be removed, or the supported API action is unavailable.",
+        "stop_or_escalate_if": [
+          "The affected AGV or tote association cannot be identified on Apidog / WCS API.",
+          "The disconnected tote remains after the supported API action.",
+          "The live state does not match the documented tote condition and no supported action is identifiable."
+        ],
+        "actions": [
+          {
+            "label": "Remove disconnected tote",
+            "exact_action": "For the documented tote 51 condition, use API dog / Apidog to remove the tote when it cannot be removed from the hospital normally.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      },
+      {
+        "step_number": 4,
+        "title": "Recover affected AGVs through Apidog / WCS API",
+        "instruction": "On Apidog / WCS API, identify the affected AGVs and use only the source-supported AGV recovery action to remove them from the obstructed state or location and re-add them as required by the live system state. The incident identified AGVs 1542188, 1555028, and 1555012, but the current live identifiers must be confirmed before any change.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": "entity:role:operator",
+        "purpose": "Remove affected AGVs from the obstructed or incorrect system state and restore the robot roster needed for hospital flow.",
+        "expected_result": "The affected AGVs are no longer shown in the obstructed or incorrect association state on Apidog / WCS API, and the required robots are re-added to the live system roster.",
+        "healthy_condition": "The affected AGVs appear in the expected live system state and are available for operation without the reported duplicate or misplaced AGV condition.",
+        "failure_condition": "An AGV remains in the obstructed or incorrect state, cannot be re-added, or the supported AGV recovery action cannot be identified.",
+        "stop_or_escalate_if": [
+          "The live AGV identifier or supported recovery action is not identifiable on Apidog / WCS API.",
+          "An AGV cannot be re-added after the supported recovery action.",
+          "The AGV remains in an unexpected location or duplicate-zone condition."
+        ],
+        "actions": [
+          {
+            "label": "Recover affected AGVs",
+            "exact_action": "Use the source-supported AGV recovery action to take affected AGVs out of the obstructed state or location and re-add the robots as required by the live system state.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      },
+      {
+        "step_number": 5,
+        "title": "Validate tote add and remove on the Hospital HMI / lane UI",
+        "instruction": "On the Hospital HMI / lane UI, verify that the hospital station can add a tote and remove a tote again. Have L2 support observe the live result as needed.",
+        "responsible_role_entity_id": "entity:role:operator",
+        "supporting_role_entity_id": "entity:role:l2_support",
+        "purpose": "Confirm that the hospital station's tote workflow has been restored after the API and AGV recovery actions.",
+        "expected_result": "The Hospital HMI / lane UI accepts both a tote-add operation and a tote-remove operation without the reported hospital induction restriction.",
+        "healthy_condition": "The hospital station visibly permits tote additions and removals, matching the restored state reported in the incident.",
+        "failure_condition": "The Hospital HMI / lane UI still permits removal but does not permit addition, or either tote operation remains unavailable.",
+        "stop_or_escalate_if": [
+          "Totes cannot be added after the recovery actions.",
+          "Totes cannot be removed or the Hospital HMI / lane UI remains unavailable."
+        ],
+        "actions": [
+          {
+            "label": "Test tote operations",
+            "exact_action": "Verify on the Hospital HMI / lane UI that the hospital station can add and remove totes again.",
+            "role_entity_id": "entity:role:operator"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      },
+      {
+        "step_number": 6,
+        "title": "Confirm robots and system are running",
+        "instruction": "On the Hospital HMI / lane UI and the live Apidog / WCS API state, confirm that the affected robots have been re-added and are operating. Confirm that the system is running after recovery.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": "entity:role:operator",
+        "purpose": "Verify that the hospital recovery restored robot availability and overall system operation.",
+        "expected_result": "The affected robots are shown as re-added and operating, and the live system state is running.",
+        "healthy_condition": "The Hospital HMI / lane UI supports ongoing tote flow, the affected robots are back up and running, and the system is reported as running.",
+        "failure_condition": "A robot cannot be re-added or remains unavailable, tote flow is not restored, or the system is not running.",
+        "stop_or_escalate_if": [
+          "Tote operations remain unavailable.",
+          "Robots cannot be re-added or are not back up and running.",
+          "The system is not running after the supported recovery actions."
+        ],
+        "actions": [
+          {
+            "label": "Verify robot and system state",
+            "exact_action": "Confirm that the robots are re-added and back up and running, and confirm that the system is running.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "procedure:confirm_fleet_system_status:case_223554_proc_recover_hospital_tote_flow_apidog_wcs_api_v1",
+    "type": "procedure",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+    ],
+    "constraints": {
+      "sites": [],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T16:59:38.918230Z",
+    "updated_at": "2026-09-08T16:59:38.918230Z",
+    "capability_id": "capability:confirm_fleet_system_status",
+    "procedure_type": "verification",
+    "title": "Recover hospital tote flow using Apidog / WCS API and validate AGV operation",
+    "summary": "For the UPS Haslet TX (TXRTH) hospital-station tote-induction condition, use the Tipper HMI / WebVisu / VISU to pause the station when operators are not present at the tippers, then use Apidog / WCS API to remove the inducted or disconnected tote state and recover affected AGV state. Validate tote add/remove operation on the Hospital HMI / lane UI, confirm affected robots are re-added and operating, and confirm the system is running. The incident did not establish a single definitive root cause or provide exact API request names, parameters, or AGV control names.",
+    "when_to_use": [
+      "Use for a hospital-station condition where totes cannot be added or inducted, especially when an inducted tote or disconnected tote association is present and Apidog / WCS API recovery actions are identifiable on the live system. Coordinate the recovery with the Tipper HMI / WebVisu / VISU and validate the result on the Hospital HMI / lane UI."
+    ],
+    "not_for": [
+      "Do not use for an undocumented API request, parameter, AGV control, or tote mutation that cannot be identified on the live Apidog / WCS API surface.",
+      "Do not treat the AGV/tote association as the confirmed root cause; the incident recorded multiple possible contributing conditions.",
+      "Do not use as a physical AGV handling or E-stop procedure; the supplied incident evidence does not define physical handling steps.",
+      "Do not continue recovery if tote operations remain unavailable, robots cannot be re-added, or the required Apidog / WCS API action is not identifiable."
+    ],
+    "allowed_role_entity_ids": [
+      "entity:role:l2_support",
+      "entity:role:operator"
+    ],
+    "steps": [
+      {
+        "step_number": 1,
+        "title": "Pause the hospital feed at the tippers",
+        "instruction": "On the Tipper HMI / WebVisu / VISU, place the station on pause before recovery when operators are not present at the tippers.",
+        "responsible_role_entity_id": "entity:role:operator",
+        "supporting_role_entity_id": "entity:role:l2_support",
+        "purpose": "Prevent additional totes from being sent to the hospital while the recovery is performed.",
+        "expected_result": "The Tipper HMI / WebVisu / VISU shows the station in a paused state while recovery is in progress.",
+        "healthy_condition": "The station remains paused and no additional tote flow to the hospital is observed during the recovery actions.",
+        "failure_condition": "The station is not shown as paused or totes continue going to the hospital while recovery is in progress.",
+        "stop_or_escalate_if": [
+          "Operators are present at the tippers and the station state cannot be coordinated safely.",
+          "The Tipper HMI / WebVisu / VISU does not identify a pause state."
+        ],
+        "actions": [
+          {
+            "label": "Pause station",
+            "exact_action": "Place the station on pause on the Tipper HMI / WebVisu / VISU when operators are not present at the tippers.",
+            "role_entity_id": "entity:role:operator"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      },
+      {
+        "step_number": 2,
+        "title": "Remove the inducted tote through Apidog / WCS API",
+        "instruction": "On the Apidog / WCS API client, identify the inducted tote associated with the hospital flow condition and use the source-supported tote-removal action. Use only the live request or action that is explicitly identifiable; the incident does not provide a request name or parameters.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Clear the inducted-tote condition that is preventing hospital tote flow.",
+        "expected_result": "The Apidog / WCS API response or live tote state shows that the identified inducted tote has been removed or is no longer blocking the hospital flow.",
+        "healthy_condition": "The affected inducted tote is absent from the blocking state on Apidog / WCS API and the hospital tote condition can proceed to validation.",
+        "failure_condition": "The tote remains in the blocking inducted state, the API action fails, or the required tote-removal action cannot be identified.",
+        "stop_or_escalate_if": [
+          "The required tote-removal action or affected tote is not identifiable on Apidog / WCS API.",
+          "The API response does not show a successful removal or the tote remains in the blocking state."
+        ],
+        "actions": [
+          {
+            "label": "Remove inducted tote",
+            "exact_action": "Use the source-supported API dog / Apidog tote-removal action to remove the inducted tote and move the system forward.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      },
+      {
+        "step_number": 3,
+        "title": "Address the disconnected tote association in Apidog / WCS API",
+        "instruction": "On the Apidog / WCS API client, inspect the affected AGV and tote association. For the documented tote 51 condition, use the source-supported API action when the tote cannot be removed from the hospital through the normal live operation. Do not infer or invent an API request name.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Clear a disconnected tote association when the affected tote cannot be removed from the hospital normally.",
+        "expected_result": "The Apidog / WCS API live state no longer shows the targeted disconnected tote association as blocking the hospital flow, or the API returns the supported removal result.",
+        "healthy_condition": "The affected tote association is cleared or the tote is shown as removed, with no unresolved disconnected association for the targeted AGV and tote.",
+        "failure_condition": "Tote 51 or the applicable live tote remains associated as disconnected, cannot be removed, or the supported API action is unavailable.",
+        "stop_or_escalate_if": [
+          "The affected AGV or tote association cannot be identified on Apidog / WCS API.",
+          "The disconnected tote remains after the supported API action.",
+          "The live state does not match the documented tote condition and no supported action is identifiable."
+        ],
+        "actions": [
+          {
+            "label": "Remove disconnected tote",
+            "exact_action": "For the documented tote 51 condition, use API dog / Apidog to remove the tote when it cannot be removed from the hospital normally.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      },
+      {
+        "step_number": 4,
+        "title": "Recover affected AGVs through Apidog / WCS API",
+        "instruction": "On Apidog / WCS API, identify the affected AGVs and use only the source-supported AGV recovery action to remove them from the obstructed state or location and re-add them as required by the live system state. The incident identified AGVs 1542188, 1555028, and 1555012, but the current live identifiers must be confirmed before any change.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": "entity:role:operator",
+        "purpose": "Remove affected AGVs from the obstructed or incorrect system state and restore the robot roster needed for hospital flow.",
+        "expected_result": "The affected AGVs are no longer shown in the obstructed or incorrect association state on Apidog / WCS API, and the required robots are re-added to the live system roster.",
+        "healthy_condition": "The affected AGVs appear in the expected live system state and are available for operation without the reported duplicate or misplaced AGV condition.",
+        "failure_condition": "An AGV remains in the obstructed or incorrect state, cannot be re-added, or the supported AGV recovery action cannot be identified.",
+        "stop_or_escalate_if": [
+          "The live AGV identifier or supported recovery action is not identifiable on Apidog / WCS API.",
+          "An AGV cannot be re-added after the supported recovery action.",
+          "The AGV remains in an unexpected location or duplicate-zone condition."
+        ],
+        "actions": [
+          {
+            "label": "Recover affected AGVs",
+            "exact_action": "Use the source-supported AGV recovery action to take affected AGVs out of the obstructed state or location and re-add the robots as required by the live system state.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      },
+      {
+        "step_number": 5,
+        "title": "Validate tote add and remove on the Hospital HMI / lane UI",
+        "instruction": "On the Hospital HMI / lane UI, verify that the hospital station can add a tote and remove a tote again. Have L2 support observe the live result as needed.",
+        "responsible_role_entity_id": "entity:role:operator",
+        "supporting_role_entity_id": "entity:role:l2_support",
+        "purpose": "Confirm that the hospital station's tote workflow has been restored after the API and AGV recovery actions.",
+        "expected_result": "The Hospital HMI / lane UI accepts both a tote-add operation and a tote-remove operation without the reported hospital induction restriction.",
+        "healthy_condition": "The hospital station visibly permits tote additions and removals, matching the restored state reported in the incident.",
+        "failure_condition": "The Hospital HMI / lane UI still permits removal but does not permit addition, or either tote operation remains unavailable.",
+        "stop_or_escalate_if": [
+          "Totes cannot be added after the recovery actions.",
+          "Totes cannot be removed or the Hospital HMI / lane UI remains unavailable."
+        ],
+        "actions": [
+          {
+            "label": "Test tote operations",
+            "exact_action": "Verify on the Hospital HMI / lane UI that the hospital station can add and remove totes again.",
+            "role_entity_id": "entity:role:operator"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      },
+      {
+        "step_number": 6,
+        "title": "Confirm robots and system are running",
+        "instruction": "On the Hospital HMI / lane UI and the live Apidog / WCS API state, confirm that the affected robots have been re-added and are operating. Confirm that the system is running after recovery.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": "entity:role:operator",
+        "purpose": "Verify that the hospital recovery restored robot availability and overall system operation.",
+        "expected_result": "The affected robots are shown as re-added and operating, and the live system state is running.",
+        "healthy_condition": "The Hospital HMI / lane UI supports ongoing tote flow, the affected robots are back up and running, and the system is reported as running.",
+        "failure_condition": "A robot cannot be re-added or remains unavailable, tote flow is not restored, or the system is not running.",
+        "stop_or_escalate_if": [
+          "Tote operations remain unavailable.",
+          "Robots cannot be re-added or are not back up and running.",
+          "The system is not running after the supported recovery actions."
+        ],
+        "actions": [
+          {
+            "label": "Verify robot and system state",
+            "exact_action": "Confirm that the robots are re-added and back up and running, and confirm that the system is running.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:runbook_proc_recover_hospital_tote_flow_apidog_wcs_api_v1"
+        ]
+      }
+    ]
+  }
+]

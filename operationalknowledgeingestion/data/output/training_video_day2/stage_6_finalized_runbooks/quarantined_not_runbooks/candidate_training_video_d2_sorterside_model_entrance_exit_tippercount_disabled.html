@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Review SorterSideDatabaseModel entrance/exit queue IDs, tipper count, and disabled flag for a sorter side</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Review SorterSideDatabaseModel entrance/exit queue IDs, tipper count, and disabled flag for a sorter side</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_review_sortersidedatabasemodel_entrance_exit_tippercount_disabled_v1</td></tr>
+<tr><th>Title</th><td>Review SorterSideDatabaseModel entrance/exit queue IDs, tipper count, and disabled flag for a sorter side</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>zone_config_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>system_fault</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the SorterSideDatabaseModel field definitions to verify which entrance/exit queue location IDs a sorter side references, what tipper count represents (round-robin closest set), and whether that sorter side is marked disabled.</p>
+<h2>When To Use</h2>
+<p>When you need to interpret how a specific sorter side is represented in the database model—specifically the EntranceId/ExitId queue-location references, the TipperCount meaning (round-robin closest set), and the Disabled flag.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/e6b308f21a2ed402.jpg" alt="artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500" /><figcaption>Frame showing Robot Location database model location types/statuses and the SorterSideDatabaseModel field meaning (Entrance/Exit queue locations, TipperCount, Disabled).</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the SorterSideDatabaseModel table described in the training segment</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In SSMS / Helix/WCS database access, navigate to the SorterSideDatabaseModel table/view that contains the sorter-side model fields.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can view the SorterSideDatabaseModel columns/fields including Name, EntranceId, ExitId, TipperCount, and Disabled.</p>
+<hr>
+<h3>Step 2 — Identify the documented columns/fields: Name, EntranceId, ExitId, TipperCount, and Disabled</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Confirm the SorterSideDatabaseModel columns/fields you will use are: Name, EntranceId, ExitId, TipperCount, and Disabled.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can map each required concept to the correct column: Name (sorter side identifier), EntranceId (entrance queue location ID), ExitId (exit-related queue location ID), TipperCount (round-robin closest set), Disabled (whether the sorter side is disabled).</p>
+<hr>
+<h3>Step 3 — Review EntranceId and ExitId values as the queue-location references used by the sorter side</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>For the sorter side record of interest, read EntranceId and ExitId and treat them as queue-location references for the entrance queue and exit-related queue, respectively.</p>
+<p><strong>Expected result:</strong></p>
+<p>For the sorter side record, EntranceId and ExitId are populated with queue-location IDs that correspond to the entrance and exit-related queue locations described by the model.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If EntranceId/ExitId do not correspond to queue-location entries in the Robot Location model (foreign-key relationship described in the segment), stop and escalate for deeper model/data integrity troubleshooting (L3/vendor).</li>
+</ul>
+<hr>
+<h3>Step 4 — Review TipperCount and confirm it represents the &#x27;round robin closest 4&#x27; concept</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>For the sorter side record of interest, read TipperCount and interpret it as the round-robin closest set concept (the segment describes closest 4 as the tipper count).</p>
+<p><strong>Expected result:</strong></p>
+<p>TipperCount value can be described as the round-robin closest set size (e.g., closest 4 concept as described).</p>
+<hr>
+<h3>Step 5 — Review Disabled to determine whether the sorter side is disabled or not</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>For the sorter side record of interest, read the Disabled field and determine whether the sorter side is disabled or not based on the model’s Disabled indicator.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can state whether the sorter side record is marked disabled (Disabled flag value) and describe it as &#x27;disabled or not&#x27; per the model definition.</p>
+<hr>
+<h3>Step 6 — If validating queue-location relationships, use the foreign-key relationship to the Robot Location model</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>When you need to validate queue-location relationships, cross-check that the EntranceId and ExitId values correspond to queue-location entries in the Robot Location model (foreign keys to the location).</p>
+<p><strong>Expected result:</strong></p>
+<p>EntranceId and ExitId can be confirmed as references to queue-location entries in the Robot Location model.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If EntranceId/ExitId do not correspond to queue-location entries in the Robot Location model (foreign-key relationship described in the segment), stop and escalate for deeper model/data integrity troubleshooting (L3/vendor), since the source does not provide remediation steps.</li>
+</ul>
+<hr>
+</body>
+</html>

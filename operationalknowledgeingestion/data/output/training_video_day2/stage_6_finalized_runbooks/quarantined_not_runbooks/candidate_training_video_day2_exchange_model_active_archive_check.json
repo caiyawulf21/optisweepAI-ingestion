@@ -1,0 +1,310 @@
+{
+  "procedure_id": "proc_check_exchange_activity_tracking_in_sorter_sweeper_database_active_exchange_vs_exchange_activity_v1",
+  "candidate_id": "candidate_training_video_day2_exchange_model_active_archive_check",
+  "title": "Check Exchange Activity Tracking in Sorter Sweeper Database (Active Exchange vs Exchange Activity)",
+  "procedure_type": "diagnostic",
+  "summary": "Verify that chute exchange lifecycle is represented correctly in the Sorter Sweeper Database: when a chute closes, an active exchange record is created in the active exchange model; when an empty tote replaces the chute, the exchange is closed and archived to the exchange activity table, while the active exchange list remains limited to a few current items.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "sorter_item_or_scan_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "sort_lifecycle_stuck",
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when you need to confirm that chute exchange events are flowing into the Sorter Sweeper Database correctly—specifically that chute-close creates an active exchange record, and that empty-tote replacement closes and archives the exchange to the exchange activity archive.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the diagnostic by querying the Sorter Sweeper Database via SSMS and verifying active exchange vs archived exchange activity behavior for the chute exchange lifecycle."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "SSMS",
+    "Sorter Sweeper Database (exchange active exchange model and exchange activity archive tables/models as named in the source)"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "SSMS access to the Sorter Sweeper Database"
+    ],
+    "system_preconditions": [],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_exchange_and_bagout_models_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+      "description": "Transcript evidence for exchange lifecycle: chute close creates active exchange; empty tote replacement closes and archives to exchange activity; active list remains small.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Sorter Sweeper Database exchange tracking models (active exchange model and exchange activity archive)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish the two data surfaces needed to compare current active exchange records vs archived exchange activity records.",
+      "instruction": "In SSMS, open the Sorter Sweeper Database view(s)/table(s) for the exchange tracking models referenced in the segment: the active exchange model and the exchange activity archive table/model.",
+      "expected_result": "You can view both (1) the active exchange model records and (2) the exchange activity archive records in the Sorter Sweeper Database.",
+      "healthy_condition": "Both the active exchange model and the exchange activity archive are accessible and show exchange-related records.",
+      "failure_condition": "You cannot access the active exchange model or the exchange activity archive view/table, or only one of the two surfaces is available.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open exchange tracking models in SSMS",
+          "exact_action": "Open the Sorter Sweeper Database view for the exchange tracking models described in the segment (active exchange model and exchange activity archive).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 25,
+          "section_id": "training_video_day2_segment_0025",
+          "quote_or_summary": "When a chute is closed, an active exchange is created in the active exchange model. When an empty tote replaces it, the exchange is closed and archived to the exchange activity. ... it keeps the active exchange so that there's just a list of a few of them ... archives them to a larger table that can store the information for later look up."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Confirm active exchange records are created when a chute is closed",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Validate that chute-close events result in active exchange entries in the active exchange model.",
+      "instruction": "Locate active exchange records in the active exchange model and confirm that an active exchange is created for recently closed chutes (i.e., active exchange entries corresponding to chute-close events).",
+      "expected_result": "Active exchange records exist for currently relevant chute exchanges, including entries corresponding to recently closed chutes.",
+      "healthy_condition": "The active exchange model contains exchange entries that align with chute-close activity (recently closed chutes have corresponding active exchange records).",
+      "failure_condition": "Chute-close events do not result in active exchange records in the active exchange model.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check active exchange entries for recently closed chutes",
+          "exact_action": "Locate the active exchange records and confirm that an active exchange is created when a chute is closed (look for active exchange entries corresponding to recently closed chutes).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If chute-close events do not create active exchange records, escalate for deeper investigation of the exchange lifecycle data flow described by the source."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:21:32.000",
+          "timestamp_end": "02:21:32.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+          "segment_id": "segment_training_video_0025",
+          "quote_or_summary": "When a chute is closed, an active exchange is created in the active exchange model."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 25,
+          "section_id": "training_video_day2_segment_0025",
+          "quote_or_summary": "When a chute is closed, an active exchange is created in the active exchange model."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Confirm exchange closure and archiving when an empty tote replaces the chute",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Validate that the exchange lifecycle completes correctly: empty tote replacement closes the exchange and archives it to exchange activity.",
+      "instruction": "Identify the event where an empty tote replaces the chute, then confirm that the exchange is closed (no longer only present in the active exchange list) and that the corresponding record exists in the exchange activity archive table/model.",
+      "expected_result": "When an empty tote replaces a chute, the exchange record is closed and present in the exchange activity archive (and is no longer only in the active exchange list).",
+      "healthy_condition": "For the empty-tote replacement event, the exchange record appears in the exchange activity archive and is not limited to the active exchange list.",
+      "failure_condition": "Empty-tote replacement does not result in closure/archiving to the exchange activity archive.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check archived exchange activity for empty-tote replacement",
+          "exact_action": "Identify the event where an empty tote replaces the chute and confirm that the exchange is closed and archived to the exchange activity (look for the corresponding record in the archived exchange activity table).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If empty-tote replacement does not result in closure/archiving, escalate for deeper investigation of the exchange lifecycle data flow described by the source."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:21:32.000",
+          "timestamp_end": "02:21:32.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+          "segment_id": "segment_training_video_0025",
+          "quote_or_summary": "When an empty tote replaces it, the exchange is closed and archived to the exchange activity."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 25,
+          "section_id": "training_video_day2_segment_0025",
+          "quote_or_summary": "When an empty tote replaces it, the exchange is closed and archived to the exchange activity."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify active exchange list remains small while older exchanges move to the archive",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the intended retention behavior: active exchange model holds only a few current items, while older exchanges are archived for later lookup.",
+      "instruction": "Review the active exchange model and confirm it remains limited to a few current items, while older exchange records are moved into the larger exchange activity archive table/model.",
+      "expected_result": "The active exchange list contains only a few current exchange items; older exchanges are found in the exchange activity archive.",
+      "healthy_condition": "Active exchange model shows a small set of current exchanges, and older exchanges are present in the archive table/model for later lookup.",
+      "failure_condition": "Active exchange list grows large with older exchanges that should have been archived, or older exchanges are missing from the archive.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Compare active vs archived exchange record counts/age",
+          "exact_action": "Confirm the active exchange list remains limited to a few current items while older items move to the larger archive table for later lookup.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:21:32.000",
+          "timestamp_end": "02:21:32.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+          "segment_id": "segment_training_video_0025",
+          "quote_or_summary": "It keeps the active exchange so that there's just a list of a few of them ... archives them to a larger table that can store the information for later look up."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 25,
+          "section_id": "training_video_day2_segment_0025",
+          "quote_or_summary": "It keeps the active exchange so that there's just a list of a few of them ... archives them to a larger table that can store the information for later look up."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Active exchange records exist for currently relevant chute exchanges, including entries corresponding to chute-close events.",
+    "When an empty tote replaces a chute, the exchange is closed and the corresponding record is present in the exchange activity archive.",
+    "Active exchange list remains limited to a few current items while older exchanges move to the larger archive table/model."
+  ],
+  "healthy_conditions": [
+    "Active exchange model contains only a small set of current exchange records.",
+    "Exchange activity archive contains closed/archived exchange records corresponding to empty-tote replacement events."
+  ],
+  "failure_conditions": [
+    "Chute-close events do not create active exchange records.",
+    "Empty-tote replacement does not close and archive the exchange to exchange activity.",
+    "Active exchange list contains older exchanges that should have been archived."
+  ],
+  "escalation_guidance": [
+    "If chute-close events do not create active exchange records, or if empty-tote replacement does not result in closure/archiving, escalate for deeper investigation of the exchange lifecycle data flow described by the source."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+      "description": "Exchange lifecycle mapping: chute close -> active exchange model; empty tote replacement -> exchange closed and archived to exchange activity; active list kept small and archived to larger table for later lookup.",
+      "required_level": "recommended"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 25,
+      "section_id": "training_video_day2_segment_0025",
+      "quote_or_summary": "When a chute is closed, an active exchange is created in the active exchange model. When an empty tote replaces it, the exchange is closed and archived to the exchange activity. ... it keeps the active exchange so that there's just a list of a few of them that we can look through and then archives them to a a larger table that can store the information for later look up."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+      "what_to_look_at": "Transcript evidence for exchange lifecycle: chute close creates active exchange; empty tote replacement closes and archives to exchange activity; active list remains small."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_exchange_model_active_archive_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not name the exact SSMS table/view names or columns for the active exchange model and exchange activity archive; it only describes them conceptually as 'active exchange model' and 'exchange activity' archive."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

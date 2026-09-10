@@ -1,0 +1,276 @@
+{
+  "procedure_id": "proc_wait_for_solid_green_during_robot_restart_cycle_before_moving_brakes_locked_v1",
+  "candidate_id": "candidate_training_video_robot_restart_cycle_wait_for_solid_green_before_moving",
+  "title": "Wait for Solid Green During Robot Restart Cycle Before Physically Moving (Brakes Stay Locked)",
+  "procedure_type": "recovery",
+  "summary": "After restarting a robot/AGV, it goes through a cycle. Do not physically move it until the robot indicator reaches the source-described green state. If it is solid green and not on a label, you must wait until it turns green for movement readiness because the brakes stay locked until that condition.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_physical_recovery",
+    "e_stop_or_safety_stop"
+  ],
+  "access_surface": [
+    "rms_ui",
+    "physical_floor"
+  ],
+  "audience_roles": [
+    "operator"
+  ],
+  "failure_pattern_tags": [
+    "shutdown_or_dwell_abnormal"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when you have initiated a robot/AGV restart and you need to determine when it is safe to physically move it based on the indicator color/state and label presence behavior described in the source.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "Operator: Observe the robot indicator color/state during the restart cycle and only physically move the robot when the source-described green readiness condition is met."
+  ],
+  "safety_notes": [
+    "Do not attempt to move the robot while brakes are still locked; the source states brakes stay locked until the robot reaches the correct green readiness condition."
+  ],
+  "access_or_tools_needed": [
+    "Visual access to the robot indicator/sign showing flashing blue / solid blue / solid green",
+    "Ability to observe whether the robot is on a label (source describes 'not on a label' vs label identification)"
+  ],
+  "prerequisites": {
+    "access_required": [],
+    "system_preconditions": [
+      "A robot/AGV restart has been initiated (so the robot is in the restart cycle described by the source)."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_robot_brake_lock_restart_behavior_v1",
+    "ctx_training_video_robot_indicator_color_states_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500",
+      "description": "Robot restart panel and restart-cycle indicator behavior (flashing blue -> solid blue -> solid green) and the brake-lock / wait-until-green movement rule.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Observe the robot indicator color/state through the restart cycle",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "To confirm the robot is progressing through the restart-cycle states so you can apply the correct movement readiness rule.",
+      "instruction": "After initiating the restart, visually observe the robot indicator color/state as it cycles (the source describes flashing blue, solid blue, and solid green).",
+      "expected_result": "The robot indicator transitions through the source-described restart-cycle states (including flashing blue and then solid blue) as the robot reacquires label status.",
+      "healthy_condition": "Indicator behavior matches the source-described progression during restart (flashing blue when searching for/related to label acquisition, then solid blue after label pickup).",
+      "failure_condition": "The indicator does not progress as expected (e.g., it remains in a non-green state or does not reach the source-described green state).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Watch indicator color/state",
+          "exact_action": "Observe the robot indicator color/state through the restart cycle.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the indicator does not reach the source-described green state, escalate for further troubleshooting."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Wait until the robot reaches solid green",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "To ensure the robot has completed the restart cycle stage described as reaching solid green before considering movement.",
+      "instruction": "Continue observing until the robot indicator reaches solid green.",
+      "expected_result": "The robot indicator is solid green.",
+      "healthy_condition": "Indicator is solid green (as described by the source) during/after the restart cycle.",
+      "failure_condition": "The robot does not become solid green.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm solid green",
+          "exact_action": "Wait until the indicator reaches solid green.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the indicator does not reach solid green/green as described, escalate for further troubleshooting."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Do not move while brakes are locked; wait until it turns green for movement readiness (especially if solid green and not on a label)",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "To prevent unsafe movement while brakes remain locked, using the source-described green readiness rule and label condition.",
+      "instruction": "Before physically moving the robot, verify the source-described condition: if the robot is solid green and not on a label, wait until it turns green (movement readiness). The source states you must wait because brakes stay locked.",
+      "expected_result": "You only proceed to physical movement after the robot turns green for readiness (not merely solid green when not on a label).",
+      "healthy_condition": "Robot is in the source-described movement-ready green state (the source distinguishes 'solid green' vs 'turns green' readiness) and you have not moved it while brakes were locked.",
+      "failure_condition": "You attempt to move the robot while brakes are still locked (e.g., moving when it is solid green but not on a label, or before it turns green readiness).",
+      "actions": [
+        {
+          "action_type": "physical_inspection",
+          "label": "Check label presence and readiness green state",
+          "exact_action": "If it's solid green and not on a label, wait till it turns green for you to move it because the brakes stay locked.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Do not move the robot while brakes are still locked.",
+        "If the robot does not reach the source-described 'turns green' readiness condition, escalate for further troubleshooting."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Proceed with moving the robot only after the source-described green readiness condition is met",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "To complete the recovery action safely by moving only when the robot is ready for movement per the source rule.",
+      "instruction": "Once the robot meets the source-described movement readiness condition (indicator turns green as required), proceed with moving the robot as allowed by your site process.",
+      "expected_result": "The robot is physically moved only after it reaches the source-described green readiness state indicating brakes are no longer locked for movement.",
+      "healthy_condition": "Movement occurs after the readiness condition is met; no movement is attempted during the locked-brake period.",
+      "failure_condition": "Movement occurs before the readiness condition is met (brakes still locked).",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Physically move robot",
+          "exact_action": "Proceed with moving the robot as allowed by your site process (only after it turns green readiness).",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you realize the robot was moved before it reached the source-described readiness condition, stop and escalate for further troubleshooting."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Robot is physically moved only after the source-described green readiness condition is met (specifically, waiting until it turns green when solid green and not on a label)."
+  ],
+  "healthy_conditions": [
+    "Robot indicator transitions through the restart-cycle states and reaches solid green, then turns green readiness for movement.",
+    "No physical movement occurs while brakes are locked."
+  ],
+  "failure_conditions": [
+    "Robot is moved while brakes are still locked (e.g., before it turns green readiness).",
+    "Robot does not reach solid green/green as described."
+  ],
+  "escalation_guidance": [
+    "If the indicator does not reach the source-described solid green/green readiness condition, escalate for further troubleshooting."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500",
+      "description": "Robot restart cycle and indicator color/state behavior (flashing blue -> solid blue -> solid green) and the rule to wait until it turns green before moving due to brake lock.",
+      "required_level": "required"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "section_id": "training_video_day1_segment_0034",
+      "page": 34,
+      "timestamp_start": "01:21:18.000",
+      "timestamp_end": "01:24:15.000",
+      "artifact_id": "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500",
+      "segment_id": "segment_training_video_0034",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0029_all_right_so_the_robot_selection_primary_01_15_18_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0033_yeah_because_it_has_front_sensors_primary_01_19_57_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0045_i_i_would_say_like_the_primary_01_37_38_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0021_yes_so_there_s_something_wrong_primary_00_47_36_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0037_what_are_these_these_are_rack_primary_01_29_18_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_robot_restart_cycle_wait_for_solid_green_before_moving"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The source does not define the exact visual distinction between 'solid green' and 'turns green' beyond the wording; it is treated as an observable readiness transition.",
+    "The source does not provide specific escalation contacts or additional troubleshooting steps beyond 'escalate for further troubleshooting' when the indicator does not reach the described green condition."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

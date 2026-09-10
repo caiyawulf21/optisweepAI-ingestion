@@ -5,10 +5,10 @@
 | Metric | Value |
 | --- | --- |
 | Playbook candidates | 1 |
-| Nodes | 6 |
+| Nodes | 5 |
 | Nodes missing runbook placeholder | 0 |
 | Validation errors | 0 |
-| Warnings | 1 |
+| Warnings | 3 |
 | Dropped candidates | 0 |
 | Deduped candidates | 0 |
 | Candidates with artifacts | 0 |
@@ -22,61 +22,67 @@
 
 ## Warnings
 
-- playbook_candidate_incident_228723_zone5_pairing_amr_roster_recovery is missing candidate-level source_refs
+- playbook_candidate_incident_228723_agv_pairing_roster_recovery node node_1 (diagnostic_decision) is missing expects_capability
+- playbook_candidate_incident_228723_agv_pairing_roster_recovery node node_2 (diagnostic_decision) is missing expects_capability
+- playbook_candidate_incident_228723_agv_pairing_roster_recovery node node_4 (validation_gate) is missing expects_capability
 
 ## Candidate Index
 
 | Candidate | Confidence | Nodes | Events | Summary |
 | --- | --- | --- | --- | --- |
-| playbook_candidate_incident_228723_zone5_pairing_amr_roster_recovery | medium | 6 |  | Use this troubleshooting pattern when a site reports a zone cannot get a pair and AMRs begin diverting to the hospital lane after a low-battery robot event, replacement attempt,... |
+| playbook_candidate_incident_228723_agv_pairing_roster_recovery | medium | 5 |  | Use this path when a site reports that an ACB or zone cannot obtain an AMR pair, multiple AMRs route unexpectedly, or the system appears down after an AMR replacement or add/rem... |
 
 ## Candidate Details
 
-### Zone unable to get a pair with AMRs diverting to hospital after recent robot replacement or remove/add activity
+### AMR pairing failure with abnormal fleet roster or mapping state
 
 | Field | Value |
 | --- | --- |
-| Candidate ID | playbook_candidate_incident_228723_zone5_pairing_amr_roster_recovery |
-| Goal | Restore normal zone pairing and fleet behavior by identifying whether a recently replaced, added, or abnormal robot should be isolated from active operation, then confirming the system remains operational after the corrective action. |
-| Entry symptoms | Site reports the ACB system is down; A specific zone, especially zone 5 in this incident, is unable to get a pair; After a low-battery AMR event or replacement attempt, AMRs begin going to the hospital lane; The issue appears after recent robot replacement, remove/add, or attempted addition of one or more AGVs |
-| Tentative internal patterns | Recent robot remove/add or replacement activity may have left one or more robots in an abnormal RMS roster or mapping state; A robot shown as not mapped may correlate with zone pairing failure and broad AMR diversion behavior; Leaving an affected robot out of service for the rest of the sort was discussed as a possible workaround shape |
-| Affected systems/components | ACB system; AMR/robot fleet; RMS; Zone 5 pairing behavior; Specific robots discussed in incident evidence including robot 158 and robot 153 |
-| Roles | L1_support, L2_support, L3_support |
+| Candidate ID | playbook_candidate_incident_228723_agv_pairing_roster_recovery |
+| Goal | Determine whether the pairing failure is associated with an abnormal AMR roster or mapping state, use an authorized site-side isolation or removal procedure when supported, and confirm that normal pairing and operation return. |
+| Entry symptoms | A site reports that an ACB or affected zone cannot get a pair.; The ACB system is described as down or production is seriously impacted.; Replacement AMRs reportedly route to the hospital lane instead of supporting the affected workflow.; An AMR was previously reported with low battery or in an abnormal physical location.; The issue follows an AMR replacement, add, or remove activity. |
+| Tentative internal patterns | Possible abnormal AMR roster or mapping state after add/remove activity; Possible robot-location or pairing inconsistency affecting task assignment; Possible residual abnormal state after an earlier low-battery or physically inaccessible AMR event |
+| Affected systems/components | ACB system; AMRs / AGVs; RMS; Hospital lane; Affected zone pairing workflow |
+| Roles | L1_support, L2_support, L3_support, operator |
 | Confidence | medium |
-| Confidence reason | The incident contains a coherent troubleshooting shape and a reported recovery action tied to robot 158 removal, but the evidence is partly chat-based, some OCR is degraded, and the exact RMS state and authorized recovery boundaries are not fully documented in the packet. |
+| Confidence reason | The packet contains a clear observable symptom, a named RMS surface, discussion of possible roster/add-remove behavior, a source-supported site removal action, and reported recovery. Confidence is limited because the RMS details are partly unreadable, recovery was reported rather than independently measured, and the source contains inconsistent ACB/ECB naming. |
 
-**Summary:** Use this troubleshooting pattern when a site reports a zone cannot get a pair and AMRs begin diverting to the hospital lane after a low-battery robot event, replacement attempt, or recent robot remove/add activity. The response pattern is to confirm the observable fleet behavior, inspect RMS for abnormal robot roster or mapping state, use the approved robot isolation or remove-from-service procedure if an affected robot is identified and authorized, then validate that pairing and site operation recover during monitoring.
+**Summary:** Use this path when a site reports that an ACB or zone cannot obtain an AMR pair, multiple AMRs route unexpectedly, or the system appears down after an AMR replacement or add/remove event.
 
 #### Support User Language Examples
 
-- Zone 5 is unable to get a pair
-- Every AMR goes to the hospital
-- They had a low battery AMR under the rack
-- They tried replacing or adding AGVs and now the system is acting up
-- Removing robot 158 may have fixed it
+- Zone can't get a pair
+- ACB system is down
+- AMRs are going to the hospital
+- The robot was replaced and nothing is pairing
+- AGV was added but it is not getting a task
+- Robot is not mapped
+- Robots are not working after an add/remove
 
 #### Negative Or Absent Signals
 
-- The low-battery condition itself was discussed as not necessarily being the current issue
-- Evidence does not confirm a software service crash or gateway outage
-- Evidence does not provide a confirmed database-only fix path
-- RMS screenshots are not legible enough to confirm exact table values directly from the packet
+- The source does not independently establish that low battery was the current cause.
+- The source does not provide readable RMS status values or a confirmed error code.
+- The source does not independently validate recovery through live telemetry.
+- No authoritative site location metadata was supplied in source_package.site_location.
 
 #### Nodes
 
-| # | Type | Title | Intent | Runbook placeholder | Source-supported description |
-| --- | --- | --- | --- | --- | --- |
-| 1 | diagnostic_decision | Confirm the observable symptom pattern and recent robot-handling context | Determine whether the incident matches the pattern of zone pairing failure plus abnormal AMR hospital diversion after a recent low-battery event, replacement attempt, or robot remove/add activity. | Procedure needed to confirm with the site which specific zone cannot get a pair, whether AMRs are actively going to the hospital lane, whether a low-battery robot was recently under the rack, and whether the site recently replaced, removed, or added one or more robots. In RMS, check the fleet or zone-related views available to support for signs that the reported zone and robot activity align with the site description. | The site reported zone 5 unable to get a pair; earlier low-battery AMR issues were discussed; after replacement attempts, AMRs were reportedly going to the hospital lane. |
-| 2 | diagnostic_decision | Inspect RMS for abnormal robot roster, mapping, charging, or stuck-state indicators tied to the affected zone | Determine whether one or more specific robots appear to be in an abnormal state that could explain the pairing failure and broad AMR diversion behavior. | Procedure needed to inspect RMS robot roster and status views for the affected site, including whether recently replaced or added robots appear not mapped, improperly rostered, not charging, stuck on tasks, not moving, or otherwise abnormal. The procedure should also cover how to correlate specific robot IDs with the affected zone and recent remove/add activity. | Support chat discussed improper remove/add handling, possible roster issues in RMS, robot 158 removal, and robot 153 still reporting no charging or possibly stuck. |
-| 3 | branching_condition | Decide whether an identified robot should be isolated from active operation using an approved procedure | Choose whether to proceed with supported robot isolation or remove-from-system handling for a specific abnormal robot, or continue investigation if no supported target is identified. | Decision rubric needed to determine whether a specific robot identified in RMS can be safely isolated, left out of service for the rest of the sort, or removed from the system under an approved support procedure. The rubric should reference RMS evidence, recent remove/add history, charging state, mapping state, and role authorization limits. | Support discussed an easier way than deeper correction, including leaving the unit out for the rest of the sort, and later the site removed robot 158 from the system. |
-| 4 | procedure_reference | Perform the approved robot isolation or remove-from-system recovery action | Use the authorized operational procedure to remove the identified abnormal robot from active fleet participation or otherwise keep it out of service when that is the supported recovery path. | Procedure needed for authorized robot isolation, remove-from-system handling, or equivalent supported recovery in RMS for a named robot, including any required safety preconditions, coordination with the site, charging or parking expectations, and limits on who may perform or direct the action. | The reported recovery action was removal of robot 158 from the system, with the robot then on charger. |
-| 5 | validation_gate | Validate that pairing and fleet behavior recover and remain stable during monitoring | Confirm that the affected zone can pair again, AMRs are no longer broadly diverting to the hospital lane, and the site remains operational after the recovery action. | Procedure needed to validate post-recovery state in RMS and with the site, including checking that the affected zone can obtain pairs again, confirming AMRs are no longer broadly routing to the hospital lane, reviewing the fleet roster for remaining abnormal robots, and monitoring for a defined observation period before declaring recovery. | Support remained on the call to monitor and reported the system remained operational after robot 158 was removed. |
-| 6 | escalation_gate | Stop and escalate if no supported abnormal-robot recovery path is identified or validation fails | Hand off when RMS review does not reveal a supported robot isolation target, when authorized recovery cannot be performed, or when the zone and fleet behavior do not stabilize after the attempted action. | Procedure needed to prepare escalation evidence for higher-tier support, including the site symptom summary, recent robot replacement or remove/add history, RMS roster and status evidence for the affected robot IDs, any signs of not-mapped or not-charging state, actions already attempted, and post-action validation results showing whether pairing and hospital-lane behavior recovered. | The incident included escalation and discussion that if robots were not properly rostered in RMS, available responders might have limited corrective options; however, the final... |
+| # | Type | Title | Intent | Expects | Runbook placeholder | Source-supported description |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | diagnostic_decision | Confirm the observable pairing and routing pattern | Determine whether the site is experiencing an active pairing failure with abnormal AMR routing or behavior after a replacement or add/remove event. | aud:operator, aud:L1_support | Procedure needed to interview the site about the affected zone's pairing availability, intended AMR routing, recent replacement or add/remove activity, and current physical robot behavior; this is an evidence-collection and interpretation aid, not a case-intake procedure. | The source records site-reported inability to get a pair, replacement AMRs going to the hospital lane, and earlier low-battery and robot-location circumstances. |
+| 2 | diagnostic_decision | Check fleet roster and mapping state | Determine whether RMS shows an abnormal robot membership, mapping, or status condition that could explain the pairing failure. | aud:operator, aud:L1_support | Procedure needed to inspect the RMS fleet or robot status view for roster membership, mapping, location, and exception indicators associated with the affected workflow, and to interpret whether the displayed state is consistent with normal pairing. | The source identifies RMS as the system used to view robot status and states that a removed robot was shown as not mapped; the artifact shows red-highlighted RMS table entries. |
+| 3 | procedure_reference | Use an authorized site-side robot isolation or removal path | If an abnormal roster or mapping condition is supported, use the approved site procedure to isolate or remove the affected robot from the operating system and place it in a safe non-operational state. | aud:operator | Procedure needed for authorized site-side AGV physical isolation and system removal, including safety prerequisites, handling of a robot in an abnormal location, charger placement, and confirmation of the corresponding RMS state; exact removal or handling steps belong in the runbook. | The incident reports site-side removal of a robot from the system and placement on a charger, followed by reported system recovery. |
+| 4 | validation_gate | Confirm pairing and operational stability | Determine whether the affected workflow has recovered after the authorized robot isolation or removal action. | aud:operator, aud:L1_support | Procedure needed to validate pairing availability through site observation and to review the RMS fleet or robot status view for persistent abnormal membership, mapping, or exception indicators during a defined monitoring period. | The source reports that the system began functioning after robot removal and remained operational during approximately ten minutes of monitoring, while acknowledging that the re... |
+| 5 | escalation_gate | Stop when the supported roster-recovery path is unsafe or unsuccessful | Hand off when the abnormal state cannot be safely isolated, the available evidence is inconclusive, or pairing and stable operation do not return after the supported path. | aud:L2_support, aud:L3_support | Procedure needed to prepare an escalation handoff containing the site-observed pairing and routing symptoms, RMS screenshots or status evidence, physical robot state, actions attempted, authorization constraints, and validation results; it must define stop criteria without prescribing case-management or communication workflow. | The incident record shows incomplete and partly conflicting evidence, including unreadable RMS details, a delayed recovery report, and unresolved ambiguity about the cause. |
 
 #### Extraction Notes
 
-- Exactly one playbook candidate was returned per instruction.
-- The candidate is framed from observable symptoms rather than a fixed internal label such as not-mapped robot or RMS roster mismatch.
-- The packet supports a broad troubleshooting pattern around abnormal robot state after replacement or remove/add activity, but does not provide enough detail to encode exact recovery steps.
-- Robot 158 removal is captured as a source-supported recovery reference, not as a universally confirmed root cause.
-- CBRE and case-management details were excluded from nodes because they are administrative rather than troubleshooting orchestration.
+- Exactly one candidate was produced for the incident packet.
+- source_package.site_location is empty; no ingestion site, site_code, or site_label was populated from that metadata.
+- The canonical record identifies UPS Fort Worth, TX (Haslet), but this candidate does not place that incident-specific site name in reusable node fields.
+- The source alternates between ACB and ECB naming; this ambiguity is preserved rather than resolved.
+- RMS screenshots contain unreadable or garbled details. Red entries are treated only as possible exception indicators.
+- The source supports a tentative roster or mapping pattern and a reported recovery after robot removal, not a confirmed root cause.
+- No ontology-backed WCS SQL, API, service, or database evidence was used because those surfaces were not established by the incident evidence as the historical troubleshooting surface.
+- The later CBRE work-order artifact and case-management history were excluded from the technical path.

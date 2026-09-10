@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Determine tote pickup priority from volumetric thresholds (pretty full vs full)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Determine tote pickup priority from volumetric thresholds (pretty full vs full)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_determine_tote_pickup_priority_from_volumetric_thresholds_v1</td></tr>
+<tr><th>Title</th><td>Determine tote pickup priority from volumetric thresholds (pretty full vs full)</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L1_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>tote_lifecycle_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_api, apidog</td></tr>
+<tr><th>Audience Roles</th><td>L1_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>mapping_abnormal, sort_lifecycle_stuck</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use OptiSweep’s tote fullness logic (accumulated parcel dimensions scaled by package type) to determine tote pickup priority. The source describes two fullness thresholds: “pretty full” at ~60% and “full” at ~80%. Priority increases as fullness rises through the ~60/70/80 ranges, and at ~80% the chute is closed (highest priority).</p>
+<h2>When To Use</h2>
+<p>When you need to explain or validate why a tote is being selected for pickup next based on fullness priority derived from volumetric thresholds (~60% pretty full, ~80% full) and the intermediate ~70% priority range.</p>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Locate the tote fullness basis used by software (scaled dimensions by package type)</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the live system, identify the tote fullness metric/inputs that reflect accumulated parcel dimensions scaled by package type (the source describes that software updates tote fullness as parcel dimension data is scaled up/down based on configuration/package type).</p>
+<p><strong>Expected result:</strong></p>
+<p>You can state that tote fullness is determined by software using dimension data scaled by package type, and that tote fullness is updated as parcel dimension data is received and scaled.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you cannot confirm the fullness metric basis is scaled dimension data by package type, stop and escalate for deeper investigation (the source does not provide corrective steps).</li>
+</ul>
+<hr>
+<h3>Step 2 — Confirm package-type scaling examples (boxes vs bags) used in fullness computation</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>When interpreting the fullness percentage, account for the source-described scaling examples: boxes are scaled higher (example ~120%) while bags are scaled lower (example ~70% or 60%).</p>
+<p><strong>Expected result:</strong></p>
+<p>You can explain that the fullness percentage is influenced by package-type scaling (e.g., boxes ~120% and bags ~70%/60% in the source examples).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you cannot determine which package-type scaling applies to the tote’s contents, stop and escalate for deeper investigation (the source does not provide corrective steps).</li>
+</ul>
+<hr>
+<h3>Step 3 — Check tote fullness against the two thresholds: pretty full (~60%) and full (~80%)</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Read the live tote fullness percentage/volumetrics and compare it to the source thresholds: pretty full at ~60% and full at ~80%.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can categorize the tote fullness as: pretty full (~60%), intermediate (~70%), or full (~80%).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the fullness metric is missing/undefined or you cannot compare it to ~60% and ~80%, stop and escalate for deeper investigation (the source does not provide corrective steps).</li>
+</ul>
+<hr>
+<h3>Step 4 — Determine tote pickup priority from the fullness range (60/70/80) and chute closure at 80%</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Use the source priority guidance: (1) over 60% but under 70% = lowest priority; (2) over 70% but under 80% = next priority; (3) at 80% = highest priority because the chute is closed.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can state the expected pickup priority for the tote based on where its fullness falls relative to ~60%, ~70%, and ~80%, including that ~80% corresponds to chute closure.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the observed fullness does not align with the expected threshold behavior described by the source, stop and escalate for deeper investigation (the source does not provide corrective steps).</li>
+</ul>
+<hr>
+<h3>Step 5 — If fullness is over the pretty-full threshold (~60%), expect an internal pick-up tote request</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>For a tote whose fullness is over ~60% (pretty full), verify that the system behavior corresponds to the source-described internal pick-up tote request being sent.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can describe that when volume metrics goes over 60%, the system marks it for pick up and sends a pick up tote request internally.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If observed behavior does not match the source-described threshold behavior, stop and escalate for deeper investigation (the source does not provide corrective steps).</li>
+</ul>
+<hr>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Trace OptiSweep architecture data/command flow across modules (Scanner/PLC → XLE chat/OBC com → Ignition tags → Sorter sweeper → Robotics maps → Geek Plus COM → Geek Plus API)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Trace OptiSweep architecture data/command flow across modules (Scanner/PLC → XLE chat/OBC com → Ignition tags → Sorter sweeper → Robotics maps → Geek Plus COM → Geek Plus API)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_trace_optsweep_architecture_data_command_flow_modules_v1</td></tr>
+<tr><th>Title</th><td>Trace OptiSweep architecture data/command flow across modules (Scanner/PLC → XLE chat/OBC com → Ignition tags → Sorter sweeper → Robotics maps → Geek Plus COM → Geek Plus API)</td></tr>
+<tr><th>Procedure Type</th><td>reference</td></tr>
+<tr><th>Primary Role</th><td>L1_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>fleet_system_status, wcs_api_responsiveness</td></tr>
+<tr><th>Access Surface</th><td>wcs_api, wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L1_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>None</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the documented OptiSweep architecture path to explain which OptiSweep module owns each part of the UPS-side data/command path: UPS-side scanner/ASX/XLE printers/sorter PLCs communicate via XLE chat over S tunnel to the XLE chat module; the XLE chat OBC com module subscribes to tags and Ignition for read/write with tippers; sorter sweeper acts as a tote state machine; sorter sweeper requests robotics actions (pick up/move out/drop off); robotics routes those actions through named maps; Geek Plus COM translates robotics commands into Geek Plus API requests; Ignition is the HMI base used to collect data and send to Aviva for UPS, running on the OPC server (Windows).</p>
+<h2>When To Use</h2>
+<p>When you need to map a symptom to the most likely owning OptiSweep module by following the documented architecture path (UPS-side equipment → XLE chat/S tunnel → XLE chat OBC com + Ignition tags → sorter sweeper tote state machine → robotics maps → Geek Plus COM → Geek Plus API).</p>
+<h2>Visual References</h2>
+<figure><img src="assets/994a86f756480c79.jpg" alt="artifact_training_video_training_video_day2_0003_so_we_kind_of_started_this_primary_00_02_12_500" /><figcaption>Architecture overview showing UPS-side equipment (scanner/ASX/XLE printers/sorter PLCs) and OptiSweep modules (XLE chat, XLE chat OBC com, sorter sweeper, robotics module, Geek Plus COM, Ignition/Windows service, OPC server).</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Identify the UPS-side equipment that interfaces into OptiSweep</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the architecture overview, name the UPS-side equipment that interfaces into OptiSweep: scanner, ASX, XLE printers, and sorter PLCs.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can correctly state the UPS-side starting equipment list (scanner, ASX, XLE printers, sorter PLCs) as the source of the path that flows into OptiSweep.</p>
+<hr>
+<h3>Step 2 — Locate the secure UPS-to-OptiSweep communication path via XLE chat and S tunnel</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>From the architecture overview, describe that UPS-side systems communicate through XLE chat, and that OptiSweep uses S tunnel to securely communicate through XLE chat.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can state that XLE chat is the communication path and that S tunnel is used for secure communication.</p>
+<hr>
+<h3>Step 3 — Follow the handoff from XLE chat module to XLE chat OBC com module (Ignition tags subscription/read-write)</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the architecture overview, explain that the XLE chat module talks to the XLE chat OBC com module, and that the OBC com module subscribes to tags and Ignition to enable reading and writing from tippers.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can describe the module handoff: XLE chat module → XLE chat OBC com module, and that OBC com subscribes to tags and Ignition for read/write from tippers.</p>
+<hr>
+<h3>Step 4 — Trace the next responsibility to the sorter sweeper module (tote state machine)</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the architecture overview and sorter sweeper module frame, explain that sorter sweeper is basically a tote state machine that tracks packages as they come in, updates information, and tracks it at the tipper.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can state that sorter sweeper is the tote state machine responsible for tracking packages/totes and tracking at the tipper.</p>
+<hr>
+<h3>Step 5 — Trace sorter sweeper requests to the robotics module (pick up/move out/drop off tote)</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the architecture overview, describe that sorter sweeper makes requests to the robotics module such as pick up tote, move out tote, and drop off tote.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can list the movement-related requests from sorter sweeper to robotics module: pick up tote, move out tote, drop off tote.</p>
+<hr>
+<h3>Step 6 — Trace robotics module routing through named maps (entrance/queue/execute for sorter and tipper)</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the architecture overview, describe that robotics module runs the requests through the maps: shorter entrance sorter queue, sorter sorter execute tipper entrance queue, and tipper tipper execute sorter entrance queue.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can name the map/queue routing responsibilities exactly as listed in the source architecture overview.</p>
+<hr>
+<h3>Step 7 — Trace vendor translation to Geek Plus COM (robotics commands → Geek Plus API requests)</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the architecture overview, explain that Geek Plus COM translates commands from the robotics module into what Geek Plus requires and sends them as API requests to Geek Plus.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can describe Geek Plus COM as the translation layer that sends Geek Plus API requests based on robotics module commands.</p>
+<hr>
+<h3>Step 8 — Use Ignition as the HMI base and note Ignition/OPC server placement (Windows)</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the architecture overview, describe that Ignition is the HMI base used to collect data and send to Aviva for UPS, and that Ignition/OPC runs on the OPC server (Windows-based).</p>
+<p><strong>Expected result:</strong></p>
+<p>You can state that Ignition is the HMI base for data collection and sending to Aviva for UPS, and that Ignition/OPC runs on the OPC server in a Windows environment.</p>
+<hr>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Diagnose Active AGV Errors in the Robotics Database</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Diagnose Active AGV Errors in the Robotics Database</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_diagnose_active_agv_errors_in_the_robotics_database_v1</td></tr>
+<tr><th>Title</th><td>Diagnose Active AGV Errors in the Robotics Database</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>agv_active_errors</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>bump_fault</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use read-only SSMS access to the WCS / Helix DB (SSMS) Robotics database to inspect current AGV active-error records and identify the affected robot code, error code, description, and SortGuid. When an error is resolved or an AGV is removed, verify that the record is archived to AGVErrorActivityDatabaseModel with available timing fields.</p>
+<h2>When To Use</h2>
+<p>Use the WCS / Helix DB (SSMS) Robotics database when an AGV error must be correlated to the affected robot code, error code, error description, and sort during which the error occurred.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/0060f6132e5274b9.jpg" alt="artifact_training_video_training_video_day2_0015_right_moving_on_excuse_me_the_primary_01_28_41_500" /><figcaption>Robotics database view showing AgvActiveErrorDatabaseModel fields including Name, ErrorCode, error description, and SortGuid.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the Robotics active-error table in WCS / Helix DB (SSMS)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In WCS / Helix DB (SSMS), open the Robotics database and locate the AgvActiveErrorDatabaseModel table.</p>
+<p><strong>Expected result:</strong></p>
+<p>The AgvActiveErrorDatabaseModel table is available for read-only inspection and exposes the active-error fields used for correlation.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if L2_support cannot access the Robotics database or the AgvActiveErrorDatabaseModel table.</li>
+</ul>
+<hr>
+<h3>Step 2 — Check for the affected AGV active-error row</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the AgvActiveErrorDatabaseModel table in WCS / Helix DB (SSMS), check whether a row is present for the affected AGV. Use the Name field as the robot code and inspect ErrorCode, the error description, and SortGuid.</p>
+<p><strong>Expected result:</strong></p>
+<p>The result shows either no active-error row for the affected AGV or a row containing the robot code, error code, error description, and SortGuid.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate when the active record lacks the expected robot code, error code, description, or SortGuid fields.</li>
+<li>Escalate when an active-error row cannot be correlated to the reported AGV condition.</li>
+</ul>
+<hr>
+<h3>Step 3 — Capture the active error and sort correlation</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>From the active-error row in WCS / Helix DB (SSMS), capture the Name robot code, ErrorCode, error description, and SortGuid. For example, the source shows error code 21057 with the description &quot;Front bumper trigger.&quot; Use SortGuid as the identifier for the sort during which the error occurred.</p>
+<p><strong>Expected result:</strong></p>
+<p>The diagnostic record contains the affected robot code, active error code, description, and SortGuid, including the sort association when the active row provides it.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop the database diagnostic and escalate when the error description cannot be correlated to the reported condition.</li>
+<li>Escalate when the active record is missing the robot code, error code, description, or SortGuid.</li>
+</ul>
+<hr>
+<h3>Step 4 — Verify resolution in AGV error activity</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>After the error is resolved or the AGV is removed, recheck AgvActiveErrorDatabaseModel in WCS / Helix DB (SSMS) and verify that the record is no longer an active-error row. Then inspect AGVErrorActivityDatabaseModel for the archived record and available Start Time, Finish Time, and Total Time fields.</p>
+<p><strong>Expected result:</strong></p>
+<p>The resolved or removed error is absent from the active-error table and is present in AGVErrorActivityDatabaseModel with Start Time, Finish Time, and Total Time when those fields are available.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate when an active-error row remains for the AGV after the error is reported resolved or the AGV has been removed.</li>
+<li>Escalate when the corresponding archived record or expected timing fields cannot be found.</li>
+</ul>
+<hr>
+</body>
+</html>

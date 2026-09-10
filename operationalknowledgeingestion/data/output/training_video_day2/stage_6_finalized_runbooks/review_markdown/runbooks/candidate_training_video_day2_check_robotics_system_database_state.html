@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check Robotics SystemDatabaseModel State in SSMS</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check Robotics SystemDatabaseModel State in SSMS</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_robotics_systemdatabasemodel_state_v1</td></tr>
+<tr><th>Title</th><td>Check Robotics SystemDatabaseModel State in SSMS</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>wcs_system_faults</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>system_fault</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the WCS / Helix DB (SSMS) surface to perform a read-only inspection of Helix2x_1Prod_Robotics.dbo.SystemDatabaseModel. Verify the live system configuration state, current SortGuid, EntityInserted timestamp, and EntityLastUpdate timestamp.</p>
+<h2>When To Use</h2>
+<p>Use this WCS / Helix DB (SSMS) diagnostic when support needs to verify the live system configuration state, current sort GUID, and update timestamps in Helix2x_1Prod_Robotics.dbo.SystemDatabaseModel.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/73959e129fe8ea06.jpg" alt="artifact_training_video_training_video_day2_0020_yes_and_there_ll_be_a_primary_01_36_33_500" /><figcaption>SSMS Robotics Database view showing Helix2x_1Prod_Robotics, dbo.SystemDatabaseModel, and the EntityInserted, EntityLastUpdate, Status, and SortGuid result columns.</figcaption></figure>
+<figure><img src="assets/ddafaa4a681bc7fb.jpg" alt="artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000" /><figcaption>SSMS SystemDatabaseModel results and the displayed system status values, including Running, StartingUp, StartUpRequested, ShutDownRequested, Shutdown, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, and CloseOutStaged.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Connect to the Robotics database in SSMS</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open SSMS and connect to the Robotics Database, selecting the Helix2x_1Prod_Robotics database.</p>
+<p><strong>Expected result:</strong></p>
+<p>SSMS displays Helix2x_1Prod_Robotics as the selected database and exposes its database objects.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L3 support or engineering if Helix2x_1Prod_Robotics cannot be opened.</li>
+</ul>
+<hr>
+<h3>Step 2 — Open dbo.SystemDatabaseModel results</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the SSMS object list for Helix2x_1Prod_Robotics, open dbo.SystemDatabaseModel and view its results in the read-only query view.</p>
+<p><strong>Expected result:</strong></p>
+<p>The SSMS results view displays the SystemDatabaseModel row with the EntityInserted, EntityLastUpdate, Status, and SortGuid columns.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L3 support or engineering if dbo.SystemDatabaseModel cannot be opened, the expected row is absent, or the required fields are unavailable.</li>
+</ul>
+<hr>
+<h3>Step 3 — Inspect the current model fields</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the SSMS SystemDatabaseModel results, inspect the current row&#x27;s EntityInserted, EntityLastUpdate, Status, and SortGuid fields.</p>
+<p><strong>Expected result:</strong></p>
+<p>The current row exposes observable values for Status and SortGuid and displayed values for EntityInserted and EntityLastUpdate.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L3 support or engineering if the required fields are unavailable or the expected row does not contain the fields.</li>
+</ul>
+<hr>
+<h3>Step 4 — Interpret the displayed Status</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Compare the displayed Status in the WCS / Helix DB (SSMS) results with the status values shown for SystemDatabaseModel: Running, StartingUp, StartUpRequested, ShutDownRequested, Shutdown, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, and CloseOutStaged.</p>
+<p><strong>Expected result:</strong></p>
+<p>The current row has one explicitly displayed Status value that identifies the current system configuration or lifecycle state.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the live Status is unexpected for the reported condition.</li>
+<li>Escalate if the Status remains in a startup, shutdown, staging, requested, or close-out state without the expected state transition.</li>
+</ul>
+<hr>
+<h3>Step 5 — Confirm SortGuid and timestamps</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Confirm in the SSMS SystemDatabaseModel results that SortGuid is populated and that EntityInserted and EntityLastUpdate contain displayed timestamps rather than being empty or missing.</p>
+<p><strong>Expected result:</strong></p>
+<p>The row shows a populated SortGuid and displayed EntityInserted and EntityLastUpdate timestamps.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L3 support or engineering if SortGuid is not populated or either timestamp is empty or unavailable.</li>
+</ul>
+<hr>
+</body>
+</html>

@@ -1,0 +1,413 @@
+{
+  "procedure_id": "proc_check_geek_rms_overall_system_faults_vs_agv_faults_v1",
+  "candidate_id": "candidate_training_video_day1_check_rms_system_faults_agv_faults",
+  "title": "Check Geek+ RMS page for system faults (left) vs AGV system faults (right) and relate to commanded-move/communication-loss symptoms",
+  "procedure_type": "diagnostic",
+  "summary": "Use the Geek+ “Overall System RMS” web page to determine whether the observed fault symptom is categorized as a general “system faults” issue (left side) or an “active AGV faults / AGV system faults” issue (right side). The source’s examples map communication loss to the left and “AGV told to move but not reaching in-progress” to the right. If the RMS page appears blank, the source attributes this to the firewall not being open.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_active_errors"
+  ],
+  "access_surface": [
+    "rms_ui"
+  ],
+  "audience_roles": [
+    "L1_support"
+  ],
+  "failure_pattern_tags": [
+    "gateway_unhealthy",
+    "api_unresponsive",
+    "web_app_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When a caller reports an issue and you need to quickly categorize what the Geek+ RMS “Overall System RMS” page is showing—specifically whether faults appear under the left “system faults” area or the right “active AGV faults / AGV system faults” area—using the source’s symptom mapping (communication loss vs commanded move not reaching in-progress).",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L1_support: Open the Geek+ RMS “Overall System RMS” web page and interpret whether faults are shown on the left “system faults” area or the right “active AGV faults / AGV system faults” area, then apply the source’s symptom mapping."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Geek+ RMS web page access for the “Overall System RMS” page",
+    "Ability to view the left “system faults” and right “AGV system faults / active AGV faults” areas",
+    "If the RMS page is blank due to firewall visibility, the source indicates using an API Dog or the database to see what is on the screen"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the Geek+ RMS web application (Overall System RMS page)"
+    ],
+    "system_preconditions": [
+      "Firewall must be open for the RMS page to display (otherwise the page may appear blank)"
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_system_faults_vs_agv_faults_v1",
+    "ctx_training_video_rms_visibility_on_thin_clients_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000",
+      "description": "Example frame for the “Overall System RMS” page showing the left “system faults” and right “active AGV faults” areas, plus the source’s note that the page can appear blank when the firewall is not open.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Geek+ RMS “Overall System RMS” page",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Establish the correct RMS page view that the source uses to separate fault categories into left vs right areas.",
+      "instruction": "Open the Geek+ RMS web page corresponding to “Overall System RMS”.",
+      "expected_result": "The “Overall System RMS” page loads and shows two fault areas: left “system faults” and right “AGV system faults / active AGV faults”.",
+      "healthy_condition": "You can see the left-side “system faults” area and the right-side “AGV system faults / active AGV faults” area on the page.",
+      "failure_condition": "The RMS page appears blank.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Open Overall System RMS page",
+          "exact_action": "Open the Geek+ RMS web page that corresponds to “Overall System RMS”.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the page is blank, do not assume there are no faults; treat it as a firewall/visibility issue per the source and proceed to Step 5."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 61,
+          "section_id": "training_video_day1_segment_0061",
+          "quote_or_summary": "This page should show RMS, but the firewall is not open, so it just kind of shows blank."
+        },
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 61,
+          "section_id": "training_video_day1_segment_0063",
+          "quote_or_summary": "This page will show the Geek+ RMS web page... system faults on the left and any active AGV faults on the right."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Check the left-side “system faults” entries",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the symptom is categorized as a general system fault (left side) per the source’s mapping.",
+      "instruction": "On the “Overall System RMS” page, look at the left side under “system faults”.",
+      "expected_result": "If the symptom is communication loss, the relevant fault appears under the left-side “system faults” area.",
+      "healthy_condition": "The left-side “system faults” area contains entries that correspond to the reported symptom category.",
+      "failure_condition": "No entries appear under “system faults” when you expect a communication-loss-related fault category.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect left system faults area",
+          "exact_action": "On the left side, look for entries under “system faults”.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 61,
+          "section_id": "training_video_day1_segment_0061",
+          "quote_or_summary": "On the left, you'll see system faults... If we lose communication with one of the chats, it'll be on the left."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Check the right-side “AGV system faults / active AGV faults” entries",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the symptom is categorized as an AGV-specific system fault (right side) per the source’s mapping.",
+      "instruction": "On the “Overall System RMS” page, look at the right side under “AGV system faults” / “active AGV faults”.",
+      "expected_result": "If the symptom is an AGV commanded to move but it has not reached “in progress”, the relevant fault appears under the right-side “AGV system faults / active AGV faults” area.",
+      "healthy_condition": "The right-side “AGV system faults / active AGV faults” area contains entries consistent with the commanded-move-not-reaching-in-progress category.",
+      "failure_condition": "No entries appear under “AGV system faults / active AGV faults” when you expect a commanded-move-not-reaching-in-progress-related fault category.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect right AGV system faults area",
+          "exact_action": "On the right side, look for entries under “AGV system faults” / “active AGV faults”.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 61,
+          "section_id": "training_video_day1_segment_0061",
+          "quote_or_summary": "If we told an AGV to move and we haven't gotten in progress, it's a system fault."
+        },
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 61,
+          "section_id": "training_video_day1_segment_0061",
+          "quote_or_summary": "On the right there's AGV system faults... If we told an AGV to move but it hasn't moved, it'll be on the right."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Relate observed fault placement to the reported symptom",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Apply the source’s fault-category mapping to interpret what the RMS page indicates about the underlying issue.",
+      "instruction": "Use the source’s mapping: communication loss → left “system faults”; AGV told to move but not reaching “in progress” → right “AGV system faults / active AGV faults”.",
+      "expected_result": "The observed fault placement matches the source’s examples (left for communication loss; right for commanded move not reaching in-progress).",
+      "healthy_condition": "Faults appear in the expected left/right area for the symptom being investigated.",
+      "failure_condition": "Faults do not appear in either expected area (left “system faults” or right “AGV system faults / active AGV faults”).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Map left/right placement to symptom",
+          "exact_action": "Use the source’s described mapping to interpret what you’re seeing: communication loss appears on the left; commanded move not reaching “in progress” appears on the right.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If faults do not appear in either expected area (left “system faults” / right “AGV system faults / active AGV faults”), stop and escalate for deeper investigation using the source’s stated alternatives (API Dog or database)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 61,
+          "section_id": "training_video_day1_segment_0061",
+          "quote_or_summary": "If we lose communication with one of the chats, it'll be on the left. If we told an AGV to move but it hasn't moved, it'll be on the right."
+        },
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 61,
+          "section_id": "training_video_day1_segment_0061",
+          "quote_or_summary": "If we tell an AGB to move and we haven't gotten in progress, right, it's a system fault... on the left, you'll see system faults and on the right there's AGV system faults."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Handle blank RMS page (firewall not open) and use alternatives",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Avoid misinterpreting a blank RMS page as “no faults” and follow the source’s stated workaround approach.",
+      "instruction": "If the “Overall System RMS” page appears blank, treat it as a firewall visibility issue. Then use the source’s stated alternatives (API Dog or database) to determine what is on the screen.",
+      "expected_result": "You do not conclude “no faults” from a blank page; instead you proceed using API Dog or database visibility per the source.",
+      "healthy_condition": "You can obtain fault information via API Dog or database when direct RMS viewing is blank due to firewall not being open.",
+      "failure_condition": "You treat a blank RMS page as evidence that there are no system/AGV faults.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Use API Dog or database when RMS is blank",
+          "exact_action": "If you can't see RMS due to thin-client/firewall visibility limits, rely on either pulling an API (API dog) or using the database to see what's on their screen.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot retrieve fault information via API Dog or database after the page is blank, escalate for deeper investigation (per the candidate’s escalation note)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 61,
+          "section_id": "training_video_day1_segment_0061",
+          "quote_or_summary": "This page should show RMS, but the firewall is not open, so it just kind of shows blank."
+        },
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 61,
+          "section_id": "training_video_day1_segment_0061",
+          "quote_or_summary": "we're kind of dependent on either pulling an API, an API dog, or using the database to see what's on their screen."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Faults are categorized correctly by placement: communication loss appears under left “system faults”, and commanded move not reaching “in progress” appears under right “AGV system faults / active AGV faults”.",
+    "If the RMS page is blank, the investigation does not stop; you proceed using API Dog or database visibility per the source."
+  ],
+  "healthy_conditions": [
+    "Left “system faults” area shows entries consistent with communication-loss symptoms.",
+    "Right “AGV system faults / active AGV faults” area shows entries consistent with commanded-move-not-reaching-in-progress symptoms.",
+    "RMS page is not blank; if blank, fault visibility is obtained via API Dog or database."
+  ],
+  "failure_conditions": [
+    "RMS page is blank and you incorrectly conclude there are no faults.",
+    "Faults do not appear in either expected area (left “system faults” or right “AGV system faults / active AGV faults”) for the reported symptom."
+  ],
+  "escalation_guidance": [
+    "If faults do not appear in either expected area (left “system faults” / right “AGV system faults / active AGV faults”), escalate for deeper investigation using the source’s stated alternatives (API Dog or database)."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000",
+      "what_to_look_at": "Overall System RMS page layout: left “system faults” and right “active AGV faults / AGV system faults”, plus the blank-page scenario attributed to firewall not being open."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1",
+      "source_document_id": "training_video_day1_video",
+      "page": 61,
+      "section_id": "training_video_day1_segment_0061",
+      "quote_or_summary": "Overall System RMS page shows system faults on the left and active AGV faults on the right; communication loss appears on the left; commanded move without reaching in-progress appears on the right."
+    },
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1",
+      "source_document_id": "training_video_day1_video",
+      "page": 61,
+      "section_id": "training_video_day1_segment_0061",
+      "quote_or_summary": "This page should show RMS, but the firewall is not open, so it just kind of shows blank."
+    },
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1",
+      "source_document_id": "training_video_day1_video",
+      "page": 61,
+      "section_id": "training_video_day1_segment_0063",
+      "quote_or_summary": "This page will show the Geek+ RMS web page... system faults on the left and any active AGV faults on the right."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000",
+      "what_to_look_at": "Overall System RMS page layout: left “system faults” and right “active AGV faults / AGV system faults”, plus the blank-page scenario attributed to firewall not being open."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0063_do_you_have_any_system_faults_primary_02_15_57_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0022_rms_is_the_robot_management_system_primary_00_52_41_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0045_i_i_would_say_like_the_primary_01_37_38_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0066_so_kind_of_what_i_was_primary_02_18_32_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0077_all_right_any_questions_on_the_primary_02_31_34_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day1_check_rms_system_faults_agv_faults"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide exact Geek+ RMS UI control names beyond the left/right labels (“system faults” and “AGV system faults / active AGV faults”).",
+    "The source mentions alternatives (“API dog” or database) but does not provide the specific procedure, endpoints, or database tables to use."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day1_0022_rms_is_the_robot_management_system_primary_00_52_41_500",
+    "artifact_training_video_training_video_day1_0045_i_i_would_say_like_the_primary_01_37_38_000",
+    "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000",
+    "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000",
+    "artifact_training_video_training_video_day1_0063_do_you_have_any_system_faults_primary_02_15_57_000",
+    "artifact_training_video_training_video_day1_0066_so_kind_of_what_i_was_primary_02_18_32_000",
+    "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000",
+    "artifact_training_video_training_video_day1_0077_all_right_any_questions_on_the_primary_02_31_34_000"
+  ]
+}

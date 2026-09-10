@@ -1,0 +1,311 @@
+{
+  "procedure_id": "proc_inspect_robot_location_attributes_in_the_robotics_database_v1",
+  "candidate_id": "candidate_training_video_day2_robot_location_model_diagnostic",
+  "title": "Inspect Robot Location Attributes in the Robotics Database",
+  "procedure_type": "diagnostic",
+  "summary": "A read-only WCS / Helix DB (SSMS) diagnostic for inspecting Robot Location records in the OptiSweep Robotics database and comparing the record with the corresponding RMS / fleet status UI location cue. Review station number, occupied state, zone, closeout zone, location type, maximum AGVs allowed, and dwell-time tracking.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "fleet_system_status",
+    "zone_config_state"
+  ],
+  "access_surface": [
+    "wcs_sql",
+    "rms_ui"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this diagnostic when L2/L3 support needs to interpret a station or location in the live WCS / Helix DB (SSMS) and associate it with a location shown in the RMS / fleet status UI.",
+  "not_for": [
+    "Do not use this procedure to modify Robotics database records.",
+    "Do not use this procedure as a physical AGV recovery or E-stop procedure.",
+    "Do not use this procedure as a substitute for a live database query or RMS location comparison; the packet does not provide a complete SSMS navigation path or SQL query."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Perform the read-only WCS / Helix DB (SSMS) inspection and compare the record with the RMS / fleet status UI."
+    },
+    {
+      "role": "L3_support",
+      "responsibility": "Review or assist when the Robot Location record is missing, cannot be associated with RMS, or contains blank or inconsistent identifying fields."
+    }
+  ],
+  "safety_notes": [
+    "Use read-only inspection only.",
+    "Do not modify database records as part of this diagnostic."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS) access to the OptiSweep Robotics database",
+    "Robot Location database model/table",
+    "RMS / fleet status UI access for location comparison"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2/L3 access to WCS / Helix DB (SSMS) on the support path",
+      "Access to the RMS / fleet status UI"
+    ],
+    "system_preconditions": [
+      "A relevant station or location has been identified for investigation.",
+      "The location can be identified by a station or workstation cue, if available, in RMS."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_robot_location_database_model_v1",
+    "ctx_training_video_location_types_and_statuses_v1",
+    "ctx_training_video_location_zones_coordinates_and_cell_codes_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Robotics database in WCS / Helix DB (SSMS)",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Establish a read-only view of the OptiSweep Robotics database that contains the Robot Location model/table.",
+      "instruction": "In WCS / Helix DB (SSMS), select the OptiSweep Robotics database. Use read-only inspection and do not edit or execute changes against database records.",
+      "expected_result": "The OptiSweep Robotics database is selected and available for inspection in WCS / Helix DB (SSMS).",
+      "healthy_condition": "The Robotics database is accessible and its database objects can be inspected without making changes.",
+      "failure_condition": "The Robotics database is unavailable, inaccessible, or cannot be inspected read-only.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Select Robotics database",
+          "exact_action": "Select the OptiSweep Robotics database in WCS / Helix DB (SSMS).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop if the database cannot be accessed read-only.",
+        "Escalate to L3_support if the Robotics database is unavailable or access cannot be established."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0009",
+          "timestamp_start": "00:13:33.000",
+          "timestamp_end": "00:20:58.000",
+          "quote_or_summary": "The source identifies the Robotics database and describes the Robot Location database model/table."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Locate the Robot Location record",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Find the live location record corresponding to the station or location under investigation.",
+      "instruction": "In WCS / Helix DB (SSMS), locate the Robot Location database model/table and inspect the record for the relevant station or location. Use the available station or location identity to select the record; do not infer an unprovided table path or SQL query.",
+      "expected_result": "A Robot Location record corresponding to the investigated station or location is present and readable.",
+      "healthy_condition": "The record has an identifiable station or location identity that can be used for comparison with RMS.",
+      "failure_condition": "No relevant Robot Location record can be found, or the record lacks enough identifying information to associate it with the investigated location.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect Robot Location record",
+          "exact_action": "Locate the Robot Location database model/table and inspect the record for the relevant station or location.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if the expected Robot Location record is missing.",
+        "Escalate if the record cannot be associated with the investigated location."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0009",
+          "timestamp_start": "00:13:33.000",
+          "timestamp_end": "00:20:58.000",
+          "quote_or_summary": "The Robot Location database model/table contains information about locations, including station number and other location attributes."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Inspect Robot Location attributes",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Determine the live configuration and state attributes associated with the investigated location.",
+      "instruction": "In WCS / Helix DB (SSMS), inspect the Robot Location record fields for station number, occupied state, zone, closeout zone, location type, maximum number of AGVs allowed, and dwell-time tracking.",
+      "expected_result": "The live Robot Location record exposes readable values for station or location identity, occupied state, zone, closeout zone, location type, maximum AGVs allowed, and dwell-time tracking.",
+      "healthy_condition": "The expected fields are populated and internally usable for identifying the location and interpreting its live occupancy, zone, type, capacity, and dwell-tracking configuration.",
+      "failure_condition": "One or more identifying or operational fields are blank, inconsistent, or unavailable.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review location fields",
+          "exact_action": "Check the station number, occupied state, zone, closeout zone, location type, maximum number of AGVs allowed, and dwell-time tracking field.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if identifying fields are blank or inconsistent.",
+        "Do not modify the record to correct a value during this diagnostic."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0009",
+          "timestamp_start": "00:13:33.000",
+          "timestamp_end": "00:20:58.000",
+          "quote_or_summary": "The Robot Location model/table includes station number, occupied state, zone, closeout zone, location type, maximum AGVs allowed, and dwell-time tracking."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0009",
+          "timestamp_start": "00:13:33.000",
+          "timestamp_end": "00:20:58.000",
+          "quote_or_summary": "Location types include sorter, tipper, hospital, shutdown, and GLD pre-queue locations."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Compare the record with the RMS location cue",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Corroborate the database location identity against the live RMS / fleet status UI representation.",
+      "instruction": "In the RMS / fleet status UI, locate the corresponding orange location or workstation ID and compare that live location cue with the station or location identity from the WCS / Helix DB (SSMS) Robot Location record. Use the RMS location cue for association; do not assume that color alone proves a field value.",
+      "expected_result": "The Robot Location record can be associated with the corresponding RMS / fleet status UI location cue, including an orange location or visible workstation ID when present.",
+      "healthy_condition": "The RMS / fleet status UI location cue and the WCS / Helix DB (SSMS) record identify the same station or location.",
+      "failure_condition": "The RMS / fleet status UI cue cannot be matched to the database record, or the identifying values conflict.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Compare RMS location",
+          "exact_action": "Compare the live record with the location being investigated in RMS, using orange locations and workstation IDs as visible location cues.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if the database record cannot be associated with the RMS location.",
+        "Escalate if the RMS cue and database identifying fields are inconsistent."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0009",
+          "timestamp_start": "00:13:33.000",
+          "timestamp_end": "00:20:58.000",
+          "quote_or_summary": "The source describes orange locations shown in RMS and workstation IDs visible for stations."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The relevant Robot Location record is found in the OptiSweep Robotics database through WCS / Helix DB (SSMS).",
+    "Station or location identity, occupied state, zone, closeout zone, location type, maximum AGVs allowed, and dwell-time tracking are readable.",
+    "The database record can be associated with the corresponding RMS / fleet status UI location cue.",
+    "No database records are modified."
+  ],
+  "healthy_conditions": [
+    "The Robotics database is accessible for read-only inspection.",
+    "The Robot Location record is present and identifiable.",
+    "The expected location attributes are populated and readable.",
+    "The WCS / Helix DB (SSMS) identity matches the corresponding RMS / fleet status UI station or location cue."
+  ],
+  "failure_conditions": [
+    "The Robotics database or Robot Location model/table cannot be accessed.",
+    "The expected Robot Location record is missing.",
+    "Station or location identifying fields are blank or inconsistent.",
+    "The record cannot be associated with the RMS / fleet status UI location cue.",
+    "The database record would need to be modified to continue."
+  ],
+  "escalation_guidance": [
+    "Escalate to L2/L3 support when the expected Robot Location record is missing, cannot be associated with RMS, or contains blank or inconsistent identifying fields.",
+    "Do not modify database records during this diagnostic."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "timestamp_start": "00:13:33.000",
+      "timestamp_end": "00:20:58.000",
+      "start_time_seconds": 813.0,
+      "end_time_seconds": 1258.0,
+      "segment_id": "segment_training_video_0009",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0009"
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_robot_location_model_diagnostic"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide a dedicated Robot Location screenshot showing the requested fields; the available same-section frame is not a dedicated live Robot Location table view.",
+    "The packet does not provide an exact SSMS navigation path, database object path, or SQL query for locating the Robot Location record.",
+    "The packet does not provide a dedicated RMS map screenshot for the orange-location and workstation-ID comparison."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

@@ -1,0 +1,390 @@
+{
+  "procedure_id": "proc_use_charger_selection_disable_enable_manual_agv_charging_v1",
+  "candidate_id": "candidate_training_video_day1_charger_selection_disable_enable_manual_charging",
+  "title": "Use Charger Selection to Disable/Enable a Charging Location for Manual AGV Charging (Low Power/Error State)",
+  "procedure_type": "recovery",
+  "summary": "Use the Charger Selection screen to disable a specific charging location (by charger ID) so RMS will not route other AGVs there, then physically place the extremely low-power AGV into that disabled charging station for manual charging. After the AGV is charged and removed, re-enable the charging location so RMS/WCS can resume assigning AGVs from the charging queue to that charger.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_physical_recovery",
+    "fleet_system_status"
+  ],
+  "access_surface": [
+    "rms_ui"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "charging_abnormal",
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when an AGV has extremely low power (for example, it was stuck in an error state too long) and you need to manually charge it without waiting for the OptiSweep logic to cycle through everything. The procedure uses Charger Selection to logically disable the charger allocation so RMS will not route other AGVs to that charging location during manual charging, then re-enables it afterward so RMS/WCS can reuse it.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Operate the Charger Selection screen to select the correct charger ID, verify enabled/disabled status and the robot associated with the charger, perform Disable/Enable actions, and confirm the charger state changes as expected."
+  ],
+  "safety_notes": [
+    "Disable is a logical allocation control: it does not kill/shut down the charger hardware; it prevents RMS from routing AGVs to that charging location for allocation."
+  ],
+  "access_or_tools_needed": [
+    "Charger Selection screen/view (HMI)",
+    "Ability to click/select a charger by its unique charger ID",
+    "Disable and Enable controls on Charger Selection",
+    "Visual access to the charging station to physically push the AGV into the disabled charging location"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the Charger Selection screen/view (HMI)"
+    ],
+    "system_preconditions": [
+      "You have identified the target charging station by its unique charger ID in Charger Selection",
+      "The AGV to be manually charged is extremely low on power (e.g., stuck in an error state too long) and requires manual charging"
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_charger_selection_screen_v1",
+    "ctx_training_video_disabled_charger_status_v1",
+    "ctx_training_video_manual_charging_use_case_v1",
+    "ctx_training_video_charging_control_architecture_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000",
+      "description": "Charger Selection screen reference showing unique charger IDs, charger status (enabled/disabled), and the robot associated with the charger; includes the Disable/Enable logical allocation concept for manual charging.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Charger Selection view/screen",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Access the Charger Selection UI to select a charger by its unique charger ID and view charger status and associated robot.",
+      "instruction": "Open the Charger Selection screen/view so you can select a charger by its unique charger ID and view charger status (enabled vs disabled) and the robot on that charger.",
+      "expected_result": "The Charger Selection screen is visible and shows a list/selection of charging stations with unique charger IDs.",
+      "healthy_condition": "You can click/select a charger ID and the UI responds by showing charger details including whether the charger is enabled or disabled and which robot is on the charger.",
+      "failure_condition": "You cannot access the Charger Selection screen or cannot select a charger ID to view charger status/associated robot.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Open Charger Selection",
+          "exact_action": "Open the Charger Selection view/screen",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Select the specific charging station by charger ID to view charger details",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Identify the correct charger allocation target and confirm which robot is currently associated with that charger.",
+      "instruction": "Click/select the specific charging station using its unique charger ID so the Charger Selection panel shows charger status and the robot currently on that charger.",
+      "expected_result": "The selected charger’s details display, including charger enabled/disabled status and the robot associated with that charger.",
+      "healthy_condition": "The UI clearly indicates the charger status (enabled vs disabled) and shows which robot is on that charger.",
+      "failure_condition": "The charger details do not update for the selected charger ID, or the UI does not show charger status and the associated robot.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Select charger ID",
+          "exact_action": "click on the charger ID",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Verify charger status (enabled vs disabled) and identify the robot associated with the charger",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the current allocation state before applying Disable/Enable so you target the correct charger and understand what is currently associated with it.",
+      "instruction": "On the Charger Selection details for the selected charger ID, verify whether the charger is currently enabled or disabled and note which robot is currently associated with that charger.",
+      "expected_result": "You can observe the charger status as enabled or disabled and identify the robot shown as being on that charger.",
+      "healthy_condition": "Charger status is readable (enabled vs disabled) and the associated robot is displayed for the selected charger ID.",
+      "failure_condition": "Charger status is not visible/unclear, or the associated robot cannot be identified for the selected charger ID.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check enabled/disabled and associated robot",
+          "exact_action": "Verify the charger status shown on the screen (enabled vs disabled) and identify which robot is currently associated with that charger",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Disable the charger allocation for manual charging (extremely low-power AGV)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Logically disable the charger allocation so RMS will not route other AGVs to that charging location while you manually charge the target AGV.",
+      "instruction": "If the goal is manual charging for an AGV with extremely low power (e.g., stuck in an error state too long), use the Disable function for that charger in Charger Selection.",
+      "expected_result": "After clicking Disable, the charger is logically disabled for allocation (RMS will not route AGVs to charge in that charging location).",
+      "healthy_condition": "The Charger Selection UI reflects that the charger is disabled (allocation disabled) and the logical behavior described by the source is in effect.",
+      "failure_condition": "The charger does not become disabled for allocation (e.g., RMS still routes other AGVs to that charging location after Disable).",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Disable charger allocation",
+          "exact_action": "click disable",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the charger does not reflect the expected enabled/disabled status after using Disable/Enable, stop and escalate for support."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Confirm Disable is logical (charger hardware remains; RMS allocation is blocked)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure the Disable action is being used as intended: logical allocation disablement (not hardware shutdown), so the charger can be used for manual charging without RMS interference.",
+      "instruction": "Confirm that the Disable behavior is logical by verifying the charger allocation state in Charger Selection (disabled) and ensuring RMS will not route other AGVs to that charging location.",
+      "expected_result": "The charger is shown as disabled in Charger Selection, and the charging location is not used for RMS routing during manual charging.",
+      "healthy_condition": "Charger Selection indicates disabled status for the selected charger ID, consistent with the logical allocation behavior.",
+      "failure_condition": "Charger Selection does not show disabled status, or RMS routes other AGVs to that charging location despite the Disable action.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Verify disabled allocation state",
+          "exact_action": "Verify the charger status shown on the screen (enabled vs disabled)",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the charger does not reflect the expected enabled/disabled status after using Disable/Enable, stop and escalate for support."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Physically move/push the desired AGV into the disabled charging station (manual charging)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Place the extremely low-power AGV into the disabled charging location so it can receive a charging boost without RMS routing other AGVs there.",
+      "instruction": "Physically push the desired AGV into the disabled charging station (the charging location you disabled in Charger Selection).",
+      "expected_result": "The AGV is positioned at the disabled charging station entrance/charging location for manual charging.",
+      "healthy_condition": "The AGV is physically at the disabled charging location corresponding to the charger ID you disabled.",
+      "failure_condition": "The AGV cannot be positioned into the disabled charging station, or it is placed into a different charging location than the one disabled in Charger Selection.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Push AGV into disabled charger",
+          "exact_action": "push the desired AGV into the disabled charging station",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "After the AGV is removed from the charger, expect it to pick up a task and go to the hospital in that tote",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Verify the manual charging recovery results in the AGV resuming normal tasking and routing to the hospital in the tote.",
+      "instruction": "After the AGV is removed from the charger, observe that it picks up a task and goes to the hospital in that tote.",
+      "expected_result": "The AGV picks up a task and goes to the hospital in that tote after manual charging.",
+      "healthy_condition": "The AGV transitions from the manual charging context back into task execution and routes to the hospital as described.",
+      "failure_condition": "The intended AGV does not pick up a task and go to the hospital in that tote after manual charging.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Observe task pickup and hospital routing",
+          "exact_action": "expect it to pick up a task and go to the hospital in that tote",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the intended AGV does not pick up a task and go to the hospital in the tote after manual charging, stop and escalate for support."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 8,
+      "title": "Re-enable the charging location so RMS/WCS can reuse it from the charging queue",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Restore normal charger allocation so RMS/WCS can assign AGVs from the charging queue to that charger.",
+      "instruction": "In Charger Selection, use the Enable control for the same charger ID to re-enable the charging location after the manual-charging AGV has been removed.",
+      "expected_result": "The charger is re-enabled in Charger Selection, allowing RMS and WCS to again assign AGVs from the charging queue to use that charger.",
+      "healthy_condition": "Charger Selection shows the charger as enabled, and the charger becomes available for RMS/WCS allocation.",
+      "failure_condition": "The charger does not reflect enabled status after using Enable, or it remains unavailable for allocation.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Enable charger allocation",
+          "exact_action": "re enable this charging location",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the charger does not reflect the expected enabled/disabled status after using Disable/Enable, stop and escalate for support."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Charger Selection shows the selected charger as disabled during manual charging and enabled after re-enabling.",
+    "While disabled, RMS does not route other AGVs to charge in that charging location (allocation blocked).",
+    "After manual charging, the intended AGV picks up a task and goes to the hospital in that tote.",
+    "After re-enabling, RMS and WCS can again assign AGVs from the charging queue to use that charger."
+  ],
+  "healthy_conditions": [
+    "Charger Selection indicates charger enabled/disabled status for the selected charger ID.",
+    "Disable is logical (charger hardware not killed) and prevents RMS routing to that charging location for allocation.",
+    "Enable restores reuse of the station for charging queue assignments."
+  ],
+  "failure_conditions": [
+    "Charger does not reflect expected enabled/disabled status after Disable/Enable.",
+    "RMS routes other AGVs to the charging location while it is disabled for allocation.",
+    "Intended AGV does not pick up a task and go to the hospital in that tote after manual charging."
+  ],
+  "escalation_guidance": [
+    "If the charger does not reflect the expected enabled/disabled status after using Disable/Enable, stop and escalate for support.",
+    "If the intended AGV does not pick up a task and go to the hospital in the tote after manual charging, stop and escalate for support."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000",
+      "what_to_look_at": "Charger Selection UI: unique charger IDs; selecting a charger shows charger status (enabled/disabled) and the robot on that charger; includes the Disable behavior (logical disable, RMS will not route AGVs to that charging location) and the Enable behavior (re-enable so RMS/WCS can reuse the station)."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "timestamp_start": "01:45:37.000",
+      "timestamp_end": "01:51:09.000",
+      "start_time_seconds": 6337.0,
+      "end_time_seconds": 6669.0,
+      "segment_id": "segment_training_video_0047",
+      "section_id": "training_video_day1_segment_0047",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000",
+      "what_to_look_at": "Charger Selection UI: unique charger IDs; selecting a charger shows charger status (enabled/disabled) and the robot on that charger; includes the Disable behavior (logical disable, RMS will not route AGVs to that charging location) and the Enable behavior (re-enable so RMS/WCS can reuse the station)."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0037_what_are_these_these_are_rack_primary_01_29_18_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0050_and_i_think_under_20_it_primary_01_53_04_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0035_it_d_be_a_question_mark_primary_01_25_36_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0029_all_right_so_the_robot_selection_primary_01_15_18_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day1_charger_selection_disable_enable_manual_charging"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "Exact UI label text for the Disable/Enable controls is not fully captured in the provided transcript/OCR; steps reference the Disable/Enable functions as described by the source."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+    "artifact_training_video_training_video_day1_0029_all_right_so_the_robot_selection_primary_01_15_18_000",
+    "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500",
+    "artifact_training_video_training_video_day1_0035_it_d_be_a_question_mark_primary_01_25_36_500",
+    "artifact_training_video_training_video_day1_0037_what_are_these_these_are_rack_primary_01_29_18_500",
+    "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000",
+    "artifact_training_video_training_video_day1_0050_and_i_think_under_20_it_primary_01_53_04_000",
+    "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000"
+  ]
+}

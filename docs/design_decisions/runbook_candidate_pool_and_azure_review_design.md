@@ -68,8 +68,14 @@ Shared Stage 7 [LLM Assisted, selective]
 Shared Stage 8 [LLM Assisted]
   Playbook finalization and runbook linking using pass-through + merged runbooks.
 
-Shared Stage 9+ [mixed]
-  Relationship linking, validation, publishing.
+Shared Stage 9 [Deterministic]
+  Corpus validation on Stage 7 runbooks + Stage 8 playbooks
+
+Shared Stage 10 [Deterministic]
+  Vector embedding generation
+
+Shared Stage 11 [Deterministic]
+  Cosmos DB publishing and manifest
 ```
 
 ## Stage 6 Source-Specific Runbook Finalization

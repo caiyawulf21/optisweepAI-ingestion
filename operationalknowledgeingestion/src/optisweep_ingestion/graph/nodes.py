@@ -1,1 +1,1 @@
-"""Future graph node placeholders for ingestion stage execution."""
+"""Graph nodes moved to `orchestration.graph.nodes`."""

@@ -1,8 +1,11 @@
+import json
 from pathlib import Path
 import subprocess
 import tempfile
+import urllib.request
 
 from optisweep_ingestion.stage1_training_video_builder import (
+    AzureComputerVisionOCRClient,
     CropBox,
     FrameSample,
     SlideInterval,
@@ -163,6 +166,75 @@ def test_tesseract_ocr_client_parses_tsv(monkeypatch, tmp_path: Path) -> None:
     assert result.text == "Charger Selection"
     assert result.confidence == 90.0
     assert result.provenance["backend"] == "tesseract"
+
+
+def test_azure_computer_vision_client_parses_read_result(monkeypatch, tmp_path: Path) -> None:
+    image = tmp_path / "sample.jpg"
+    image.write_bytes(b"fake")
+    monkeypatch.setenv("AZURE_COMPUTER_VISION_ENDPOINT", "https://example.cognitiveservices.azure.com")
+    monkeypatch.setenv("AZURE_COMPUTER_VISION_KEY", "fake-key")
+    monkeypatch.setenv("AZURE_COMPUTER_VISION_MIN_INTERVAL_SEC", "0")
+
+    response_body = json.dumps(
+        {
+            "readResult": {
+                "blocks": [
+                    {
+                        "lines": [
+                            {
+                                "text": "Charger Selection",
+                                "words": [
+                                    {"text": "Charger", "confidence": 0.95},
+                                    {"text": "Selection", "confidence": 0.90},
+                                ],
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ).encode("utf-8")
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self):
+            return response_body
+
+    def fake_urlopen(request, timeout=None):
+        assert request.get_method() == "POST"
+        assert request.get_header("Ocp-apim-subscription-key") == "fake-key"
+        assert "features=read" in request.full_url
+        return FakeResponse()
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+
+    result = AzureComputerVisionOCRClient().extract(image)
+
+    assert result.text == "Charger Selection"
+    assert result.confidence == 92.5
+    assert result.backend == "azure_cv"
+    assert result.provenance["backend"] == "azure_cv"
+
+
+def test_azure_computer_vision_client_requires_config(monkeypatch) -> None:
+    import optisweep_ingestion.stage1_training_video_builder as module
+
+    # Avoid picking up real credentials from a developer's local .env file.
+    monkeypatch.setattr(module, "load_dotenv", lambda *args, **kwargs: False)
+    monkeypatch.delenv("AZURE_COMPUTER_VISION_ENDPOINT", raising=False)
+    monkeypatch.delenv("AZURE_COMPUTER_VISION_KEY", raising=False)
+    try:
+        AzureComputerVisionOCRClient()
+    except RuntimeError as exc:
+        assert "AZURE_COMPUTER_VISION_ENDPOINT" in str(exc)
+        assert "AZURE_COMPUTER_VISION_KEY" in str(exc)
+    else:
+        raise AssertionError("Expected RuntimeError for missing configuration")
 
 
 def test_ocr_text_normalization_and_change_detection() -> None:

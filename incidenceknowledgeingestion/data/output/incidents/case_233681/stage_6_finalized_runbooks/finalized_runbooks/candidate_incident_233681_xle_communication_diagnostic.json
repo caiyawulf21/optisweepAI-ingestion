@@ -1,0 +1,487 @@
+{
+  "procedure_id": "proc_xle_communication_loss_diagnostic_v1",
+  "candidate_id": "candidate_incident_233681_xle_communication_diagnostic",
+  "title": "Diagnose XLE communication loss using RMS / fleet status UI, Ignition gateway, and S-Tunnel / Chat path",
+  "procedure_type": "diagnostic",
+  "summary": "Use the RMS / fleet status UI, Ignition gateway, and S-Tunnel / Chat path at UPS Haslet TX (TXRTH) to compare live AGV and task state with XLE communication and stunnel indicators. The incident showed no reported AGV faults or crashes, 80 canceled tasks, 88 received tasks, repeated XLE communication-loss messages, failed TCP connectivity on port 42400, and stunnel errors. Do not modify firewall or service configuration from this diagnostic procedure.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "agv_active_errors"
+  ],
+  "access_surface": [
+    "rms_ui",
+    "ignition_gateway",
+    "stunnel"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive",
+    "stunnel_or_chat_down",
+    "site_stoppage"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use on the live UPS Haslet TX (TXRTH) job when tote exchange, bag-out, or sorter communication is abnormal and the cause may involve XLE communication, abnormal AGV task state, or S-Tunnel / Chat communication errors. Compare RMS / fleet status UI, Ignition gateway, and S-Tunnel / Chat path observations before escalating.",
+  "not_for": [
+    "Do not use this procedure to change firewall rules or other network configuration.",
+    "Do not use this procedure to restart undocumented services.",
+    "Do not use this procedure to perform a system purge.",
+    "Do not treat the absence of an AGV fault or crash in RMS / fleet status UI as proof that the communication path is healthy."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support performs the live diagnostic on RMS / fleet status UI, Ignition gateway, and S-Tunnel / Chat path.",
+    "L3_support may guide or review the diagnostic when communication loss persists.",
+    "The site or network owner investigates suspected firewall or network-path issues; this runbook does not specify the corrective change."
+  ],
+  "safety_notes": [
+    "This is an inspection and diagnostic procedure; do not modify firewall or service configuration.",
+    "Do not restart undocumented services or perform a system purge from this procedure.",
+    "Escalate rather than treating the condition as an AGV hardware fault when RMS shows no AGV faults or crashes but tote exchange, bag-out, task counts, or sorter communication remain abnormal."
+  ],
+  "access_or_tools_needed": [
+    "RMS / fleet status UI",
+    "Ignition gateway",
+    "S-Tunnel / Chat path",
+    "Source-documented Test-NetConnection diagnostic against documented XLE targets on port 42400"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2_support or L3_support access to the UPS Haslet TX (TXRTH) RMS / fleet status UI, Ignition gateway, and S-Tunnel / Chat path.",
+      "Access to the source-documented connectivity diagnostic environment for Test-NetConnection."
+    ],
+    "system_preconditions": [
+      "The live UPS Haslet TX (TXRTH) job is available for inspection.",
+      "The tote-exchange, bag-out, or sorter communication symptom is still present or has recently been reported."
+    ],
+    "external_references": [
+      "UPS Haslet TX (TXRTH), case 233681 incident evidence."
+    ]
+  },
+  "related_context_ids": [],
+  "related_event_ids": [
+    "incident_233681_event_005",
+    "incident_233681_event_006",
+    "incident_233681_event_008",
+    "incident_233681_event_009",
+    "incident_233681_event_017"
+  ],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_incident_233681_page_004_nested_image_01",
+      "description": "RMS / fleet status UI screenshot showing current robot status, average battery power of 57%, and current task data; the exact health state is not established.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_incident_233681_page_005_nested_image_01",
+      "description": "Incident communication view showing loss of connection to XLE and repeated communication-lost entries.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_incident_233681_page_006_detected_region_01",
+      "description": "Ignition gateway-associated diagnostic screenshot showing lost communication to XLEs and failed TCP connectivity on port 42400; several target addresses are OCR-uncertain.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_incident_233681_page_012_nested_image_01",
+      "description": "S-Tunnel / Chat path evidence reporting stunnel errors and firewall-related blocking of scanner and sorter communication.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Inspect live AGV and task state in the RMS / fleet status UI",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Determine whether the live tote-exchange or sorter symptom coincides with reported AGV faults, crashes, or abnormal task counts.",
+      "instruction": "In the RMS / fleet status UI for UPS Haslet TX (TXRTH), inspect current robot status, current task data, and the displayed tote-exchange or bag-out operating state. Record whether AGVs are reported as faulted or crashed and record the displayed canceled and received task counts.",
+      "expected_result": "The RMS / fleet status UI displays current robot and task values that can be compared with the live tote-exchange or sorter symptom, including whether AGV faults or crashes are reported and the current canceled and received task counts.",
+      "healthy_condition": "The RMS / fleet status UI shows no reported AGV fault or crash, task counts are not accumulating abnormally, and tote exchange or bag-out is operating normally.",
+      "failure_condition": "The RMS / fleet status UI shows an AGV fault or crash, abnormal task counts, or tote exchange or bag-out remains unavailable; absence of an AGV fault does not clear a communication-path issue.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Inspect RMS robot status",
+          "exact_action": "Open the RMS / fleet status UI and check the current robot status, current task data, and tote-exchange or bag-out operating state.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "hmi_inspection",
+          "label": "Record task counts",
+          "exact_action": "Record whether AGVs are reported as faulted or crashed and record the displayed canceled and received task counts.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "RMS / fleet status UI shows an AGV fault or crash and the condition cannot be explained by the communication comparison.",
+        "No AGV fault or crash is shown but tote exchange, bag-out, or task state remains abnormal."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_233681:page_4",
+          "artifact_id": "artifact_incident_233681_page_004_nested_image_01",
+          "event_id": "incident_233681_event_005",
+          "chunk_id": "stage4_artifact_chunk_001",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "RMS monitoring showed current robot status, current task data, and average battery power of 57%; the exact health state was not established."
+        },
+        {
+          "page_ref": "case_233681:page_11",
+          "artifact_id": "artifact_incident_233681_page_011_nested_image_01",
+          "event_id": "incident_233681_event_015",
+          "chunk_id": "stage4_artifact_chunk_001",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "RMS evidence reported no AGV faults or crashes, with 80 canceled tasks and 88 received tasks."
+        }
+      ],
+      "related_event_ids": [
+        "incident_233681_event_005"
+      ]
+    },
+    {
+      "step_number": 2,
+      "title": "Check XLE communication in the Ignition gateway",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Verify whether the live Ignition gateway reports XLE communication loss and, when supported by the diagnostic environment, compare the TCP result with the incident pattern.",
+      "instruction": "In the Ignition gateway Systems Overview or status view for UPS Haslet TX (TXRTH), check for a current or recent message stating lost communication to XLEs. If the source-documented connectivity diagnostic is available, inspect the result for the documented XLE targets on port 42400 without substituting OCR-uncertain endpoint values.",
+      "expected_result": "The Ignition gateway status view shows either an active/recent XLE communication-loss indication or no such indication, and the connectivity diagnostic exposes an observable TCP result for the documented port when run.",
+      "healthy_condition": "The Ignition gateway shows no current or recent XLE communication-loss indication and the diagnostic no longer reports the source-documented failed TCP result on port 42400.",
+      "failure_condition": "The Ignition gateway reports lost communication to XLEs or the diagnostic reports TcpTestSucceeded as False on port 42400; a ping response alone does not establish healthy TCP communication.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Inspect XLE status",
+          "exact_action": "Open the Ignition gateway Systems Overview or status view and check for a current or recent message stating lost communication to XLEs.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "command_action",
+          "label": "Inspect documented TCP result",
+          "exact_action": "Compare the live result with the source-documented failed TCP connectivity checks on port 42400 for the documented XLE targets.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The Ignition gateway continues to report lost communication to XLEs.",
+        "TCP connectivity remains failed on port 42400.",
+        "The target address or command details are not confirmed in the live environment."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_233681:page_6",
+          "artifact_id": "artifact_incident_233681_page_006_detected_region_01",
+          "event_id": "incident_233681_event_008",
+          "chunk_id": "stage4_artifact_chunk_001",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "The diagnostic evidence stated Lost communication to XLEs; Test-NetConnection showed failed TCP connectivity on port 42400. Several target addresses were OCR-uncertain."
+        },
+        {
+          "page_ref": "case_233681:page_5",
+          "artifact_id": "artifact_incident_233681_page_005_nested_image_01",
+          "event_id": "incident_233681_event_006",
+          "chunk_id": "stage4_artifact_chunk_001",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "The system reported lost connection to XLE and repeated communication-lost entries."
+        }
+      ],
+      "related_event_ids": [
+        "incident_233681_event_006",
+        "incident_233681_event_008"
+      ]
+    },
+    {
+      "step_number": 3,
+      "title": "Inspect stunnel communication in the S-Tunnel / Chat path",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Determine whether stunnel or the associated scanner and sorter communication path is reporting an active error.",
+      "instruction": "Open the S-Tunnel / Chat path for UPS Haslet TX (TXRTH), inspect the connection list and current error state, and record whether stunnel errors are present. Record whether scanners or the sorter are reported as unable to communicate with the system.",
+      "expected_result": "The S-Tunnel / Chat path exposes the current connection/error state and indicates whether stunnel errors or scanner/sorter communication failures are being reported.",
+      "healthy_condition": "The S-Tunnel / Chat path shows no current stunnel errors and no current report that scanners or the sorter cannot communicate with the system.",
+      "failure_condition": "The S-Tunnel / Chat path reports stunnel errors or scanner/sorter communication remains blocked or unavailable.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Inspect stunnel connection state",
+          "exact_action": "Open the S-Tunnel / Chat path and check the connection list and current error state for stunnel communication.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check sorter communication report",
+          "exact_action": "Record whether stunnel errors are present and whether scanners or the sorter are reported as unable to communicate with the system.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stunnel continues to report errors.",
+        "Scanners or the sorter remain unable to communicate with the system.",
+        "The evidence suggests a firewall or network-owner issue requiring site or network-owner action."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_233681:page_12",
+          "artifact_id": "artifact_incident_233681_page_012_nested_image_01",
+          "event_id": "incident_233681_event_017",
+          "chunk_id": "stage4_artifact_chunk_002",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "Chat evidence reported that stunnel was generating errors and that firewall issues were blocking scanner and sorter communication."
+        }
+      ],
+      "related_event_ids": [
+        "incident_233681_event_017"
+      ]
+    },
+    {
+      "step_number": 4,
+      "title": "Compare RMS / fleet status UI, Ignition gateway, and S-Tunnel / Chat path observations",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Correlate live AGV/task state with XLE and stunnel communication state without assigning an unsupported root cause or performing remediation.",
+      "instruction": "Compare the observations from the RMS / fleet status UI, Ignition gateway, and S-Tunnel / Chat path. Treat a communication-related abnormal state as supported when XLE loss or stunnel errors coincide with tote-exchange or sorter communication failure, including when RMS reports no AGV fault or crash.",
+      "expected_result": "The comparison identifies whether the live tote-exchange or sorter symptom coincides with XLE communication loss, failed TCP connectivity on port 42400, stunnel errors, abnormal RMS task counts, or no corroborating communication indicator.",
+      "healthy_condition": "RMS / fleet status UI shows normal live task and tote-exchange operation, Ignition gateway shows no XLE communication loss, and S-Tunnel / Chat path shows no stunnel or scanner/sorter communication error.",
+      "failure_condition": "Any combination of active XLE loss, failed TCP connectivity on port 42400, stunnel errors, abnormal task counts, or tote-exchange/sorter communication failure remains present.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Correlate live observations",
+          "exact_action": "Compare the three live observations: RMS task and AGV state, XLE communication status, and S-Tunnel errors.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Classify communication-related abnormal state",
+          "exact_action": "Treat a communication-related abnormal state as supported when XLE loss or stunnel errors coincide with tote exchange or sorter communication failure, even when no AGV fault or crash is reported.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "XLE communication remains lost.",
+        "Stunnel continues to report errors.",
+        "TCP connectivity remains failed on port 42400.",
+        "The sorter remains non-communicating or tote exchange remains unavailable.",
+        "RMS shows no AGV faults or crashes but task counts or tote exchange remain abnormal."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_233681:page_5",
+          "artifact_id": "artifact_incident_233681_page_005_nested_image_01",
+          "event_id": "incident_233681_event_006",
+          "chunk_id": "stage4_artifact_chunk_001",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "Repeated XLE communication-loss messages were shown."
+        },
+        {
+          "page_ref": "case_233681:page_6",
+          "artifact_id": "artifact_incident_233681_page_006_detected_region_01",
+          "event_id": "incident_233681_event_008",
+          "chunk_id": "stage4_artifact_chunk_001",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "TCP connectivity checks on port 42400 were reported as failed."
+        },
+        {
+          "page_ref": "case_233681:page_7",
+          "artifact_id": "artifact_incident_233681_page_007_detected_region_01",
+          "event_id": "incident_233681_event_009",
+          "chunk_id": "stage4_artifact_chunk_001",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "The sorter was still not communicating and a firewall appeared to be causing the issue; the suspected cause was not independently confirmed in the artifact."
+        },
+        {
+          "page_ref": "case_233681:page_12",
+          "artifact_id": "artifact_incident_233681_page_012_nested_image_01",
+          "event_id": "incident_233681_event_017",
+          "chunk_id": "stage4_artifact_chunk_002",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "Stunnel errors and blocked scanner/sorter communication were reported."
+        }
+      ],
+      "related_event_ids": [
+        "incident_233681_event_006",
+        "incident_233681_event_008",
+        "incident_233681_event_009",
+        "incident_233681_event_017"
+      ]
+    }
+  ],
+  "success_criteria": [
+    "RMS / fleet status UI, Ignition gateway, and S-Tunnel / Chat path observations are compared for the same live job.",
+    "The diagnostic identifies whether active XLE loss, failed TCP connectivity on port 42400, stunnel errors, or abnormal RMS task state coincides with the tote-exchange or sorter symptom.",
+    "No unsupported firewall, service, purge, or recovery action is performed."
+  ],
+  "healthy_conditions": [
+    "The RMS / fleet status UI shows no AGV fault or crash and live tote exchange or bag-out is operating.",
+    "The Ignition gateway shows no current or recent XLE communication-loss indication.",
+    "The documented TCP connectivity check no longer reports a failed TCP result on port 42400.",
+    "The S-Tunnel / Chat path shows no current stunnel errors and scanners and the sorter can communicate with the system."
+  ],
+  "failure_conditions": [
+    "The Ignition gateway continues to report lost communication to XLEs.",
+    "TCP connectivity remains failed on port 42400.",
+    "The S-Tunnel / Chat path continues to report stunnel errors.",
+    "The sorter, scanners, tote exchange, or bag-out remain non-communicating or unavailable.",
+    "RMS shows no AGV faults or crashes but task counts or tote exchange remain abnormal."
+  ],
+  "escalation_guidance": [
+    "Escalate to L2/L3 support or the site network owner if XLE communication remains lost, stunnel continues to report errors, TCP connectivity remains failed, or the sorter remains non-communicating.",
+    "Retain the RMS, Ignition gateway, and S-Tunnel / Chat path observations when escalating.",
+    "Do not change firewall rules, restart undocumented services, or perform a system purge from this diagnostic procedure.",
+    "The incident recorded a firewall issue affecting XLE communication, but the exact firewall change and sustained live validation are not documented."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "source_case_233681",
+      "source_type": "incident_case",
+      "source_title": "Case 233681 - UPS Haslet OptiSweep Incident Evidence",
+      "source_case_id": "233681",
+      "ingestion_batch_id": "batch_20260910T143853Z",
+      "page_ref": "case_233681:page_4",
+      "artifact_id": "artifact_incident_233681_page_004_nested_image_01",
+      "event_id": "incident_233681_event_005",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)",
+      "quote_or_summary": "RMS monitoring showed current robot status, current task data, and average battery power of 57%; the exact health state was not established."
+    },
+    {
+      "source_id": "source_case_233681",
+      "source_type": "incident_case",
+      "source_title": "Case 233681 - UPS Haslet OptiSweep Incident Evidence",
+      "source_case_id": "233681",
+      "ingestion_batch_id": "batch_20260910T143853Z",
+      "page_ref": "case_233681:page_5",
+      "artifact_id": "artifact_incident_233681_page_005_nested_image_01",
+      "event_id": "incident_233681_event_006",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)",
+      "quote_or_summary": "The system reported lost connection to XLE and repeated communication-lost entries."
+    },
+    {
+      "source_id": "source_case_233681",
+      "source_type": "incident_case",
+      "source_title": "Case 233681 - UPS Haslet OptiSweep Incident Evidence",
+      "source_case_id": "233681",
+      "ingestion_batch_id": "batch_20260910T143853Z",
+      "page_ref": "case_233681:page_6",
+      "artifact_id": "artifact_incident_233681_page_006_detected_region_01",
+      "event_id": "incident_233681_event_008",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)",
+      "quote_or_summary": "Test-NetConnection evidence showed failed TCP connectivity on port 42400 for multiple XLE-related targets; one ping timed out while other pings succeeded."
+    },
+    {
+      "source_id": "source_case_233681",
+      "source_type": "incident_case",
+      "source_title": "Case 233681 - UPS Haslet OptiSweep Incident Evidence",
+      "source_case_id": "233681",
+      "ingestion_batch_id": "batch_20260910T143853Z",
+      "page_ref": "case_233681:page_12",
+      "artifact_id": "artifact_incident_233681_page_012_nested_image_01",
+      "event_id": "incident_233681_event_017",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)",
+      "quote_or_summary": "Chat evidence reported stunnel errors and firewall-related blocking of scanner and sorter communication."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_incident_233681_page_004_nested_image_01",
+      "what_to_look_at": "RMS monitoring showed current robot status, current task data, and average battery power of 57%; the exact health state was not established."
+    },
+    {
+      "artifact_id": "artifact_incident_233681_page_005_nested_image_01",
+      "what_to_look_at": "The system reported lost connection to XLE and repeated communication-lost entries."
+    },
+    {
+      "artifact_id": "artifact_incident_233681_page_006_detected_region_01",
+      "what_to_look_at": "Test-NetConnection evidence showed failed TCP connectivity on port 42400 for multiple XLE-related targets; one ping timed out while other pings succeeded."
+    },
+    {
+      "artifact_id": "artifact_incident_233681_page_012_nested_image_01",
+      "what_to_look_at": "Chat evidence reported stunnel errors and firewall-related blocking of scanner and sorter communication."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_incident_233681_xle_communication_diagnostic"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "source_case_233681",
+      "source_case_id": "233681",
+      "source_type": "incident_evidence_pdf",
+      "source_title": "Case 233681 - UPS Haslet OptiSweep Incident Evidence",
+      "ingestion_batch_id": "batch_20260910T143853Z",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)"
+    }
+  ],
+  "missing_details": [
+    "Exact XLE target list is not fully reliable because several IP addresses are OCR-uncertain.",
+    "The exact firewall rule or network correction is not documented.",
+    "No complete service restart procedure is documented.",
+    "No system purge procedure is documented.",
+    "The incident does not provide independent sustained live-system validation after recovery.",
+    "The exact healthy meanings of several RMS fields and task values are not established."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_incident_runbook_finalization",
+    "source_id": "source_case_233681",
+    "source_type": "incident_evidence_pdf",
+    "source_title": "Case 233681 - UPS Haslet OptiSweep Incident Evidence",
+    "source_version": "",
+    "ingestion_batch_id": "batch_20260910T143853Z",
+    "source_quality": "incident_case",
+    "incident_context": {
+      "case_id": "233681",
+      "site": "UPS Haslet TX (TXRTH)",
+      "site_code": "ups_haslet_tx",
+      "site_location": {
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "customer": "UPS",
+        "city": "Haslet",
+        "state": "TX",
+        "country": "US",
+        "hub_code": "TXRTH",
+        "region_label": "Fort Worth, TX"
+      },
+      "incident_start_time": "2026-08-22 06:04",
+      "incident_resolved_time": "2026-08-25",
+      "time_to_resolve": "3 calendar days; exact resolution time unavailable",
+      "resolution_confirmed": true
+    }
+  }
+}

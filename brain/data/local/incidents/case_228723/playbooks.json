@@ -1,0 +1,530 @@
+[
+  {
+    "id": "playbook:one_per_incident:228723:agv_pairing_roster_recovery",
+    "type": "playbook",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_228723:event_002",
+      "evidence:case_228723:event_003",
+      "evidence:case_228723:event_005",
+      "evidence:case_228723:event_008",
+      "evidence:case_228723:event_009",
+      "evidence:case_228723:event_011",
+      "evidence:case_228723:event_016",
+      "evidence:case_228723:event_022",
+      "evidence:case_228723:event_023",
+      "evidence:case_228723:event_024",
+      "evidence:case_228723:stage8_playbook_one_per_incident_playbook_incident_228723_agv_pairing_roster_recovery"
+    ],
+    "constraints": {
+      "sites": [
+        "ups_haslet"
+      ],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T17:02:12.828355Z",
+    "updated_at": "2026-09-08T17:02:12.828355Z",
+    "title": "[one_per_incident] AMR pairing failure with abnormal fleet roster or mapping state",
+    "playbook_goal": "Determine whether the pairing failure is associated with an abnormal AMR roster or mapping state, use an authorized site-side isolation or removal procedure when supported, and confirm that normal pairing and operation return.",
+    "entry_symptom_entity_ids": [
+      "entity:symptom:pairing_failure",
+      "entity:symptom:agvs_diverting_to_hospital_unexpectedly",
+      "entity:state:device_roster_mapping_and_fleet_membership_state"
+    ],
+    "affected_entity_ids": [],
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm the observable pairing and routing pattern",
+        "capability_id": "capability:confirm_device_roster_state",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:symptom:pairing_failure",
+        "intent": "Determine whether the site is experiencing an active pairing failure with abnormal AMR routing or behavior after a replacement or add/remove event.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Site confirms active pairing failure and abnormal hospital-lane routing, with recent replacement/add/remove context.",
+            "next_node_id": "node_2",
+            "source_refs": [
+              "evidence:case_228723:event_002",
+              "evidence:case_228723:event_003",
+              "evidence:case_228723:event_005"
+            ]
+          },
+          {
+            "outcome": "healthy",
+            "condition": "Site reports pairing works and abnormal hospital-lane routing pattern is not present.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_228723:event_002",
+              "evidence:case_228723:event_003",
+              "evidence:case_228723:event_005"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "Site cannot confirm the affected workflow, timing, or current behavior.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_228723:event_002",
+              "evidence:case_228723:event_003",
+              "evidence:case_228723:event_005"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228723:event_002",
+          "evidence:case_228723:event_003",
+          "evidence:case_228723:event_005"
+        ]
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "diagnostic_decision",
+        "title": "Check fleet roster and mapping state",
+        "capability_id": "capability:confirm_device_roster_state",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:state:device_roster_mapping_and_fleet_membership_state",
+        "intent": "Determine whether RMS shows an abnormal robot membership, mapping, or status condition that could explain the pairing failure.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "RMS shows not mapped/exception-highlighted or otherwise inconsistent robot roster/mapping relevant to the affected workflow.",
+            "next_node_id": "node_3",
+            "source_refs": [
+              "evidence:case_228723:event_008",
+              "evidence:case_228723:event_022",
+              "evidence:case_228723:event_023"
+            ]
+          },
+          {
+            "outcome": "healthy",
+            "condition": "No supported abnormal roster/mapping indication appears in RMS for the affected workflow.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_228723:event_008",
+              "evidence:case_228723:event_022",
+              "evidence:case_228723:event_023"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "RMS cannot be read reliably or cannot be correlated to the affected workflow; avoid proceeding with physical removal based on ambiguity.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_228723:event_008",
+              "evidence:case_228723:event_022",
+              "evidence:case_228723:event_023"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228723:event_008",
+          "evidence:case_228723:event_022",
+          "evidence:case_228723:event_023"
+        ]
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "procedure_reference",
+        "title": "Use an authorized site-side robot isolation or removal path",
+        "capability_id": null,
+        "procedure_id": "procedure:confirm_robot_command_or_task_state:training_video_day1_proc_use_map_robot_selection_go_to_reposition_agv_v1",
+        "symptom_entity_id": null,
+        "intent": "If an abnormal roster or mapping condition is supported, use the approved site procedure to isolate or remove the affected robot from the operating system and place it in a safe non-operational state.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Stop if physical access, safety conditions, authorization, or system-side state cannot be confirmed.",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "Robot isolated/removed by authorized site personnel and placed in safe non-operational state; RMS state aligns.",
+            "next_node_id": "node_4",
+            "source_refs": [
+              "evidence:case_228723:event_009",
+              "evidence:case_228723:event_016",
+              "evidence:case_228723:event_022"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "Safety/authorization unclear OR RMS-side confirmation not possible.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_228723:event_009",
+              "evidence:case_228723:event_016",
+              "evidence:case_228723:event_022"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228723:event_009",
+          "evidence:case_228723:event_016",
+          "evidence:case_228723:event_022"
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "validation_gate",
+        "title": "Confirm pairing and operational stability",
+        "capability_id": "capability:confirm_device_roster_state",
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Determine whether the affected workflow has recovered after the authorized robot isolation or removal action.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "Site confirms intended pairing and routing return; abnormal roster/mapping indication resolved during monitoring.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_228723:event_011",
+              "evidence:case_228723:event_016",
+              "evidence:case_228723:event_024"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "Recovery validation fails; abnormal behavior persists after supported action.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_228723:event_011",
+              "evidence:case_228723:event_016",
+              "evidence:case_228723:event_024"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228723:event_011",
+          "evidence:case_228723:event_016",
+          "evidence:case_228723:event_024"
+        ]
+      },
+      {
+        "node_id": "node_5",
+        "node_order": 5,
+        "node_type": "escalation_gate",
+        "title": "Stop when the supported roster-recovery path is unsafe or unsuccessful",
+        "capability_id": null,
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Hand off when the abnormal state cannot be safely isolated, the available evidence is inconclusive, or pairing and stable operation do not return after the supported path.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Do not infer a confirmed root cause or authorize unsupported database, configuration, or physical actions.",
+        "branches": [
+          {
+            "outcome": "escalate",
+            "condition": "Handoff required when physical safety/authorization cannot be confirmed, RMS evidence remains unreadable/contradictory, or pairing/routing remains abnormal.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_228723:event_008",
+              "evidence:case_228723:event_011",
+              "evidence:case_228723:event_016"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228723:event_008",
+          "evidence:case_228723:event_011",
+          "evidence:case_228723:event_016"
+        ]
+      }
+    ],
+    "entry_node_id": "node_1",
+    "confidence": "medium"
+  },
+  {
+    "id": "playbook:multi_flow:228723:zone_pairing_roster_anomaly",
+    "type": "playbook",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_228723:event_002",
+      "evidence:case_228723:event_003",
+      "evidence:case_228723:event_004",
+      "evidence:case_228723:event_005",
+      "evidence:case_228723:event_006",
+      "evidence:case_228723:event_007",
+      "evidence:case_228723:event_008",
+      "evidence:case_228723:event_009",
+      "evidence:case_228723:event_010",
+      "evidence:case_228723:event_011",
+      "evidence:case_228723:event_016",
+      "evidence:case_228723:event_020",
+      "evidence:case_228723:event_022",
+      "evidence:case_228723:event_023",
+      "evidence:case_228723:event_024",
+      "evidence:case_228723:stage8_playbook_multi_flow_playbook_incident_228723_zone_pairing_roster_anomaly"
+    ],
+    "constraints": {
+      "sites": [
+        "ups_haslet"
+      ],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T17:02:12.886309Z",
+    "updated_at": "2026-09-08T17:02:12.886309Z",
+    "title": "[multi_flow] Zone pairing failure with abnormal AMR routing or roster state",
+    "playbook_goal": "Confirm the observable pairing and fleet symptoms, determine whether the affected AMR roster or mapping state is abnormal, guide an authorized site-side isolation or removal decision when supported, and validate that normal operation returns.",
+    "entry_symptom_entity_ids": [
+      "entity:symptom:pairing_failure",
+      "entity:symptom:agvs_diverting_to_hospital_unexpectedly",
+      "entity:state:device_roster_mapping_and_fleet_membership_state"
+    ],
+    "affected_entity_ids": [],
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm zone pairing failure and abnormal AMR behavior",
+        "capability_id": "capability:confirm_device_roster_state",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:symptom:pairing_failure",
+        "intent": "Determine whether the reported issue is an active zone pairing failure accompanied by abnormal AMR routing or inability to support the affected workflow.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Current evidence supports zone unable-to-pair and AMRs routing to hospital lane (optionally with current low-battery/physical constraint).",
+            "next_node_id": "node_2",
+            "source_refs": [
+              "evidence:case_228723:event_002",
+              "evidence:case_228723:event_003",
+              "evidence:case_228723:event_008",
+              "evidence:case_228723:event_020"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "Evidence does not establish an active pairing failure/hospital diversion state.",
+            "next_node_id": "node_6",
+            "source_refs": [
+              "evidence:case_228723:event_002",
+              "evidence:case_228723:event_003",
+              "evidence:case_228723:event_008",
+              "evidence:case_228723:event_020"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228723:event_002",
+          "evidence:case_228723:event_003",
+          "evidence:case_228723:event_008",
+          "evidence:case_228723:event_020"
+        ]
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "diagnostic_decision",
+        "title": "Determine whether AMR roster or mapping state is abnormal",
+        "capability_id": "capability:confirm_device_roster_state",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:state:device_roster_mapping_and_fleet_membership_state",
+        "intent": "Determine whether recent AMR replacement or remove/add activity left an AMR missing, unmapped, incorrectly rostered, or otherwise unable to receive the expected task.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "RMS mapping/roster evidence (when readable) plus site remove/add history indicate the AMR is not eligible for expected tasking/pairing.",
+            "next_node_id": "node_3",
+            "source_refs": [
+              "evidence:case_228723:event_004",
+              "evidence:case_228723:event_005",
+              "evidence:case_228723:event_008",
+              "evidence:case_228723:event_022",
+              "evidence:case_228723:event_023"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "No supported evidence of an abnormal roster/mapping state tied to the pairing failure or RMS is unreadable.",
+            "next_node_id": "node_6",
+            "source_refs": [
+              "evidence:case_228723:event_004",
+              "evidence:case_228723:event_005",
+              "evidence:case_228723:event_008",
+              "evidence:case_228723:event_022",
+              "evidence:case_228723:event_023"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228723:event_004",
+          "evidence:case_228723:event_005",
+          "evidence:case_228723:event_008",
+          "evidence:case_228723:event_022",
+          "evidence:case_228723:event_023"
+        ]
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "diagnostic_decision",
+        "title": "Choose supported fleet-state recovery path",
+        "capability_id": "capability:confirm_device_roster_state",
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Choose whether the affected AMR should remain isolated from the active fleet under an authorized site procedure, or whether the evidence does not support that path.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Do not direct an unauthorized role to perform fleet-control or physical recovery actions. If the evidence does not establish a safe supported path, use the escalation gate.",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "RMS evidence links to a specific AMR and prerequisites for safe isolation/removal are confirmed by the site.",
+            "next_node_id": "node_4",
+            "source_refs": [
+              "evidence:case_228723:event_006",
+              "evidence:case_228723:event_007",
+              "evidence:case_228723:event_009",
+              "evidence:case_228723:event_022"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "Cannot confirm the action is authorized/safe or cannot link AMR evidence to the symptom; do not proceed.",
+            "next_node_id": "node_6",
+            "source_refs": [
+              "evidence:case_228723:event_006",
+              "evidence:case_228723:event_007",
+              "evidence:case_228723:event_009",
+              "evidence:case_228723:event_022"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228723:event_006",
+          "evidence:case_228723:event_007",
+          "evidence:case_228723:event_009",
+          "evidence:case_228723:event_022"
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "procedure_reference",
+        "title": "Perform authorized AMR isolation or removal action",
+        "capability_id": null,
+        "procedure_id": "procedure:recover_agv_physically:manual_optisweep_om_v3_proc_recover_from_agv_fault_during_exchange_recovery_v1",
+        "symptom_entity_id": null,
+        "intent": "Carry out the source-supported high-level recovery action when the affected AMR is linked to the abnormal roster or mapping state and the authorized site procedure permits it.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Stop if physical safety, authorization, or approved remove/add prerequisites are not satisfied. Do not substitute this node for the exact site procedure.",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "AMR isolated/removed and placed into safe charging/holding; evidence supports it.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_228723:event_009",
+              "evidence:case_228723:event_016",
+              "evidence:case_228723:event_022"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "Failure to isolate/remove safely or symptom persists.",
+            "next_node_id": "node_6",
+            "source_refs": [
+              "evidence:case_228723:event_009",
+              "evidence:case_228723:event_016",
+              "evidence:case_228723:event_022"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228723:event_009",
+          "evidence:case_228723:event_016",
+          "evidence:case_228723:event_022"
+        ]
+      },
+      {
+        "node_id": "node_5",
+        "node_order": 5,
+        "node_type": "validation_gate",
+        "title": "Validate restored pairing and stable AMR operation",
+        "capability_id": "capability:confirm_device_roster_state",
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Confirm that the affected workflow has recovered after the authorized fleet-state action and remains operational during observation.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "If pairing or normal AMR routing does not recover, or if the abnormal state returns during monitoring, stop this path and use the escalation gate.",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "Healthy validation: pair success + normal routing + stability window.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_228723:event_011",
+              "evidence:case_228723:event_016",
+              "evidence:case_228723:event_024"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "Validation fails after recovery; do not close the path.",
+            "next_node_id": "node_6",
+            "source_refs": [
+              "evidence:case_228723:event_011",
+              "evidence:case_228723:event_016",
+              "evidence:case_228723:event_024"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228723:event_011",
+          "evidence:case_228723:event_016",
+          "evidence:case_228723:event_024"
+        ]
+      },
+      {
+        "node_id": "node_6",
+        "node_order": 6,
+        "node_type": "escalation_gate",
+        "title": "Stop if the supported fleet-state path does not restore operation",
+        "capability_id": null,
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Stop and hand off when the roster or mapping evidence is inconclusive, the authorized recovery action cannot be performed safely, or validation fails after the supported path.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "This gate represents an unsafe, unsupported, or unresolved technical path, not historical unfamiliarity or routine support coordination.",
+        "branches": [
+          {
+            "outcome": "escalate",
+            "condition": "Evidence is inconclusive or validation fails; safety/authorization prerequisites are absent; or abnormal state persists/returns.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_228723:event_007",
+              "evidence:case_228723:event_008",
+              "evidence:case_228723:event_010",
+              "evidence:case_228723:event_016"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228723:event_007",
+          "evidence:case_228723:event_008",
+          "evidence:case_228723:event_010",
+          "evidence:case_228723:event_016"
+        ]
+      }
+    ],
+    "entry_node_id": "node_1",
+    "confidence": "medium"
+  }
+]

@@ -1,0 +1,309 @@
+{
+  "procedure_id": "proc_explain_agv_exchange_backfill_gap_v1",
+  "candidate_id": "candidate_training_video_day1_interpret_agv_exchange_backfill_gap",
+  "title": "Explain why an AGV can move out without a replacement (exchange/backfill gap) during AGV exchange pairing",
+  "procedure_type": "diagnostic",
+  "summary": "Use the OptiSweep exchange pairing rule to explain an observed “AGV moves out without another one to replace it.” The source-backed mechanism is that OptiSweep sends the exchange commands as a paired action; therefore, a visible gap typically indicates the trailing AGV behind the departing AGV had a fault / was not backfilled properly. The source also describes a timing edge case where the trailing AGV is reported ready for a new task and completes/faults at the same time, which can lead to improper backfill.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_active_errors"
+  ],
+  "access_surface": [
+    "rms_ui"
+  ],
+  "audience_roles": [
+    "L1_support"
+  ],
+  "failure_pattern_tags": [
+    "agv_tracking_or_path_lost",
+    "api_unresponsive"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to interpret the source-backed reason an AGV appears to depart during an exchange pairing without a replacement AGV backfilling it.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L1_support: Provide the source-backed explanation for the exchange/backfill gap mechanism (paired commands + trailing AGV fault/backfill issue) and determine whether the observed behavior matches the described edge case.",
+    "Escalation (if needed): If the observed behavior cannot be explained by the source-backed mechanism, escalate for deeper system evidence beyond this training segment."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Training video segment transcript (00:28:37.000 to 00:32:10.000) for the pairing/backfill explanation"
+  ],
+  "prerequisites": {
+    "access_required": [],
+    "system_preconditions": [],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_agv_exchange_pairing_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+      "description": "Source frame containing the pairing/backfill explanation: front AGV will not move until the AGV behind it is available; software sends both commands at the same time; gap can occur when the trailing AGV faults / is not backfilled properly; timing edge case where trailing AGV is ready for a new task and completes/faults at the same time; chute closure tied to chute being full.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Apply the exchange pairing rule (front AGV movement depends on the trailing AGV)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Establish the source-backed constraint that explains why a replacement AGV should normally be present when the front AGV moves.",
+      "instruction": "Use the source pairing rule: the front AGV will not move until the AGV behind it is available for the paired exchange command, because OptiSweep sends both exchange commands at the same time.",
+      "expected_result": "Your interpretation is consistent with the rule that the exchange command to leave is only sent when there is an AGV behind it (paired commands).",
+      "healthy_condition": "The observed behavior you are explaining aligns with a paired exchange mechanism (front movement implies a trailing AGV was available for the paired command).",
+      "failure_condition": "You observe an exchange/backfill gap (front AGV moves out without a replacement) that appears inconsistent with the paired-command rule.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Recall pairing rule",
+          "exact_action": "Recall the pairing rule from the source: the front AGV will not move until the AGV behind it is available for the paired exchange command; literally our software sends both commands at the same time.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "timestamp_start": "00:30:23.500",
+          "timestamp_end": "00:30:23.500",
+          "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+          "quote": "“the only time it can happen is if the AGV behind it has a fault because the front AGV will not move until AGV behind it. Literally our software sends both commands at the same time. So they get sent together.”",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Check whether the trailing AGV fault/backfill issue explains the gap",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Identify the source-backed cause for the “moves out without replacement” condition.",
+      "instruction": "When you observe an AGV moving out without a replacement, evaluate whether the trailing AGV behind it could have had a fault / was not backfilled properly, since the source states this is the only time this can happen.",
+      "expected_result": "You can explain the gap using the source-backed mechanism: the trailing AGV behind the departing AGV had a fault or was not backfilled properly.",
+      "healthy_condition": "The trailing AGV is consistent with being faulted / not backfilled properly at the time the front AGV departed (matching the source’s described only-time condition).",
+      "failure_condition": "The observed behavior cannot be explained by the trailing AGV fault/backfill mechanism described by the source.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Assess trailing AGV fault/backfill",
+          "exact_action": "Check whether the AGV behind it has a fault (the only time it can happen) and whether it was not backfilled properly.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the observed behavior cannot be explained by the source-backed mechanism (paired commands + trailing AGV fault/backfill issue), escalate for deeper system evidence beyond this training segment."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "timestamp_start": "00:30:23.500",
+          "timestamp_end": "00:30:23.500",
+          "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+          "quote": "“the only time it can happen is if the AGV behind it has a fault… So sometimes it… it’s not backfilled properly.”",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Consider the timing edge case: trailing AGV ready for new task and completes/faults at the same time",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Use the source-described edge case to refine the explanation when the trailing AGV appears ready but still results in improper backfill.",
+      "instruction": "If you need a more specific explanation, consider the source’s timing edge case: the trailing AGV behind the departing AGV may be “ready for a new task” and also “completed and faulted at the same time,” which can lead to improper backfill.",
+      "expected_result": "Your explanation includes the edge case where the trailing AGV is reported ready for a new task while also completing/faulting simultaneously, resulting in improper backfill.",
+      "healthy_condition": "The observed gap can be tied to a scenario consistent with “ready for a new task” plus “completed and faulted at the same time.”",
+      "failure_condition": "You cannot align the observed gap with either the general trailing fault/backfill mechanism or the described ready+complete+fault timing edge case.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Evaluate timing edge case",
+          "exact_action": "Consider whether the AGV behind it was ready for a new task and completed and faulted at the same time, leading to improper backfill.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the observed behavior cannot be explained by the source-backed mechanism (paired commands + trailing AGV fault/backfill issue), escalate for deeper system evidence beyond this training segment."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "timestamp_start": "00:30:23.500",
+          "timestamp_end": "00:30:23.500",
+          "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+          "quote": "“sometimes we’re told that AGB behind it is ready for a new task and it might have completed and faulted at the same time. So sometimes it… it’s not backfilled properly.”",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Use chute-closure behavior as context for exchange timing effects",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Provide source-backed context that chute closure is tied to chute fullness, not merely both AGVs being in the station, which can help interpret downstream effects.",
+      "instruction": "When interpreting related behavior around the exchange, remember the source’s chute-closure rule: chute gets closed when the chute is full, not when both AGVs are in the station (or “it’s both”).",
+      "expected_result": "Your explanation accounts for the possibility that exchange timing issues can contribute to later chute fullness/closure effects, consistent with the source’s closure rule.",
+      "healthy_condition": "Any chute closure you observe is consistent with the chute being full rather than simply the presence of both AGVs in the station.",
+      "failure_condition": "Chute closure behavior contradicts the source’s rule (e.g., closure occurs without the chute being full) in a way that cannot be reconciled with the exchange timing explanation.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Apply chute closure context",
+          "exact_action": "Use the source’s chute-closure behavior: “The chute gets closed when the chute is full, not when both of them are in this in the station or it’s both.”",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "timestamp_start": "00:30:23.500",
+          "timestamp_end": "00:30:23.500",
+          "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+          "quote": "“The chute gets closed when the the the chute is full, not when both of them are in this in the station or it’s both.”",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You can explain the observed “AGV moves out without another one to replace it” using the source-backed paired-command mechanism and the trailing AGV fault/backfill issue.",
+    "If needed, your explanation includes the source-described timing edge case where the trailing AGV is ready for a new task and completes/faults at the same time, leading to improper backfill."
+  ],
+  "healthy_conditions": [
+    "The explanation you provide is consistent with the source rule that the front AGV will not move until the AGV behind it is available, because software sends both commands at the same time."
+  ],
+  "failure_conditions": [
+    "The observed behavior cannot be explained by the source-backed mechanism (paired commands + trailing AGV fault/backfill issue)."
+  ],
+  "escalation_guidance": [
+    "If the observed behavior cannot be explained by the source-backed mechanism (paired commands + trailing AGV fault/backfill issue), escalate for deeper system evidence beyond this training segment."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+      "description": "Source frame with the pairing/backfill explanation and chute closure rule.",
+      "required_level": "required"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "timestamp_start": "00:30:23.500",
+      "timestamp_end": "00:32:10.000",
+      "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+      "segment_id": "training_video_day1_segment_0016",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0033_yeah_because_it_has_front_sensors_primary_01_19_57_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0037_what_are_these_these_are_rack_primary_01_29_18_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day1_interpret_agv_exchange_backfill_gap"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide live system fields/rows/statuses to verify the trailing AGV fault/backfill condition in RMS/WCS/SSMS; it only provides the source-backed explanation mechanism."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

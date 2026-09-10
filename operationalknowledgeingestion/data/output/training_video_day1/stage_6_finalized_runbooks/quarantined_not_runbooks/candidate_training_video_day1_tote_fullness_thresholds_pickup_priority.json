@@ -1,0 +1,404 @@
+{
+  "procedure_id": "proc_determine_tote_pickup_priority_from_volumetric_thresholds_v1",
+  "candidate_id": "candidate_training_video_day1_tote_fullness_thresholds_pickup_priority",
+  "title": "Determine tote pickup priority from volumetric thresholds (pretty full vs full)",
+  "procedure_type": "diagnostic",
+  "summary": "Use OptiSweep’s tote fullness logic (accumulated parcel dimensions scaled by package type) to determine tote pickup priority. The source describes two fullness thresholds: “pretty full” at ~60% and “full” at ~80%. Priority increases as fullness rises through the ~60/70/80 ranges, and at ~80% the chute is closed (highest priority).",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "tote_lifecycle_state"
+  ],
+  "access_surface": [
+    "wcs_api",
+    "apidog"
+  ],
+  "audience_roles": [
+    "L1_support"
+  ],
+  "failure_pattern_tags": [
+    "mapping_abnormal",
+    "sort_lifecycle_stuck"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to explain or validate why a tote is being selected for pickup next based on fullness priority derived from volumetric thresholds (~60% pretty full, ~80% full) and the intermediate ~70% priority range.",
+  "not_for": [
+    "Do not use this procedure as a corrective playbook for missing/incorrect dimension data; the source does not provide corrective steps for that condition."
+  ],
+  "roles_and_responsibilities": [
+    "L1_support: Determine the expected tote pickup priority from the source-described fullness thresholds and ranges, and compare it to observed behavior on the live system."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Access to the live display/log/metric that shows tote fullness/volumetrics (or the scaled dimension data used by software)."
+  ],
+  "prerequisites": {
+    "access_required": [],
+    "system_preconditions": [
+      "OptiSweep is computing tote fullness using accumulated parcel dimension data scaled by package type."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_tote_fullness_volumetric_thresholds_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+      "description": "Training video frame containing the source-described tote fullness thresholds (~60% pretty full, ~80% full) and the priority/range behavior (including chute closure at 80%).",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Locate the tote fullness basis used by software (scaled dimensions by package type)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Establish the exact fullness basis so you interpret the fullness percentage correctly (it is not a raw count; it is derived from dimension data scaled by package type).",
+      "instruction": "On the live system, identify the tote fullness metric/inputs that reflect accumulated parcel dimensions scaled by package type (the source describes that software updates tote fullness as parcel dimension data is scaled up/down based on configuration/package type).",
+      "expected_result": "You can state that tote fullness is determined by software using dimension data scaled by package type, and that tote fullness is updated as parcel dimension data is received and scaled.",
+      "healthy_condition": "The fullness metric you are using corresponds to the source-described “dimension data scaled by package type” logic (not an unrelated count-only metric).",
+      "failure_condition": "The fullness metric you are using cannot be tied to the source-described scaled dimension basis (e.g., you only have an unscaled count metric).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm fullness metric basis is scaled dimensions by package type",
+          "exact_action": "Identify the live tote fullness/volumetrics metric that reflects dimension data scaled by package type.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot confirm the fullness metric basis is scaled dimension data by package type, stop and escalate for deeper investigation (the source does not provide corrective steps)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0014",
+          "page": 14,
+          "timestamp_start": "00:23:58.000",
+          "timestamp_end": "00:23:58.000",
+          "quote_or_summary": "“current cube item count … updated … message dimension data on the sort induct is scaled up or down depending on the configurations. So boxes … 120% and bags … 70 or 60%. Software determines how full a tote is.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Confirm package-type scaling examples (boxes vs bags) used in fullness computation",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Ensure you apply the correct scaling concept when interpreting fullness percentages for different package types.",
+      "instruction": "When interpreting the fullness percentage, account for the source-described scaling examples: boxes are scaled higher (example ~120%) while bags are scaled lower (example ~70% or 60%).",
+      "expected_result": "You can explain that the fullness percentage is influenced by package-type scaling (e.g., boxes ~120% and bags ~70%/60% in the source examples).",
+      "healthy_condition": "The fullness interpretation you provide is consistent with package-type scaling affecting the computed volumetrics.",
+      "failure_condition": "You interpret fullness as if it were not scaled by package type, contradicting the source-described scaling concept.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Apply scaling concept to fullness interpretation",
+          "exact_action": "Use the source-described package-type scaling concept (boxes ~120%, bags ~70%/60%) when interpreting fullness.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot determine which package-type scaling applies to the tote’s contents, stop and escalate for deeper investigation (the source does not provide corrective steps)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0014",
+          "page": 14,
+          "timestamp_start": "00:23:58.000",
+          "timestamp_end": "00:23:58.000",
+          "quote_or_summary": "“So boxes … 120% and bags are at 70 or 60%.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Check tote fullness against the two thresholds: pretty full (~60%) and full (~80%)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Classify the tote into the source-defined fullness states that drive pickup priority.",
+      "instruction": "Read the live tote fullness percentage/volumetrics and compare it to the source thresholds: pretty full at ~60% and full at ~80%.",
+      "expected_result": "You can categorize the tote fullness as: pretty full (~60%), intermediate (~70%), or full (~80%).",
+      "healthy_condition": "The tote fullness value you observe falls into one of the source-described ranges around 60/70/80.",
+      "failure_condition": "The observed fullness value cannot be mapped to the source-described ~60% and ~80% thresholds (e.g., missing/undefined fullness metric).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Compare fullness % to ~60% and ~80%",
+          "exact_action": "Compare the tote volumetrics/fullness percentage to pretty full (~60%) and full (~80%).",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the fullness metric is missing/undefined or you cannot compare it to ~60% and ~80%, stop and escalate for deeper investigation (the source does not provide corrective steps)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0014",
+          "page": 14,
+          "timestamp_start": "00:23:58.000",
+          "timestamp_end": "00:23:58.000",
+          "quote_or_summary": "“pretty full … 60% … full … 80%.”"
+        },
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0012",
+          "page": 12,
+          "timestamp_start": "00:19:06.000",
+          "timestamp_end": "00:19:06.000",
+          "quote_or_summary": "“Two thresholds exist … Pretty full … Full … When a tote is full, we tell Chat that the chute is unavailable …”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Determine tote pickup priority from the fullness range (60/70/80) and chute closure at 80%",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Translate the fullness classification into the source-described pickup priority ordering.",
+      "instruction": "Use the source priority guidance: (1) over 60% but under 70% = lowest priority; (2) over 70% but under 80% = next priority; (3) at 80% = highest priority because the chute is closed.",
+      "expected_result": "You can state the expected pickup priority for the tote based on where its fullness falls relative to ~60%, ~70%, and ~80%, including that ~80% corresponds to chute closure.",
+      "healthy_condition": "Your expected priority matches the source-described behavior: higher fullness yields higher priority, and at ~80% the chute is closed.",
+      "failure_condition": "The observed pickup selection behavior contradicts the source-described priority ordering for the tote’s fullness range.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Map fullness range to priority",
+          "exact_action": "Apply: over 60% & under 70% lowest; over 70% & under 80% next; 80% highest with chute closed.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the observed fullness does not align with the expected threshold behavior described by the source, stop and escalate for deeper investigation (the source does not provide corrective steps)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0014",
+          "page": 14,
+          "timestamp_start": "00:23:58.000",
+          "timestamp_end": "00:23:58.000",
+          "quote_or_summary": "“70% kind of puts a priority … lowest priority where it’s over the 60% but under … 70% … If it’s over 70% but under 80% … next tote … and then 80% … we have closed the chute … highest priority.”"
+        },
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0012",
+          "page": 12,
+          "timestamp_start": "00:19:06.000",
+          "timestamp_end": "00:19:06.000",
+          "quote_or_summary": "“When a tote is full, we tell Chat that the chute is unavailable so that no packages come down while doing an exchange.”"
+        },
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0016",
+          "page": 16,
+          "timestamp_start": "00:30:23.500",
+          "timestamp_end": "00:30:23.500",
+          "quote_or_summary": "“The chute gets closed when the … chute is full … Shoots will close … Ideally … before we hit that 80%, we’ve already done the exchange … because if you close the chute, then pick it up, then exchange …”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "If fullness is over the pretty-full threshold (~60%), expect an internal pick-up tote request",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Confirm the source-described downstream behavior that should occur once the tote crosses the pretty-full threshold.",
+      "instruction": "For a tote whose fullness is over ~60% (pretty full), verify that the system behavior corresponds to the source-described internal pick-up tote request being sent.",
+      "expected_result": "You can describe that when volume metrics goes over 60%, the system marks it for pick up and sends a pick up tote request internally.",
+      "healthy_condition": "The live behavior you observe is consistent with the source: crossing ~60% triggers a pick-up request.",
+      "failure_condition": "A tote above ~60% does not show the expected internal pick-up request behavior described by the source.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify internal pick-up request behavior for >~60%",
+          "exact_action": "Check that a pick up tote request is sent internally when volume metrics goes over 60% (pretty full).",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If observed behavior does not match the source-described threshold behavior, stop and escalate for deeper investigation (the source does not provide corrective steps)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0014",
+          "page": 14,
+          "timestamp_start": "00:23:58.000",
+          "timestamp_end": "00:23:58.000",
+          "quote_or_summary": "“our bottom … OK, we should pick up. So pick up tote request is sent internally … if the volume metrics goes over 60%, we mark that out for pick up …”"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You can explain tote pickup priority using the source thresholds: pretty full ~60%, intermediate ~70%, full ~80%.",
+    "You can state that at ~80% the chute is closed (highest priority) and that the chute closure behavior is part of the full-state logic.",
+    "For a tote over ~60%, you can describe the expected internal pick-up tote request behavior described by the source."
+  ],
+  "healthy_conditions": [
+    "Tote fullness interpretation aligns with scaled dimension logic by package type.",
+    "Tote fullness falls into a range that maps to the source-described priority ordering (over 60%/<70%, over 70%/<80%, ~80%).",
+    "At ~80% the chute is closed (highest priority) as described by the source."
+  ],
+  "failure_conditions": [
+    "Observed fullness/priority behavior does not align with the source-described threshold behavior.",
+    "You cannot map the observed fullness metric to the source-described ~60% and ~80% thresholds."
+  ],
+  "escalation_guidance": [
+    "If observed fullness does not align with the expected threshold behavior described by the source, stop and escalate for deeper investigation. The source does not provide corrective steps."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+      "description": "Thresholds and priority mapping: pretty full (~60%), full (~80%), intermediate (~70%), and chute closure at 80%.",
+      "required_level": "recommended"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "source_document_id": "training_video_day1_video",
+      "section_id": "training_video_day1_segment_0014",
+      "page": 14,
+      "timestamp_start": "00:20:52.000",
+      "timestamp_end": "00:27:04.000",
+      "quote_or_summary": "Software determines how full a tote is using dimension data scaled by package type; pretty full ~60% and full ~80%; priority ranges around 60/70/80; at 80% the chute is closed."
+    },
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "section_id": "training_video_day1_segment_0012",
+      "page": 12,
+      "timestamp_start": "00:19:06.000",
+      "timestamp_end": "00:19:06.000",
+      "quote_or_summary": "Two thresholds: Pretty full and Full; when a tote is full, Chat is told the chute is unavailable so no packages come down while doing an exchange."
+    },
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "section_id": "training_video_day1_segment_0016",
+      "page": 16,
+      "timestamp_start": "00:30:23.500",
+      "timestamp_end": "00:30:23.500",
+      "quote_or_summary": "Chute gets closed when the chute is full; ideally exchange happens before hitting 80% to avoid long exchange time."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0012_one_question_previous_like_the_two_primary_00_19_06_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0037_what_are_these_these_are_rack_primary_01_29_18_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0039_everything_else_oh_on_this_slide_primary_01_33_22_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0013_so_why_is_this_potential_and_primary_00_20_02_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day1_tote_fullness_thresholds_pickup_priority"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The source does not name the exact live UI fields/labels where tote fullness/volumetrics are displayed, so this runbook cannot specify where to read the fullness percentage on the live surface."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

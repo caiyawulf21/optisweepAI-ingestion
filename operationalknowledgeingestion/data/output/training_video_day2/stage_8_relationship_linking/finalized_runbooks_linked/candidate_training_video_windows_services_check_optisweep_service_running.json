@@ -1,0 +1,297 @@
+{
+  "procedure_id": "proc_verify_optsweep_wcs_windows_service_health_v1",
+  "candidate_id": "candidate_training_video_windows_services_check_optisweep_service_running",
+  "title": "Verify OptiSweep/WCS Windows service health when RMS/logs appear silent",
+  "procedure_type": "diagnostic",
+  "summary": "When the system appears to have a crash/restart period and logs may be silent, verify whether the relevant OptiSweep/WCS Windows service(s) are actually Running vs Stopped in the Windows Services MMC. Use the service state as the primary observable when log activity is missing.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L2_support"
+  ],
+  "capability_tags": [
+    "wcs_service_health"
+  ],
+  "access_surface": [
+    "event_viewer"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "service_crash_or_restart"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when RMS and/or other log-based signals appear silent during a suspected OptiSweep/WCS crash/restart window, and you need host-level evidence that the service is Running vs Stopped.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Check Windows Services MMC on the OptiSweep/WCS host to confirm whether OptiSweep/WCS-related service(s) are Running vs Stopped, and escalate if the relevant service(s) cannot be identified or the status is unclear."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Windows Services MMC / Windows Services view (event_viewer surface)"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Windows Services MMC access on the OptiSweep/WCS host"
+    ],
+    "system_preconditions": [
+      "You are investigating a suspected crash/restart period where logs may be silent"
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_windows_services_visibility_v1",
+    "ctx_training_video_service_stop_silent_logs_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0044_probably_understand_this_so_if_the_primary_03_07_17_500",
+      "description": "Training frame showing the segment discussion that during a crash the service must stop and logs may be silent; it also mentions checking Windows Services and that there are about 10 services.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open Windows Services MMC on the OptiSweep/WCS host",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish the host-level view needed to determine whether the OptiSweep/WCS service(s) are Running vs Stopped when logs may be silent.",
+      "instruction": "On the OptiSweep/WCS host, open the Windows Services MMC / Windows Services view (the Services list).",
+      "expected_result": "The Services list is visible with a Status column that can show Running vs Stopped for services.",
+      "healthy_condition": "You can clearly see the Services list and the Status values (Running/Stopped) for services.",
+      "failure_condition": "The Services view does not show clear Running/Stopped status, or you cannot access the Services MMC on the host.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open Services MMC",
+          "exact_action": "Open the Windows Services MMC on the OptiSweep/WCS host.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "You cannot access the Windows Services MMC on the OptiSweep/WCS host"
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 44,
+          "section_id": "training_video_day2_segment_0044",
+          "segment_id": "segment_training_video_0044",
+          "timestamp_start": "03:05:01.000",
+          "timestamp_end": "03:09:34.000",
+          "quote_or_summary": "“It’s a Windows… you check the service services… there are 10 services.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Locate OptiSweep/WCS-related service(s) and check Running vs Stopped",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the relevant OptiSweep/WCS service(s) are Running or Stopped during the suspected silent/crash window.",
+      "instruction": "In the Services list, locate the OptiSweep/WCS-related service(s) (the segment notes there are about 10 services) and check the Status column for Running vs Stopped.",
+      "expected_result": "You identify the relevant OptiSweep/WCS-related service(s) and observe their Status as Running or Stopped.",
+      "healthy_condition": "The OptiSweep/WCS-related service(s) show Status = Running during normal operation.",
+      "failure_condition": "The OptiSweep/WCS-related service(s) show Status = Stopped, or you observe restart behavior consistent with the suspected crash/restart period.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Find relevant services and read Status",
+          "exact_action": "In the Services list, locate the OptiSweep/WCS-related service(s) and check the Status column for Running vs Stopped.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "You cannot identify the relevant OptiSweep/WCS service(s) in the Services list",
+        "The Services view does not show clear Running/Stopped status"
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 44,
+          "section_id": "training_video_day2_segment_0044",
+          "segment_id": "segment_training_video_0044",
+          "timestamp_start": "03:05:01.000",
+          "timestamp_end": "03:09:34.000",
+          "quote_or_summary": "“the service must stop” and “the log will be silent” and “how will someone support… know that service is just gone… It’s a Windows… you check the service services… there are 10 services.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Interpret Stopped/restarting service state as evidence consistent with the silent crash window",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Use the service state as the observable indicator when logs are silent, matching the segment’s described behavior during crash periods.",
+      "instruction": "If the relevant OptiSweep/WCS service(s) are Stopped (or show restart behavior), treat that as evidence consistent with the segment’s “service must stop” / “service was just like … gone” period during the suspected crash window.",
+      "expected_result": "Your conclusion matches the observed Status: Stopped/restarting supports the suspected crash/restart period; Running supports normal operation.",
+      "healthy_condition": "During normal operation, the OptiSweep/WCS-related service(s) are Running.",
+      "failure_condition": "During the suspected crash window, the OptiSweep/WCS-related service(s) are Stopped or restarting.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm evidence from service state",
+          "exact_action": "If the service is Stopped (or repeatedly restarting), treat this as evidence consistent with the segment’s “service must stop” / “service was just like … gone” period.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "You cannot map which of the ~10 services corresponds to the affected component"
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 44,
+          "section_id": "training_video_day2_segment_0044",
+          "segment_id": "segment_training_video_0044",
+          "timestamp_start": "03:05:01.000",
+          "timestamp_end": "03:09:34.000",
+          "quote_or_summary": "“except the service from the service must stop. Service must stop right… the log will be silent… you check the service services… there are 10 services.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Stop and escalate when service identification/status is unclear",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure you do not proceed with an unsupported conclusion when the relevant service(s) cannot be identified or the status evidence is not clear.",
+      "instruction": "If you cannot identify the relevant OptiSweep/WCS service(s) in the Services list, or if the Services view does not show clear Running/Stopped status, stop and escalate.",
+      "expected_result": "Escalation is initiated with the evidence that the relevant service(s) could not be identified or status was unclear.",
+      "healthy_condition": "The relevant service(s) are identifiable and show clear Running/Stopped status.",
+      "failure_condition": "Service identification is ambiguous or the Services view does not provide clear Running/Stopped status.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Escalate",
+          "exact_action": "Stop and escalate if you cannot identify the relevant OptiSweep/WCS service(s) in the Services list or if the Services view does not show clear Running/Stopped status.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Cannot identify the relevant OptiSweep/WCS service(s) among the ~10 services",
+        "Services view does not show clear Running/Stopped status"
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 44,
+          "section_id": "training_video_day2_segment_0044",
+          "segment_id": "segment_training_video_0044",
+          "timestamp_start": "03:05:01.000",
+          "timestamp_end": "03:09:34.000",
+          "quote_or_summary": "“there are 10 services” and the segment’s stated challenge is knowing the service is gone when logs are silent by checking Windows Services."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You can identify the relevant OptiSweep/WCS-related service(s) in the Windows Services MMC and observe clear Status values (Running vs Stopped).",
+    "During the suspected crash window, the observed service state (Stopped/restarting) aligns with the segment’s described “service must stop” / “logs may be silent” behavior."
+  ],
+  "healthy_conditions": [
+    "OptiSweep/WCS-related service(s) show Status = Running in the Windows Services MMC during normal operation."
+  ],
+  "failure_conditions": [
+    "OptiSweep/WCS-related service(s) show Status = Stopped during the suspected crash window.",
+    "OptiSweep/WCS-related service(s) show restart behavior consistent with an unplanned crash/restart period.",
+    "Relevant service(s) cannot be identified among the ~10 services, or Running/Stopped status is unclear."
+  ],
+  "escalation_guidance": [
+    "Escalate if you cannot map which of the ~10 services corresponds to the affected component or if the Services view does not show clear Running/Stopped status."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 44,
+      "section_id": "training_video_day2_segment_0044",
+      "segment_id": "segment_training_video_0044",
+      "timestamp_start": "03:05:01.000",
+      "timestamp_end": "03:09:34.000",
+      "site_code": "",
+      "site_label": "",
+      "quote_or_summary": "Transcript: “It’s a Windows… you check the service services… there are 10 services.” Also: “the service must stop” and logs may be silent."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0044_probably_understand_this_so_if_the_primary_03_07_17_500"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_windows_services_check_optisweep_service_running"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The segment does not name specific OptiSweep/WCS service names; the runbook therefore cannot provide a deterministic mapping from “affected component” to a specific service name beyond using the Services list to identify the relevant service(s)."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0044_probably_understand_this_so_if_the_primary_03_07_17_500"
+  ]
+}

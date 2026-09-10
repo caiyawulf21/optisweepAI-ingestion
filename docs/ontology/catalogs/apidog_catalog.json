@@ -1,0 +1,854 @@
+{
+  "schema_version": "0.4",
+  "catalog_id": "apidog",
+  "access_surface": "apidog",
+  "title": "Apidog — OptiSweep / WCS API client on primary",
+  "aliases": [
+    "api_client",
+    "API Dog",
+    "Apidog",
+    "WCS API client",
+    "OptiSweep API",
+    "Apidog / WCS API client",
+    "apidog"
+  ],
+  "purpose": "Locally hosted API client on WCS primary for System/AGV/Tote APIs. Same APIs Ignition uses to feed Aveva. Primary L2/L3 surface for GetAGVStatuses, closeout, exchange, zone config, etc.",
+  "when_to_use": [
+    "Corroborate AGV/system state remotely",
+    "API responsiveness checks",
+    "Authorized CloseOut / Exchange / ResendGeekCommand / InitializeTote",
+    "Unplanned restart — re-exec commands if OptiSweep missed Geek callbacks"
+  ],
+  "not_for": [
+    "Operator access",
+    "Inventing request bodies not in source",
+    "L1 mutate"
+  ],
+  "architecture_notes": [
+    "Day2: Apidog set up on primary servers.",
+    "GetAGVStatuses shows AGV state, command vitals, AGV errors and system errors.",
+    "Mutating APIs only when playbook/source authorizes."
+  ],
+  "audience_roles_typical": [
+    "L2_support",
+    "L3_support"
+  ],
+  "role_paths": {
+    "L1_support": "Escalate to L2 for Apidog.",
+    "L2_support": "Primary API client.",
+    "L3_support": "Deeper API diagnostics / authorized mutates.",
+    "operator": "No access."
+  },
+  "screens_or_views": [
+    {
+      "id": "apidog_collections",
+      "title": "Apidog System / AGV / Tote collections",
+      "purpose": "Grouped OptiSweep API requests.",
+      "aliases": [
+        "API Dog"
+      ],
+      "key_points": [
+        "primary host",
+        "same APIs as Ignition→Aveva"
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "OpenAllChutes",
+      "label": "OpenAllChutes",
+      "group": "system",
+      "aliases": [],
+      "capability_hints": [
+        "lane_or_chute_state",
+        "bag_out_or_closeout_state"
+      ],
+      "notes": null
+    },
+    {
+      "id": "CancelCloseout",
+      "label": "CancelCloseout",
+      "group": "system",
+      "aliases": [],
+      "capability_hints": [
+        "bag_out_or_closeout_state"
+      ],
+      "notes": null
+    },
+    {
+      "id": "GetAGVFaultStats",
+      "label": "GetAGVFaultStats",
+      "group": "system",
+      "aliases": [],
+      "capability_hints": [
+        "agv_active_errors"
+      ],
+      "notes": null
+    },
+    {
+      "id": "SystemState",
+      "label": "SystemState",
+      "group": "system",
+      "aliases": [],
+      "capability_hints": [
+        "sort_lifecycle_state"
+      ],
+      "notes": null
+    },
+    {
+      "id": "SystemStartup",
+      "label": "SystemStartup",
+      "group": "system",
+      "aliases": [],
+      "capability_hints": [
+        "sort_lifecycle_state"
+      ],
+      "notes": null
+    },
+    {
+      "id": "SystemShutdown",
+      "label": "SystemShutdown",
+      "group": "system",
+      "aliases": [],
+      "capability_hints": [
+        "sort_lifecycle_state"
+      ],
+      "notes": null
+    },
+    {
+      "id": "CloseOut",
+      "label": "CloseOut",
+      "group": "system",
+      "aliases": [],
+      "capability_hints": [
+        "bag_out_or_closeout_state"
+      ],
+      "notes": null
+    },
+    {
+      "id": "Purge",
+      "label": "Purge",
+      "group": "system",
+      "aliases": [],
+      "capability_hints": [
+        "tote_exchange_sequence"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ResetMetrics",
+      "label": "ResetMetrics",
+      "group": "system",
+      "aliases": [],
+      "capability_hints": [
+        "sort_lifecycle_state"
+      ],
+      "notes": null
+    },
+    {
+      "id": "GetZoneConfig",
+      "label": "GetZoneConfig",
+      "group": "system",
+      "aliases": [],
+      "capability_hints": [
+        "zone_config_state"
+      ],
+      "notes": null
+    },
+    {
+      "id": "UpdateZoneConfig",
+      "label": "UpdateZoneConfig",
+      "group": "system",
+      "aliases": [],
+      "capability_hints": [
+        "zone_config_state"
+      ],
+      "notes": "Slides: never used by customer in practice"
+    },
+    {
+      "id": "RemoveAgv",
+      "label": "RemoveAgv",
+      "group": "agvs",
+      "aliases": [],
+      "capability_hints": [
+        "agv_physical_recovery",
+        "device_roster_state"
+      ],
+      "notes": null
+    },
+    {
+      "id": "RecoverAGV",
+      "label": "RecoverAGV",
+      "group": "agvs",
+      "aliases": [],
+      "capability_hints": [
+        "agv_physical_recovery",
+        "device_roster_state"
+      ],
+      "notes": null
+    },
+    {
+      "id": "PauseAGVs",
+      "label": "PauseAGVs",
+      "group": "agvs",
+      "aliases": [
+        "PuaseAGVs"
+      ],
+      "capability_hints": [
+        "rms_soft_stop"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ResumeAGVs",
+      "label": "ResumeAGVs",
+      "group": "agvs",
+      "aliases": [],
+      "capability_hints": [
+        "rms_soft_stop"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ExecutedAgvCommand",
+      "label": "ExecutedAgvCommand",
+      "group": "agvs",
+      "aliases": [],
+      "capability_hints": [
+        "robot_command_or_task_state"
+      ],
+      "notes": "Unplanned restart: re-exec active command if OptiSweep missed Geek callbacks"
+    },
+    {
+      "id": "GetAGVStatuses",
+      "label": "GetAGVStatuses",
+      "group": "agvs",
+      "aliases": [],
+      "capability_hints": [
+        "agv_active_errors",
+        "device_roster_state",
+        "wcs_api_responsiveness"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ResendGeekCommand",
+      "label": "ResendGeekCommand",
+      "group": "agvs",
+      "aliases": [],
+      "capability_hints": [
+        "robot_command_or_task_state"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ExchangeSorterSideZone",
+      "label": "ExchangeSorterSideZone",
+      "group": "totes",
+      "aliases": [],
+      "capability_hints": [
+        "tote_exchange_sequence"
+      ],
+      "notes": null
+    },
+    {
+      "id": "RemoveTote",
+      "label": "RemoveTote",
+      "group": "totes",
+      "aliases": [],
+      "capability_hints": [
+        "tote_lifecycle_state"
+      ],
+      "notes": null
+    },
+    {
+      "id": "GetToteTask",
+      "label": "GetToteTask",
+      "group": "totes",
+      "aliases": [],
+      "capability_hints": [
+        "tote_lifecycle_state",
+        "tote_exchange_sequence"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ResendToteTask",
+      "label": "ResendToteTask",
+      "group": "totes",
+      "aliases": [
+        "ResendtoteTask"
+      ],
+      "capability_hints": [
+        "robot_command_or_task_state"
+      ],
+      "notes": null
+    },
+    {
+      "id": "InitializeTote",
+      "label": "InitializeTote",
+      "group": "totes",
+      "aliases": [
+        "InitalizeTote"
+      ],
+      "capability_hints": [
+        "tote_lifecycle_state"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ExchangeTote",
+      "label": "ExchangeTote",
+      "group": "totes",
+      "aliases": [],
+      "capability_hints": [
+        "tote_exchange_sequence"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ExchangeLane",
+      "label": "ExchangeLane",
+      "group": "totes",
+      "aliases": [],
+      "capability_hints": [
+        "tote_exchange_sequence",
+        "lane_or_chute_state"
+      ],
+      "notes": null
+    },
+    {
+      "id": "GetExchangeSettings",
+      "label": "GetExchangeSettings",
+      "group": "totes",
+      "aliases": [
+        "GetExchangeSeettings"
+      ],
+      "capability_hints": [
+        "tote_exchange_sequence"
+      ],
+      "notes": null
+    },
+    {
+      "id": "UpdateExchange",
+      "label": "UpdateExchange",
+      "group": "totes",
+      "aliases": [],
+      "capability_hints": [
+        "tote_exchange_sequence"
+      ],
+      "notes": null
+    }
+  ],
+  "activities": [
+    {
+      "id": "apidog_get_agv_statuses",
+      "label": "GetAGVStatuses",
+      "observables": [
+        "AGV state/command/vitals/errors returned",
+        "API unresponsive"
+      ],
+      "capability_hints": [
+        "wcs_api_responsiveness",
+        "agv_active_errors"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_resend_geek",
+      "label": "ResendGeekCommand",
+      "observables": [
+        "command resent after unplanned restart"
+      ],
+      "capability_hints": [
+        "robot_command_or_task_state"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_openallchutes",
+      "label": "Apidog — OpenAllChutes",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "lane_or_chute_state",
+        "bag_out_or_closeout_state"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_cancelcloseout",
+      "label": "Apidog — CancelCloseout",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "bag_out_or_closeout_state"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_getagvfaultstats",
+      "label": "Apidog — GetAGVFaultStats",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "agv_active_errors"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_systemstate",
+      "label": "Apidog — SystemState",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "sort_lifecycle_state"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_systemstartup",
+      "label": "Apidog — SystemStartup",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "sort_lifecycle_state"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_systemshutdown",
+      "label": "Apidog — SystemShutdown",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "sort_lifecycle_state"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_closeout",
+      "label": "Apidog — CloseOut",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "bag_out_or_closeout_state"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_purge",
+      "label": "Apidog — Purge",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "tote_exchange_sequence"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_resetmetrics",
+      "label": "Apidog — ResetMetrics",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "sort_lifecycle_state"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_getzoneconfig",
+      "label": "Apidog — GetZoneConfig",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "zone_config_state"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_updatezoneconfig",
+      "label": "Apidog — UpdateZoneConfig",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "zone_config_state"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_removeagv",
+      "label": "Apidog — RemoveAgv",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "agv_physical_recovery",
+        "device_roster_state"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_recoveragv",
+      "label": "Apidog — RecoverAGV",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "agv_physical_recovery",
+        "device_roster_state"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_pauseagvs",
+      "label": "Apidog — PauseAGVs",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "rms_soft_stop"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_resumeagvs",
+      "label": "Apidog — ResumeAGVs",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "rms_soft_stop"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_executedagvcommand",
+      "label": "Apidog — ExecutedAgvCommand",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "robot_command_or_task_state"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_getagvstatuses",
+      "label": "Apidog — GetAGVStatuses",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "agv_active_errors",
+        "device_roster_state",
+        "wcs_api_responsiveness"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_resendgeekcommand",
+      "label": "Apidog — ResendGeekCommand",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "robot_command_or_task_state"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_exchangesortersidezone",
+      "label": "Apidog — ExchangeSorterSideZone",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "tote_exchange_sequence"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "apidog_removetote",
+      "label": "Apidog — RemoveTote",
+      "observables": [
+        "success payload",
+        "timeout/5xx",
+        "unexpected empty"
+      ],
+      "capability_hints": [
+        "tote_lifecycle_state"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    }
+  ],
+  "related_capabilities": [
+    "agv_active_errors",
+    "device_roster_state",
+    "sort_lifecycle_state",
+    "zone_config_state",
+    "rms_soft_stop",
+    "wcs_api_responsiveness",
+    "agv_physical_recovery",
+    "agv_charging_state",
+    "tote_exchange_sequence",
+    "bag_out_or_closeout_state",
+    "robot_command_or_task_state",
+    "wcs_system_faults",
+    "lane_or_chute_state",
+    "tote_lifecycle_state"
+  ],
+  "related_failure_patterns": [
+    "system_fault",
+    "bump_fault",
+    "agv_tracking_or_path_lost",
+    "object_blocking_agv",
+    "mapping_abnormal",
+    "zone_agv_mismatch",
+    "rms_map_collision_display",
+    "sort_lifecycle_stuck",
+    "api_unresponsive",
+    "charging_abnormal",
+    "hot_bin_or_missort_exchange",
+    "bag_out_stuck",
+    "robot_task_or_command_stuck",
+    "chute_bypassed_or_stuck_closed",
+    "tote_error_noread_or_mismatch"
+  ],
+  "distinguish_from": {
+    "wcs_api": "Logical API surface; apidog is the client tool on primary.",
+    "aveva_hmi": "Operator UI that may trigger same APIs via Ignition.",
+    "wcs_sql": "DB truth for many of the same jobs."
+  },
+  "gaps": [
+    "Full request/response JSON schemas not in training OCR."
+  ],
+  "evidence": [
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "So we have open all shoots. This will open all closed shoots."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Get AGV status shows the current state of Agvs, its current command vitals, any AGV errors and system errors."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "We use API Dog, API Dog. ... it's all set up on the primary servers"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "APIs up DB suite provides APIs to get data and to make requests. We have API Dog installed on the primary servers. The same APIs feed ignition. So this all the stuff we reviewed and it. In Ababa yesterday or here just in a different way."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "a purge or close. So manual back out is basically we took too long to recover the system and they went through all the toads and manually bagged them and then printed labels at the hospital. And now that the system is back up and running, we can cancel all active unactive exchanges. So when you do a bag out, everything"
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "transcript",
+      "snippet": "This page should show RMS, but the firewall is not open, so it just kind of shows blank. Sorry, all the sorry if you said it all the stats reset for each sort for their like yeah, stats and all that. When they cycle sort, they send a bit that says reset metrics, which Todd picks up, resets the Tipper metrics and then i"
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "System control actions shown on the Viva overview: The presenter states that on the right-hand side of the overview screen you can see startup, shutdown, bag out, purge, resume, and pause all AGVs. OCR text also describes a controls and info area with Start/Stop system, Bag Out, Purge, view Metrics (Destinations), and AGV status."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Robot Location database model: The model includes the station number, occupancy state, zone, closeout zone, location type, maximum number of AGVs allowed at the location, and whether dwell time should be tracked. The training describes the orange locations shown in RMS as including workstation or station identifiers."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Sorter Sweeper Database Overview: The displayed database overview includes field names such as SystemState, Destination, Active Exchange, PackageUid, Status, TrackingNumber, SorterSideName, SortGuid, Station, Zone, ToteName, RobotCode, ExchangeType, SortName, LaneName, and ErrorCode."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Displayed OptiSweep API endpoint categories: The displayed catalog includes System endpoints such as System State, System Startup, System Shutdown, CloseOut, Purge, ResetMetrics, SystemMetrics, and zone configuration operations. AGVS endpoints include status retrieval, fault-related data retrieval, and command-related operations."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "CloseOut and Purge behavior: The source associates CloseOut with a customer bag-out and describes it as closing all chutes and exchanging totes with parcels. Purge is described as performing exchanges for every tote in the system and not printing a label."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Sort metrics and reset behavior: The source states that ResetMetrics is called when UPS cycles a sort and generates a new sort GUID so metrics can be tracked. The transcript also mentions Sort Goods as historical information, but the source does not further define its fields or display."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Remove and Recover AGV APIs: RemoveAgv requires the robot ID and sends a request to Geek to remove the specified AGV from the system. RecoverAgv also requires the robot ID and sends a request to Geek to add the specified AGV to the system. The training describes Recover AGV as the equivalent of Add AGV in Geek Plus."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Pause and Resume AGV Movement: PauseAgvs makes a request to Geek to pause all AGV movement. ResumeAgvs makes a request to Geek to resume all AGV movement. The training distinguishes this pause behavior from AE."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Execute Active AGV Command: The ExecutedAgvCommand operation requires a robot ID and executes the active command the AGV has. The training identifies this capability as helpful during unplanned restarts when OptiSweep has missed callbacks from Geek Plus."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Resend Geek Command for retrying a command after Geek+ server restart or error: The transcript states that if the Geek Plus server is restarted, the system retries sending callbacks for some period based on a retry count, and eventually stops sending if there is no response. Once Geek Plus is back up, a user can specify the command GUID and resend the command to Geek Plus."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "AGV Active Error and Error Activity Records: Active error records include the robot code or name, error code, error description, and Sort GUID. The Sort GUID identifies the sort during which the error occurred. The source states that when an error is resolved or the AGV is removed, the record is archived to the AGVErrorActivityDatabaseModel."
+    },
+    {
+      "source": "active_agv_error_query_1",
+      "kind": "operational_claim",
+      "snippet": "WCS primary server as the access point for active AGV error queries: The manual states that the user logs into the WCS primary server and opens the WCS database before working with the active AGV error query. This establishes the WCS primary server and WCS database as the source-specific environment used for this error visibility task."
+    },
+    {
+      "source": "active_agv_error_query_1",
+      "kind": "operational_claim",
+      "snippet": "Active AGV error record fields returned by the query: The SQL query selects the following columns from SystemActiveErrorModel: Id, EntityInserted, EntityLastUpdate, Name, Area, Error, LastSeen, SystemErrorDescription, and SystemErrorResolution. These fields define the data elements shown when active errors are retrieved in this source."
+    },
+    {
+      "source": "active_agv_error_query_1",
+      "kind": "operational_claim",
+      "snippet": "Query tab and results area used to display active AGV errors: The manual indicates that a new query tab is opened in the interface, the query is placed there, and the active errors then appear in a designated results area. This establishes a source-specific screen context consisting of a query editor tab and a results display region."
+    }
+  ],
+  "source_refs": [
+    {
+      "source": "training_video_day2"
+    },
+    {
+      "source": "wcs_api_catalog.json"
+    },
+    {
+      "source": "support_roles_components_and_adjacency.md"
+    }
+  ]
+}

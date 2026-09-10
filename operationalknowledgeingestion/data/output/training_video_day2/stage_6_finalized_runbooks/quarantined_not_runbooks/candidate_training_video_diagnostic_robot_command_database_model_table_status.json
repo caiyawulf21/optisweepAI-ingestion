@@ -1,0 +1,358 @@
+{
+  "procedure_id": "proc_check_robot_command_database_model_table_active_command_status_v1",
+  "candidate_id": "candidate_training_video_diagnostic_robot_command_database_model_table_status",
+  "title": "Check Robot Command Database Model Table for Active Command Status (Sent → In Progress → Archived)",
+  "procedure_type": "diagnostic",
+  "summary": "Use the Robotics module’s transactional table, RobotCommandDatabaseModel, to determine whether a robot command is still active (sent/in-progress) or has completed and been archived to Robot Command Activity (historical status such as errored or cancelled).",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "robot_command_or_task_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive",
+    "robot_task_or_command_stuck"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to verify whether a specific Robotics-module robot command for an AGV is still active (sent/in-progress) or has completed and moved into the archived Robot Command Activity record.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the database checks in RobotCommandDatabaseModel and Robot Command Activity to confirm command lifecycle state and timing fields."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Access to the Robot Command Database model table (RobotCommandDatabaseModel)",
+    "Access to the Robot Command Activity archive view/table"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Robot Command Database model table access (RobotCommandDatabaseModel)",
+      "Robot Command Activity archive view/table access"
+    ],
+    "system_preconditions": [
+      "Robotics module is generating commands that are written into RobotCommandDatabaseModel and later archived to Robot Command Activity when complete."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_robot_command_database_table_v1",
+    "ctx_training_video_robot_command_activity_archive_v1",
+    "ctx_training_video_command_status_and_queue_capacity_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+      "description": "Training frame showing RobotCommandDatabaseModel command names and fields (including sent/in-progress indicators and command lifecycle context).",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Robot Command Database model table view (RobotCommandDatabaseModel)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Access the active transactional table that tracks Robotics-module robot command lifecycle.",
+      "instruction": "Open the Robot Command Database model table view for RobotCommandDatabaseModel and display the columns/fields used to identify command lifecycle (including sent time and in-progress time) and command identity fields (command name, robot name, container, station/parameters).",
+      "expected_result": "RobotCommandDatabaseModel is visible with rows that include command identity fields and lifecycle timing fields (sent time and in-progress time).",
+      "healthy_condition": "The table shows active command records (the source describes it as a constantly updating transactional table that keeps active commands).",
+      "failure_condition": "You cannot view RobotCommandDatabaseModel fields needed to identify command lifecycle (sent time / in-progress time) or command identity (command name and associated robot/container/station parameters).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open RobotCommandDatabaseModel table view",
+          "exact_action": "Open the Robot Command Database model table view (RobotCommandDatabaseModel)",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "training_video_0014",
+          "quote_or_summary": "Robot Command Database model table tracks status of robot commands requested by the Robotics module for AGVs; it is a constantly updating transactional table for active commands only; it shows sent time and in progress time."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "01:18:59.000",
+          "timestamp_end": "01:18:59.000",
+          "segment_id": "segment_training_video_0014",
+          "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Locate the relevant active command row by command name and associated parameters",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Find the exact command record in RobotCommandDatabaseModel that corresponds to the Robotics request you are investigating.",
+      "instruction": "In RobotCommandDatabaseModel, locate the row matching the command name (examples from the source include MoveTote, PickupTote, DropOffTote, EmptyGoTo, RemoveAgv, ReleaseAgv, GoCharge) and match the associated robot name/container/station parameters shown in the table.",
+      "expected_result": "A single RobotCommandDatabaseModel row is identified for the target command name and the associated robot/container/station parameters.",
+      "healthy_condition": "The identified row represents an active command record that is currently in the active RobotCommandDatabaseModel table (the source describes active commands are kept here until completion).",
+      "failure_condition": "No row matches the command name and associated robot/container/station parameters in RobotCommandDatabaseModel.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Match command row by identity fields",
+          "exact_action": "Locate the relevant active command row by matching the command name and the associated robot name/container/station parameters",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "training_video_0014",
+          "quote_or_summary": "RobotCommandDatabaseModel includes command name, robot name, container and station/parameters sent to the Geek Plus COM module; it tracks status of robot commands requested by Robotics module for AGVs."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "01:18:59.000",
+          "timestamp_end": "01:18:59.000",
+          "segment_id": "segment_training_video_0014",
+          "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Check lifecycle timestamps/fields (sent time and in-progress time)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the command is still in the active lifecycle stage (sent vs in-progress).",
+      "instruction": "For the identified RobotCommandDatabaseModel row, confirm the row has a sent time and determine whether it is marked as in progress by checking the in-progress time field/indicator described in the source.",
+      "expected_result": "You can classify the command lifecycle state based on the presence/values of sent time and in-progress time (sent but not in-progress vs marked in-progress).",
+      "healthy_condition": "The row shows sent time, and when it is marked in-progress the source describes that the AGV is marked and the destination queue/location capacity is freed accordingly.",
+      "failure_condition": "The row does not show sent time, or it appears stuck in a state where it does not progress from sent to in-progress as described by the source.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify sent and in-progress timing fields",
+          "exact_action": "Confirm the row has a sent time and determine whether it is marked as in progress (sent time vs in-progress time)",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the command appears stuck (e.g., not progressing from sent to in-progress as described), stop and escalate for deeper investigation."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "training_video_0014",
+          "quote_or_summary": "The table shows sent time and in progress time; when we write it to the table we put sent time, and when we get an in progress we mark that AGV; until then there is still a current destination location."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "If not in active table, confirm archive in Robot Command Activity and review archived status",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the command has completed and moved out of the active table into the historical archive, including resolved/failed outcomes.",
+      "instruction": "If the command is no longer present in RobotCommandDatabaseModel, open the Robot Command Activity archive view/table and search for the historical record for the same command name and associated robot/container/station parameters. Review the archived status, noting that the source states it could be errored or cancelled.",
+      "expected_result": "A matching historical record is found in Robot Command Activity with an archived status (e.g., errored or cancelled) for the target command.",
+      "healthy_condition": "The command is absent from RobotCommandDatabaseModel and present in Robot Command Activity as a completed/archived record.",
+      "failure_condition": "The expected command is not present in RobotCommandDatabaseModel and also not found in Robot Command Activity.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Search Robot Command Activity archive",
+          "exact_action": "Confirm it has been archived to Robot Command Activity and review the archived status (errored/cancelled)",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the expected command is not present in RobotCommandDatabaseModel and also not found in Robot Command Activity, stop and escalate for deeper investigation."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "training_video_0014",
+          "quote_or_summary": "When commands are complete, they're archived to robot command activity; historical status includes outcomes such as errored or cancelled."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "01:11:39.000",
+          "timestamp_end": "01:26:19.000",
+          "segment_id": "training_video_0014"
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "01:18:59.000",
+          "timestamp_end": "01:18:59.000",
+          "segment_id": "segment_training_video_0014",
+          "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Interpret queue/capacity implication of in-progress vs not-yet in-progress",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Use the source’s described operational meaning of the lifecycle transition to understand why a destination may appear occupied or freed.",
+      "instruction": "Using the source’s described relationship between command lifecycle and queue/location capacity, interpret the observed lifecycle state: when the command is in-progress, it frees up the queue/location capacity; until then, the current destination location remains.",
+      "expected_result": "Your lifecycle classification (sent vs in-progress vs archived) aligns with the expected queue/location capacity behavior described by the source.",
+      "healthy_condition": "If the command is marked in-progress, the source’s described implication is that the queue/location capacity is freed; if not yet in-progress, the current destination location remains.",
+      "failure_condition": "The observed lifecycle state does not align with the expected queue/location capacity behavior described by the source (indicating a deeper issue beyond this database-only check).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Interpret lifecycle vs queue capacity behavior",
+          "exact_action": "Interpret the queue/capacity implication described by the source for sent vs in-progress",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "training_video_0014",
+          "quote_or_summary": "Until we get it in progress, you still have a current destination location; when in progress, it frees up that queue/location capacity (source ties this to Robot Location model Max Agvs and tipper capacity)."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "training_video_0014",
+          "quote_or_summary": "Robot location model includes Max Agvs; each tipper can only have one (some have two), and in-progress indicates the queue/location is freed."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "For the target command, you determine whether it is still active in RobotCommandDatabaseModel (sent and/or in-progress) or has been archived to Robot Command Activity with an archived status (e.g., errored or cancelled).",
+    "You can explain the observed lifecycle state using the source’s sent → in-progress → archived model and the described queue/location capacity implication."
+  ],
+  "healthy_conditions": [
+    "RobotCommandDatabaseModel contains active command rows with sent time and in-progress time fields.",
+    "Completed commands are absent from RobotCommandDatabaseModel and present in Robot Command Activity with a status such as errored or cancelled."
+  ],
+  "failure_conditions": [
+    "Target command is missing from RobotCommandDatabaseModel and also missing from Robot Command Activity.",
+    "Target command appears stuck (not progressing from sent to in-progress as described).",
+    "Lifecycle state cannot be classified due to missing/unclear sent time or in-progress time fields."
+  ],
+  "escalation_guidance": [
+    "If the expected command is not present in RobotCommandDatabaseModel and also not found in Robot Command Activity, stop and escalate for deeper investigation (the source does not provide further database-only troubleshooting steps in this segment).",
+    "If the command appears stuck (e.g., not progressing from sent to in-progress as described), stop and escalate; the source mentions operational recovery ideas elsewhere but does not provide a specific database-only recovery procedure in this segment."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+      "description": "RobotCommandDatabaseModel command names and fields (including sent/in-progress lifecycle context).",
+      "required_level": "required"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 14,
+      "section_id": "training_video_day2_segment_0014",
+      "quote_or_summary": "Robot Command Database model table tracks status of robot commands requested by the Robotics module for AGVs; when commands are complete, they're archived to robot command activity; shows sent time, in progress time, and archived status (could be errored or cancelled); active commands only kept in this database."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000",
+      "what_to_look_at": "Training frame showing RobotCommandDatabaseModel command names and fields (including sent/in-progress indicators and command lifecycle context)."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_diagnostic_robot_command_database_model_table_status"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide explicit SSMS/WCS navigation steps (e.g., exact menu path) to open RobotCommandDatabaseModel and Robot Command Activity; steps are written to match the source’s described table/fields but without UI navigation specifics.",
+    "The packet does not provide exact column names for sent time vs in-progress time vs archived status; it only states these fields exist and are used for lifecycle classification.",
+    "The packet does not provide a specific database-only recovery procedure for a command stuck in sent/not-in-progress; it only instructs to stop and escalate."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source",
+    "missing verified live access surface in title/steps/tools"
+  ]
+}

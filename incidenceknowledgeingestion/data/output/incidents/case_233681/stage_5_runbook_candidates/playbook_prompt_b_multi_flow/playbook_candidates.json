@@ -1,0 +1,1297 @@
+[
+  {
+    "playbook_candidate_id": "playbook_candidate_incident_233681_site_communication_tote_exchange",
+    "title": "Site-wide tote exchange failure with lost equipment communication",
+    "user_facing_summary": "Use when totes are not exchanging or bag-out is unavailable across the operation, especially when the system appears to be running but communication with equipment or the sorter is impaired.",
+    "playbook_goal": "Distinguish a site-wide tote-exchange workflow failure from an AGV hardware fault, investigate communication loss affecting XLEs, scanners, or the sorter, apply an authorized high-level recovery path, and validate resumed operation.",
+    "incident_context": {
+      "case_id": "233681",
+      "site": "UPS Haslet TX (TXRTH)",
+      "site_code": "ups_haslet_tx",
+      "site_location": {
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "customer": "UPS",
+        "city": "Haslet",
+        "state": "TX",
+        "country": "US",
+        "hub_code": "TXRTH",
+        "region_label": "Fort Worth, TX"
+      },
+      "incident_start_time": "2026-08-22 06:04",
+      "incident_resolved_time": "2026-08-25",
+      "time_to_resolve": "3 calendar days; exact resolution time unavailable",
+      "resolution_confirmed": true
+    },
+    "observed_entry_symptoms": [
+      "Totes are not exchanging after startup or during normal operation.",
+      "Bag-out is unavailable or no totes are being processed.",
+      "The sorter is not communicating with the system.",
+      "The system appears to be running, but AGV and tote workflows do not progress.",
+      "Communication-loss messages refer to XLEs.",
+      "Multiple TCP connectivity tests to XLE-related targets fail."
+    ],
+    "negative_or_absent_signals": [
+      "The site reported no AVEVA alarms.",
+      "The site reported that required robots were present across the zones.",
+      "The incident evidence reported that AGVs were not faulted or crashed.",
+      "The evidence does not establish a specific endpoint, firewall rule, service failure, or confirmed root cause."
+    ],
+    "support_user_language_examples": [
+      "Totes aren't exchanging",
+      "AGVs can't exchange totes",
+      "We can't bag out",
+      "The sorter isn't communicating",
+      "The system looks like it's running but nothing is moving through",
+      "XLE communication is lost",
+      "TCP tests are failing",
+      "The scanners can't talk to the system"
+    ],
+    "tentative_internal_patterns": [
+      "Possible XLE communication-path failure",
+      "Possible firewall or network-path blocking",
+      "Possible stunnel communication errors",
+      "Possible accumulated or abnormal task state"
+    ],
+    "internal_pattern_notes": "These are tentative patterns from the incident evidence only. The recorded resolution attributes the communication blockage to a firewall issue, but the specific rule and corrective change were not documented or independently validated. Stunnel errors and failed TCP tests support communication-path investigation, not a confirmed diagnosis.",
+    "affected_systems_or_components": [
+      "AGV system",
+      "Tote exchange and bag-out workflow",
+      "Sorter",
+      "XLE communication",
+      "Scanners",
+      "RMS monitoring",
+      "Stunnel communication component",
+      "Firewall or network path"
+    ],
+    "separability_reason": "This is the dominant troubleshooting flow. It has a distinct site-wide symptom pattern, a communication-focused diagnostic goal, source-supported recovery activity, and an operational validation goal.",
+    "confidence": "high",
+    "confidence_reason": "The packet provides repeated evidence of tote-exchange and bag-out failure, XLE communication loss, failed TCP connectivity tests, suspected firewall blocking, stunnel errors, interim purge recovery, and reported return of sorting.",
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm a site-wide tote-exchange or bag-out workflow failure",
+        "intent": "Determine whether the reported problem is a broad tote-exchange or bag-out interruption rather than an isolated robot fault.",
+        "goal": "Determine whether the reported problem is a broad tote-exchange or bag-out interruption rather than an isolated robot fault.",
+        "runbook_placeholder": "Procedure needed to confirm with the site whether totes are exchanging, whether bag-out is unavailable, whether the sorter is processing, and whether the issue affects multiple workflows. In RMS, inspect the fleet or map-monitoring view for overall robot status and current task activity without treating ambiguous counters as a confirmed fault.",
+        "allowed_roles": [
+          "operator",
+          "L1_support",
+          "L2_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "The case reports inability to exchange totes and bag out, while RMS evidence and site statements indicate no AGVs were faulted or crashed.",
+        "needed_runbook_capability": "Procedure needed to confirm with the site whether totes are exchanging, whether bag-out is unavailable, whether the sorter is processing, and whether the issue affects multiple workflows. In RMS, inspect the fleet or map-monitoring view for overall robot status and current task activity without treating ambiguous counters as a confirmed fault.",
+        "expected_or_observed_result": "The site or L1 support observes the affected workflow and, where available, the RMS monitoring view. Healthy or alternate-path evidence is that totes exchange and bag-out proceeds normally or the issue is localized to one asset. Unhealthy evidence is that multiple tote exchanges or bag-out operations are unavailable while the system otherwise appears active. Inconclusive evidence is a single unverified report, unclear scope, or unavailable monitoring.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "Site reports described totes not exchanging, inability to bag out, and no totes being processed."
+          },
+          {
+            "surface": "rms_ui",
+            "provenance": "source_artifact_visible",
+            "source_evidence": "RMS screenshots showed map monitoring, current robot status, and current task data."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "rms_ui"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [
+          {
+            "id": "capability:agv_active_errors",
+            "support_contract": "Confirm whether AGVs or robots currently have active error or fault state.",
+            "relevant_evidence": "The incident specifically reported that AGVs were not faulted or crashed while the system could not run."
+          }
+        ],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology snippet does not establish a tote-exchange or bag-out backend mapping for this node."
+        ],
+        "ontology_contract_status": "complete",
+        "healthy_indicators": [
+          "Site reports normal tote exchange and bag-out.",
+          "RMS shows normal robot activity and no broad task interruption."
+        ],
+        "unhealthy_indicators": [
+          "Site reports broad inability to exchange totes or bag out.",
+          "RMS or site evidence shows the system is active but tote or task progress is not occurring.",
+          "No AGV hardware fault is reported despite the workflow interruption."
+        ],
+        "inconclusive_indicators": [
+          "Only one tote or one robot is affected.",
+          "RMS values or identifiers are ambiguous.",
+          "The site cannot confirm whether the issue is system-wide."
+        ],
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_233681_page_004_nested_image_01",
+          "artifact_incident_233681_page_011_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_233681_event_001",
+          "incident_233681_event_003",
+          "incident_233681_event_015"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_1",
+            "artifact_id": null,
+            "quote_or_summary": "After startup, totes were not exchanging and the site placed the system in bag-out mode."
+          },
+          {
+            "page_ref": "case_233681:page_11",
+            "artifact_id": "artifact_incident_233681_page_011_nested_image_01",
+            "quote_or_summary": "The system was not able to run; none of the AGVs were faulted or crashed."
+          }
+        ]
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "diagnostic_decision",
+        "title": "Determine whether equipment communication loss is present",
+        "intent": "Determine whether XLE, scanner, sorter, or related communication loss correlates with the tote-exchange failure.",
+        "goal": "Determine whether XLE, scanner, sorter, or related communication loss correlates with the tote-exchange failure.",
+        "runbook_placeholder": "Procedure needed to review the XLE communication-loss messages and stunnel error evidence, and to assess the incident-evidenced connectivity-test results for the affected communication path. The procedure should distinguish reachability, TCP connection failure, and application communication failure without assuming that a firewall is the confirmed cause.",
+        "allowed_roles": [
+          "L1_support",
+          "L2_support",
+          "L3_support"
+        ],
+        "preferred_audience": [
+          "L1_support",
+          "L2_support"
+        ],
+        "source_supported_description": "The source reports repeated XLE communication-loss errors, failed TCP connectivity tests, stunnel errors, and a sorter that was not communicating.",
+        "needed_runbook_capability": "Procedure needed to review the XLE communication-loss messages and stunnel error evidence, and to assess the incident-evidenced connectivity-test results for the affected communication path. The procedure should distinguish reachability, TCP connection failure, and application communication failure without assuming that a firewall is the confirmed cause.",
+        "expected_or_observed_result": "L1 or L2 support observes the communication evidence in the incident-visible status or diagnostic surfaces. Unhealthy evidence includes explicit XLE communication-loss messages, stunnel errors, or failed TCP connectivity tests to multiple XLE-related targets. Healthy or alternate-path evidence is successful communication and no current communication-loss indication, requiring exit or retriage. Inconclusive evidence is inconsistent endpoint data, ambiguous OCR, or tests that do not distinguish endpoint, network path, firewall, or service failure.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "The site reported that the sorter was still not communicating and that a firewall appeared to be involved."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "wcs_api",
+          "wcs_sql",
+          "stunnel"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "No supplied ontology capability card establishes the backend mapping for XLE communication, stunnel health, or the incident's connectivity-test results."
+        ],
+        "ontology_contract_status": "missing",
+        "healthy_indicators": [
+          "Communication-loss messages are absent or cleared.",
+          "The site reports that the sorter and scanners communicate normally.",
+          "Connectivity checks no longer show the previously observed failed TCP pattern."
+        ],
+        "unhealthy_indicators": [
+          "Repeated messages report lost communication with XLE.",
+          "Stunnel is reported to be generating errors.",
+          "TCP connectivity fails for multiple XLE-related targets.",
+          "The sorter or scanners remain unable to communicate."
+        ],
+        "inconclusive_indicators": [
+          "Ping succeeds but TCP fails without identifying the failing layer.",
+          "Endpoint addresses or ports are unclear.",
+          "Only historical messages are available and current state cannot be confirmed."
+        ],
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_233681_page_005_nested_image_01",
+          "artifact_incident_233681_page_006_detected_region_01",
+          "artifact_incident_233681_page_007_detected_region_01",
+          "artifact_incident_233681_page_012_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_233681_event_006",
+          "incident_233681_event_008",
+          "incident_233681_event_009",
+          "incident_233681_event_017"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_5",
+            "artifact_id": "artifact_incident_233681_page_005_nested_image_01",
+            "quote_or_summary": "System lost connection to XLE; repeated entries reported communication lost with XLE."
+          },
+          {
+            "page_ref": "case_233681:page_6",
+            "artifact_id": "artifact_incident_233681_page_006_detected_region_01",
+            "quote_or_summary": "Connectivity tests showed failed TCP connections to multiple targets."
+          },
+          {
+            "page_ref": "case_233681:page_12",
+            "artifact_id": "artifact_incident_233681_page_012_nested_image_01",
+            "quote_or_summary": "Stunnel was kicking errors and firewall issues were blocking scanners and sorter communication."
+          }
+        ]
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "procedure_reference",
+        "title": "Apply an authorized communication-path recovery",
+        "intent": "Use the approved recovery path for the affected communication chain when communication loss is confirmed and the responsible role is authorized.",
+        "goal": "Use the approved recovery path for the affected communication chain when communication loss is confirmed and the responsible role is authorized.",
+        "runbook_placeholder": "Procedure needed for authorized recovery of the XLE communication path, including coordination with the site network owner for any firewall or network-path correction, review of stunnel status, and controlled handling of any supported system-purge or restart-related recovery activity. The procedure must define role limits and safety prerequisites without embedding exact commands or configuration changes.",
+        "allowed_roles": [
+          "L2_support",
+          "L3_support"
+        ],
+        "preferred_audience": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "The source records a planned camera-tunnel/XLE reset, a system purge followed by movement and tote exchange, and a recorded firewall-related communication blockage. Exact recovery steps are not documented.",
+        "needed_runbook_capability": "Procedure needed for authorized recovery of the XLE communication path, including coordination with the site network owner for any firewall or network-path correction, review of stunnel status, and controlled handling of any supported system-purge or restart-related recovery activity. The procedure must define role limits and safety prerequisites without embedding exact commands or configuration changes.",
+        "expected_or_observed_result": "L2 or L3 support and the authorized site/network role observe completion of the approved recovery activity. Progress evidence is that the affected communication path becomes available and the system can resume controlled operation. Failure evidence is continued communication loss, continued stunnel errors, or continued sorter non-communication. Inconclusive evidence is movement without confirmed tote exchange or recovery activity that is not documented.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "The source records site/network investigation of firewall issues affecting XLE, scanner, and sorter communication."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "stunnel",
+          "wcs_api"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The ontology snippet does not provide a validated recovery capability for firewall changes, stunnel recovery, or system purge."
+        ],
+        "ontology_contract_status": "not_required",
+        "healthy_indicators": [
+          "Authorized recovery activity is complete.",
+          "Communication-loss indicators stop appearing.",
+          "The system begins controlled movement and tote exchange."
+        ],
+        "unhealthy_indicators": [
+          "Communication remains blocked.",
+          "Stunnel continues generating errors.",
+          "The sorter or scanners remain disconnected."
+        ],
+        "inconclusive_indicators": [
+          "Movement resumes but tote exchange is not confirmed.",
+          "The purge is still in progress.",
+          "The responsible network or service role cannot confirm what changed."
+        ],
+        "stop_or_escalation_note": "Do not continue with unsupported firewall or database changes. Stop when the required network or service authority is unavailable.",
+        "related_artifact_ids": [
+          "artifact_incident_233681_page_011_nested_image_02",
+          "artifact_incident_233681_page_012_nested_image_01",
+          "artifact_incident_233681_page_010_embedded_image_01"
+        ],
+        "related_event_ids": [
+          "incident_233681_event_007",
+          "incident_233681_event_013",
+          "incident_233681_event_016",
+          "incident_233681_event_017"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_11",
+            "artifact_id": "artifact_incident_233681_page_011_nested_image_02",
+            "quote_or_summary": "A system purge had started and movement and tote exchange were occurring; completion was not yet confirmed."
+          },
+          {
+            "page_ref": "case_233681:page_10",
+            "artifact_id": "artifact_incident_233681_page_010_embedded_image_01",
+            "quote_or_summary": "Recorded resolution details attributed the communication blockage to a firewall preventing XLE communication."
+          }
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "validation_gate",
+        "title": "Validate restored communication and sustained tote exchange",
+        "intent": "Confirm that recovery restored the affected workflow rather than only producing temporary movement.",
+        "goal": "Confirm that recovery restored the affected workflow rather than only producing temporary movement.",
+        "runbook_placeholder": "Procedure needed to validate the affected communication path and workflow after recovery, including confirmation with the site that tote exchange, bag-out, scanner communication, and sorter processing remain normal, plus review of the incident-evidenced communication status for recurring XLE or stunnel errors.",
+        "allowed_roles": [
+          "operator",
+          "L1_support",
+          "L2_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "The case records that sorting resumed, but also states that movement and tote exchange during the purge were interim and that closure did not independently prove sustained live-system health.",
+        "needed_runbook_capability": "Procedure needed to validate the affected communication path and workflow after recovery, including confirmation with the site that tote exchange, bag-out, scanner communication, and sorter processing remain normal, plus review of the incident-evidenced communication status for recurring XLE or stunnel errors.",
+        "expected_or_observed_result": "The site observes resumed tote exchange, bag-out, and sorter processing; L1 or L2 support corroborates available communication or system-status evidence. Healthy evidence is sustained sorting and tote exchange with no recurring XLE or stunnel communication-loss indication. Unhealthy evidence is continued bag-out failure, sorter non-communication, or recurring communication errors. Inconclusive evidence is a case-closure update, brief movement, or purge-in-progress report without sustained operational confirmation.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "The site later reported that it could sort again, while another message reported movement and tote exchange during the purge."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "wcs_api",
+          "stunnel",
+          "rms_ui"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology does not establish a validated backend validation mapping for tote exchange or bag-out recovery."
+        ],
+        "ontology_contract_status": "missing",
+        "healthy_indicators": [
+          "Site confirms sustained sorting and tote exchange.",
+          "Bag-out is available.",
+          "No recurring XLE communication-loss or stunnel-error indication is observed."
+        ],
+        "unhealthy_indicators": [
+          "Tote exchange stops again.",
+          "The sorter or scanners remain unable to communicate.",
+          "Communication-loss messages recur."
+        ],
+        "inconclusive_indicators": [
+          "Only administrative case closure is available.",
+          "Movement is observed during an unfinished purge but sustained tote exchange is not confirmed."
+        ],
+        "stop_or_escalation_note": "If validation fails or remains inconclusive after the authorized recovery path, hand off with the communication evidence and recovery results.",
+        "related_artifact_ids": [
+          "artifact_incident_233681_page_011_nested_image_02",
+          "artifact_incident_233681_page_010_embedded_image_02"
+        ],
+        "related_event_ids": [
+          "incident_233681_event_010",
+          "incident_233681_event_012",
+          "incident_233681_event_016"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_8",
+            "artifact_id": null,
+            "quote_or_summary": "The site reported that the issue was fixed and sorting had resumed."
+          },
+          {
+            "page_ref": "case_233681:page_11",
+            "artifact_id": "artifact_incident_233681_page_011_nested_image_02",
+            "quote_or_summary": "Movement and tote exchange were occurring during a purge, but completion and sustained recovery were not confirmed."
+          }
+        ]
+      },
+      {
+        "node_id": "node_5",
+        "node_order": 5,
+        "node_type": "escalation_gate",
+        "title": "Stop when communication recovery or validation cannot continue safely",
+        "intent": "Hand off when the communication path requires unsupported network or service changes, or when authorized recovery does not restore stable operation.",
+        "goal": "Hand off when the communication path requires unsupported network or service changes, or when authorized recovery does not restore stable operation.",
+        "runbook_placeholder": "Procedure needed to prepare an escalation handoff containing XLE communication-loss evidence, connectivity-test results, stunnel error observations, sorter and tote-exchange impact, recovery actions attempted, and validation results, while identifying any required site network-owner or service-owner decision.",
+        "allowed_roles": [
+          "L2_support",
+          "L3_support"
+        ],
+        "preferred_audience": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "The source documents ongoing site network investigation, an apparent firewall issue, incomplete recovery validation, and later case closure without a complete live-system validation.",
+        "needed_runbook_capability": "Procedure needed to prepare an escalation handoff containing XLE communication-loss evidence, connectivity-test results, stunnel error observations, sorter and tote-exchange impact, recovery actions attempted, and validation results, while identifying any required site network-owner or service-owner decision.",
+        "expected_or_observed_result": "L2 or L3 support confirms that the evidence package contains the communication-loss messages, connectivity-test results, stunnel observations, affected workflow state, recovery attempts, and validation outcome. Continue only when an authorized role and supported recovery path are available.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "The incident records ongoing site network investigation and later firewall analysis."
+          }
+        ],
+        "stage8_candidate_surfaces": [],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [],
+        "ontology_contract_status": "not_required",
+        "healthy_indicators": [],
+        "unhealthy_indicators": [
+          "Required network or service authority is unavailable.",
+          "Communication remains unavailable after supported recovery.",
+          "Tote exchange or sorter validation fails."
+        ],
+        "inconclusive_indicators": [
+          "Only case closure or interim movement is available without live operational confirmation."
+        ],
+        "stop_or_escalation_note": "Escalate for unsupported network or service changes or unresolved communication failure; do not treat historical collaboration or case escalation as the reason for this gate.",
+        "related_artifact_ids": [
+          "artifact_incident_233681_page_006_detected_region_01",
+          "artifact_incident_233681_page_007_detected_region_01",
+          "artifact_incident_233681_page_012_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_233681_event_008",
+          "incident_233681_event_009",
+          "incident_233681_event_013"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_7",
+            "artifact_id": "artifact_incident_233681_page_007_detected_region_01",
+            "quote_or_summary": "The site was still investigating on its network side and a firewall appeared to be causing the issue."
+          }
+        ]
+      }
+    ],
+    "branch_hints": [
+      {
+        "from_node_id": "node_1",
+        "condition_or_signal": "Broad tote-exchange or bag-out failure is confirmed while the system appears active.",
+        "suggested_next_node_id": "node_2",
+        "reason": "The source supports moving from the observable workflow failure to communication-focused investigation.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_1",
+            "quote_or_summary": "Totes were not exchanging and the site entered bag-out mode."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_1",
+        "condition_or_signal": "The issue is localized, tote exchange is normal, or the reported broad pattern is not confirmed.",
+        "suggested_next_node_id": "",
+        "reason": "Exit this path and retriage rather than entering a communication-recovery sequence.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_11",
+            "quote_or_summary": "The source distinguishes the broad system symptom from the absence of reported AGV faults."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_2",
+        "condition_or_signal": "XLE communication loss, stunnel errors, sorter non-communication, or failed TCP connectivity is indicated.",
+        "suggested_next_node_id": "node_3",
+        "reason": "The incident evidence supports an authorized communication-path recovery direction.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_5",
+            "quote_or_summary": "Repeated communication-loss messages involved XLE."
+          },
+          {
+            "page_ref": "case_233681:page_6",
+            "quote_or_summary": "TCP connectivity tests failed."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_2",
+        "condition_or_signal": "Communication loss is not currently indicated or the evidence points to a different localized workflow problem.",
+        "suggested_next_node_id": "",
+        "reason": "Exit or retriage because the source-supported communication branch is not matched.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_7",
+            "quote_or_summary": "The firewall was described as appearing to cause the issue, not as a universally applicable diagnosis."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_3",
+        "condition_or_signal": "Authorized communication-path recovery is completed and controlled operation can be attempted.",
+        "suggested_next_node_id": "node_4",
+        "reason": "Post-recovery validation should occur only after recovery completion.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_11",
+            "quote_or_summary": "Movement and tote exchange resumed during the purge, but completion still required confirmation."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_3",
+        "condition_or_signal": "Recovery cannot be performed within the authorized role or communication remains unavailable.",
+        "suggested_next_node_id": "node_5",
+        "reason": "Unsupported network or service changes require an escalation handoff.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_7",
+            "quote_or_summary": "The site was still investigating on its network side."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_4",
+        "condition_or_signal": "Sorting, bag-out, and tote exchange remain normal and communication-loss indications do not recur.",
+        "suggested_next_node_id": "",
+        "reason": "The troubleshooting path has reached a supported operational validation outcome.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_8",
+            "quote_or_summary": "The site reported that it was able to sort again."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_4",
+        "condition_or_signal": "Tote exchange or sorter operation fails again, or communication-loss indications recur.",
+        "suggested_next_node_id": "node_5",
+        "reason": "The source does not support declaring recovery when only interim movement or administrative closure is observed.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_11",
+            "quote_or_summary": "The purge-related recovery was in progress and sustained normal operation was not confirmed."
+          }
+        ]
+      }
+    ],
+    "escalation_gates": [
+      {
+        "condition_or_signal": "Firewall, network-path, or service changes are required beyond the authorized role, or supported recovery does not restore stable tote exchange and sorter communication.",
+        "required_role": "L2_support",
+        "reason": "The evidence identifies a suspected firewall communication block but does not document the exact rule or corrective change.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_10",
+            "artifact_id": "artifact_incident_233681_page_010_embedded_image_01",
+            "quote_or_summary": "Resolution details state that a firewall prevented XLEs from communicating with the rest of the system."
+          }
+        ]
+      }
+    ],
+    "validation_gates": [
+      {
+        "validation_goal": "Confirm sustained recovery of tote exchange, bag-out, sorter processing, and the affected communication path.",
+        "expected_recovery_signal": "The site confirms continued sorting and tote exchange, and no recurring XLE or stunnel communication-loss indication is observed.",
+        "failure_outcome": "Return to communication investigation or escalate with the evidence package; do not rely solely on case closure or brief movement during a purge.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_8",
+            "quote_or_summary": "Sorting was reported to have resumed."
+          },
+          {
+            "page_ref": "case_233681:page_11",
+            "quote_or_summary": "Movement and tote exchange resumed during a purge, but sustained recovery was not confirmed."
+          }
+        ]
+      }
+    ],
+    "runbook_placeholders": [
+      {
+        "needed_procedure": "Site symptom and workflow-scope confirmation for tote exchange, bag-out, sorter processing, and RMS-observed task activity.",
+        "why_needed": "The first decision must distinguish a broad workflow failure from a localized robot or tote issue.",
+        "suggested_role": "operator",
+        "risk_note": "Do not interpret ambiguous RMS OCR values or counters as confirmed faults.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_1",
+            "quote_or_summary": "The site reported no tote processing after startup."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "XLE communication, stunnel, and connectivity-evidence assessment using the incident-visible communication messages and diagnostic output.",
+        "why_needed": "The incident's main technical direction is communication loss, but the evidence does not identify the failing layer.",
+        "suggested_role": "L1_support",
+        "risk_note": "Do not infer a confirmed firewall cause from failed TCP tests alone.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_6",
+            "quote_or_summary": "Multiple TCP connectivity tests failed."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Authorized XLE communication-path recovery and controlled system-purge or related recovery assessment, including site network-owner role limits.",
+        "why_needed": "The incident records a purge and communication remediation but does not provide a complete reusable procedure.",
+        "suggested_role": "L2_support",
+        "risk_note": "Do not perform undocumented firewall or database changes.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_11",
+            "quote_or_summary": "A system purge was started and movement resumed."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Post-recovery validation of sorter communication, bag-out, tote exchange, and recurrence of XLE or stunnel errors.",
+        "why_needed": "The historical evidence includes interim recovery and administrative closure without complete live-system validation.",
+        "suggested_role": "L1_support",
+        "risk_note": "Brief movement or case closure is not sufficient evidence of sustained recovery.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_11",
+            "quote_or_summary": "The purge was not yet confirmed complete."
+          }
+        ]
+      }
+    ],
+    "ignored_non_playbook_content": [
+      {
+        "content_type": "intake",
+        "example_from_incident": "The case was opened as priority 2 with production seriously impacted.",
+        "reason_ignored": "Priority and case creation are intake and case-management content, not troubleshooting orchestration."
+      },
+      {
+        "content_type": "support_coordination",
+        "example_from_incident": "Attempts to reach escalation and chat participants.",
+        "reason_ignored": "Historical coordination does not define a reusable technical troubleshooting direction."
+      },
+      {
+        "content_type": "communication",
+        "example_from_incident": "Status updates and messages to internal or all recipients.",
+        "reason_ignored": "Communication activity is not a diagnostic or recovery node."
+      },
+      {
+        "content_type": "exact_procedure",
+        "example_from_incident": "The site planned to reset the camera tunnel and XLE and performed a system purge.",
+        "reason_ignored": "The evidence lacks a complete validated procedure; the actions are represented only as high-level procedure or recovery placeholders."
+      },
+      {
+        "content_type": "reference_background",
+        "example_from_incident": "The case changed from Resolved to Closed.",
+        "reason_ignored": "Administrative closure does not independently validate live operational recovery."
+      }
+    ],
+    "source_refs": [
+      {
+        "page_ref": "case_233681:page_1",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "Totes were not exchanging after startup and the site entered bag-out mode."
+      },
+      {
+        "page_ref": "case_233681:page_6",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "Lost communication to XLEs and failed TCP connectivity tests were reported."
+      },
+      {
+        "page_ref": "case_233681:page_10",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "The recorded resolution attributed the communication blockage to a firewall issue."
+      }
+    ],
+    "evidence_source_refs": [
+      {
+        "page_ref": "case_233681:page_1",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "Totes were not exchanging after startup and the site entered bag-out mode."
+      },
+      {
+        "page_ref": "case_233681:page_6",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "Lost communication to XLEs and failed TCP connectivity tests were reported."
+      },
+      {
+        "page_ref": "case_233681:page_10",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "The recorded resolution attributed the communication blockage to a firewall issue."
+      }
+    ],
+    "extraction_notes": [
+      "Ingestion metadata is authoritative for site assignment: UPS Haslet TX (TXRTH), site_code ups_haslet_tx.",
+      "The source uses both Haslet and UPS Fort Worth, TX (Haslet); these are consistent with the authoritative ingestion site and do not require replacement.",
+      "Firewall involvement is source-supported as a recorded or suspected explanation, not a confirmed diagnosis.",
+      "The exact endpoint addresses, ports, firewall rule, stunnel change, and purge procedure are not reliable or complete enough for reusable procedural steps.",
+      "The RMS screenshot contains ambiguous identifiers and values; those details were not used as confirmed decision criteria."
+    ],
+    "summary": "Use when totes are not exchanging or bag-out is unavailable across the operation, especially when the system appears to be running but communication with equipment or the sorter is impaired.",
+    "likely_roles": [
+      "L1_support",
+      "L2_support",
+      "L3_support",
+      "operator"
+    ],
+    "related_artifact_ids": [],
+    "related_event_ids": [],
+    "source_id": "source_case_233681",
+    "source_type": "incident_case",
+    "source_title": "Case 233681 - UPS Haslet OptiSweep Incident Evidence",
+    "source_version": "0.1",
+    "ingestion_batch_id": "batch_20260910T143853Z",
+    "extraction_mode": "one_or_more_playbook_candidates_when_separable"
+  },
+  {
+    "playbook_candidate_id": "playbook_candidate_incident_233681_single_agv_interruption",
+    "title": "Single AGV intermittently stopping and obstructing sorter flow",
+    "user_facing_summary": "Use when one AGV repeatedly stops and starts and appears to hold up part of the sorter while the broader system is otherwise operating.",
+    "playbook_goal": "Distinguish an isolated intermittently stopping AGV from the site-wide communication flow, assess whether the asset presents an active fault or physical obstruction, and determine whether authorized physical recovery or removal is required.",
+    "incident_context": {
+      "case_id": "233681",
+      "site": "UPS Haslet TX (TXRTH)",
+      "site_code": "ups_haslet_tx",
+      "site_location": {
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "customer": "UPS",
+        "city": "Haslet",
+        "state": "TX",
+        "country": "US",
+        "hub_code": "TXRTH",
+        "region_label": "Fort Worth, TX"
+      },
+      "incident_start_time": "2026-08-22 06:04",
+      "incident_resolved_time": "2026-08-25",
+      "time_to_resolve": "3 calendar days; exact resolution time unavailable",
+      "resolution_confirmed": true
+    },
+    "observed_entry_symptoms": [
+      "One AGV stops and starts intermittently.",
+      "The intermittent AGV holds up one side of the sorter.",
+      "The broader sorter may otherwise be operating after communication recovery."
+    ],
+    "negative_or_absent_signals": [
+      "The source does not confirm that the AGV was faulted.",
+      "The source does not confirm that the AGV was physically removed.",
+      "The source does not establish whether the issue was caused by hardware, pathing, task state, or communication."
+    ],
+    "support_user_language_examples": [
+      "One AGV keeps stopping and starting",
+      "A robot is holding up one side of the sorter",
+      "One AGV is blocking the sorter",
+      "The system is mostly back but one robot keeps stopping",
+      "Should we remove the robot?"
+    ],
+    "tentative_internal_patterns": [
+      "Possible isolated AGV operational interruption",
+      "Possible AGV task, path, or physical-state issue",
+      "Possible localized sorter obstruction"
+    ],
+    "internal_pattern_notes": "The source supports only a symptom pattern and a conditional consideration of removal. It does not establish a fault type, physical obstruction, or completed recovery.",
+    "affected_systems_or_components": [
+      "Individual AGV",
+      "Sorter",
+      "RMS monitoring",
+      "Physical floor or AGV handling"
+    ],
+    "separability_reason": "This flow has a different runtime entry symptom and troubleshooting goal from the site-wide communication flow. It occurs later and may be selected independently when one AGV is reported to stop and start, although the evidence is sparse.",
+    "confidence": "low",
+    "confidence_reason": "The packet contains one report of an AGV stopping and starting, a conditional suggestion to remove it, and no confirmed diagnosis, removal, or validation sequence.",
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm an isolated intermittently stopping AGV",
+        "intent": "Determine whether one identifiable AGV is repeatedly stopping and starting while obstructing sorter flow, rather than the site-wide communication symptom recurring.",
+        "goal": "Determine whether one identifiable AGV is repeatedly stopping and starting while obstructing sorter flow, rather than the site-wide communication symptom recurring.",
+        "runbook_placeholder": "Procedure needed to confirm the affected robot's current behavior and identity through site observation and the RMS fleet or map-monitoring view, including whether the interruption is isolated and whether RMS shows an active AGV error or abnormal state.",
+        "allowed_roles": [
+          "operator",
+          "L1_support",
+          "L2_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "The source reports that an AGV identified in the chat as 052 was stopping and starting and holding up one side of the sorter.",
+        "needed_runbook_capability": "Procedure needed to confirm the affected robot's current behavior and identity through site observation and the RMS fleet or map-monitoring view, including whether the interruption is isolated and whether RMS shows an active AGV error or abnormal state.",
+        "expected_or_observed_result": "The site operator observes the affected AGV and L1 support reviews RMS fleet or map-monitoring status when available. Unhealthy evidence is repeated stop/start behavior associated with one asset and a localized sorter interruption. Healthy or alternate-path evidence is normal operation by the asset or a site-wide communication failure instead. Inconclusive evidence is an unclear asset identity, no repeatable behavior, or no direct observation.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "The source reports that one AGV was stopping and starting and holding up one side of the sorter."
+          },
+          {
+            "surface": "rms_ui",
+            "provenance": "source_artifact_visible",
+            "source_evidence": "The incident includes RMS monitoring evidence for robot status, although the later individual-AGV symptom was reported in chat rather than shown in a dedicated RMS artifact."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "rms_ui",
+          "wcs_sql"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [
+          {
+            "id": "capability:agv_active_errors",
+            "support_contract": "Confirm whether AGVs or robots currently have active error or fault state.",
+            "relevant_evidence": "The node checks whether the intermittently stopping asset has an active error state."
+          }
+        ],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology snippet does not establish a specific mapping for intermittent stop/start behavior or sorter obstruction."
+        ],
+        "ontology_contract_status": "complete",
+        "healthy_indicators": [
+          "The affected AGV operates normally during observation.",
+          "The issue is not isolated and instead matches the separate site-wide communication pattern."
+        ],
+        "unhealthy_indicators": [
+          "One AGV repeatedly stops and starts.",
+          "The same asset correlates with a localized sorter interruption.",
+          "RMS or corroborating evidence shows an active error or abnormal state."
+        ],
+        "inconclusive_indicators": [
+          "The asset identifier is unclear.",
+          "The behavior is not observed again.",
+          "No current RMS or other status evidence is available."
+        ],
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_233681_page_012_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_233681_event_018"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_12",
+            "artifact_id": "artifact_incident_233681_page_012_nested_image_01",
+            "quote_or_summary": "An AGV identified as 052 was stopping and starting and holding up one side of the sorter."
+          }
+        ]
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "procedure_reference",
+        "title": "Use the authorized isolated-AGV recovery path",
+        "intent": "Apply the approved recovery direction for an isolated intermittently stopping AGV, including physical isolation or removal only when authorized and safe.",
+        "goal": "Apply the approved recovery direction for an isolated intermittently stopping AGV, including physical isolation or removal only when authorized and safe.",
+        "runbook_placeholder": "Procedure needed for authorized isolated-AGV assessment and physical recovery or removal, including safety prerequisites, role limits, fleet-impact checks, and criteria for deciding whether the affected asset may be taken out of service. Do not infer or prescribe a specific removal action from the incident alone.",
+        "allowed_roles": [
+          "operator",
+          "L2_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L2_support"
+        ],
+        "source_supported_description": "The source records a conditional plan to take the affected AGV out if the stop/start behavior continued, but does not document completion.",
+        "needed_runbook_capability": "Procedure needed for authorized isolated-AGV assessment and physical recovery or removal, including safety prerequisites, role limits, fleet-impact checks, and criteria for deciding whether the affected asset may be taken out of service. Do not infer or prescribe a specific removal action from the incident alone.",
+        "expected_or_observed_result": "The site operator or authorized support role observes that the affected AGV is safely handled according to the approved procedure. Progress evidence is that the localized sorter obstruction clears and the remaining operation can proceed. Failure evidence is continued stop/start behavior or continued obstruction. Inconclusive evidence is a proposed removal with no confirmation that it occurred or that the obstruction was resolved.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "rms_ui",
+            "provenance": "source_artifact_visible",
+            "source_evidence": "RMS monitoring was present in the incident evidence and is relevant to checking fleet impact."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "physical_floor",
+          "rms_ui"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [
+          {
+            "id": "capability:agv_physical_recovery",
+            "support_contract": "Support physical AGV recovery or removal workflows.",
+            "relevant_evidence": "The incident records a conditional plan to remove the intermittently stopping AGV if the condition continued."
+          }
+        ],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology does not define the specific safe-removal decision rubric for this symptom."
+        ],
+        "ontology_contract_status": "complete",
+        "healthy_indicators": [
+          "The affected AGV is safely isolated or otherwise no longer obstructs sorter flow.",
+          "The remaining fleet and sorter operate without the localized interruption."
+        ],
+        "unhealthy_indicators": [
+          "The AGV continues stopping and starting.",
+          "The sorter remains obstructed after the authorized recovery path.",
+          "Physical conditions are unsafe or unclear."
+        ],
+        "inconclusive_indicators": [
+          "Removal was discussed but not confirmed.",
+          "The asset cannot be safely identified or accessed.",
+          "The sorter impact cannot be separated from the broader communication issue."
+        ],
+        "stop_or_escalation_note": "Only the site or another role authorized by the applicable physical-recovery procedure may perform physical handling; remote support should not direct unsupported physical actions.",
+        "related_artifact_ids": [
+          "artifact_incident_233681_page_012_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_233681_event_018"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_12",
+            "artifact_id": "artifact_incident_233681_page_012_nested_image_01",
+            "quote_or_summary": "The affected AGV was to be taken out if the condition continued."
+          }
+        ]
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "validation_gate",
+        "title": "Validate clearance of the localized sorter interruption",
+        "intent": "Confirm that the isolated AGV condition no longer blocks sorter operation and that the broader fleet remains stable.",
+        "goal": "Confirm that the isolated AGV condition no longer blocks sorter operation and that the broader fleet remains stable.",
+        "runbook_placeholder": "Procedure needed to monitor the affected sorter section and confirm stable AGV or fleet status in RMS after isolated-AGV recovery, including confirmation that the obstruction does not recur during normal operation.",
+        "allowed_roles": [
+          "operator",
+          "L1_support",
+          "L2_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "The incident provides a localized symptom but no documented confirmation that the sorter remained clear after the conditional removal discussion.",
+        "needed_runbook_capability": "Procedure needed to monitor the affected sorter section and confirm stable AGV or fleet status in RMS after isolated-AGV recovery, including confirmation that the obstruction does not recur during normal operation.",
+        "expected_or_observed_result": "The site observes the affected sorter side and the affected AGV or its replacement state; support may corroborate fleet status in RMS. Healthy evidence is that sorter flow continues without the recurring stop/start behavior and no new localized obstruction appears. Unhealthy evidence is recurring interruption or continued sorter blockage. Inconclusive evidence is no sustained observation or unclear asset state.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "The source reports localized sorter impact from the intermittently stopping AGV."
+          },
+          {
+            "surface": "rms_ui",
+            "provenance": "source_artifact_visible",
+            "source_evidence": "RMS monitoring was included in the incident packet as a fleet-status surface."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "rms_ui"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [
+          {
+            "id": "capability:agv_active_errors",
+            "support_contract": "Confirm whether AGVs or robots currently have active error or fault state.",
+            "relevant_evidence": "Validation includes checking whether an active error recurs for the affected asset."
+          }
+        ],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology does not define a specific sorter-side validation mapping for this localized symptom."
+        ],
+        "ontology_contract_status": "complete",
+        "healthy_indicators": [
+          "The affected sorter side continues operating.",
+          "The stop/start behavior does not recur during observation.",
+          "No new active AGV error or localized obstruction is observed."
+        ],
+        "unhealthy_indicators": [
+          "The same intermittent AGV behavior recurs.",
+          "The sorter remains blocked or repeatedly pauses at the affected area."
+        ],
+        "inconclusive_indicators": [
+          "The observation period is too short.",
+          "The affected asset or sorter side cannot be identified.",
+          "No current fleet-status evidence is available."
+        ],
+        "stop_or_escalation_note": "If the localized interruption persists after the authorized path, stop and provide the asset, sorter impact, observed behavior, and recovery outcome to the next support role.",
+        "related_artifact_ids": [
+          "artifact_incident_233681_page_012_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_233681_event_018"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_12",
+            "artifact_id": "artifact_incident_233681_page_012_nested_image_01",
+            "quote_or_summary": "The intermittent AGV behavior was reported as holding up one side of the sorter."
+          }
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "escalation_gate",
+        "title": "Stop if isolated AGV recovery is unsafe or unsuccessful",
+        "intent": "Hand off when the asset cannot be safely handled, the symptom persists, or the evidence is insufficient to choose a supported recovery.",
+        "goal": "Hand off when the asset cannot be safely handled, the symptom persists, or the evidence is insufficient to choose a supported recovery.",
+        "runbook_placeholder": "Procedure needed to prepare an isolated-AGV escalation handoff containing asset identity, RMS status evidence, site observation of stop/start behavior, sorter impact, physical safety constraints, recovery attempted, and validation outcome.",
+        "allowed_roles": [
+          "L2_support",
+          "L3_support"
+        ],
+        "preferred_audience": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "The incident records a conditional removal discussion but no confirmed completion or diagnosis.",
+        "needed_runbook_capability": "Procedure needed to prepare an isolated-AGV escalation handoff containing asset identity, RMS status evidence, site observation of stop/start behavior, sorter impact, physical safety constraints, recovery attempted, and validation outcome.",
+        "expected_or_observed_result": "The authorized support role confirms that the asset identity, observed behavior, physical safety state, recovery attempt, and sorter impact are documented. Continue only when a supported and authorized physical-recovery path is available.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [],
+        "stage8_candidate_surfaces": [],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [],
+        "ontology_contract_status": "not_required",
+        "healthy_indicators": [],
+        "unhealthy_indicators": [
+          "The AGV remains intermittently stopped or continues obstructing the sorter.",
+          "Physical handling is unsafe or outside the available role.",
+          "The asset identity or state cannot be established."
+        ],
+        "inconclusive_indicators": [
+          "The source only records a conditional plan and no completed recovery."
+        ],
+        "stop_or_escalation_note": "Do not infer a hardware fault or direct unsupported physical removal.",
+        "related_artifact_ids": [
+          "artifact_incident_233681_page_012_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_233681_event_018"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_12",
+            "artifact_id": "artifact_incident_233681_page_012_nested_image_01",
+            "quote_or_summary": "The AGV was to be taken out if the condition continued."
+          }
+        ]
+      }
+    ],
+    "branch_hints": [
+      {
+        "from_node_id": "node_1",
+        "condition_or_signal": "One identifiable AGV repeatedly stops and starts and correlates with a localized sorter interruption.",
+        "suggested_next_node_id": "node_2",
+        "reason": "This confirms the distinct isolated-AGV troubleshooting pattern.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_12",
+            "quote_or_summary": "An AGV was stopping and starting and holding up one side of the sorter."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_1",
+        "condition_or_signal": "The symptom is not isolated, the AGV operates normally, or the pattern is instead site-wide communication loss.",
+        "suggested_next_node_id": "",
+        "reason": "Exit this candidate and use the broader communication or another appropriate path.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_7",
+            "quote_or_summary": "The incident also contained a separate site-wide communication problem."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_2",
+        "condition_or_signal": "The authorized physical or isolated-AGV recovery path is completed.",
+        "suggested_next_node_id": "node_3",
+        "reason": "Validation follows only after the approved recovery activity is complete.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_12",
+            "quote_or_summary": "Removal was discussed conditionally if the behavior continued."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_2",
+        "condition_or_signal": "Recovery is unsafe, unauthorized, not completed, or the obstruction persists.",
+        "suggested_next_node_id": "node_4",
+        "reason": "The packet does not support continuing without an authorized physical-recovery path.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_12",
+            "quote_or_summary": "The source does not confirm that removal occurred."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_3",
+        "condition_or_signal": "Sorter flow remains stable and the intermittent stop/start behavior does not recur.",
+        "suggested_next_node_id": "",
+        "reason": "The localized troubleshooting goal has been validated.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_12",
+            "quote_or_summary": "The reported concern was localized sorter obstruction."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_3",
+        "condition_or_signal": "The intermittent behavior recurs or the sorter remains obstructed.",
+        "suggested_next_node_id": "node_4",
+        "reason": "The limited incident evidence does not support an additional recovery step beyond escalation.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_12",
+            "quote_or_summary": "No confirmed successful recovery for the intermittent AGV issue is documented."
+          }
+        ]
+      }
+    ],
+    "escalation_gates": [
+      {
+        "condition_or_signal": "The isolated AGV continues to stop and start, remains a sorter obstruction, or cannot be safely identified or handled.",
+        "required_role": "L2_support",
+        "reason": "The source provides only a conditional removal discussion and no confirmed diagnosis or completed procedure.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_12",
+            "artifact_id": "artifact_incident_233681_page_012_nested_image_01",
+            "quote_or_summary": "The affected AGV was to be taken out if the condition continued."
+          }
+        ]
+      }
+    ],
+    "validation_gates": [
+      {
+        "validation_goal": "Confirm that the localized sorter interruption has cleared after authorized isolated-AGV recovery.",
+        "expected_recovery_signal": "The sorter continues operating and the affected AGV stop/start behavior does not recur during observation.",
+        "failure_outcome": "Escalate with the asset identity, RMS evidence, physical observation, recovery attempt, and sorter impact.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_12",
+            "artifact_id": "artifact_incident_233681_page_012_nested_image_01",
+            "quote_or_summary": "The reported symptom was an intermittently stopping AGV holding up one side of the sorter."
+          }
+        ]
+      }
+    ],
+    "runbook_placeholders": [
+      {
+        "needed_procedure": "Isolated AGV behavior and active-error assessment using site observation and RMS fleet status.",
+        "why_needed": "The incident does not establish whether the individual asset had a fault, task issue, path issue, or physical problem.",
+        "suggested_role": "operator",
+        "risk_note": "Do not treat the reported asset identifier or intermittent behavior as a confirmed fault classification.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_12",
+            "quote_or_summary": "One AGV was reported to be stopping and starting."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Authorized AGV physical recovery or removal decision and safety procedure.",
+        "why_needed": "The source mentions conditional removal but does not document the safe procedure or role boundaries.",
+        "suggested_role": "operator",
+        "risk_note": "Physical handling must follow site safety controls and authorized procedures.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_12",
+            "quote_or_summary": "The AGV was to be taken out if the condition continued."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Localized sorter-flow and fleet-stability validation after isolated-AGV recovery.",
+        "why_needed": "The evidence does not confirm that the sorter obstruction cleared or that the symptom remained absent.",
+        "suggested_role": "operator",
+        "risk_note": "A brief absence of the symptom is not sufficient if the sorter remains unstable.",
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_12",
+            "quote_or_summary": "The AGV was reported to hold up one side of the sorter."
+          }
+        ]
+      }
+    ],
+    "ignored_non_playbook_content": [
+      {
+        "content_type": "reference_background",
+        "example_from_incident": "Preventive maintenance was complete for 57 of 63 AGVs.",
+        "reason_ignored": "The maintenance-progress statement does not provide a diagnostic decision or reusable recovery direction for the reported symptom."
+      },
+      {
+        "content_type": "support_coordination",
+        "example_from_incident": "Participants thanked support for getting the system back on track.",
+        "reason_ignored": "Recognition and collaboration are not troubleshooting nodes."
+      },
+      {
+        "content_type": "exact_procedure",
+        "example_from_incident": "The discussion suggested taking the AGV out during a later sort.",
+        "reason_ignored": "The source does not provide a complete safe-removal procedure; it is retained only as a conditional high-level recovery direction."
+      }
+    ],
+    "source_refs": [
+      {
+        "page_ref": "case_233681:page_12",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "artifact_id": "artifact_incident_233681_page_012_nested_image_01",
+        "quote_or_summary": "An AGV was stopping and starting and holding up one side of the sorter."
+      }
+    ],
+    "evidence_source_refs": [
+      {
+        "page_ref": "case_233681:page_12",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "artifact_id": "artifact_incident_233681_page_012_nested_image_01",
+        "quote_or_summary": "An AGV was stopping and starting and holding up one side of the sorter."
+      }
+    ],
+    "extraction_notes": [
+      "This candidate is intentionally low confidence because the packet contains only one sparse report of the isolated AGV symptom.",
+      "The source identifier '052' is preserved only in source references and is not used in reusable node fields.",
+      "No confirmed AGV fault, physical obstruction, removal, or successful validation is documented.",
+      "The ingestion site remains UPS Haslet TX (TXRTH), site_code ups_haslet_tx."
+    ],
+    "summary": "Use when one AGV repeatedly stops and starts and appears to hold up part of the sorter while the broader system is otherwise operating.",
+    "likely_roles": [
+      "L1_support",
+      "L2_support",
+      "L3_support",
+      "operator"
+    ],
+    "related_artifact_ids": [],
+    "related_event_ids": [],
+    "source_id": "source_case_233681",
+    "source_type": "incident_case",
+    "source_title": "Case 233681 - UPS Haslet OptiSweep Incident Evidence",
+    "source_version": "0.1",
+    "ingestion_batch_id": "batch_20260910T143853Z",
+    "extraction_mode": "one_or_more_playbook_candidates_when_separable"
+  }
+]

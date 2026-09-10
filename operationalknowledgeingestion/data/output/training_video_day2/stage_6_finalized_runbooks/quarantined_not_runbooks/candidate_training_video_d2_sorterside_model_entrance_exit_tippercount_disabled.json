@@ -1,0 +1,315 @@
+{
+  "procedure_id": "proc_review_sortersidedatabasemodel_entrance_exit_tippercount_disabled_v1",
+  "candidate_id": "candidate_training_video_d2_sorterside_model_entrance_exit_tippercount_disabled",
+  "title": "Review SorterSideDatabaseModel entrance/exit queue IDs, tipper count, and disabled flag for a sorter side",
+  "procedure_type": "diagnostic",
+  "summary": "Use the SorterSideDatabaseModel field definitions to verify which entrance/exit queue location IDs a sorter side references, what tipper count represents (round-robin closest set), and whether that sorter side is marked disabled.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "zone_config_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to interpret how a specific sorter side is represented in the database model—specifically the EntranceId/ExitId queue-location references, the TipperCount meaning (round-robin closest set), and the Disabled flag.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Open the relevant database model view/table and interpret SorterSideDatabaseModel fields (Name, EntranceId, ExitId, TipperCount, Disabled) for the sorter side under investigation."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "SSMS / Helix/WCS database access to view the SorterSideDatabaseModel table (exact access method not specified in the source).",
+    "SorterSideDatabaseModel table fields: Name, EntranceId, ExitId, TipperCount, Disabled.",
+    "Robot Location model understanding for the foreign-key relationship of EntranceId/ExitId to queue-location entries."
+  ],
+  "prerequisites": {
+    "access_required": [
+      "SSMS / Helix/WCS database access to view SorterSideDatabaseModel"
+    ],
+    "system_preconditions": [],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_sorter_side_database_model_v1",
+    "ctx_training_video_entrance_exit_queue_location_relationship_v1",
+    "ctx_training_video_tipper_count_round_robin_concept_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+      "description": "Frame showing Robot Location database model location types/statuses and the SorterSideDatabaseModel field meaning (Entrance/Exit queue locations, TipperCount, Disabled).",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the SorterSideDatabaseModel table described in the training segment",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Get to the live database model fields needed to interpret a sorter side’s entrance/exit queue IDs, tipper count, and disabled status.",
+      "instruction": "In SSMS / Helix/WCS database access, navigate to the SorterSideDatabaseModel table/view that contains the sorter-side model fields.",
+      "expected_result": "You can view the SorterSideDatabaseModel columns/fields including Name, EntranceId, ExitId, TipperCount, and Disabled.",
+      "healthy_condition": "The SorterSideDatabaseModel table/view is accessible and shows the expected field names (Name, EntranceId, ExitId, TipperCount, Disabled).",
+      "failure_condition": "You cannot locate the SorterSideDatabaseModel table/view or the expected fields are not present/visible.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open SorterSideDatabaseModel",
+          "exact_action": "Open the SorterSideDatabaseModel table described in the training segment.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Identify the documented columns/fields: Name, EntranceId, ExitId, TipperCount, and Disabled",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure you are interpreting the correct database model fields for the sorter side record.",
+      "instruction": "Confirm the SorterSideDatabaseModel columns/fields you will use are: Name, EntranceId, ExitId, TipperCount, and Disabled.",
+      "expected_result": "You can map each required concept to the correct column: Name (sorter side identifier), EntranceId (entrance queue location ID), ExitId (exit-related queue location ID), TipperCount (round-robin closest set), Disabled (whether the sorter side is disabled).",
+      "healthy_condition": "All five fields are visible and correspond to the meanings described in the source.",
+      "failure_condition": "One or more of the required fields (EntranceId, ExitId, TipperCount, Disabled) are missing or cannot be identified in the table/view.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify field list",
+          "exact_action": "Identify the documented columns/fields: Name, EntranceId, ExitId, TipperCount, and Disabled.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Review EntranceId and ExitId values as the queue-location references used by the sorter side",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine which queue-location IDs the sorter side uses for entrance (before it goes on the sorter) and exit-related queue (when it leaves and stops before it gets to a tipper queue).",
+      "instruction": "For the sorter side record of interest, read EntranceId and ExitId and treat them as queue-location references for the entrance queue and exit-related queue, respectively.",
+      "expected_result": "For the sorter side record, EntranceId and ExitId are populated with queue-location IDs that correspond to the entrance and exit-related queue locations described by the model.",
+      "healthy_condition": "EntranceId and ExitId values are consistent with the model’s entrance/exit queue-location concept (entrance before sorter; exit-related queue when leaving and stopping before tipper queue).",
+      "failure_condition": "EntranceId/ExitId values do not correspond to queue-location entries in the Robot Location model (foreign-key relationship described in the segment).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect EntranceId/ExitId for sorter side",
+          "exact_action": "For the sorter side of interest, review EntranceId and ExitId values as the queue-location references used by that sorter side.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If EntranceId/ExitId do not correspond to queue-location entries in the Robot Location model (foreign-key relationship described in the segment), stop and escalate for deeper model/data integrity troubleshooting (L3/vendor)."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Review TipperCount and confirm it represents the 'round robin closest 4' concept",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Interpret how many tippers the sorter side will consider as the closest set (round-robin closest set) based on the TipperCount field.",
+      "instruction": "For the sorter side record of interest, read TipperCount and interpret it as the round-robin closest set concept (the segment describes closest 4 as the tipper count).",
+      "expected_result": "TipperCount value can be described as the round-robin closest set size (e.g., closest 4 concept as described).",
+      "healthy_condition": "TipperCount aligns with the model’s round-robin closest set meaning (closest 4 described as the tipper count).",
+      "failure_condition": "TipperCount cannot be reconciled with the round-robin closest set meaning described in the source (e.g., value/meaning mismatch).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect TipperCount",
+          "exact_action": "Review TipperCount and confirm it represents the 'round robin closest 4' concept (the segment describes closest 4 as the tipper count).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Review Disabled to determine whether the sorter side is disabled or not",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm whether the sorter side is marked disabled in the model, which affects whether it is considered active for sorting behavior.",
+      "instruction": "For the sorter side record of interest, read the Disabled field and determine whether the sorter side is disabled or not based on the model’s Disabled indicator.",
+      "expected_result": "You can state whether the sorter side record is marked disabled (Disabled flag value) and describe it as 'disabled or not' per the model definition.",
+      "healthy_condition": "Disabled is clearly set for the sorter side record and matches the model’s 'sorter side is disabled or not' meaning.",
+      "failure_condition": "Disabled is unclear/unset or does not match the expected disabled/not-disabled interpretation for the sorter side record.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect Disabled flag",
+          "exact_action": "Review Disabled to determine whether the sorter side is disabled or not (as stated in the segment).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "If validating queue-location relationships, use the foreign-key relationship to the Robot Location model",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Validate that EntranceId/ExitId values reference valid queue-location entries in the broader Robot Location model.",
+      "instruction": "When you need to validate queue-location relationships, cross-check that the EntranceId and ExitId values correspond to queue-location entries in the Robot Location model (foreign keys to the location).",
+      "expected_result": "EntranceId and ExitId can be confirmed as references to queue-location entries in the Robot Location model.",
+      "healthy_condition": "EntranceId/ExitId map to existing queue-location entries (foreign-key relationship described in the segment).",
+      "failure_condition": "EntranceId/ExitId do not correspond to queue-location entries in the Robot Location model.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Cross-check foreign-key references",
+          "exact_action": "If validating queue-location relationships, use the training explanation that EntranceId/ExitId are foreign-key references to locations in the broader Robot Location model.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If EntranceId/ExitId do not correspond to queue-location entries in the Robot Location model (foreign-key relationship described in the segment), stop and escalate for deeper model/data integrity troubleshooting (L3/vendor), since the source does not provide remediation steps."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "For the sorter side record of interest, EntranceId and ExitId can be described as the entrance queue and exit-related queue location IDs used by that sorter side.",
+    "TipperCount can be described as the round-robin closest set concept (closest 4 described as the tipper count).",
+    "Disabled can be described as whether the sorter side is disabled or not.",
+    "If queue-location relationship validation is performed, EntranceId/ExitId correspond to queue-location entries in the Robot Location model."
+  ],
+  "healthy_conditions": [
+    "SorterSideDatabaseModel shows Name, EntranceId, ExitId, TipperCount, Disabled.",
+    "EntranceId/ExitId behave as foreign-key references to queue locations in the Robot Location model.",
+    "TipperCount matches the round-robin closest set meaning (closest 4 described as tipper count).",
+    "Disabled flag is set and interpretable as disabled/not disabled."
+  ],
+  "failure_conditions": [
+    "EntranceId/ExitId do not correspond to queue-location entries in the Robot Location model.",
+    "TipperCount cannot be interpreted as the round-robin closest set concept described in the source.",
+    "Disabled flag is missing/uninterpretable for the sorter side record."
+  ],
+  "escalation_guidance": [
+    "If EntranceId/ExitId do not correspond to queue-location entries in the Robot Location model (foreign-key relationship described in the segment), stop and escalate for deeper model/data integrity troubleshooting (L3/vendor), since the source does not provide remediation steps."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+      "what_to_look_at": "SorterSideDatabaseModel field definitions (Name, EntranceId, ExitId, TipperCount, Disabled) and the Robot Location model context for queue-location types and foreign-key relationship."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "timestamp_start": "00:17:15.500",
+      "timestamp_end": "00:17:15.500",
+      "start_time_seconds": 1035.5,
+      "end_time_seconds": 1035.5,
+      "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+      "segment_id": "segment_training_video_0009",
+      "site_code": "",
+      "site_label": ""
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "timestamp_start": "00:26:58.500",
+      "timestamp_end": "00:26:58.500",
+      "start_time_seconds": 1618.5,
+      "end_time_seconds": 1618.5,
+      "artifact_id": "artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500",
+      "segment_id": "segment_training_video_0011",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+      "what_to_look_at": "Frame showing Robot Location database model location types/statuses and the SorterSideDatabaseModel field meaning (Entrance/Exit queue locations, TipperCount, Disabled)."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_d2_sorterside_model_entrance_exit_tippercount_disabled"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not specify the exact SSMS/Helix/WCS query or how to select a specific sorter side record (e.g., by Name/SorterSideId).",
+    "The source does not provide the exact data types/allowed values for Disabled or the exact mapping table name/columns for validating EntranceId/ExitId against Robot Location entries."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

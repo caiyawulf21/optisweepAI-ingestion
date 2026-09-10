@@ -1,0 +1,419 @@
+{
+  "procedure_id": "proc_check_optisweep_api_status_and_fault_responses_in_apidog_v1",
+  "candidate_id": "candidate_training_video_day2_apidog_check_optisweep_api_status_and_fault_response",
+  "title": "Check OptiSweep API Status and Fault Responses in Apidog",
+  "procedure_type": "diagnostic",
+  "summary": "Use Apidog on a primary server to call documented read-oriented OptiSweep / WCS API requests and verify that the API returns an observable response. Use the returned system-state or AGV fault-summary fields to support troubleshooting. Apidog calls the same API functionality that feeds Ignition and AVEVA.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "wcs_api_responsiveness",
+    "agv_active_errors"
+  ],
+  "access_surface": [
+    "apidog",
+    "wcs_api"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive"
+  ],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this diagnostic when support needs to verify that the locally hosted OptiSweep / WCS API on a primary server returns system-state or AGV fault data, or when an API response needs to be compared with the live operating condition.",
+  "not_for": [
+    "Do not use this procedure to infer detailed module-to-module request flow, downstream request stacking, or internal request tracing; the source states that this level of tracing is not available.",
+    "Do not create new request parameters or build a separate local API project."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support performs the Apidog and OptiSweep / WCS API diagnostic from a primary server.",
+    "Escalate when the API cannot be reached, returns no response, or indicates an API or system error."
+  ],
+  "safety_notes": [
+    "Use a documented read-oriented request such as Statuses, FaultStats, or System State for this diagnostic.",
+    "Do not submit operational requests such as startup, shutdown, pause, recovery, closeout, purge, or configuration updates as part of the read-only check unless a separately approved procedure directs that action."
+  ],
+  "access_or_tools_needed": [
+    "Apidog / WCS API client on a primary server",
+    "OptiSweep / WCS API",
+    "Configured request parameters installed with the shared API project",
+    "API guide"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2_support access to a primary server",
+      "Access to the locally installed Apidog shared project"
+    ],
+    "system_preconditions": [
+      "The OptiSweep / WCS API project and configured request parameters are available on the primary server."
+    ],
+    "external_references": [
+      "API guide"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_training_video_primary_server_api_hosting_v1",
+    "ctx_training_video_ignition_aveva_api_integration_v1",
+    "ctx_training_video_api_request_response_tracing_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+      "description": "Apidog API overview on a primary server showing system, AGV, and tote request categories, including GetAgvFaultStats, System State, and Get Agv Statuses.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+      "description": "Apidog API list showing Statuses, FaultStats, Response, and the named AGV fault-summary fields.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Apidog project on the primary server",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Access the locally hosted OptiSweep / WCS API requests used for live status and fault diagnostics.",
+      "instruction": "On a primary server, open Apidog / WCS API client and open the shared OptiSweep / WCS API project. Use the project and request parameters already installed on the primary server.",
+      "expected_result": "The shared project opens and displays documented OptiSweep / WCS API request categories and requests.",
+      "healthy_condition": "The Apidog project is available and the API list includes read-oriented requests such as Statuses, FaultStats, or System State.",
+      "failure_condition": "The project is unavailable, the API list cannot be opened, or the locally installed request configuration is missing.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open Apidog project",
+          "exact_action": "Open Apidog on the primary server and open the shared OptiSweep / WCS API project.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the Apidog project or configured API requests are not available on the primary server."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:39:55.500",
+          "timestamp_end": "02:39:55.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+          "segment_id": "segment_training_video_0027",
+          "page": 27
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:44:50.000",
+          "timestamp_end": "02:56:41.000",
+          "segment_id": "segment_training_video_0033",
+          "section_id": "training_video_day2_segment_0033"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Select a documented read-oriented API request",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Choose a request that retrieves current system-state or AGV fault information without creating new request configuration.",
+      "instruction": "In Apidog / WCS API client, select a documented read-oriented request such as Statuses, FaultStats, GetAgvFaultStats, Get Agv Statuses, or System State. Use the configured request parameters already present in the project; do not create new request parameters.",
+      "expected_result": "A documented read-oriented OptiSweep / WCS API request is selected with its configured parameters available for submission.",
+      "healthy_condition": "The selected request is a documented data-fetching request and its configured parameters are present.",
+      "failure_condition": "The request is missing, requires newly invented parameters, or cannot be configured from the installed project.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Select status or fault request",
+          "exact_action": "Select Statuses, FaultStats, GetAgvFaultStats, Get Agv Statuses, or System State in Apidog.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Use configured parameters",
+          "exact_action": "Use the request parameters already configured in the shared Apidog project.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the required documented request or its configured parameters are unavailable."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:39:55.500",
+          "timestamp_end": "02:39:55.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+          "segment_id": "segment_training_video_0027",
+          "page": 27
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:50:45.500",
+          "timestamp_end": "02:50:45.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+          "segment_id": "segment_training_video_0033",
+          "page": 33,
+          "quote_or_summary": "The API list includes Statuses, FaultStats, Response, and named fault-summary fields including totalAgvFaults, totalCriticalFaults, totalNonCriticalFaults, and totalNotDefinedFaults."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Submit the request and inspect the API response",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Verify that the OptiSweep / WCS API is reachable and returns an observable response for the selected request.",
+      "instruction": "Submit the selected request in Apidog / WCS API client and inspect the returned response. Record whether the response contains system-state data, fault-summary data, or an API or system error.",
+      "expected_result": "Apidog returns a response for the selected OptiSweep / WCS API request.",
+      "healthy_condition": "A response is returned and contains the requested system-state or fault-summary data.",
+      "failure_condition": "Apidog cannot reach the API, no response is returned, or the response indicates an API or system error.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Submit request",
+          "exact_action": "Submit the selected request in Apidog.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect response",
+          "exact_action": "Inspect the returned response in the Apidog request/response view.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if Apidog cannot reach the API.",
+        "Stop and escalate if no response is returned.",
+        "Stop and escalate if the response indicates an API or system error."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:44:50.000",
+          "timestamp_end": "02:56:41.000",
+          "segment_id": "segment_training_video_0033",
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "API Dog calls the same functionality as AVEVA; a request is submitted and a response is returned."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Inspect AGV fault-summary fields",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Use the returned fault-summary response to quantify AGV fault duration and fault categories.",
+      "instruction": "When the selected request returns a FaultStats or GetAgvFaultStats response, inspect the response for totalAgvFaultDurationInSeconds, totalAgvFaults, totalCriticalFaults, totalNonCriticalFaults, and totalNotDefinedFaults.",
+      "expected_result": "The fault response exposes the named AGV fault-summary fields or clearly indicates that the requested fault data is unavailable.",
+      "healthy_condition": "The response contains the named fault-summary fields and their returned values can be read from the live API response.",
+      "failure_condition": "The response does not return the requested fault-summary data, returns an API or system error, or cannot be interpreted because the expected fields are absent.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check fault totals",
+          "exact_action": "Inspect totalAgvFaultDurationInSeconds, totalAgvFaults, totalCriticalFaults, totalNonCriticalFaults, and totalNotDefinedFaults in the returned response.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the FaultStats response is unavailable or indicates an API or system error.",
+        "Escalate if the named fault-summary fields are absent from a response expected to provide fault statistics."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:50:45.500",
+          "timestamp_end": "02:50:45.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+          "segment_id": "segment_training_video_0033",
+          "page": 33,
+          "quote_or_summary": "FaultStats includes totalAgvFaultDurationInSeconds, totalAgvFaults, totalCriticalFaults, totalNonCriticalFaults, and totalNotDefinedFaults."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Interpret the returned system state",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Compare the API-reported system state with the live operating condition and distinguish an expected state response from an API failure.",
+      "instruction": "For a System State or status response, inspect and record the returned system state, then compare it with the live operating condition. If a startup request is encountered while the system is already running, interpret the returned response stating that the system is not in the running state as the API's state response rather than as module-to-module trace information.",
+      "expected_result": "The returned system state is observable in Apidog and can be compared with the live operating condition.",
+      "healthy_condition": "The API returns a readable system-state response whose reported state can be reconciled with the live operating condition.",
+      "failure_condition": "The API returns no readable state, reports an API or system error, or the returned state cannot be reconciled with the live operating condition.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Read system state",
+          "exact_action": "Inspect the returned system state in the Apidog response.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Compare live condition",
+          "exact_action": "Compare the returned system state with the live operating condition.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the system-state response indicates an API or system error.",
+        "Escalate if the returned system state cannot be reconciled with the live operating condition.",
+        "Do not attempt to diagnose internal module flow from this response; detailed request tracing is not available."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:44:50.000",
+          "timestamp_end": "02:56:41.000",
+          "segment_id": "segment_training_video_0033",
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "System-state requests return a response describing the resulting state; a startup request made while the system is already running returns a response stating that the system is not in the running state."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Apidog opens the shared OptiSweep / WCS API project on a primary server.",
+    "A documented read-oriented request is submitted using configured request parameters.",
+    "The OptiSweep / WCS API returns an observable response.",
+    "The response provides readable system-state data or the named AGV fault-summary fields.",
+    "The returned state or fault data can be used for live troubleshooting without relying on unavailable module-to-module request tracing."
+  ],
+  "healthy_conditions": [
+    "The Apidog shared project and configured requests are available on the primary server.",
+    "The selected OptiSweep / WCS API request returns a response.",
+    "A FaultStats response contains totalAgvFaultDurationInSeconds, totalAgvFaults, totalCriticalFaults, totalNonCriticalFaults, and totalNotDefinedFaults.",
+    "A system-state response returns a readable state that can be compared with the live operating condition."
+  ],
+  "failure_conditions": [
+    "Apidog cannot reach the OptiSweep / WCS API.",
+    "No response is returned.",
+    "The API response indicates an API or system error.",
+    "Expected system-state or named fault-summary fields are absent.",
+    "The returned state cannot be reconciled with the live operating condition."
+  ],
+  "escalation_guidance": [
+    "Escalate to the appropriate L2/L3 support path when the API is unreachable, produces no response, or returns an API or system error.",
+    "Include the selected request and the observable response or error details in the escalation.",
+    "Do not claim a specific downstream module failure from this check because detailed module-to-module request tracing and request stacking are not available."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "timestamp_start": "02:44:50.000",
+      "timestamp_end": "02:56:41.000",
+      "segment_id": "segment_training_video_0033",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0033"
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "timestamp_start": "02:50:45.500",
+      "timestamp_end": "02:50:45.500",
+      "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+      "segment_id": "segment_training_video_0033",
+      "page": 33,
+      "quote_or_summary": "The API list includes Statuses, FaultStats, Response, and named fault-summary fields including totalAgvFaults, totalCriticalFaults, totalNonCriticalFaults, and totalNotDefinedFaults."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+      "what_to_look_at": "The API list includes Statuses, FaultStats, Response, and named fault-summary fields including totalAgvFaults, totalCriticalFaults, totalNonCriticalFaults, and totalNotDefinedFaults."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_apidog_check_optisweep_api_status_and_fault_response"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide the exact API endpoint URL, authentication method, or request parameter values.",
+    "The packet does not define numeric healthy or failure thresholds for the returned fault-summary fields.",
+    "The packet does not provide a complete response schema or specific API error-code interpretation.",
+    "Detailed module-to-module request-flow tracing and request stacking are explicitly unavailable in the source.",
+    "The packet does not provide a production-impact assessment for submitting requests beyond the read-oriented diagnostic requests."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+    "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500"
+  ]
+}

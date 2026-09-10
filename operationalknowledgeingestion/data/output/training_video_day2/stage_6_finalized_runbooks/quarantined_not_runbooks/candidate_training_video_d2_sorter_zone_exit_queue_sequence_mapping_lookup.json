@@ -1,0 +1,378 @@
+{
+  "procedure_id": "proc_use_sorter_zone_exit_queue_sequence_id_and_mapping_lookup_v1",
+  "candidate_id": "candidate_training_video_d2_sorter_zone_exit_queue_sequence_mapping_lookup",
+  "title": "Use sorter zone exit queue sequence ID and mapping file lookup to determine the target station/location",
+  "procedure_type": "diagnostic",
+  "summary": "When an AGV is shut down and the system uses a zone + shutdown queue sequence number, it looks up a zone-to-sequence mapping (lookup table) to translate that zone/sequence into a specific sorter station/location. Use the observed zone and shutdown queue sequence ID to query the sorter-side mapping and read the mapped station/location.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "sorter_item_or_scan_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "mapping_abnormal",
+    "sort_lifecycle_stuck"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this when you need to determine which sorter station/location an AGV should target based on a shutdown queue sequence ID tied to a specific zone (e.g., zone 4 with sequence 4).",
+  "not_for": [
+    "Do not use this procedure to perform physical safety actions (e-stop).",
+    "Do not use this procedure when the zone/sequence values are unknown or cannot be observed from the live system context."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the zone + shutdown queue sequence lookup against the sorter-side mapping/lookup table and report the mapped sorter station/location.",
+    "Supporting reviewer (if available): Validate that the observed zone and sequence correspond to the shutdown queue sequence concept (sequence 1–4 starting from the sorter entrance queue) and that the mapping result is consistent with the expected sequence ordering/compression behavior."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Sorter-side mapping file / lookup table (as referenced by the training segment)",
+    "Ability to identify the relevant zone and shutdown queue sequence number from the live system context"
+  ],
+  "prerequisites": {
+    "access_required": [],
+    "system_preconditions": [
+      "You can observe/identify the AGV shutdown queue zone and the shutdown queue sequence number (example concept: zone 4 and sequence of four)."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_sorter_zone_exit_queue_sequence_id_v1",
+    "ctx_training_video_zone_sequence_mapping_file_v1",
+    "ctx_training_video_sorter_entrance_queue_sequence_order_v1",
+    "ctx_training_video_compression_preserves_order_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0012_the_sense_to_me_yeah_if_primary_00_34_18_500",
+      "description": "RMS robotControl page frame with transcript describing: shutdown queue sequence number tied to zone; query for zone 4; mapping file lookup table; sequence 1–4 start from sorter entrance queue; compression keeps AGVs in order.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Identify the current zone and the shutdown queue sequence number",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "The mapping lookup requires the zone value and the shutdown queue sequence number (sequence values 1 through 4) to translate to a sorter station/location.",
+      "instruction": "From the live shutdown queue context, identify the zone (example concept: zone 4) and the shutdown queue sequence number you are dealing with (example concept: sequence four).",
+      "expected_result": "You have a specific (zone, sequence) pair (e.g., zone 4 + sequence 4) that can be used as lookup keys.",
+      "healthy_condition": "The zone and sequence you identify correspond to the shutdown queue sequence concept described in the segment (sequence 1–4 tied to zones).",
+      "failure_condition": "You cannot determine the zone or the shutdown queue sequence number, or the values do not align with the expected shutdown queue sequence concept.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Record zone and sequence from shutdown queue context",
+          "exact_action": "Identify the current zone and the sequence number shown/used for the shutdown queue",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the zone/sequence pair cannot be identified reliably, stop and escalate for deeper investigation."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0012",
+          "artifact_id": "artifact_training_video_training_video_day2_0012_the_sense_to_me_yeah_if_primary_00_34_18_500",
+          "site_code": "",
+          "site_label": "",
+          "quote": "“if it is a queue… that sequence number that I see there… You have 4 Agvs… You have 4 zones… This is your 4th zone… So this AGV, you get shut down and it looks up the table… I should look for in the mapping file what sequence that this is tied to. So I do a query… for zone 4… the shutdown queues that have a sequence of four”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Open/locate the sorter-side mapping file (lookup table)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "The mapping file/lookup table is the mechanism that translates zone + sequence into a sorter station/location.",
+      "instruction": "Locate the sorter-side mapping file/lookup table referenced by the segment and prepare to query it using the identified zone value.",
+      "expected_result": "You have access to the mapping/lookup table that supports querying by zone and sequence.",
+      "healthy_condition": "The mapping/lookup table you use is the one that maps zone values to sequence entries and then to sorter locations/stations.",
+      "failure_condition": "You cannot locate the mapping/lookup table, or the table you find does not support zone-to-sequence-to-station translation.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate mapping file/lookup table",
+          "exact_action": "Open/locate the sorter-side mapping file described as a lookup table",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the mapping file/lookup table cannot be found or does not support the required lookup keys, stop and escalate."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0012",
+          "artifact_id": "artifact_training_video_training_video_day2_0012_the_sense_to_me_yeah_if_primary_00_34_18_500",
+          "site_code": "",
+          "site_label": "",
+          "quote": "“I should look for in the mapping file what sequence that this is tied to… So when I do a query… the shutdown queues… And it is mapped to this location… But in this mapping file, this is a lookup table says, OK, use zone 4. What is sequence four? OK, go to station 300”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Use the zone value in the mapping file",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "The lookup table first selects the mapping context for the specified zone (example: zone 4).",
+      "instruction": "In the mapping file/lookup table, select the entry for the identified zone value (example concept: use zone 4).",
+      "expected_result": "The mapping table context for the selected zone is active/selected so you can retrieve the sequence mapping for that zone.",
+      "healthy_condition": "The mapping table returns sequence entries for the selected zone (sequence values 1–4).",
+      "failure_condition": "The selected zone value is not present in the mapping file/lookup table.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Query mapping table by zone",
+          "exact_action": "In the mapping file, use the zone value (example: “use zone 4”).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the zone value is not found in the mapping file/lookup table, stop and escalate for deeper investigation."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0012",
+          "artifact_id": "artifact_training_video_training_video_day2_0012_the_sense_to_me_yeah_if_primary_00_34_18_500",
+          "site_code": "",
+          "site_label": "",
+          "quote": "“this is a lookup table says, OK, use zone 4.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Find the sequence entry for that zone",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "The mapping file/lookup table uses the zone-selected context to map the specific sequence number (example: sequence four) to a station/location.",
+      "instruction": "Within the selected zone entry, locate the row/entry for the identified shutdown queue sequence number (example concept: “what is sequence four”).",
+      "expected_result": "You have identified the mapping row/entry corresponding to the (zone, sequence) pair.",
+      "healthy_condition": "The mapping table contains a sequence entry for the selected zone and the sequence number is within the expected 1–4 range.",
+      "failure_condition": "The sequence number is not present for the selected zone, or the mapping row cannot be found.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate sequence mapping within zone",
+          "exact_action": "Find the sequence entry for that zone (example: “what is sequence four”).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the (zone, sequence) combination is not found in the mapping file/lookup table, stop and escalate for deeper investigation."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0012",
+          "artifact_id": "artifact_training_video_training_video_day2_0012_the_sense_to_me_yeah_if_primary_00_34_18_500",
+          "site_code": "",
+          "site_label": "",
+          "quote": "“What is sequence four? OK, go to station 300”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Read the mapped sorter station/location from the lookup table",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "The final lookup output is the mapped sorter station/location that the shutdown queue sequence should target.",
+      "instruction": "Read the mapped sorter station/location value from the mapping file/lookup table for the selected (zone, sequence) entry (examples from the segment include station 300; zone 3, station 301; zone 3, 2302).",
+      "expected_result": "You can state the mapped sorter station/location corresponding to the observed zone + sequence number using the mapping file/lookup table (example concept: zone 4 + sequence 4 → station/location as defined in the lookup table).",
+      "healthy_condition": "The mapping output is a valid sorter location/station value (as described by the segment’s examples) for the selected zone and sequence.",
+      "failure_condition": "The mapped station/location is missing, null/blank, or inconsistent with the expected sequence ordering/compression concept described in the segment.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Extract mapped station/location",
+          "exact_action": "Read the mapped sorter location/station from the lookup table (example from source: “go to station 300” / “zone 3, station 301” / “zone 3, 2302”).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the mapped station/location is inconsistent with the source’s sequence ordering/compression concept, stop and escalate for deeper investigation."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0012",
+          "artifact_id": "artifact_training_video_training_video_day2_0012_the_sense_to_me_yeah_if_primary_00_34_18_500",
+          "site_code": "",
+          "site_label": "",
+          "quote": "“OK, use zone 4. What is sequence four? OK, go to station 300… Zone 3, Station 301, zone 3, 2302”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Confirm mapping logic aligns with sequence ordering and compression behavior",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "The segment explains why the mapping exists: sequence 1–4 start from the sorter entrance queue and compression keeps AGVs in order by sequence; the mapping should be consistent with that logic.",
+      "instruction": "Verify that the mapping result you read is consistent with the concept that sequence values 1–4 start from the sorter entrance queue and that compression keeps AGVs in order by sequence (including the idea that AGVs need to move together when compressing).",
+      "expected_result": "The mapped station/location you report is consistent with the expected sequence ordering/compression logic described in the segment.",
+      "healthy_condition": "The mapping output supports the idea that when you start up, AGVs go into the zone in which their sequences belong, and compression preserves order by sequence.",
+      "failure_condition": "The mapping output contradicts the expected sequence ordering/compression concept (e.g., sequence-to-zone/station relationships appear reversed or mismatched).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Cross-check sequence ordering/compression logic",
+          "exact_action": "Confirm the mapping logic aligns with the source concept that sequence 1–4 start from the sorter entrance queue and progress onward, and that compression keeps AGVs in order by sequence.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the mapping logic does not align with the sequence ordering/compression concept, stop and escalate for deeper investigation."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0012",
+          "artifact_id": "artifact_training_video_training_video_day2_0012_the_sense_to_me_yeah_if_primary_00_34_18_500",
+          "site_code": "",
+          "site_label": "",
+          "quote": "“these sequence are one through 4. So everything starts from the sorter entrance queue… What why we do this is because when they compress, it keeps them in order… they need to go together because now we are compressing… The software takes care of how they compress. We compress. All they need to compress is they need to move together if the same to need this.”"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You can state the mapped sorter station/location corresponding to the observed zone + shutdown queue sequence number using the sorter-side mapping/lookup table.",
+    "The mapping result is consistent with the sequence ordering/compression concept (sequence 1–4 starting from sorter entrance queue; compression preserves order by sequence)."
+  ],
+  "healthy_conditions": [
+    "The mapping file/lookup table contains the selected zone and the selected sequence entry for that zone.",
+    "The mapping output is a concrete sorter station/location value (not missing/blank) and aligns with the expected sequence ordering/compression behavior."
+  ],
+  "failure_conditions": [
+    "Zone value not found in the mapping file/lookup table.",
+    "Sequence entry for the selected zone not found (zone/sequence combination missing).",
+    "Mapped station/location is inconsistent with the expected sequence ordering/compression concept."
+  ],
+  "escalation_guidance": [
+    "If the zone/sequence combination is not found in the mapping file/lookup table, or the mapped station/location is inconsistent with the sequence ordering/compression concept, stop and escalate for deeper investigation."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0012_the_sense_to_me_yeah_if_primary_00_34_18_500",
+      "what_to_look_at": "Transcript describing: shutdown queue sequence number tied to zone; query for zone 4; mapping file lookup table; sequence 1–4 start from sorter entrance queue; compression keeps AGVs in order."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "site_code": "",
+      "site_label": "",
+      "segment_id": "segment_training_video_0012",
+      "timestamp_start": "00:32:47.000",
+      "timestamp_end": "00:35:50.000",
+      "start_time_seconds": 1967.0,
+      "end_time_seconds": 2150.0
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0012_the_sense_to_me_yeah_if_primary_00_34_18_500",
+      "what_to_look_at": "RMS robotControl page frame with transcript describing: shutdown queue sequence number tied to zone; query for zone 4; mapping file lookup table; sequence 1–4 start from sorter entrance queue; compression keeps AGVs in order."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_d2_sorter_zone_exit_queue_sequence_mapping_lookup"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not name the exact mapping file name, table name, or the specific query mechanism/fields used to perform the lookup (it is described conceptually as a mapping file/lookup table).",
+    "The source provides example station/location outputs (e.g., station 300; zone 3, station 301; zone 3, 2302) but does not provide the full mapping dataset needed to compute real station/location values without access to the actual mapping file."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

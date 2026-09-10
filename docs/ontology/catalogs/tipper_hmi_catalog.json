@@ -1,0 +1,1733 @@
+{
+  "schema_version": "0.4",
+  "catalog_id": "tipper_hmi",
+  "access_surface": "tipper_hmi",
+  "title": "Tipper station HMI — WebVisu / VISU (not Aveva)",
+  "aliases": [
+    "webvisu",
+    "WebVisu",
+    "VISU",
+    "visu",
+    "tipper HMI",
+    "operator station HMI",
+    "Visu_MCP_Dual"
+  ],
+  "purpose": "Operator-station tipper HMI (CODESYS/WebVisu-style VISU screens at the machine). Primary for tipper faults, alarms, IO diagnostics, manual axis control, and machine-data parameters. Distinct from Aveva building HMI and from Ignition Gateway admin UI — though tipper heartbeats/OPC health are checked via Ignition and may require OptiSweep restart when flatlined.",
+  "when_to_use": [
+    "Tipper alarm / fault at operator station",
+    "Need alarm history or IO diagnostics on tipper",
+    "Manual axis positioning / stop cycle (maintenance)",
+    "Motor replace → VISU_MDS axis parameters / home offsets",
+    "After unplanned restart: confirm tipper heartbeats (with Ignition OPC)"
+  ],
+  "not_for": [
+    "Aveva Overall System / Zone Config / Initialize Tote (use aveva_hmi)",
+    "RMS AGV fleet overview (use rms_ui)",
+    "SSMS tipper tables as substitute for reading live VISU alarm text",
+    "Physical E-stop (physical_floor / e_stop_or_safety_stop)"
+  ],
+  "architecture_notes": [
+    "Each operator station has two tippers (Day2: 8 stations → 16 tippers).",
+    "Ignition OPC reads/writes tipper tags; SorterSweeper tracks tote state at tipper.",
+    "WebVisu/VISU is the on-station HMI; Ignition Designer/web view can also read tags.",
+    "Heartbeat flatline after Ignition comes up late → restart OptiSweep (OPC path).",
+    "Physical tipper actions and LOTO remain operator/customer; FORTNA coaches remotely."
+  ],
+  "audience_roles_typical": [
+    "operator",
+    "L1_support",
+    "L2_support",
+    "L3_support"
+  ],
+  "role_paths": {
+    "operator": "Primary user of VISU screens; executes physical tipper/LOTO steps.",
+    "L1_support": "Ask alarm text/color/photo or remote-view VISU if available; do not treat as SSMS how-to.",
+    "L2_support": "Deeper VISU_IO_DIAG / alarm history + SSMS Tipper/Tag/Bits; Ignition OPC + heartbeat.",
+    "L3_support": "Persistent tipper faults, axis/MDS parameter work with OM procedures."
+  },
+  "screens": [
+    {
+      "id": "visu_mcp_dual",
+      "om_section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_1_tipper_machine_control_panel_visu_mcp_dual_screen",
+      "title": "4.1.2.1: TIPPER MACHINE CONTROL PANEL (VISU_MCP_DUAL SCREEN)",
+      "purpose": "The Tipper Machine Control Panel (\"Visu_MCP_Dual\" screen) has buttons that control tipper movement and allows for fault re",
+      "aliases": [
+        "VISU_MCP_DUAL",
+        "Tipper Machine Control Panel",
+        "MCP dual"
+      ],
+      "key_points": [
+        "Controls tipper movement and allows fault reset / cycle control on the dual MCP screen.",
+        "Primary operator station tipper control surface (not Aveva)."
+      ],
+      "source_refs": [
+        {
+          "source": "manual_optisweep_om_v3",
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_1_tipper_machine_control_panel_visu_mcp_dual_screen"
+        },
+        {
+          "source": "docs/ontology/sources/om_manual/4_1_2_1_tipper_machine_control_panel_visu_mcp_dual_screen.txt"
+        }
+      ]
+    },
+    {
+      "id": "visu_data",
+      "om_section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_2_visu_data_screen",
+      "title": "4.1.2.2: VISU_DATA SCREEN",
+      "purpose": "An informational banner displaying alarms or informational messages.",
+      "aliases": [
+        "VISU_DATA",
+        "Data screen"
+      ],
+      "key_points": [
+        "Informational banner displays alarms or informational messages.",
+        "Operator station HMI data view for tipper/station status."
+      ],
+      "source_refs": [
+        {
+          "source": "manual_optisweep_om_v3",
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_2_visu_data_screen"
+        },
+        {
+          "source": "docs/ontology/sources/om_manual/4_1_2_2_visu_data_screen.txt"
+        }
+      ]
+    },
+    {
+      "id": "visu_mancontrol",
+      "om_section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_3_visu_mancontrol_screen",
+      "title": "4.1.2.3: VISU_MANCONTROL SCREEN",
+      "purpose": "NOTE: The screen shown below is what personnel logged in as maintenance will see. Figure 4-23: Operator Station HMI Manual Control Screen Item Descript",
+      "aliases": [
+        "VISU_MANCONTROL",
+        "Manual Control",
+        "ManControl"
+      ],
+      "key_points": [
+        "Manual control screen; maintenance login sees deeper controls than operator.",
+        "Used when stopping cycle for manual axis positioning (OM procedures).",
+        "Some views differ for maintenance login vs operator."
+      ],
+      "source_refs": [
+        {
+          "source": "manual_optisweep_om_v3",
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_3_visu_mancontrol_screen"
+        },
+        {
+          "source": "docs/ontology/sources/om_manual/4_1_2_3_visu_mancontrol_screen.txt"
+        }
+      ]
+    },
+    {
+      "id": "visu_mds",
+      "om_section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_4_visu_mds_screen",
+      "title": "4.1.2.4: VISU_MDS SCREEN",
+      "purpose": "The \"Machine Data\" screen contains all of the parameters for each axis (Z1, A1, Z2, and A2). These do not require changing unless a motor replaced. Use the CO",
+      "aliases": [
+        "VISU_MDS",
+        "Machine Data",
+        "MDS"
+      ],
+      "key_points": [
+        "Machine Data holds parameters for axes Z1, A1, Z2, A2.",
+        "Do not change unless a motor is replaced; used for home offset / recommissioning."
+      ],
+      "source_refs": [
+        {
+          "source": "manual_optisweep_om_v3",
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_4_visu_mds_screen"
+        },
+        {
+          "source": "docs/ontology/sources/om_manual/4_1_2_4_visu_mds_screen.txt"
+        }
+      ]
+    },
+    {
+      "id": "visu_io_diag",
+      "om_section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_5_visu_io_diag_screen",
+      "title": "4.1.2.5: VISU_IO_DIAG SCREEN",
+      "purpose": "NOTE: This screen is read-only and can be used for troubleshooting. Figure 4-27: Operator Station IO Diagnostics Screen Item Description 1 An informationa",
+      "aliases": [
+        "VISU_IO_DIAG",
+        "IO Diagnostics",
+        "visu_io"
+      ],
+      "key_points": [
+        "Read-only IO diagnostics for troubleshooting tipper inputs/outputs.",
+        "Use for L2/L3 deeper tipper IO when alarms are unclear.",
+        "Screen is read-only where noted in OM."
+      ],
+      "source_refs": [
+        {
+          "source": "manual_optisweep_om_v3",
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_5_visu_io_diag_screen"
+        },
+        {
+          "source": "docs/ontology/sources/om_manual/4_1_2_5_visu_io_diag_screen.txt"
+        }
+      ]
+    },
+    {
+      "id": "visu_alarm",
+      "om_section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_6_visu_alarm_screen",
+      "title": "4.1.2.6: VISU_ALARM SCREEN",
+      "purpose": "The \"Visu_Alarm\" screen displays a list of all tipper alarms along with a timestamp. The SHOW HISTORY button will show the last 1500 records. Figure 4-28: O",
+      "aliases": [
+        "VISU_ALARM",
+        "Alarm screen"
+      ],
+      "key_points": [
+        "Lists tipper alarms with timestamps.",
+        "SHOW HISTORY shows last 1500 alarm records."
+      ],
+      "source_refs": [
+        {
+          "source": "manual_optisweep_om_v3",
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_6_visu_alarm_screen"
+        },
+        {
+          "source": "docs/ontology/sources/om_manual/4_1_2_6_visu_alarm_screen.txt"
+        }
+      ]
+    }
+  ],
+  "activities": [
+    {
+      "id": "visu_read_alarm",
+      "label": "Open VISU_ALARM — read active tipper alarms + history",
+      "screen": "visu_alarm",
+      "observables": [
+        "alarm list with timestamps",
+        "SHOW HISTORY last 1500 records",
+        "no active alarms"
+      ],
+      "capability_hints": [
+        "tipper_station_fault"
+      ],
+      "audience_roles": [
+        "operator",
+        "L1_support",
+        "L2_support"
+      ]
+    },
+    {
+      "id": "visu_data_banner",
+      "label": "VISU_DATA — check informational banner / station data",
+      "screen": "visu_data",
+      "observables": [
+        "banner alarm or info message",
+        "station data fields"
+      ],
+      "capability_hints": [
+        "tipper_station_fault"
+      ],
+      "audience_roles": [
+        "operator",
+        "L1_support",
+        "L2_support"
+      ]
+    },
+    {
+      "id": "visu_mcp_fault_reset",
+      "label": "VISU_MCP_DUAL — tipper movement control / fault reset",
+      "screen": "visu_mcp_dual",
+      "observables": [
+        "tipper movement controls available",
+        "fault reset succeeds"
+      ],
+      "capability_hints": [
+        "tipper_station_fault"
+      ],
+      "audience_roles": [
+        "operator",
+        "L2_support"
+      ]
+    },
+    {
+      "id": "visu_io_diag_troubleshoot",
+      "label": "VISU_IO_DIAG — read-only IO troubleshooting",
+      "screen": "visu_io_diag",
+      "observables": [
+        "IO points state",
+        "mismatch vs expected"
+      ],
+      "capability_hints": [
+        "tipper_station_fault"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support",
+        "operator"
+      ]
+    },
+    {
+      "id": "visu_mancontrol_stop_cycle",
+      "label": "VISU_MANCONTROL — stop cycle / manual axis (maintenance view)",
+      "screen": "visu_mancontrol",
+      "observables": [
+        "cycle stopped",
+        "manual axis positioning available"
+      ],
+      "capability_hints": [
+        "tipper_station_fault",
+        "agv_physical_recovery"
+      ],
+      "audience_roles": [
+        "operator",
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "visu_mds_axis_params",
+      "label": "VISU_MDS — axis parameters Z1/A1/Z2/A2 (motor replace / home offset)",
+      "screen": "visu_mds",
+      "observables": [
+        "axis parameters",
+        "home offset values"
+      ],
+      "capability_hints": [
+        "tipper_station_fault"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support",
+        "operator"
+      ]
+    },
+    {
+      "id": "webvisu_heartbeat_check",
+      "label": "Confirm tipper WebVisu/OPC heartbeats (with Ignition)",
+      "screen": null,
+      "observables": [
+        "heartbeats present",
+        "heartbeat flatline",
+        "OPC tipper connection Faulted"
+      ],
+      "capability_hints": [
+        "opc_connection_or_tipper_heartbeat",
+        "gateway_health",
+        "wcs_service_health"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support",
+        "L1_support"
+      ],
+      "related_surfaces": [
+        "ignition_gateway"
+      ],
+      "notes": "Flatline after Ignition late start → restart OptiSweep (Day2 unplanned restart)."
+    },
+    {
+      "id": "ask_tipper_alarm_photo",
+      "label": "Site interview — tipper alarm text/color/photo when VISU not remote",
+      "screen": null,
+      "observables": [
+        "alarm text",
+        "stacklight/alarm color",
+        "photo of VISU"
+      ],
+      "capability_hints": [
+        "tipper_station_fault"
+      ],
+      "audience_roles": [
+        "L1_support",
+        "L2_support"
+      ],
+      "related_surfaces": [
+        "site_interview"
+      ]
+    }
+  ],
+  "corroborating_sql_models": [
+    {
+      "database": "robotics",
+      "model": "SorterSideDatabaseModel",
+      "purpose": "Defines sorter legs: entrance/exit queue locations, tipper count, disabled flag.",
+      "capability_hints": [
+        "device_roster_state",
+        "tipper_station_fault"
+      ],
+      "fields_sample": [
+        {
+          "name": "Name",
+          "meaning": "Sorter side name (e.g. SorterSide1a).",
+          "needs_sme": null
+        },
+        {
+          "name": "EntranceId",
+          "meaning": "Entrance queue location id.",
+          "needs_sme": null
+        },
+        {
+          "name": "ExitId",
+          "meaning": "Exit queue location id.",
+          "needs_sme": null
+        },
+        {
+          "name": "TipperCount",
+          "meaning": "Number of tippers associated with the sorter side (can vary by phase).",
+          "needs_sme": null
+        },
+        {
+          "name": "Disabled",
+          "meaning": "Whether the sorter side is disabled.",
+          "needs_sme": null
+        }
+      ]
+    },
+    {
+      "database": "robotics",
+      "model": "TipperStationDatabaseModel",
+      "purpose": "Stores tipper station name (robotics).",
+      "capability_hints": [
+        "tipper_station_fault"
+      ],
+      "fields_sample": [
+        {
+          "name": "Name",
+          "meaning": "Tipper station name.",
+          "needs_sme": null
+        }
+      ]
+    },
+    {
+      "database": "robotics",
+      "model": "TipperDatabaseModel",
+      "purpose": "Tipper location ids, entrance/exit, load type, GLD pre-queue ids.",
+      "capability_hints": [
+        "tipper_station_fault"
+      ],
+      "fields_sample": [
+        {
+          "name": "LocationId",
+          "meaning": "Location id of the tipper.",
+          "needs_sme": null
+        },
+        {
+          "name": "EntranceId",
+          "meaning": "Entrance id.",
+          "needs_sme": null
+        },
+        {
+          "name": "ExitId",
+          "meaning": "Exit id.",
+          "needs_sme": null
+        },
+        {
+          "name": "TipperLoadType",
+          "meaning": "GLD (gaylord) or Standard tipper.",
+          "needs_sme": null
+        },
+        {
+          "name": "GLDPreQueueEntranceId",
+          "meaning": "GLD pre-queue entrance; ignore for Standard tippers.",
+          "needs_sme": null
+        },
+        {
+          "name": "GLDPreQueueExitId",
+          "meaning": "GLD pre-queue exit; ignore for Standard tippers.",
+          "needs_sme": null
+        }
+      ]
+    },
+    {
+      "database": "robotics",
+      "model": "SorterSideTipperStation",
+      "purpose": "Sorter-side tipper sequence / association.",
+      "capability_hints": [
+        "tipper_station_fault"
+      ],
+      "fields_sample": [
+        {
+          "name": "SorterSide tipper sequence",
+          "meaning": "Which sorter side the tipper station associates with (model id).",
+          "needs_sme": null
+        }
+      ]
+    },
+    {
+      "database": "opc_comms",
+      "model": "OpcTags",
+      "purpose": "Startup subscribed OPC tags.",
+      "capability_hints": [
+        "opc_connection_or_tipper_heartbeat",
+        "tipper_station_fault"
+      ],
+      "fields_sample": [
+        {
+          "name": "Startup subscribed tags",
+          "meaning": null,
+          "needs_sme": true
+        }
+      ]
+    },
+    {
+      "database": "sorter_sweeper",
+      "model": "LocationModel",
+      "purpose": "SorterSweeper stations: Sorter/Tipper/Hospital/Induction; lane/chute attributes.",
+      "capability_hints": [
+        "lane_or_chute_state",
+        "hospital_diversion",
+        "tipper_station_fault"
+      ],
+      "fields_sample": [
+        {
+          "name": "Type",
+          "meaning": "Location type: Sorter, Tipper, Hospital, Induction.",
+          "needs_sme": null
+        },
+        {
+          "name": "SorterName",
+          "meaning": "Sorter name for the location.",
+          "needs_sme": null
+        },
+        {
+          "name": "Zone",
+          "meaning": "Zone the location belongs to.",
+          "needs_sme": null
+        },
+        {
+          "name": "Sequence",
+          "meaning": "Sequence from sorter entrance.",
+          "needs_sme": null
+        },
+        {
+          "name": "Lane",
+          "meaning": "Chute/lane number UPS defines.",
+          "needs_sme": null
+        },
+        {
+          "name": "LaneDelay",
+          "meaning": "Delay used historically for straight-line divert prediction (mostly unused on these sorters).",
+          "needs_sme": null
+        },
+        {
+          "name": "LaneStatus",
+          "meaning": "Active (open), Bypassed (closed), NotTracking (not yet in control / phased).",
+          "needs_sme": null
+        },
+        {
+          "name": "KeepClose",
+          "meaning": "If chute should remain closed after an exchange (e.g. hot bin).",
+          "needs_sme": null
+        },
+        {
+          "name": "TipperSelect",
+          "meaning": "If location has a specified tipper (GLD).",
+          "needs_sme": null
+        },
+        {
+          "name": "LoadCategory",
+          "meaning": "Load category (e.g. sure post) messaging to tipper; often null in production.",
+          "needs_sme": true
+        }
+      ]
+    },
+    {
+      "database": "sorter_sweeper",
+      "model": "TipperStationModel",
+      "purpose": "Operator stations (standard vs GLD); two tippers per station.",
+      "capability_hints": [
+        "tipper_station_fault"
+      ],
+      "fields_sample": [
+        {
+          "name": "Standard vs GLD stations",
+          "meaning": "Station class.",
+          "needs_sme": null
+        },
+        {
+          "name": "2 tippers per station",
+          "meaning": "Left/right tippers per station.",
+          "needs_sme": null
+        }
+      ]
+    },
+    {
+      "database": "sorter_sweeper",
+      "model": "TipperModel",
+      "purpose": "All tippers: id, printer, location, status.",
+      "capability_hints": [
+        "tipper_station_fault"
+      ],
+      "fields_sample": [
+        {
+          "name": "TipperId",
+          "meaning": "Tipper name; A/B for right/left at operator station.",
+          "needs_sme": null
+        },
+        {
+          "name": "PrinterName",
+          "meaning": "Printer name for print-label directive to UPS.",
+          "needs_sme": null
+        },
+        {
+          "name": "PrinterIp",
+          "meaning": "Printer IP.",
+          "needs_sme": null
+        },
+        {
+          "name": "LocationId",
+          "meaning": "Geek station for the tipper.",
+          "needs_sme": null
+        },
+        {
+          "name": "TipperStatus",
+          "meaning": "Ready / NotReady / Disabled.",
+          "needs_sme": null
+        }
+      ]
+    },
+    {
+      "database": "sorter_sweeper",
+      "model": "TagModel",
+      "purpose": "12 tags per tipper (7 in / 5 out); OptiSweep reads out tags, writes in tags.",
+      "capability_hints": [
+        "tipper_station_fault",
+        "opc_connection_or_tipper_heartbeat"
+      ],
+      "fields_sample": [
+        {
+          "name": "TagType",
+          "meaning": "Defines tag and processes action.",
+          "needs_sme": null
+        },
+        {
+          "name": "Bit",
+          "meaning": "Whether tag should be broken into bits.",
+          "needs_sme": null
+        },
+        {
+          "name": "Value",
+          "meaning": "Current tag value.",
+          "needs_sme": null
+        },
+        {
+          "name": "Flag",
+          "meaning": "Tracks when tipper went into cycle.",
+          "needs_sme": null
+        }
+      ]
+    },
+    {
+      "database": "sorter_sweeper",
+      "model": "BitsModel",
+      "purpose": "Bit decomposition for multi-bit tipper tags.",
+      "capability_hints": [
+        "tipper_station_fault"
+      ],
+      "fields_sample": [
+        {
+          "name": "BitType",
+          "meaning": "Function of the bit.",
+          "needs_sme": null
+        },
+        {
+          "name": "Bit",
+          "meaning": "Bit position to look for.",
+          "needs_sme": null
+        },
+        {
+          "name": "Value",
+          "meaning": "Current 0/1 value.",
+          "needs_sme": null
+        },
+        {
+          "name": "DefaultValue",
+          "meaning": "Default used when writing reset state to tipper.",
+          "needs_sme": null
+        }
+      ]
+    },
+    {
+      "database": "sorter_sweeper",
+      "model": "TagReadWriteLogs",
+      "purpose": "History of all tag reads/writes.",
+      "capability_hints": [
+        "tipper_station_fault"
+      ],
+      "fields_sample": [
+        {
+          "name": "Tag read/write history",
+          "meaning": "All tags the system reads and writes.",
+          "needs_sme": null
+        }
+      ]
+    },
+    {
+      "database": "sorter_sweeper",
+      "model": "TipperDepartureActivityModel",
+      "purpose": "Every time AGV leaves tipper: DropOffSorter/Hospital, tote, tag path, fault code — tipper issue narrowing.",
+      "capability_hints": [
+        "tipper_station_fault",
+        "tote_exchange_sequence"
+      ],
+      "fields_sample": [
+        {
+          "name": "DropOffSorter/Hospital",
+          "meaning": "Departure destination type.",
+          "needs_sme": null
+        },
+        {
+          "name": "Tote",
+          "meaning": "Tote involved.",
+          "needs_sme": null
+        },
+        {
+          "name": "Tag path",
+          "meaning": "Tag path recorded.",
+          "needs_sme": null
+        },
+        {
+          "name": "Fault code",
+          "meaning": "Any fault code.",
+          "needs_sme": null
+        }
+      ]
+    }
+  ],
+  "related_capabilities": [
+    "tipper_station_fault",
+    "opc_connection_or_tipper_heartbeat",
+    "gateway_health",
+    "tote_exchange_sequence",
+    "e_stop_or_safety_stop"
+  ],
+  "related_failure_patterns": [
+    "tipper_fault",
+    "opc_connection_faulted",
+    "unplanned_restart"
+  ],
+  "distinguish_from": {
+    "aveva_hmi": "Building/overall system HMI fed via Ignition APIs — not tipper VISU screens.",
+    "ignition_gateway": "OPC Connections / gateway admin — corroborates tipper power/heartbeat, not MCP controls.",
+    "hospital_hmi": "Hospital lane/stacklight UI — different station family.",
+    "rms_ui": "Geek+ fleet UI — not tipper axis/IO."
+  },
+  "gaps": [
+    "Full tag-by-tag visu_io map beyond OM figure callouts not extracted.",
+    "Exact WebVisu URL/IP per site not in corpus — site-specific.",
+    "Day1 tipper hardware walkthrough OCR still noisy; prefer OM screen text."
+  ],
+  "evidence": [
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Check to make sure that tippers are getting heartbeats. If the heartbeats are flat lines ... If you're not getting heartbeats, you have to restart Opti Sweep because OPC is stupid."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "ocr+transcript",
+      "snippet": "Ignition Gateway UI — Config → OPC → OPC Connections: tipper 7 and 8 powered off show Faulted. Web view can read tags (Designer screenshots)."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "The Robot Location database model table contains all the information about the locations, including the station number, whether it's occupied or not, zone, it's closeout zone, the location type, the Max number of Agvs allowed at that location, and whether the location should be tracked for dwell time there. Listed belo"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "So all right, we'll move on this this side and this side they'd want you probably, yeah. And we go, you know, top to bottom. Yeah, from the map. So yeah, one A1B and you know, this is has it because there's more data to view. So I think it's everyone may have gotten it. So people come associated with, for example, sort"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Let's see and the last one sorted side database module I what's the damage? That's just which sort of side it's on. You know, you have remember the past one we had solar side 1A1B2A2B. So those all associate with one or two or three or four. Oh, it's a model ID. It's just a model ID. OK, it's names and all right. The c"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Wait, do we need to stay here for a 2nd? The hospital tags model is to process the data from the hospital controller. We have a list of tags that we subscribe to and action on based on the tag type parent. The tag type parent just whether it's an in or out. Yeah. So these are just list of tags that we use to communicat"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "the tippers ignition. We save it in the web browser as well, but here's a link to you can log in to the local host to see performances. You can see under configuration the active communications in this example to both Tipper 7-8 are powered off and show faulted."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Yeah. Question about ignition. Are we going to move towards using the HMI side of the ignition or only the services and OPC connections and stuff? I mean, I like as the product progresses, like that's what I would, you know, I would like, but I'm not in charge of be able to collect stuff from Aviva and RMS. Then yeah, "
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Or is there a different place to check those tags? I mean designer, like these screenshots are from designer Designer, Yeah, you can read them from the web view,"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "So this is actually pulled premier knowledge base in Salesforce, so you could look it up on your own. So we have our primary services. There are three programs that must be running for the system to run Ignition of course, S tunnel. That's what we talked about. Securely talks to the UPS chat and then of course our Opti"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Check to make sure that tippers are getting heartbeats. If the heartbeats are flat lines, this is kind of goes back to ignition just ******** itself. If you're not getting heartbeats, you have to restart Opti Sweep because OPC is stupid. Yep, ignition."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "You know this is like, you know, check your heart beats, you know on the you know, pick a tipper, you know restart the service because sometimes ignition just opti sweep is delayed restart on startup but ignition sometimes takes longer so it needs to be restarted. Check your test tunnel. You can under file click connec"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "So questions, comments, concerns, lunch. Yeah. I mean, lately it's mainly been ignition issues where we have to restart Opti Suite because ignition like in the graph I showed you took too long and the retry is just kind of OPC is very weird. And there's not a lot of documentation like there's like when it comes to like"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "I got a question about the the don't understand like that. Then we're both going here. Yeah. And you actually select things on there or is it just people? No, you can select it. You got. Yeah, you can do which it really ****** people a good thing. But you can run it just as you were standing there. OK, yeah, I'll make "
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Get AGV Status Pop-Up Screen: This artifact is a screenshot of the 'Get AGV Status' pop-up screen, located within the AGV API Controls section of the OptiSweep Operation and Maintenance Manual. It visually documents the interface used to query the status of an Automated Guided Vehicle (AGV) from the system's Human-Machine Interface (HMI)."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Operator Station Display Controls: This artifact is a combined figure and table from the OptiSweep Operation and Maintenance Manual that identifies the primary navigation controls on the operator station HMI."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Operator Station Control Panel: This artifact is a photograph of the Operator Station Control Panel, identified as the 'Visu_MCP_Dual' screen. It is the primary interface for station operators to control the tipper machine."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Operator Station HMI Data Screen: This artifact is a screenshot of the primary data monitoring screen on the OptiSweep operator station HMI, labeled as the VISU_DATA screen. It provides a real-time overview of system status, including an alarm banner, user login/logout controls, and a dedicated 'Tipper Stats' section."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Operator Station HMI Data Screenâ€”Operator Stats: This artifact is a screenshot of the Operator Station HMI Data Screen, specifically the 'Operator Stats' section, as shown in Figure 4-21 of the OptiSweep Operation and Maintenance Manual. It displays real-time operator performance statistics related to the tipping process."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Operator Station HMI Manual Control Screen: This artifact is a labeled diagram of the VISU_MANCONTROL screen from the Operator Station HMI, as seen by maintenance personnel. It details the function of interactive elements such as the informational alarm banner, user ID display, and manual controls for the left and right tippers."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Operator Station HMI Machine Data Screen: This artifact is a reference to Figure 4-26, the 'Operator Station HMI Machine Data Screen' (VISU_MDS). According to the manual, this screen displays all parameters for the four axes (Z1, A1, Z2, and A2). The nearby text specifies that these parameters typically do not require changing unless a motor is replaced."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Operator Station IO Diagnostics Screen: This artifact is a photo of the VISU_IO_DIAG screen from the OptiSweep Operator Station HMI. It is a read-only diagnostic view intended for troubleshooting. The screen displays an informational alarm banner, internal temperature readings for the CPU and motherboard, 24V voltage level readings for the internal..."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Operator Station HMI Alarms Screen: This artifact is a screenshot of the 'Visu_Alarm' screen from the OptiSweep Operator Station HMI. According to the manual, this screen provides a list of all tipper alarms along with their associated timestamps. It also includes a 'SHOW HISTORY' button that, when pressed, displays the last 1500 alarm records."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Smalls System Overview Screen: This artifact is a system screen capture from the OptiSweep HMI, accessed by pressing the SMALLS button. It provides a visual overview of the smalls subsystem layout, using color coding to indicate the operational status of individual components."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "End Stop: This artifact is a maintenance diagram (Figure 7-12) from the OptiSweep Operation and Maintenance Manual, page 155. It visually depicts the end stop assembly, highlighting the two end stops and the two M8x40 socket-head cap screws used to secure each one."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Controller PCA: This artifact is a maintenance diagram labeled 'Figure 7-19: Controller PCA' from the OptiSweep Operation and Maintenance Manual. It visually depicts the Controller PCA component and its associated controller box."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is an image of the operator station HMI screen, specifically the 'Visu_Dual_MCP' screen's jogging interface, as referenced in section 5.6 of the OptiSweep Operation and Maintenance Manual. The screen provides manual controls for moving the end effector of the dual tipper system."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is an image of the operator station HMI showing the 'MCP_Dual' screen in manual mode, as referenced in the recovery procedure for non-recoverable motor faults. The screen displays axis statuses (Z1, Z2, A2, A1) and a 'Manual Mode Fault' indicator with a RESET button."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is an image of the operator station HMI, likely the 'MCP_Dual' screen (F3), captured in the context of Section 5.7.1 of the OptiSweep manual. It depicts the interface used during a non-recoverable fault recovery process, specifically for operator station motors."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is a photo of the Operator Station interface, referenced in Section 5.7.1 of the OptiSweep Operation and Maintenance Manual. It visually depicts the manual jog mode screen, showing controls for the Z1, Z2, A1, and A2 axes."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is a photo of the Operator Station HMI screen, referenced in section 5.7.1 of the OptiSweep Operation and Maintenance Manual. It illustrates the manual jog mode interface after a non-recoverable fault has occurred on the operator station motors."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is an image from page 87 of the OptiSweep Operation and Maintenance Manual, section 5.7.2. It depicts the operator station HMI screen used to diagnose and clear a non-recoverable fault where an AGV remains stuck at a tipper after tote-tipping is complete."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is a maintenance diagram from page 92 of the OptiSweep Operation and Maintenance Manual, illustrating the physical layout of a Hospital Station. The diagram visually distinguishes the right side, where an AGV delivers a tote for extraction from the system, and the left side, which serves as the induct..."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is an image of the operator station HMI screen used to manually reference the axes of an OptiSweep tipper. According to the surrounding manual text, this procedure is part of the maintenance workflow and is accessed by navigating to the 'Visu_Dual_MCP' screen (F3)."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is a maintenance diagram from the OptiSweep Operation and Maintenance Manual, page 122, section 7.3.5.2: MOTOR REMOVAL. It visually depicts the initial step of the motor replacement procedure, which involves connecting a USB cable from a laptop to the motor to download its configuration file."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is an image from the OptiSweep Operation and Maintenance Manual, page 197, section 7.3.23.3. It visually depicts the step in the tipper commissioning workflow where a technician must set the IP address."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is a visual reference from the OptiSweep Operation and Maintenance Manual, page 199, section 7.3.23.3: Set the IP Address. It depicts the interface used during tipper commissioning to configure network settings."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is a screenshot of the HMI 'Visu_Default' screen, referenced in the context of the Tipper Commissioning procedure. According to the nearby text, this screen appears after setting the time zone, date, time, and screen brightness, and then power cycling the controller without pressing any buttons."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is an HMI screenshot referenced in the tipper commissioning procedure. Based on the nearby text, it likely shows the 'Visu_Default' screen that appears after a controller reboot, displaying the configured IP address and subnet mask."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is an image from page 203 of the OptiSweep Operation and Maintenance Manual, corresponding to section 7.3.23.7. It visually depicts the initial step of the 'Level the End Effectors' procedure, which instructs a technician to place a physical level on each end effector."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is an HMI screenshot from the OptiSweep Operation and Maintenance Manual, page 207, section 7.3.23.10. It visually depicts the 'Visu_MCP_Dual' screen (F3) used during the 'Set Tote Pickup Position' step of tipper commissioning."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is an image of an AGV screen, likely the 'Visu_ManPosn' or a related interface, referenced in the procedure for setting the tote dump position. The surrounding text details the steps for this process, which involves navigating to the 'Visu_MDs' screen to set a Z-axis parameter, then moving to the..."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is an image of the operator interface screen 'Visu_ManPosn' as referenced in the OptiSweep Operation and Maintenance Manual, section 7.3.23.11. The screen is used during the tipper commissioning process to manually control the Z and A axes for setting the tote dump position."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "This artifact is an image from page 210 of the OptiSweep Operation and Maintenance Manual, section 7.3.24. It visually depicts the procedure for setting up a replacement scanner."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Operator Station Lockout/Tagout Procedure Reference: The documented LOTO steps are: 1) At the operator station HMI, navigate to the 'Visu_Dual_MCP' screen. 2) Press CYCLE STOP. 3) If carriage movement is needed, press JOG, select the corresponding tipper axis, and use the + and – buttons."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Visu_Dual_MCP HMI Screen Reference: This screen is referenced in the lockout/tagout procedure. It contains a CYCLE STOP button and, after pressing JOG, provides axis selection and +/- movement controls for the tipper carriages."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Operator Station Components: The operator station features are identified in Table 3-1 and Figure 3-1. The components are: 1. Tipper, 2. Chute, 3. Stacklight, 4. Plastic curtain, 5. Operator station HMI, 6. Push-buttons, 7. Rotary station."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Operator Station HMI: The operator station includes an HMI screen as one of its components, as listed in Table 3-1 and shown in Figure 3-1."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep HMI Interfaces: The three HMI interfaces are: System API, Operator station HMI, and Hospital HMI. The manual details screens associated with each interface in subsequent sections."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep HMI Interfaces Overview: The System HMI ties into the existing customer system. The Operator Station HMI and Hospital HMI are separate panels. Each interface has associated screens detailed in the manual."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Operator Station HMI Screen Location: The HMI screen is physically located on the right side of each tipper station. It is used to set parameters and control the tippers."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Operator Station HMI Navigation Methods: Screens can be navigated in three ways: the Next Screen drop-down menu, buttons on the right side of the screen, and buttons on the right side of the physical display. The physical buttons navigate to the same screen as the corresponding on-screen button."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Operator Station Primary Screens: Station operators will only need to use the main control panel screen (F3 button), the data screen (F5 button), and the alarms screen (F6 button). The F3 button navigates to the 'Visu_MCP_Dual' screen, which is the primary screen operators need to use."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Operator Station Function Key Screen Mapping: The function keys map to the following screens: F1 navigates to 'Visu_ManControl', F2 navigates to 'Visu_MDs', F3 navigates to 'Visu_MCP_Dual', F4 navigates to 'Visu_IO_Diag', F5 navigates to 'Visu_Data', and F6 navigates to 'Visu_Alarm'."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tipper Machine Control Panel (Visu_MCP_Dual) Screen Overview: This screen is identified as the primary screen that station operators will need to use. It includes an informational banner for alarms and messages, navigable via arrows. The screen can be directly selected from a drop-down menu (item 12)."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Visu_MCP_Dual AUTO Button: Item 2 in the control panel description. Pressing AUTO is required to restart the system after an E-stop reset."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Visu_MCP_Dual JOG Button: Item 3 in the control panel description. The manual explicitly notes that only maintenance personnel should jog the tipper."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Visu_MCP_Dual Axis Position Indicators (A1, Z1, A2, Z2): Item 10 in the control panel description. An axis being 'out of reference' may cause a tipper fault."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Visu_MCP_Dual Feedrate Override: Item 11 in the control panel description."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Visu_MCP_Dual Fault and E-Stop Reset Sequence: Items 7 and 9 in the control panel description. The AUTO REF button (item 8) is enabled after pressing RESET."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "VISU_DATA Screen Overview: The VISU_DATA screen is described in section 4.1.2.2 of the OptiSweep Operation and Maintenance Manual. It is the primary monitoring interface for the operator station, consolidating several key performance indicator (KPI) sections: Tipper Stats, Process Status, RunTime Meters, Operator Stats, and Heartbeat Stats."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "VISU_DATA Screen Manual Controls: The screen provides the following manual controls: SEND LEFT TO HOSPITAL button (sends the tote at the left tipper to the hospital), SEND RIGHT TO HOSPITAL button (sends the tote at the right tipper to the hospital), and PAUSE TIPPER button (pauses both tippers)."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "VISU_MANCONTROL Screen Overview: This screen is part of the Operator Station HMI. It includes an informational banner for alarms/messages, displays the currently logged-in user ID, and provides manual control buttons for system components like tippers and grippers."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "VISU_MANCONTROL Informational Banner: This banner is a UI element on the VISU_MANCONTROL screen. It provides a scrolling or navigable list of active alarms and informational messages for the operator or maintenance personnel."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "LEFT/RIGHT TIPPER FAULT RESET Button: These are manual control buttons on the Operator Station HMI. They are specific to the left and right tippers and are used to clear a fault condition on the selected tipper."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "LEFT/RIGHT TIPPER DISABLE Button: These are manual control buttons on the Operator Station HMI for disabling the left or right tipper. The system provides visual feedback for this state via the stacklight turning solid blue."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "VISU_MDS (Machine Data) Screen Overview: The Machine Data screen provides access to axis-specific configuration parameters. A COPY FROM OPPOSITE button is available to copy parameters to the selected axis from the other tipper."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "VISU_MDS Axis Parameter Definitions: Key parameters include: MD0 Axis Name, MD1 OT Minus, MD5 Tote Pickup Position, MD6 Plus Travel Opposite Axis Position, MD7 Neg Travel Opposite Axis Position, MD8 Tote Dump Position, MD9 Soft Travel Lim Pos, MD10 OT Pos, MD11 Base Speed for AutoCycle (steps/min), MD12 Base Acc/Dec for AutoCycle (steps/min^2)/10, MD13..."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "VISU_MDS COPY FROM OPPOSITE Function: This function is used to duplicate parameters between tippers, likely to ensure consistency or speed up configuration after a motor replacement. The source text does not specify which parameters are copied or any restrictions."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "VISU_MDS Unique Axis Parameters: While most Machine Data values should match from machine to machine, MD5 and MD21 are exceptions. These values are determined through physical measurement during alignment and are not transferable between machines or axes."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "VISU_IO_DIAG Screen Overview: This screen is part of the Operator Station HMI. It is explicitly noted as read-only and intended for troubleshooting purposes. It includes an informational banner for alarms/messages, temperature readings for the CPU and motherboard, voltage readings for the internal controller, and statuses for station switches and..."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "VISU_IO_DIAG Control Temps Section: This section provides real-time temperature data for the HMI's central processing unit and motherboard. It is part of the read-only VISU_IO_DIAG troubleshooting screen."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "VISU_IO_DIAG Voltage Levels Section: This section provides voltage readings for the internal controller of the HMI. The expected value is 24 V. It is part of the read-only VISU_IO_DIAG troubleshooting screen."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "VISU_IO_DIAG Input Details Pop-up: The screen includes sections showing inputs. These sections are interactive; selecting one will open a new window with detailed information about those specific inputs. This is part of the read-only troubleshooting interface."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "VISU_ALARM Screen: The Visu_Alarm screen is part of the Operator Station HMI. It provides a list of all tipper alarms, each accompanied by a timestamp. The screen includes a SHOW HISTORY button that, when activated, displays the last 1500 alarm records."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "VISU_ALARM History Capacity: The SHOW HISTORY button on the Visu_Alarm screen is configured to retrieve and display the most recent 1500 alarm records for the tipper system."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tipper Alarms on Operator Station HMI: The Operator Station HMI includes a dedicated screen, Visu_Alarm, for monitoring tipper alarms. Each alarm event is listed with its associated timestamp, allowing operators to track the sequence and timing of tipper faults."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Operator Station HMI CYCLE STOP Button: The operator station main screen includes a CYCLE STOP button. This button is the primary control for stopping the operator station, as per the documented procedure. An image of this screen is available in the manual."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tipper Jogging Mode: Jogging mode allows manual positioning of the left and right tipper end effectors. It is accessed from the 'Visu_Dual_MCP' screen (F3) on the operator station HMI. The automatic tipping cycle must be stopped by pressing CYCLE STOP before jogging is enabled. Pressing JOG opens the jogging screen."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tipper Jogging HMI Screen: The jogging screen is accessed by pressing the JOG button on the 'Visu_Dual_MCP' screen (F3) after a CYCLE STOP. It provides manual mode controls for four axes: Z1 (left tipper vertical), A1 (left tipper rotation), Z2 (right tipper vertical), and A2 (right tipper rotation). Each axis has + and – buttons for movement."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "HMI CYCLE STOP Control: The CYCLE STOP control is a button on the operator station HMI, specifically mentioned in the context of the 'MCP_Dual' screen. Its function is to stop the tipping cycle, which is a required step when recovering from a non-recoverable motor fault on a tipper."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "MCP_Dual Screen (F3): The MCP_Dual screen is accessed by navigating to F3 on the operator station HMI. It is used during non-recoverable fault recovery processes. The screen displays axis statuses for Z1, Z2, A1, and A2, and includes buttons for CYCLE STOP, JOG, RESET, AUTO, and CYCLE START."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Non-Recoverable Fault: AGV Stuck: This fault is verified on the operator station HMI. The OUT Fault Status for the affected tipper should have a value of 82. Recovery involves forcing a value on OUT W1: a value of 3 if the tote and AGV are ready to continue, or 32771 if the AGV needs to go to the hospital."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "HMI Screen: Visu_ManControl: The 'Visu_ManControl' screen contains a 'CellIO Status' button. This screen is part of the operator station HMI and is used during the recovery procedure for a non-recoverable AGV stuck fault."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tipper Z-Axis Linear Bearings Inspection and Lubrication: Visually inspect both Z-axis linear rails for wetness of grease and/or signs of dried grease. If the rails are dry (not wet with grease), lubricate the bearing blocks using automotive bearing grease (e.g., Mobil1). There are two bearing blocks with one standard 1/4-in."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Z-Axis Linear Bearing Lubrication: Visually inspect both Z-axis linear rails for wetness of grease or signs of dried grease. If rails are dry, lubricate the bearing blocks using automotive bearing grease (e.g., Mobil1). There are two bearing blocks with one standard 1/4-in. nipple on each end, totaling four nipples to grease."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Manual Axes Referencing Initiation: To manually reference axes, navigate to the 'Visu_Dual_MCP' screen (F3) on the operator station HMI and press CYCLE STOP to stop the automatic tipping cycle. This allows manual positioning of the end effector."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Set Tipper Controller Parameters: Setting controller parameters is step 2 of tipper commissioning. The operator must navigate to the 'Visu_MDs' screen (F2) on the operator station HMI. Access to change settings requires logging in as maintenance or admin."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "HMI Screen: Visu_MDs (F2): The 'Visu_MDs' screen is an HMI screen on the operator station. It is accessed by pressing F2. Its documented use is for setting initial parameters for each axis of the tippers. Changing settings on this screen requires maintenance or admin level login."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep software as the integration layer: The speaker states that OptiSweep software integrates everything so that all connected elements talk and work as a team. The slide shows OptiSweep Software among the core elements and visually associates it with other components including UPS Chat, Geek+ AGVs, hospital controller, sorter, printer, and Aveva HMI."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Map overview uses lanes and stations as visual location types: The source describes two variants of location shown on the map. Lanes are described as light blue or grayish square blocks. Stations are described as orange elements. The presenter notes that these are the terms used in this context and that different station settings are discussed on the next slide."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "AGV active path visualization on the map: The presenter explains that clicking the View all AGV active paths icon causes the map to show all active paths for AGVs. Each path is described as a small blue line that starts from the AGV and ends where the AGV wants to go."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Map display after robot restart: OCR text states: 'After starting, the robot that has been positioned will be displayed on the station map.' This describes a post-restart visualization behavior in the interface, where the robot appears on the map after it has started and been positioned."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Container Selection color states for tote presence: According to the OCR text in the related frame, dark blue indicates the presence of an AG tote and light blue represents an empty rack. These colors appear to function as visual status indicators on the Container Selection screen."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "AGB low-battery red flashing indication: This segment provides a battery-related visual indication for AGB status. The speaker states that under 30% is the point when the AGB starts flashing red, indicating it needs charging. The source does not provide additional thresholds, escalation behavior, or charging procedure details."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Get Tote Task Pop-Up Screen: This artifact is a system screen capture from the OptiSweep Operation and Maintenance Manual, page 43, section 4.1.1.5.3 (TOTE API CONTROLS). It depicts the 'Get Tote Task' pop-up screen, which is opened by pressing the GET EXCHANGE SETTINGS button."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "AGV Status Screen: This artifact is a screenshot of the AGV Status screen, accessed by pressing the AGV STATUS button in the upper-left corner of the OptiSweep HMI display. According to the manual, this screen provides a real-time overview of the location of all Automated Guided Vehicles (AGVs) in the system and displays any error codes..."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "CellIO Screen: This artifact is a system screen capture of the 'CellIO' interface, referenced as Figure 4-24 in the OptiSweep Operation and Maintenance Manual. It is located within section 4.1.2.3, which covers the VISU_MANCONTROL screen."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tipping Station Screen: This artifact is a photograph of the Tipping Station screen from the OptiSweep HMI. According to the surrounding manual text, this screen is accessed by pressing SMALLS, selecting 'ACB' from a dropdown, choosing 'ACB1 - AMT TT', and then pressing the tipper button."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "System in Shut-down Mode: This artifact is a system screen capture labeled 'System in Shut-down Mode' from the OptiSweep Operation and Maintenance Manual. It is referenced in the context of the AGV system start-up procedure, which requires verifying that nine AGVs without totes are present in specific zones before starting the system."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "AGV \"Bump\" Fault Screen: This artifact is a screenshot of the Robot Management System (RMS) interface showing the 'Bump' fault screen for an AGV. The screen displays two specific exception codes: 21057 (robot front collision bar triggers) and 21060 (robot triggers obstacle avoidance)."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Add AGV to Zone with No Empty AGV Screen: This artifact is a screenshot referenced as Figure 5-3 in the OptiSweep Operation and Maintenance Manual. It depicts the user interface screen used during the 'Add AGV to Zone with No Empty AGV' fault recovery procedure."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Faulted AGV with Tote Screen: This artifact is a screenshot of the operator interface for the 'Faulted AGV with Tote' condition, as referenced in the OptiSweep Operation and Maintenance Manual. The screen is part of the fault recovery procedure in section 5.8.2.4."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tipper Push-Button Flashing and Cycle Behavior: When a tote comes into the tipper, the yellow button flashes for Surepost packages; the green button flashes for all other packages. The operator presses the corresponding button to initiate the tipping cycle."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Emergency Stop Button Usage: The emergency stop button is only used if there is imminent danger to personnel or damage to the equipment."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tipping Station Screen Overview: This HMI screen is part of the OptiSweep system. It is designed to give operators a view of the performance of the tipping station, specifically tracking the number of bags completed, any errors that have occurred, and the time taken for tasks."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tipping Station Screen Navigation Path: To reach the Tipping Station screen, an operator must first press the SMALLS button, then select 'ACB' from the drop-down menu. From the subsequent options, they must select 'ACB1 - AMT TT'. Finally, they press the tipper button located on the right side of the screen."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tipping Station Screen Metrics: The screen provides real-time or near-real-time operational data points for the tipping station. The specific metrics mentioned are: a count of completed bags, a count or indication of errors, and a measurement of how long tasks take to complete."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "System Shutdown Control: The System Shutdown control is located on the System API Controls screen (Figure 4-9). Its function is to shut down the system. The documented operational constraint is that it should only be done when a sort does not begin when the current sort ends. Upon shutdown, AGVs go to a shutdown queue."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "System Close Out Control: The System Close Out control is located on the System API Controls screen (Figure 4-9). Its function is to send all totes to the tippers to close out the sorter. The documented operational constraint is that it should only be done at the end of a sort."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Get Metrics Pop-Up Screen: The Get Metrics pop-up screen (Figure 4-10) is accessed from the System API Controls screen. It provides a view of key operational metrics. The documented metrics include Number of Exchanges, Number of Mis-sorts, and Status."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "AGV Remove and Recover Procedure: The Remove AGV control on the AGV API Controls screen is used to take an AGV out of the system. The procedure requires entering the AGV ID. If the AGV has an issue, it must be physically removed. If the AGV is carrying a tote, the tote must be taken to the hospital, where it is removed."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "AGV System Recovery Commands: The 'Execute AGV Command' control is used for system recovery in the event that the system goes down and messages are missed. The 'Resend Geek Command' control is also used for system recovery; if Geek+ has a command error, the command guide can be provided and the message will be resent to Geek+."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "AGV Status Screen Navigation: The navigation path to the AGV Status screen is a single button press on the AGV STATUS button located in the upper-left corner of the display."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "AGV Error Code Display: Active error codes for each AGV are shown on the AGV Status screen. This provides operators with immediate visibility into AGV faults."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tipper Stats Metrics: The Tipper Stats section provides the following metrics for both the left and right tippers: Totes Processed (total and sent to Hospital Station), Faults (count since last reset), Avg Cycle Time (from gripper taking hold of a tote until release), Avg Totes/Hour (average taken at 15-minute intervals), and Time Starved..."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Heartbeat Stats Metrics: The Heartbeat section provides statistics for heartbeat signals between the tipper and the WCS. Metrics include: Last (most recent signal time in ms), Max (longest signal time in ms), and Min (shortest signal time in ms)."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "CellIO Status Screen: This is a diagnostic/maintenance screen accessible from the main manual control HMI. It displays I/O values for the cell control system, broken down by tipper."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Alarm Table Structure: Section 4.2 of the manual lists all possible alarms/faults and their corrective actions in a structured table (Table 4-23). The columns are: Text List (Alarm Group), ID, Alarm Text, Cause, Controller Response, and Corrective Action."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Left Tipper Alarm Group: The Left Tipper component has an alarm group named 'AlarmGroup_Helix_LeftTipper'. Documented alarms include: System In Estop (ID 3), System Not In Auto Cycle (ID 4), No AGV at Tipper (ID 5), System Cycle Stop Command (ID 6), Tipper Cycle Stopped (ID 13), Tipper Faulted (ID 14), Hospital Request (ID 18), Tote Input..."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Right Tipper Alarm Group: The Right Tipper component has an alarm group named 'AlarmGroup_Helix_RightTipper'. Documented alarms include: System In EStop (ID 3), System Not In Auto Cycle (ID 4), No AGV at Tipper (ID 5), System Cycle Stop Command (ID 6), Tipper Cycle Stopped (ID 13), Tipper Faulted (ID 14), and others that mirror the Left..."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "System Startup via HMI: The system startup procedure is initiated from the system HMI. The operator must first navigate to the 'system API screen' and then press the 'SYSTEM STARTUP' button. This is a manual step to begin system operation."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tipper Axis Homing (Z1/A1, Z2/A2): The left tipper has axes Z1 and A1; the right tipper has axes Z2 and A2. Pressing AUTO REF initiates homing for each axis. During homing, the axis button changes from green to yellow to indicate movement. The tipper motor moves until it senses the home proximity switch, then stops."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tipper Cycle Start to Ready Position: Once all axes are homed, the operator presses CYCLE START. This command moves the tipper motor from the home position (where it stopped after homing) to a ready position, preparing the tipper for automatic operation."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tipper AUTO Mode: After the tipper reaches the ready position, the operator places it in AUTO mode. In AUTO mode, the tipper waits for the Warehouse Control System (WCS) to send instructions for automated operation."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "System Shutdown Procedure: The system should be shut down between sorts to allow AGVs to charge. The procedure is: 1) On the system HMI, navigate to the system API screen. 2) Press SYSTEM SHUTDOWN. 3) The AGVs go to a shutdown queue."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tipper Axis Hard Stop Fault: When manually jogging the tipper axes (Z1, Z2, A1, A2), if an operator pushes an axis until it hits a physical hard stop, the axis will register a fault. This is a known condition during manual operation."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "HMI Screen: CellIO Status: This screen allows an operator to select a specific tipper and view its OUT Fault Status. It also provides an OUT W1 forced value box and a checkbox to apply the forced value. This interface is used to recover from an AGV stuck fault."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "OUT W1 Forced Values for AGV Stuck Recovery: After verifying the AGV stuck fault (OUT Fault Status 82), the operator forces a value on OUT W1. Enter 3 if the tote and AGV are ready to continue working. Enter 32771 if the AGV needs to go to the hospital. The forced value is applied by checking the adjacent box, waiting 10 seconds, and then unchecking it."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "AGV System Start-Up Prerequisites: The system requires exactly nine AGVs without totes in specific locations before startup: five under the north rack and four under the south rack. If the system is started without this configuration, an AGV without a tote must be manually moved into the zone that is missing an AGV, and the AGV must be added to the RMS..."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "System Start-Up Timing Requirement: Operators are instructed to start the system 15 minutes prior to the scheduled sort start time."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "System Start-Up Sequence: The documented start-up sequence includes: 1. Reset the metrics (to facilitate report generation). 2. Start the system. 3. Close out (Bag Out). After close out is completed, the system goes back to 'Running'. 4. Shut down."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "AGV System Start-Up Precondition: The system requires nine (9) AGVs without totes before start-up. These must be positioned with five (5) under the north rack and four (4) under the south rack. If the system is started without this configuration, an AGV without a tote must be manually moved into the deficient zone and added to the RMS."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "AGV System Start-Up Sequence: The documented steps are: 1. Reset the metrics (to make pulling reports easier). 2. Start the system. 3. Close out (Bag Out). After close out is completed, the system returns to a 'Running' state."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "HMI Screen: System in Shut-down Mode: Figure 5-1 in the manual depicts the system interface in a shut-down state. This screen is relevant to the AGV system start-up context, as the procedure describes transitioning the system from this state."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "AGV Bump Fault Exception Codes: The manual defines two exception codes for the 'Bump' fault type. Exception code 21057 indicates the robot front collision bar triggers. Exception code 21060 indicates the robot triggers the obstacle avoidance."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "AGV RESET Button: The manual references an 'AGV RESET button' as part of the bump fault recovery process. The action described is to click the button for two (2) seconds to clear the fault."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "AGV Bump Fault Screen: This screen is referenced as Figure 5-2 in the manual. It provides the operator with the specific exception code and information needed to diagnose a bump fault on an AGV."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Fault Recovery Prerequisite Information: This information is required for safe and effective manual fault recovery when Geek+ cannot recover the AGV automatically. The operator must know the Robot ID, the fault description from RMS, the bin/tote status, and the empty AGV status for the zone if the AGV is under a rack."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Automatic Axes Referencing Procedure: The automatic referencing procedure involves pressing RESET, then AUTO REF to reference all tipper axes. The 'R' icons turn green upon completion. After referencing, press AUTO and then CYCLE START to restart operation."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Tipper Tote Pickup Position: As part of the tipper commissioning process (step 9), the tote pickup position must be set to a specific value of 16 3/4 inches."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Self-contained HMI at the tipper station: The source explicitly states that the tipper station has a self-contained HMI for operation and fault recovery. The transcript also references an HMI in the context of the tipper station. No screen layout, navigation path, or commands are provided in this segment."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Bag out as end-of-sort clearing activity: The segment explains bag out as the condition where the sort is done and all locations must be cleared because load plans and sort destinations change between sorts. It states that every chute is closed whether it contains anything or not, and bag out begins."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "System returns to running after bag out unless shutdown is chosen: The speakers state that once bag out is done, the system goes back to running automatically. During peak, this supports rapid return to sorting after chutes are reopened."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Shutdown is selected from the HMI: The discussion explicitly says shutdown is something the user chooses from the HMI. This is presented in contrast to the automatic return to running after bag out."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Terminology distinction between turned off and shutdown: During discussion of disconnected AGVs, the speaker states that shutdown is different from turned off. Shutdown is described as terminology used to define a state of the OptiSweep operation. The speaker advises using turned off rather than shutdown when referring to powering off an AGV."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "AGV object selection displays AGV-specific information: The speaker explains that the user must first select the object, described as object selection, and then select what they are interested in. The example given is that if the user is under AGV and selects the AGV icon/object, the system will show AGV information."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Bag out can be selected by sorter leg: The source states that a user can choose a bag out by leg of the sorter. This indicates the bag out function has scope options that include individual sorter legs."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Manual bag out includes cancel bag out capability: The transcript explains that in the event of a manual bag out, Fortna offers a cancel bag out. The cancellation applies only to exchange tasks or exchange chutes not currently in process. Items already in exchange must still finish."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "AGV status popup information fields: According to the transcript and OCR text, the AGV status popup provides detailed information for AGVs using the fields ID, Status, Destination, and Errors. These fields appear in the top section of the screen."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Error-focused section of AGV status popup: The transcript states that only AGVs with errors, with additional detail, will appear. OCR text also indicates a bottom section where only AGVs with errors are shown with additional details. This suggests the popup separates general AGV status information from error-focused detail."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "System Bag Out close-out concept: The OCR text states: 'At the end of a sort the close out is used to close all chutes and exchange all totes with items.' The transcript adds that close out applies only to totes with items in them and that labels are printed. The speaker contrasts this with purge, which exchanges every tote and does not print a label."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Reset Metrics behavior: The transcript states that reset metrics can happen automatically and can also be done manually on the page. The OCR text on the screen says, 'Metrics are reset when a new sort plan is loaded but can also be manually reset.' The speaker also says UPSHMI can reset the metric by hitting an A tag."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Reset Tipper Stats control: The transcript mentions 'Reset tipper stats' and the OCR text shows a corresponding item on the page. The OCR text mirrors the metrics reset note, stating that metrics are reset when a new sort plan is loaded but can also be manually reset."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "AGV initialization popup on the tote side: The segment opens with the statement that on the tote side an AGV can be initialized and that this is done through a popup. The transcript ties this popup to tote-side actions where a station ID can be specified when an AGV or tote is removed from the sorter."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Get Tote Task shows current tote status and tasks: The speaker explicitly states that Get Tote Task shows the current status of the totes and all their tasks. The slide OCR also describes Get Tote Task as retrieving the current tote task. This indicates the function is used as a status and task visibility reference for tote handling."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "AGV Status Fields and Vitals: The displayed AGV examples include name, state, command GUID, command name, command status, battery, voltage, status, IP address, error code, error description, error cause, system error description, system error resolution, and errorAlert."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Memory Trend display: The chart is labeled \"Memory Trend\" and displays a vertical scale with 0 MB, 2 GB, 3 GB, and 4 GB markings. The visible horizontal time axis includes 12:30, 12:40, 12:50, 13:00, 13:10, and 13:20. The source does not define the measurement source, thresholds, or interpretation of the trend."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Memory Trend and Garbage Collection Behavior: The displayed trend is labeled Memory Trend and shows a 4 GB scale with time points from approximately 12:30 through 13:20. The discussion explains that garbage collection clears memory, producing a drop or quiet period, after which memory can fill again."
+    }
+  ],
+  "source_refs": [
+    {
+      "source": "manual_optisweep_om_v3",
+      "sections": "4.1.2.1–4.1.2.6 VISU_*"
+    },
+    {
+      "source": "training_video_day2",
+      "topics": "OPC tippers, heartbeat, unplanned restart"
+    },
+    {
+      "source": "support_roles_components_and_adjacency.md"
+    },
+    {
+      "source": "docs/ontology/sources/om_manual/"
+    }
+  ],
+  "screens_or_views": [
+    {
+      "id": "visu_mcp_dual",
+      "om_section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_1_tipper_machine_control_panel_visu_mcp_dual_screen",
+      "title": "4.1.2.1: TIPPER MACHINE CONTROL PANEL (VISU_MCP_DUAL SCREEN)",
+      "purpose": "The Tipper Machine Control Panel (\"Visu_MCP_Dual\" screen) has buttons that control tipper movement and allows for fault re",
+      "aliases": [
+        "VISU_MCP_DUAL",
+        "Tipper Machine Control Panel",
+        "MCP dual"
+      ],
+      "key_points": [
+        "Controls tipper movement and allows fault reset / cycle control on the dual MCP screen.",
+        "Primary operator station tipper control surface (not Aveva)."
+      ],
+      "source_refs": [
+        {
+          "source": "manual_optisweep_om_v3",
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_1_tipper_machine_control_panel_visu_mcp_dual_screen"
+        },
+        {
+          "source": "docs/ontology/sources/om_manual/4_1_2_1_tipper_machine_control_panel_visu_mcp_dual_screen.txt"
+        }
+      ]
+    },
+    {
+      "id": "visu_data",
+      "om_section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_2_visu_data_screen",
+      "title": "4.1.2.2: VISU_DATA SCREEN",
+      "purpose": "An informational banner displaying alarms or informational messages.",
+      "aliases": [
+        "VISU_DATA",
+        "Data screen"
+      ],
+      "key_points": [
+        "Informational banner displays alarms or informational messages.",
+        "Operator station HMI data view for tipper/station status."
+      ],
+      "source_refs": [
+        {
+          "source": "manual_optisweep_om_v3",
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_2_visu_data_screen"
+        },
+        {
+          "source": "docs/ontology/sources/om_manual/4_1_2_2_visu_data_screen.txt"
+        }
+      ]
+    },
+    {
+      "id": "visu_mancontrol",
+      "om_section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_3_visu_mancontrol_screen",
+      "title": "4.1.2.3: VISU_MANCONTROL SCREEN",
+      "purpose": "NOTE: The screen shown below is what personnel logged in as maintenance will see. Figure 4-23: Operator Station HMI Manual Control Screen Item Descript",
+      "aliases": [
+        "VISU_MANCONTROL",
+        "Manual Control",
+        "ManControl"
+      ],
+      "key_points": [
+        "Manual control screen; maintenance login sees deeper controls than operator.",
+        "Used when stopping cycle for manual axis positioning (OM procedures).",
+        "Some views differ for maintenance login vs operator."
+      ],
+      "source_refs": [
+        {
+          "source": "manual_optisweep_om_v3",
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_3_visu_mancontrol_screen"
+        },
+        {
+          "source": "docs/ontology/sources/om_manual/4_1_2_3_visu_mancontrol_screen.txt"
+        }
+      ]
+    },
+    {
+      "id": "visu_mds",
+      "om_section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_4_visu_mds_screen",
+      "title": "4.1.2.4: VISU_MDS SCREEN",
+      "purpose": "The \"Machine Data\" screen contains all of the parameters for each axis (Z1, A1, Z2, and A2). These do not require changing unless a motor replaced. Use the CO",
+      "aliases": [
+        "VISU_MDS",
+        "Machine Data",
+        "MDS"
+      ],
+      "key_points": [
+        "Machine Data holds parameters for axes Z1, A1, Z2, A2.",
+        "Do not change unless a motor is replaced; used for home offset / recommissioning."
+      ],
+      "source_refs": [
+        {
+          "source": "manual_optisweep_om_v3",
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_4_visu_mds_screen"
+        },
+        {
+          "source": "docs/ontology/sources/om_manual/4_1_2_4_visu_mds_screen.txt"
+        }
+      ]
+    },
+    {
+      "id": "visu_io_diag",
+      "om_section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_5_visu_io_diag_screen",
+      "title": "4.1.2.5: VISU_IO_DIAG SCREEN",
+      "purpose": "NOTE: This screen is read-only and can be used for troubleshooting. Figure 4-27: Operator Station IO Diagnostics Screen Item Description 1 An informationa",
+      "aliases": [
+        "VISU_IO_DIAG",
+        "IO Diagnostics",
+        "visu_io"
+      ],
+      "key_points": [
+        "Read-only IO diagnostics for troubleshooting tipper inputs/outputs.",
+        "Use for L2/L3 deeper tipper IO when alarms are unclear.",
+        "Screen is read-only where noted in OM."
+      ],
+      "source_refs": [
+        {
+          "source": "manual_optisweep_om_v3",
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_5_visu_io_diag_screen"
+        },
+        {
+          "source": "docs/ontology/sources/om_manual/4_1_2_5_visu_io_diag_screen.txt"
+        }
+      ]
+    },
+    {
+      "id": "visu_alarm",
+      "om_section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_6_visu_alarm_screen",
+      "title": "4.1.2.6: VISU_ALARM SCREEN",
+      "purpose": "The \"Visu_Alarm\" screen displays a list of all tipper alarms along with a timestamp. The SHOW HISTORY button will show the last 1500 records. Figure 4-28: O",
+      "aliases": [
+        "VISU_ALARM",
+        "Alarm screen"
+      ],
+      "key_points": [
+        "Lists tipper alarms with timestamps.",
+        "SHOW HISTORY shows last 1500 alarm records."
+      ],
+      "source_refs": [
+        {
+          "source": "manual_optisweep_om_v3",
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_2_6_visu_alarm_screen"
+        },
+        {
+          "source": "docs/ontology/sources/om_manual/4_1_2_6_visu_alarm_screen.txt"
+        }
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "visu_mcp_dual",
+      "label": "4.1.2.1: TIPPER MACHINE CONTROL PANEL (VISU_MCP_DUAL SCREEN)",
+      "kind": "visu_screen",
+      "aliases": [
+        "VISU_MCP_DUAL",
+        "Tipper Machine Control Panel",
+        "MCP dual"
+      ]
+    },
+    {
+      "id": "visu_data",
+      "label": "4.1.2.2: VISU_DATA SCREEN",
+      "kind": "visu_screen",
+      "aliases": [
+        "VISU_DATA",
+        "Data screen"
+      ]
+    },
+    {
+      "id": "visu_mancontrol",
+      "label": "4.1.2.3: VISU_MANCONTROL SCREEN",
+      "kind": "visu_screen",
+      "aliases": [
+        "VISU_MANCONTROL",
+        "Manual Control",
+        "ManControl"
+      ]
+    },
+    {
+      "id": "visu_mds",
+      "label": "4.1.2.4: VISU_MDS SCREEN",
+      "kind": "visu_screen",
+      "aliases": [
+        "VISU_MDS",
+        "Machine Data",
+        "MDS"
+      ]
+    },
+    {
+      "id": "visu_io_diag",
+      "label": "4.1.2.5: VISU_IO_DIAG SCREEN",
+      "kind": "visu_screen",
+      "aliases": [
+        "VISU_IO_DIAG",
+        "IO Diagnostics",
+        "visu_io"
+      ]
+    },
+    {
+      "id": "visu_alarm",
+      "label": "4.1.2.6: VISU_ALARM SCREEN",
+      "kind": "visu_screen",
+      "aliases": [
+        "VISU_ALARM",
+        "Alarm screen"
+      ]
+    }
+  ]
+}

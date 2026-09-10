@@ -1,0 +1,307 @@
+{
+  "procedure_id": "proc_execute_agv_command_aveva_api_recover_missed_callback_v1",
+  "candidate_id": "candidate_training_video_execute_agv_command_recovery_missed_callback",
+  "title": "Execute AGV command in Aveva API to recover when RMS missed an AGV completion callback",
+  "procedure_type": "recovery",
+  "summary": "When Geek+ RMS fails to send a completion callback (e.g., after an RMS crash/missed callback), use the Aveva API “Execute AGV command” recovery mechanism to mark the specified AGV task as completed by providing the full AGV ID.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_physical_recovery",
+    "wcs_api_responsiveness"
+  ],
+  "access_surface": [
+    "wcs_api"
+  ],
+  "audience_roles": [
+    "L1_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when RMS fails to send a callback indicating an AGV task is complete, and you need a recovery mechanism that can mark the AGV task as done by specifying the full AGV ID via the Aveva API.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L1_support: Execute the Aveva API “Execute AGV command” recovery mechanism by entering the full AGV ID and submitting the command; confirm the API response indicates acceptance/execution."
+  ],
+  "safety_notes": [
+    "If the source indicates a restart-related safety note (E-stop before restart), follow it; do not proceed with restart actions without following the source safety note about E-stop."
+  ],
+  "access_or_tools_needed": [
+    "Aveva API interface/page that includes the Geek+ RMS command set (includes “Execute AGV command”).",
+    "Full AGV ID value for the AGV whose task completed but whose callback was missed."
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Authorized access to the Aveva API interface/page that exposes the Geek+ RMS command set."
+    ],
+    "system_preconditions": [
+      "RMS has missed a callback (or RMS crash/missed callback condition is present) such that the AGV completion was not communicated via callback."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_execute_agv_command_recovery_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0068_we_ve_implemented_some_of_the_primary_02_20_13_500",
+      "description": "Aveva API page showing recovery mechanisms including “Execute AGV command” and “Resend Geek Command”.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Aveva API interface/page that exposes the Geek+ RMS command set",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Access the recovery mechanism UI where “Execute AGV command” is available.",
+      "instruction": "Open the Aveva API interface/page that includes the Geek+ RMS command set (the page that contains the “Execute AGV command” recovery mechanism).",
+      "expected_result": "The Aveva API page is open and shows the recovery mechanism option labeled “Execute AGV command”.",
+      "healthy_condition": "The “Execute AGV command” option is visible on the Aveva API page.",
+      "failure_condition": "The Aveva API page does not show “Execute AGV command” (e.g., wrong page/section or access issue).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify Execute AGV command is present",
+          "exact_action": "Locate the “Execute AGV command” recovery mechanism on the Aveva API page.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot access the Aveva API page or cannot find “Execute AGV command”, stop and escalate for access/UI troubleshooting."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Select the recovery mechanism labeled “Execute AGV command”",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Choose the correct recovery mechanism for marking an AGV task as completed after a missed RMS callback.",
+      "instruction": "On the Aveva API page, select the recovery mechanism labeled “Execute AGV command”.",
+      "expected_result": "The “Execute AGV command” mechanism is selected/active in the Aveva API interface.",
+      "healthy_condition": "The UI is positioned to accept the required input for “Execute AGV command” (AGV ID entry).",
+      "failure_condition": "You are not able to reach the input fields for “Execute AGV command” (e.g., wrong mechanism selected).",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Select Execute AGV command",
+          "exact_action": "Select “Execute AGV command”.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If selecting “Execute AGV command” does not expose the AGV ID input, stop and escalate for UI troubleshooting."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Enter the full AGV ID for the AGV whose task completed but whose callback was missed by RMS",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Provide the required identifier so the API can complete the action for the correct AGV.",
+      "instruction": "In the “Execute AGV command” input, enter the full AGV ID for the AGV whose task completed but whose callback was missed by RMS.",
+      "expected_result": "The full AGV ID value is entered into the “Execute AGV command” input field.",
+      "healthy_condition": "The AGV ID field contains the full AGV ID (not truncated).",
+      "failure_condition": "The AGV ID is missing, incomplete, or cannot be entered/validated by the UI.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Enter full AGV ID",
+          "exact_action": "Specify the full AGV ID for the AGV whose task completed when RMS fails to send a callback.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you do not have the full AGV ID, stop and obtain the correct full AGV ID before executing the command."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Submit/execute the “Execute AGV command” for the specified AGV ID",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Trigger the recovery mechanism so the software completes the action for the specified AGV ID.",
+      "instruction": "Submit/execute the “Execute AGV command” using the entered full AGV ID.",
+      "expected_result": "The command is executed/accepted by the Aveva API interface for the specified AGV ID.",
+      "healthy_condition": "The UI proceeds to show a response (success or error) for the executed command.",
+      "failure_condition": "The UI returns an error or does not provide any response indicating acceptance/execution.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Execute command",
+          "exact_action": "Execute the “Execute AGV command” for the specified full AGV ID.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the command cannot be executed or returns an error, stop and escalate to support for deeper troubleshooting."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Verify the command was accepted/executed on the Aveva API side",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Confirm the recovery mechanism completed successfully (or identify error conditions immediately).",
+      "instruction": "Check the Aveva API response area for the executed “Execute AGV command” and confirm it indicates success/acceptance for the submitted AGV ID (no error shown for that AGV ID).",
+      "expected_result": "The Aveva API response indicates the command was accepted/executed for the specified AGV ID (i.e., no error shown for the submitted AGV ID).",
+      "healthy_condition": "A success/confirmation response is shown for the executed command.",
+      "failure_condition": "An error response is shown for the submitted AGV ID, or the response indicates the command was not accepted/executed.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review API response",
+          "exact_action": "Verify the Aveva API response for the executed “Execute AGV command” shows success (no error for the submitted AGV ID).",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the command returns an error, stop and escalate to support for deeper troubleshooting."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The Aveva API “Execute AGV command” is executed using the full AGV ID, and the API response indicates success/acceptance (no error shown for the submitted AGV ID).",
+    "The recovery mechanism is used to mark the specified AGV task as completed despite RMS failing to send the callback."
+  ],
+  "healthy_conditions": [
+    "Aveva API shows “Execute AGV command” and accepts the full AGV ID input.",
+    "API response indicates the command was accepted/executed successfully."
+  ],
+  "failure_conditions": [
+    "Aveva API cannot execute the “Execute AGV command” or returns an error for the submitted AGV ID.",
+    "You cannot locate/select “Execute AGV command” on the Aveva API page."
+  ],
+  "escalation_guidance": [
+    "If the command cannot be executed or returns an error, stop and escalate to support for deeper troubleshooting."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0068_we_ve_implemented_some_of_the_primary_02_20_13_500",
+      "what_to_look_at": "The Aveva API page section showing recovery mechanisms including “Execute AGV command” (and its description about specifying an AGV ID when RMS fails to send a callback)."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1",
+      "source_document_id": "training_video_day1_video",
+      "page": 68,
+      "section_id": "training_video_day1_segment_0068",
+      "quote_or_summary": "In the event of an RMS crash, Execute AGV command enables users to specify an AGV ID that has completed its task when RMS fails to send a callback."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0068_we_ve_implemented_some_of_the_primary_02_20_13_500",
+      "what_to_look_at": "The Aveva API page section showing recovery mechanisms including “Execute AGV command” (and its description about specifying an AGV ID when RMS fails to send a callback)."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0074_what_s_this_so_this_is_primary_02_26_01_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0039_everything_else_oh_on_this_slide_primary_01_33_22_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0033_yeah_because_it_has_front_sensors_primary_01_19_57_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0037_what_are_these_these_are_rack_primary_01_29_18_500"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_execute_agv_command_recovery_missed_callback"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide the exact UI field label(s) for the AGV ID input within “Execute AGV command” (only that a full AGV ID must be specified).",
+    "The packet does not provide the exact button/control name used to submit/execute the command, nor the exact success/error message text."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+    "artifact_training_video_training_video_day1_0033_yeah_because_it_has_front_sensors_primary_01_19_57_000",
+    "artifact_training_video_training_video_day1_0034_restart_so_basically_the_process_to_primary_01_22_46_500",
+    "artifact_training_video_training_video_day1_0037_what_are_these_these_are_rack_primary_01_29_18_500",
+    "artifact_training_video_training_video_day1_0039_everything_else_oh_on_this_slide_primary_01_33_22_500",
+    "artifact_training_video_training_video_day1_0068_we_ve_implemented_some_of_the_primary_02_20_13_500",
+    "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000",
+    "artifact_training_video_training_video_day1_0074_what_s_this_so_this_is_primary_02_26_01_500"
+  ]
+}

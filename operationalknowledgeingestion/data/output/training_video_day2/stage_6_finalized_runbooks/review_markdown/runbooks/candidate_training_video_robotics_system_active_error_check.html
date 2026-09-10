@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check Active Errors in the Robotics SystemActiveError Model</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check Active Errors in the Robotics SystemActiveError Model</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_active_errors_robotics_systemactiveerrormodel_v1</td></tr>
+<tr><th>Title</th><td>Check Active Errors in the Robotics SystemActiveError Model</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>agv_active_errors</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>system_fault</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the WCS / Helix DB (SSMS) read-only view of the Robotics Database SystemActiveErrorModel to determine whether system errors are currently active and capture the available identifying fields, including Name, Area, Error or area code, SystemErrorDescription, and Last Seen.</p>
+<h2>When To Use</h2>
+<p>Use this diagnostic when troubleshooting a reported system or AGV-related condition and a read-only confirmation of currently active system errors is needed in the WCS / Helix DB (SSMS).</p>
+<h2>Visual References</h2>
+<figure><img src="assets/f7783ed9b4087772.jpg" alt="artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000" /><figcaption>WCS / Helix DB (SSMS) database overview showing the Robotics database among the OptiSweep databases.</figcaption></figure>
+<figure><img src="assets/73959e129fe8ea06.jpg" alt="artifact_training_video_training_video_day2_0020_yes_and_there_ll_be_a_primary_01_36_33_500" /><figcaption>WCS / Helix DB (SSMS) Robotics database table list showing dbo.SystemActiveErrorModel.</figcaption></figure>
+<figure><img src="assets/445c91f76e7e9c07.jpg" alt="artifact_training_video_training_video_day2_0017_so_moving_on_system_error_definition_primary_01_34_34_500" /><figcaption>WCS / Helix DB (SSMS) SystemActiveErrorModel view showing active rows and fields including Name, Area, Error, Last Seen, and SystemErrorDescription.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the Robotics Database in SSMS</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS), select the Robotics Database. Use the database and table list to locate the Robotics database and its dbo.SystemActiveErrorModel table.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Robotics database is available in SSMS and dbo.SystemActiveErrorModel can be located in its table list.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The Robotics database is unavailable.</li>
+<li>The SystemActiveErrorModel cannot be located or accessed.</li>
+</ul>
+<hr>
+<h3>Step 2 — Inspect current SystemActiveErrorModel rows</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS), open dbo.SystemActiveErrorModel and inspect the current rows. Review the Name, Area, Error or area code, Last Seen, and SystemErrorDescription fields.</p>
+<p><strong>Expected result:</strong></p>
+<p>The model displays zero or more current active-error rows with observable identifying fields and displayed Last Seen information.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The SystemActiveErrorModel cannot be opened.</li>
+<li>The displayed active state cannot be confirmed.</li>
+<li>A relevant row lacks Name, Area, Error or area code, SystemErrorDescription, or Last Seen information.</li>
+</ul>
+<hr>
+<h3>Step 3 — Capture details for relevant active rows</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>For each relevant row in the WCS / Helix DB (SSMS), capture the Name, Area, Error or area code, SystemErrorDescription, and Last Seen value. Compare examples such as AGV has not moved in 30 seconds or Communication Error with the reported condition.</p>
+<p><strong>Expected result:</strong></p>
+<p>Each relevant active row has a captured name, area, error or area code, description, and Last Seen value, or the model shows no current active row.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The reported fault is not represented in the active-error model.</li>
+<li>No current active row is present when one is expected.</li>
+<li>The displayed fields are incomplete.</li>
+<li>The active state cannot be confirmed.</li>
+</ul>
+<hr>
+<h3>Step 4 — Stop when the active-error check is inconclusive</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Stop the diagnostic and escalate to L3_support when no matching active row is present, a relevant row lacks identifying fields, or the active state cannot be confirmed. Do not treat an active row as evidence that the documented resolution has been completed.</p>
+<p><strong>Expected result:</strong></p>
+<p>The result is classified as either a confirmed observable active-error match, no current active row, or an inconclusive check requiring escalation.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>No active row is present for an expected fault.</li>
+<li>The reported fault is not represented in the active-error model.</li>
+<li>A row lacks the identifying fields needed for comparison.</li>
+<li>The active state cannot be confirmed.</li>
+</ul>
+<hr>
+</body>
+</html>

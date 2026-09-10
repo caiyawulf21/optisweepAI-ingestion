@@ -1,0 +1,372 @@
+{
+  "procedure_id": "proc_diagnose_sorter_location_queue_mapping_in_robotics_database_v1",
+  "candidate_id": "candidate_training_video_day2_diagnose_sort_locations_database_mapping",
+  "title": "Diagnose Sorter Location and Queue Mapping in the Robotics Database",
+  "procedure_type": "diagnostic",
+  "summary": "Use read-only SSMS access to the WCS / Helix Robotics database to verify sorted-location rows, associated queue locations, sorter-side associations, and sorter-entry sequence when investigating sorter mapping behavior.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "zone_config_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "mapping_abnormal",
+    "zone_agv_mismatch"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this diagnostic on the WCS / Helix DB (SSMS) when support needs to verify sorter-side, sorted-location, queue-location, or sorter-entry sequence configuration associated with an observed sorter mapping issue.",
+  "not_for": [
+    "Do not use this procedure to modify Robotics database configuration.",
+    "Do not use this procedure as a substitute for confirming the physical sorter layout when the database-to-floor relationship is unknown.",
+    "Do not use this procedure to diagnose unrelated AGV errors, robot commands, charging, or dwell behavior."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support performs the read-only inspection in SSMS.",
+    "L3_support reviews or assists with escalation when a required row, queue association, sorter-side value, or sequence does not match the observed configuration."
+  ],
+  "safety_notes": [
+    "Keep the SSMS check read-only.",
+    "Do not modify database configuration as part of this procedure."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "SSMS",
+    "Robotics database",
+    "SortLocationsDatabaseModel table/model"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2 or L3 access to the WCS / Helix DB (SSMS)"
+    ],
+    "system_preconditions": [
+      "The affected sorter side, sorted location, or queue location has been identified well enough to select the relevant Robotics database rows."
+    ],
+    "external_references": [
+      "Observed sorter configuration or queue order supplied by the site or incident investigation"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_training_video_sort_locations_database_v1",
+    "ctx_training_video_sorter_tipper_mapping_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500",
+      "description": "Robotics database view showing sort-location concepts, queue locations, sorter-side association, and sequence-related data.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0012_the_sense_to_me_yeah_if_primary_00_34_18_500",
+      "description": "RMS / fleet status UI and mapping explanation showing sequence values beginning at the sorter entrance queue and resolving the corresponding location.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+      "description": "Robotics database view showing sorter-side fields including entrance and exit queue locations, tipper count, and disabled state.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Robotics database model in SSMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Establish the live WCS / Helix DB (SSMS) view needed to inspect sorter-location configuration.",
+      "instruction": "In the WCS / Helix DB (SSMS), open the Robotics database and locate the SortLocationsDatabaseModel table/model. Do not edit rows or database configuration.",
+      "expected_result": "The Robotics database exposes the sort-location model for read-only inspection.",
+      "healthy_condition": "The SortLocationsDatabaseModel table/model is available and its rows can be inspected without making changes.",
+      "failure_condition": "The Robotics database or SortLocationsDatabaseModel cannot be located or read.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open Robotics database",
+          "exact_action": "Open the Robotics database in SSMS and locate the sort locations database model/table.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The Robotics database or sort locations model is unavailable to the assigned support role.",
+        "The investigation would require modifying database configuration."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0011",
+          "page": 11,
+          "timestamp_start": "00:21:10.000",
+          "timestamp_end": "00:32:47.000",
+          "quote_or_summary": "The sort locations database model contains sorted locations, queue locations behind the sorted locations, associated sorter sides, and sequence from the sorter entrance queue."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Inspect sorted-location and queue-location rows",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Confirm that each relevant sorted location has the expected queue location behind it.",
+      "instruction": "In the WCS / Helix DB (SSMS), review the relevant SortLocationsDatabaseModel rows. Inspect the sorted-location identifier and its associated queue-location identifier; where present, use the model fields SorterId, StagingId, and QueueId to distinguish the sorter location, staging location, and queue location.",
+      "expected_result": "The affected sorted locations and their associated queue locations are visible as rows that can be compared with the observed sorter configuration.",
+      "healthy_condition": "Each required sorted location has a corresponding queue-location association, and the association represents the location behind the sorted location where an empty-tote AGV stages for an exchange.",
+      "failure_condition": "A required sorted-location row is missing, the QueueId association is absent, or the row does not identify the expected queue location.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review location associations",
+          "exact_action": "Review rows for the sorted locations and the associated queue locations behind those sorted locations.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The required location row is missing.",
+        "The queue-location association is absent.",
+        "The database row cannot be related to the affected sorter location."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0011",
+          "page": 11,
+          "timestamp_start": "00:21:10.000",
+          "timestamp_end": "00:32:47.000",
+          "quote_or_summary": "The queue locations are the locations behind the sorted locations where an AGV with an empty tote will move to fill when an exchange happens."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0011",
+          "page": 11,
+          "timestamp_start": "00:26:58.500",
+          "timestamp_end": "00:26:58.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500",
+          "quote_or_summary": "Robotics database view and explanation of sorted locations, respective queue locations, sorter-side association, and sequence."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Check sorter-side and entrance-queue sequence",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Determine whether the database maps each location to the intended sorter side and preserves the expected order from the sorter entrance queue.",
+      "instruction": "In the WCS / Helix DB (SSMS), inspect the sorter-side association and Sequence for each relevant row. Compare the recorded sequence with the observed sorter entrance queue order. Sequence values are used to order the locations from the sorter entrance queue; the supplied model reference describes sequence values 1–4 as starting at that entrance queue.",
+      "expected_result": "Each relevant location has a sorter-side association and a sequence that can be compared to its expected position from the sorter entrance queue.",
+      "healthy_condition": "The sorter-side value identifies the intended side, and the sequence progresses consistently with the observed entrance-queue order.",
+      "failure_condition": "A sorter-side value is missing or unexpected, sequence values do not correspond to the entrance-queue order, or the mapping points to a different location than the observed configuration.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Compare sorter-side mapping",
+          "exact_action": "Check the sorter-side association for each location.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Compare sequence order",
+          "exact_action": "Compare the recorded sequence with the sorter entrance queue order.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Sorter-side and sequence values do not correspond to the observed configuration.",
+        "The sequence cannot be reconciled with the sorter entrance queue order.",
+        "The observed configuration is insufficient to determine whether the database mapping is correct."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0011",
+          "page": 11,
+          "timestamp_start": "00:21:10.000",
+          "timestamp_end": "00:32:47.000",
+          "quote_or_summary": "The sort locations model includes associated sorter sides and sequence from the sorter entrance queue."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0012",
+          "page": 12,
+          "timestamp_start": "00:34:18.500",
+          "timestamp_end": "00:34:18.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0012_the_sense_to_me_yeah_if_primary_00_34_18_500",
+          "quote_or_summary": "Sequence begins at the sorter entrance queue and is used to map a zone or queue sequence to the corresponding station/location while preserving order during compression."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Confirm complete mapping for the affected sorter side",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Conclude whether the required sorted locations, queue locations, sorter-side associations, and sequence values form a consistent mapping.",
+      "instruction": "In the WCS / Helix DB (SSMS), verify that all locations and queue associations needed for the affected sorter side are present and that their sorter-side and Sequence values remain consistent with the observed sorter entrance queue order. Keep the inspection read-only.",
+      "expected_result": "The affected sorter side has a complete, internally consistent set of sorted-location and queue-location mappings.",
+      "healthy_condition": "All required rows are present; each sorted location has its expected queue location; sorter-side associations match the affected side; and sequence values identify the expected entrance-queue order.",
+      "failure_condition": "Any required row or queue association is missing, or the sorter-side and sequence values conflict with the observed configuration.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Validate mapping completeness",
+          "exact_action": "Verify that the locations and queue associations needed for the affected sorter side are present and have a consistent sequence.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The required location row is missing.",
+        "The queue-location association is absent.",
+        "Sorter-side or sequence values do not correspond to the observed configuration.",
+        "A database change would be needed to make the mapping consistent."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0011",
+          "page": 11,
+          "timestamp_start": "00:21:10.000",
+          "timestamp_end": "00:32:47.000",
+          "quote_or_summary": "The sort locations database model contains sorted locations, respective queue locations, sorter-side associations, and sequence from the sorter entrance queue."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The Robotics database is accessible in SSMS for read-only inspection.",
+    "Required sorted-location rows are present.",
+    "Each required sorted location has an associated queue location.",
+    "Sorter-side associations match the affected sorter side.",
+    "Sequence values are consistent with the expected order from the sorter entrance queue."
+  ],
+  "healthy_conditions": [
+    "SortLocationsDatabaseModel rows are available and readable.",
+    "SorterId and QueueId associations identify the expected sorted and queue locations.",
+    "SorterSideDatabaseModelId values correspond to the affected sorter side.",
+    "Sequence values preserve the expected sorter entrance queue order."
+  ],
+  "failure_conditions": [
+    "A required sorted-location row is missing.",
+    "A queue-location association is absent.",
+    "The sorter-side association is missing or does not match the affected side.",
+    "Sequence values do not correspond to the observed sorter entrance queue order.",
+    "The database mapping cannot be reconciled with the observed configuration."
+  ],
+  "escalation_guidance": [
+    "Escalate to L3_support or engineering when a required location row is missing, a queue-location association is absent, or sorter-side and sequence values do not correspond to the observed configuration.",
+    "Preserve the read-only findings, including the affected location, queue association, sorter-side value, and sequence value, for escalation.",
+    "Do not correct the mapping by editing the database within this procedure."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0011",
+      "page": 11,
+      "timestamp_start": "00:21:10.000",
+      "timestamp_end": "00:32:47.000",
+      "quote_or_summary": "The sort locations database model contains sorted locations, queue locations behind the sorted locations, associated sorter sides, and sequence from the sorter entrance queue."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0012_the_sense_to_me_yeah_if_primary_00_34_18_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_diagnose_sort_locations_database_mapping"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide a complete SSMS navigation path.",
+    "The exact deployed database and table names should be confirmed for the target site; the source names the Robotics database and SortLocationsDatabaseModel but does not provide a complete site-specific schema validation.",
+    "The packet does not provide a SQL statement; no SQL command is included in this runbook.",
+    "The observed sorter configuration or physical queue order must be supplied before the database sequence can be judged against the live layout.",
+    "The packet does not define a remediation procedure for correcting an inconsistent mapping."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+    "artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500",
+    "artifact_training_video_training_video_day2_0012_the_sense_to_me_yeah_if_primary_00_34_18_500"
+  ]
+}

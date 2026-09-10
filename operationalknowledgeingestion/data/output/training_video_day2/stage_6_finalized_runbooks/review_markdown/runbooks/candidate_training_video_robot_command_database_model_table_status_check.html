@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check Robot Command Database Model Table for Active Robot Command Status (Sent → In Progress → Archived)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check Robot Command Database Model Table for Active Robot Command Status (Sent → In Progress → Archived)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_robot_command_database_model_table_active_status_v1</td></tr>
+<tr><th>Title</th><td>Check Robot Command Database Model Table for Active Robot Command Status (Sent → In Progress → Archived)</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>robot_command_or_task_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>mapping_abnormal</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use WCS / Helix DB (SSMS) to verify whether a robot command is still active in RobotCommandDatabaseModel, whether it progressed from sent to in-progress, and whether completed commands have been archived to robot command activity (historical record).</p>
+<h2>When To Use</h2>
+<p>When you need to confirm the lifecycle evidence of a specific robot command for an AGV (sent vs in-progress vs completed/archived) using the active transactional table and the archived historical record.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/bc80d134a7f69ff3.jpg" alt="artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000" /><figcaption>RobotCommandDatabaseModel table lifecycle explanation and example fields (sent time, in-progress time, archived to robot command activity; includes command name/status/robot/container/station parameters).</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Connect to WCS / Helix DB in SSMS (read-only)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open SSMS and connect to the WCS / Helix DB read-only environment.</p>
+<p><strong>Expected result:</strong></p>
+<p>SSMS is connected to the WCS / Helix DB environment and ready to browse databases/tables.</p>
+<hr>
+<h3>Step 2 — Open the WCS/OptiSweep database containing RobotCommandDatabaseModel</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the database list, open the OptiSweep/WCS database that contains the RobotCommandDatabaseModel table.</p>
+<p><strong>Expected result:</strong></p>
+<p>The database containing RobotCommandDatabaseModel is opened/expanded in SSMS.</p>
+<hr>
+<h3>Step 3 — Locate RobotCommandDatabaseModel and identify lifecycle evidence fields</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Locate the RobotCommandDatabaseModel table and identify the columns/fields shown in the table UI for command lifecycle evidence, including sent time and in-progress time, plus command identifiers such as command name and robot/container/station parameters.</p>
+<p><strong>Expected result:</strong></p>
+<p>RobotCommandDatabaseModel is open and the lifecycle evidence fields (sent time and in-progress time) and identifiers (command name and robot/container/station parameters) are visible.</p>
+<hr>
+<h3>Step 4 — Find the specific command instance by CommandName and robot/container/station identifiers</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Find the specific command instance by using the command name (e.g., MoveTote, PickupTote, DropOffTote, RemoveAgv, GoCharge) and the relevant robot/container/station identifiers that match the incident context.</p>
+<p><strong>Expected result:</strong></p>
+<p>A matching row (or set of rows) for the targeted CommandName and robot/container/station identifiers is located in RobotCommandDatabaseModel.</p>
+<hr>
+<h3>Step 5 — Verify lifecycle progression: sent time and in-progress time</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Observe the lifecycle timestamps/fields for the targeted row: confirm whether the row shows a sent time and whether it has transitioned to an in-progress state (in-progress time populated).</p>
+<p><strong>Expected result:</strong></p>
+<p>For the targeted command row, sent time is populated; in-progress time is populated if the command has progressed to in-progress.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the command remains in RobotCommandDatabaseModel without an in-progress transition (sent time populated but in-progress time not populated), escalate for deeper command/task state troubleshooting rather than assuming completion.</li>
+</ul>
+<hr>
+<h3>Step 6 — Check destination/queue-capacity interaction evidence for in-progress commands</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the command is in-progress, confirm queue/capacity interaction evidence by checking that the destination queue/location is reflected as freed/occupied based on in-progress status (e.g., in-progress indicates the AGV is occupying the queue/location capacity).</p>
+<p><strong>Expected result:</strong></p>
+<p>The destination/current location fields associated with the in-progress command reflect active occupancy behavior consistent with queue capacity handling.</p>
+<hr>
+<h3>Step 7 — Verify completion: command archived out of RobotCommandDatabaseModel into robot command activity</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the command is completed, verify it is no longer present as an active command in RobotCommandDatabaseModel and instead exists in the archived robot command activity (historical record).</p>
+<p><strong>Expected result:</strong></p>
+<p>For the targeted command instance, RobotCommandDatabaseModel no longer contains the active row; the command appears in robot command activity archive with a status such as errored or cancelled.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the command appears completed but is still present in RobotCommandDatabaseModel, escalate to investigate archiving behavior and transactional table consistency.</li>
+<li>If you cannot locate the command by CommandName + robot/container/station identifiers, confirm the correct robot/container/station context and command naming used by the Robotics module.</li>
+</ul>
+<hr>
+</body>
+</html>

@@ -1,0 +1,923 @@
+[
+  {
+    "playbook_candidate_id": "playbook_candidate_incident_233681_tote_exchange_communication_loss",
+    "title": "AGV tote exchange unavailable with sorter or XLE communication loss",
+    "user_facing_summary": "Use this troubleshooting pattern when AGVs are not exchanging totes or the site cannot bag out, especially when the sorter is not communicating or the site reports communication errors.",
+    "playbook_goal": "Determine whether the tote-exchange stoppage is associated with a site-wide operational communication problem, collect evidence about XLE and network connectivity, perform only an authorized high-level recovery action when supported, and validate resumed tote exchange and sorting.",
+    "incident_context": {
+      "case_id": "233681",
+      "site": "UPS Haslet TX (TXRTH)",
+      "site_code": "ups_haslet_tx",
+      "site_location": {
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "customer": "UPS",
+        "city": "Haslet",
+        "state": "TX",
+        "country": "US",
+        "hub_code": "TXRTH",
+        "region_label": "Fort Worth, TX"
+      },
+      "incident_start_time": "2026-08-22 06:04",
+      "incident_resolved_time": "2026-08-25",
+      "time_to_resolve": "3 calendar days; exact resolution time unavailable",
+      "resolution_confirmed": true
+    },
+    "observed_entry_symptoms": [
+      "AGVs are unable to exchange totes.",
+      "The site cannot bag out or process totes normally.",
+      "The sorter is not communicating with the system.",
+      "The system appears to be running or AGVs are not individually faulted, but tote exchange and task processing are not progressing.",
+      "Tasks accumulate or are canceled while normal tote movement is unavailable."
+    ],
+    "negative_or_absent_signals": [
+      "The site reported no AVEVA alarms.",
+      "The site reported that required robots were checked across the zones without an identified issue.",
+      "The site reported that AGVs were not faulted or crashed.",
+      "The RMS screenshot did not establish a specific AGV fault or crash state."
+    ],
+    "support_user_language_examples": [
+      "AGVs stopped exchanging totes",
+      "AGVs can't exchange totes",
+      "Unable to exchange totes",
+      "We can't bag out",
+      "The sorter is not communicating",
+      "Nothing is moving through the sorter",
+      "The system looks up but totes are not moving",
+      "No AGVs are faulted but the system cannot run",
+      "XLE communication is lost",
+      "Stunnel is throwing errors"
+    ],
+    "tentative_internal_patterns": [
+      "XLE communication interruption",
+      "Network or firewall path blocking communication",
+      "Stunnel communication errors",
+      "Abnormal task or tote-exchange state without an individual AGV fault"
+    ],
+    "internal_pattern_notes": "These are tentative source-supported patterns for retrieval and later SME or ML enrichment only. The evidence reports a firewall as appearing to block communication and later records a firewall-related resolution explanation, but it does not document a specific rule, endpoint, change, or independently validated causal chain.",
+    "affected_systems_or_components": [
+      "AGV system",
+      "Tote exchange",
+      "Bag-out function",
+      "Sorter",
+      "XLE communication",
+      "RMS monitoring",
+      "Stunnel communication component",
+      "Firewall or network path"
+    ],
+    "confidence": "medium",
+    "confidence_reason": "The packet contains a coherent symptom, diagnostic, high-level recovery, and operational validation pattern. Confidence is limited because the exact network endpoints, firewall change, purge procedure, and sustained post-recovery validation are not documented.",
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm a broad tote-exchange or bag-out stoppage",
+        "intent": "Determine whether the reported problem affects normal tote exchange or bag-out operation broadly enough to follow the communication-loss investigation path.",
+        "goal": "Determine whether the reported problem affects normal tote exchange or bag-out operation broadly enough to follow the communication-loss investigation path.",
+        "runbook_placeholder": "Procedure needed to confirm with the site whether the affected zone or workflow is unable to exchange totes, whether bag-out is unavailable, whether sorter movement is absent, and whether any AGVs are visibly faulted. In RMS, inspect the fleet or map-monitoring view for the affected workflow's current robot and task state; use the site-reported AVEVA alarm state only as supporting context.",
+        "allowed_roles": [
+          "operator",
+          "L1_support",
+          "L2_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "The case began with totes not exchanging after startup and later described inability to bag out while AGVs were not reported as faulted or crashed.",
+        "needed_runbook_capability": "Procedure needed to confirm with the site whether the affected zone or workflow is unable to exchange totes, whether bag-out is unavailable, whether sorter movement is absent, and whether any AGVs are visibly faulted. In RMS, inspect the fleet or map-monitoring view for the affected workflow's current robot and task state; use the site-reported AVEVA alarm state only as supporting context.",
+        "expected_or_observed_result": "The site operator or remote support observes the reported workflow and, where available, the RMS monitoring view. Unhealthy signals are that totes are not exchanging, bag-out is unavailable, or the system cannot run despite no clear individual AGV fault. Healthy signals are that tote exchange and bag-out are operating normally. Inconclusive signals are limited observation, mixed operation, or unclear separation between a localized sorter or AGV issue and a broader stoppage.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "Site reports described inability to exchange totes, inability to bag out, and later reported that sorting resumed."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "rms_ui"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [
+          {
+            "id": "capability:agv_active_errors",
+            "support_contract": "Confirm whether AGVs or robots currently have active error or fault state; RMS and read-only backend corroboration are supported.",
+            "relevant_evidence": "The incident explicitly reported that AGVs were not faulted or crashed while the system could not run."
+          }
+        ],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology does not establish a specific tote-exchange or bag-out state mapping for the observed RMS evidence."
+        ],
+        "ontology_contract_status": "complete",
+        "healthy_indicators": [
+          "Site reports that totes are exchanging and bag-out is processing normally.",
+          "RMS shows active robot and task activity without a corresponding fleet-wide stoppage."
+        ],
+        "unhealthy_indicators": [
+          "Site reports that totes are not exchanging or bag-out is unavailable.",
+          "RMS context shows the system cannot run while individual AGV faults or crashes are absent."
+        ],
+        "inconclusive_indicators": [
+          "Only a single localized robot or sorter interruption is observed.",
+          "RMS values or status labels are unreadable or do not establish operational state.",
+          "The site cannot distinguish tote-assignment delay from communication loss."
+        ],
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_233681_page_004_nested_image_01",
+          "artifact_incident_233681_page_011_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_233681_event_001",
+          "incident_233681_event_003",
+          "incident_233681_event_014",
+          "incident_233681_event_015"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_1",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "support_type": "page_ocr",
+            "quote_or_summary": "After startup, totes were not exchanging and the site put the system in bag-out mode."
+          },
+          {
+            "page_ref": "case_233681:page_11",
+            "artifact_id": "artifact_incident_233681_page_011_nested_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "support_type": "artifact_ocr",
+            "quote_or_summary": "The system was unable to run; none of the AGVs were faulted or crashed, with canceled and received tasks shown."
+          }
+        ]
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "diagnostic_decision",
+        "title": "Check for XLE or stunnel communication-loss evidence",
+        "intent": "Determine whether the operational stoppage correlates with an explicit XLE communication-loss message or stunnel error condition.",
+        "goal": "Determine whether the operational stoppage correlates with an explicit XLE communication-loss message or stunnel error condition.",
+        "runbook_placeholder": "Procedure needed to inspect the incident-relevant RMS or system-message view for current XLE communication-loss entries and to review the named stunnel communication component for active errors or connection-state indicators, without assuming that historical messages prove a current failure.",
+        "allowed_roles": [
+          "L1_support",
+          "L2_support",
+          "L3_support"
+        ],
+        "preferred_audience": [
+          "L1_support",
+          "L2_support"
+        ],
+        "source_supported_description": "The source contains repeated XLE communication-loss messages and a later report that stunnel was generating errors.",
+        "needed_runbook_capability": "Procedure needed to inspect the incident-relevant RMS or system-message view for current XLE communication-loss entries and to review the named stunnel communication component for active errors or connection-state indicators, without assuming that historical messages prove a current failure.",
+        "expected_or_observed_result": "Remote support or the site observes the named communication evidence in the available system messaging or stunnel context. Unhealthy signals are messages reporting lost connection to XLE, repeated communication-lost errors, or stunnel errors. Healthy signals are no current communication-loss indication and normal communication status. Inconclusive signals are stale messages, unclear timestamps, ambiguous component names, or evidence that covers only a different time period.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [],
+        "stage8_candidate_surfaces": [],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology does not provide a specific taxonomy capability or backend mapping for XLE communication-message history or stunnel error interpretation."
+        ],
+        "ontology_contract_status": "missing",
+        "healthy_indicators": [
+          "No current XLE communication-loss message is present.",
+          "Stunnel is not reporting active errors and communication is described as normal."
+        ],
+        "unhealthy_indicators": [
+          "The system reports lost connection to XLE.",
+          "Repeated communication-lost errors are present.",
+          "Stunnel is reported to be generating errors."
+        ],
+        "inconclusive_indicators": [
+          "Only historical messages are available and their current relevance is unknown.",
+          "Timestamps, component names, or error-resolution fields are garbled.",
+          "Communication status cannot be observed from the available source surface."
+        ],
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_233681_page_005_nested_image_01",
+          "artifact_incident_233681_page_012_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_233681_event_006",
+          "incident_233681_event_017"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_5",
+            "artifact_id": "artifact_incident_233681_page_005_nested_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "support_type": "artifact_ocr",
+            "quote_or_summary": "The system lost connection to XLE and repeated entries reported communication lost with XLE."
+          },
+          {
+            "page_ref": "case_233681:page_12",
+            "artifact_id": "artifact_incident_233681_page_012_nested_image_01",
+            "chunk_id": "stage4_artifact_chunk_002",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "support_type": "artifact_ocr",
+            "quote_or_summary": "A participant reported that stunnel was generating errors."
+          }
+        ]
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "diagnostic_decision",
+        "title": "Assess connectivity between the system and XLE-related endpoints",
+        "intent": "Determine whether the communication problem is accompanied by failed network connectivity to the XLE-related targets identified in the incident evidence.",
+        "goal": "Determine whether the communication problem is accompanied by failed network connectivity to the XLE-related targets identified in the incident evidence.",
+        "runbook_placeholder": "Procedure needed to review or repeat the source-supported network connectivity check for the relevant XLE-related endpoints and communication port, record whether reachability and TCP connectivity succeed or fail, and distinguish endpoint, network-path, and service-level ambiguity without embedding commands or exact endpoint values.",
+        "allowed_roles": [
+          "L1_support",
+          "L2_support",
+          "L3_support"
+        ],
+        "preferred_audience": [
+          "L1_support",
+          "L2_support"
+        ],
+        "source_supported_description": "The incident diagnostic screenshot reported lost communication to XLEs and failed TCP connectivity on the displayed communication port for multiple targets.",
+        "needed_runbook_capability": "Procedure needed to review or repeat the source-supported network connectivity check for the relevant XLE-related endpoints and communication port, record whether reachability and TCP connectivity succeed or fail, and distinguish endpoint, network-path, and service-level ambiguity without embedding commands or exact endpoint values.",
+        "expected_or_observed_result": "Remote support observes the connectivity-test results associated with the XLE investigation. Unhealthy signals are failed TCP connectivity to one or more XLE-related targets, including cases where ping succeeds but the relevant TCP connection fails, or where both ping and TCP connectivity fail. Healthy signals are successful TCP connectivity to all relevant targets and no current lost-communication message. Inconclusive signals are inconsistent endpoint values, uncertain port transcription, stale tests, or inability to reproduce the connectivity result.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [],
+        "stage8_candidate_surfaces": [],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology does not provide a dedicated XLE network-connectivity capability or a validated mapping from the observed Test-NetConnection results to a backend diagnostic model."
+        ],
+        "ontology_contract_status": "missing",
+        "healthy_indicators": [
+          "TCP connectivity succeeds for the relevant XLE-related targets.",
+          "The communication-loss condition is no longer reproducible."
+        ],
+        "unhealthy_indicators": [
+          "TCP connectivity fails for one or more relevant XLE-related targets.",
+          "Ping may succeed while TCP connectivity remains failed, indicating that basic reachability alone is insufficient."
+        ],
+        "inconclusive_indicators": [
+          "The endpoint address or port is unclear because of OCR differences.",
+          "The test is not contemporaneous with the operational symptom.",
+          "The test cannot distinguish a firewall block from endpoint, service, or routing failure."
+        ],
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_233681_page_006_detected_region_01"
+        ],
+        "related_event_ids": [
+          "incident_233681_event_008"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_6",
+            "artifact_id": "artifact_incident_233681_page_006_detected_region_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "support_type": "artifact_ocr",
+            "quote_or_summary": "Connectivity evidence showed failed TCP connections for multiple XLE-related targets; one ping timed out while other pings succeeded."
+          }
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "procedure_reference",
+        "title": "Use an authorized communication recovery path",
+        "intent": "Apply the approved high-level recovery path for the confirmed communication or abnormal tote-exchange condition, subject to site safety and role authorization.",
+        "goal": "Apply the approved high-level recovery path for the confirmed communication or abnormal tote-exchange condition, subject to site safety and role authorization.",
+        "runbook_placeholder": "Procedure needed for the authorized recovery path applicable to the confirmed communication condition, including the role boundary for any system purge, camera-tunnel or XLE reset, stunnel or network remediation, required operating-state preconditions, and prohibition on unsupported firewall or database changes.",
+        "allowed_roles": [
+          "operator",
+          "L2_support",
+          "L3_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L2_support"
+        ],
+        "source_supported_description": "The incident records a system purge, planned camera-tunnel and XLE reset, and later firewall-related remediation associated with resumed movement and tote exchange.",
+        "needed_runbook_capability": "Procedure needed for the authorized recovery path applicable to the confirmed communication condition, including the role boundary for any system purge, camera-tunnel or XLE reset, stunnel or network remediation, required operating-state preconditions, and prohibition on unsupported firewall or database changes.",
+        "expected_or_observed_result": "The authorized support or site role observes progress after the approved recovery action. A positive result is renewed movement or tote exchange, as reported during the incident after a system purge or after the communication blockage was addressed. An unsuccessful result is continued sorter non-communication, continued XLE errors, or continued inability to exchange totes. An inconclusive result is temporary movement without confirmed completion or sustained operation.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [],
+        "stage8_candidate_surfaces": [],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The packet does not provide a complete, validated recovery procedure or identify the exact firewall, stunnel, camera-tunnel, XLE, or purge control used."
+        ],
+        "ontology_contract_status": "not_required",
+        "healthy_indicators": [
+          "Movement and tote exchange resume after the authorized recovery path.",
+          "The site reports that sorting has resumed."
+        ],
+        "unhealthy_indicators": [
+          "The sorter remains non-communicating.",
+          "XLE or stunnel communication errors continue.",
+          "Tote exchange remains unavailable after the authorized recovery path."
+        ],
+        "inconclusive_indicators": [
+          "Movement resumes only temporarily while a purge is still in progress.",
+          "The recovery action is reported but its completion or exact change is not documented.",
+          "The site reports improvement without confirming normal tote assignment and bag-out."
+        ],
+        "stop_or_escalation_note": "Do not authorize or describe an unverified firewall change, database change, or production service mutation in the playbook. Use the applicable approved procedure and role boundary.",
+        "related_artifact_ids": [
+          "artifact_incident_233681_page_011_nested_image_02",
+          "artifact_incident_233681_page_012_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_233681_event_002",
+          "incident_233681_event_007",
+          "incident_233681_event_016",
+          "incident_233681_event_017"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_11",
+            "artifact_id": "artifact_incident_233681_page_011_nested_image_02",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "support_type": "artifact_ocr",
+            "quote_or_summary": "A system purge had started and movement and tote exchange were occurring, but completion was not yet confirmed."
+          },
+          {
+            "page_ref": "case_233681:page_10",
+            "artifact_id": "artifact_incident_233681_page_010_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "support_type": "artifact_ocr",
+            "quote_or_summary": "Recorded resolution details attributed the XLE communication blockage to a firewall issue, without specifying the change."
+          }
+        ]
+      },
+      {
+        "node_id": "node_5",
+        "node_order": 5,
+        "node_type": "validation_gate",
+        "title": "Validate sustained tote exchange and sorting",
+        "intent": "Confirm that operational recovery is complete and not limited to temporary movement during an active purge or partial communication recovery.",
+        "goal": "Confirm that operational recovery is complete and not limited to temporary movement during an active purge or partial communication recovery.",
+        "runbook_placeholder": "Procedure needed to validate sustained tote exchange, bag-out, and sorter operation with the site, review current RMS robot and task activity, and confirm that XLE or stunnel communication errors are not recurring before declaring recovery.",
+        "allowed_roles": [
+          "operator",
+          "L1_support",
+          "L2_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "Sorting was reported to have resumed, but the packet explicitly notes that sustained normal operation was not independently validated and that purge completion was initially pending.",
+        "needed_runbook_capability": "Procedure needed to validate sustained tote exchange, bag-out, and sorter operation with the site, review current RMS robot and task activity, and confirm that XLE or stunnel communication errors are not recurring before declaring recovery.",
+        "expected_or_observed_result": "The site operator observes sustained tote exchange, bag-out, and sorter operation; remote support may corroborate current RMS task or robot activity and the absence of recurring communication errors. Healthy signals are resumed sorting and tote exchange over an observation period, with no continuing XLE or stunnel error indication. Unhealthy signals are continued non-communication, repeated tote-exchange failure, recurring communication errors, or an AGV interruption that again blocks the sorter. Inconclusive signals are a single successful movement, case closure alone, or recovery reported before purge completion.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [],
+        "stage8_candidate_surfaces": [
+          "rms_ui"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [
+          {
+            "id": "capability:agv_active_errors",
+            "support_contract": "Confirm whether AGVs or robots currently have active error or fault state using supported fleet or backend corroboration.",
+            "relevant_evidence": "The incident used RMS robot and task information and specifically noted that AGVs were not faulted or crashed."
+          }
+        ],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology does not establish a specific validated mapping for sustained tote exchange, bag-out completion, or sorter communication validation."
+        ],
+        "ontology_contract_status": "complete",
+        "healthy_indicators": [
+          "The site reports sustained normal sorting and tote exchange.",
+          "Bag-out is processing normally.",
+          "RMS shows ongoing robot and task activity without a corresponding fleet-wide stoppage.",
+          "No recurring XLE or stunnel communication errors are reported."
+        ],
+        "unhealthy_indicators": [
+          "The sorter remains unable to communicate.",
+          "Totes stop exchanging again after temporary movement.",
+          "Communication-loss errors recur.",
+          "A robot interruption again holds up sorter operation."
+        ],
+        "inconclusive_indicators": [
+          "Only case status changes or administrative closure are available.",
+          "Movement was observed only while a purge was in progress.",
+          "RMS data is present but its health meaning is unclear or task state is not current."
+        ],
+        "stop_or_escalation_note": "Do not declare recovery from case closure or a single report of resumed movement alone.",
+        "related_artifact_ids": [
+          "artifact_incident_233681_page_004_nested_image_01",
+          "artifact_incident_233681_page_011_nested_image_02",
+          "artifact_incident_233681_page_012_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_233681_event_010",
+          "incident_233681_event_012",
+          "incident_233681_event_016",
+          "incident_233681_event_017"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_8",
+            "artifact_id": null,
+            "chunk_id": "stage4_page_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "support_type": "page_ocr",
+            "quote_or_summary": "The site reported that the issue was fixed and that it was able to sort again."
+          },
+          {
+            "page_ref": "case_233681:page_11",
+            "artifact_id": "artifact_incident_233681_page_011_nested_image_02",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "support_type": "artifact_ocr",
+            "quote_or_summary": "Movement and tote exchange resumed while the system purge was still in progress."
+          }
+        ]
+      },
+      {
+        "node_id": "node_6",
+        "node_order": 6,
+        "node_type": "escalation_gate",
+        "title": "Stop and escalate when communication recovery or validation fails",
+        "intent": "Hand off when the authorized diagnostic and recovery path cannot safely identify or correct the communication condition, or when operational validation fails.",
+        "goal": "Hand off when the authorized diagnostic and recovery path cannot safely identify or correct the communication condition, or when operational validation fails.",
+        "runbook_placeholder": "Procedure needed to prepare an escalation handoff containing the XLE communication messages, stunnel error evidence, connectivity-test outcomes, RMS or site operational observations, recovery actions attempted, role and authorization constraints, and validation results; the handoff must identify whether the unresolved boundary is network or firewall ownership, communication service health, or operational recovery.",
+        "allowed_roles": [
+          "L1_support",
+          "L2_support",
+          "L3_support"
+        ],
+        "preferred_audience": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "The incident involved ongoing network-side investigation, a suspected firewall blocker, incomplete endpoint detail, and limited sustained validation evidence.",
+        "needed_runbook_capability": "Procedure needed to prepare an escalation handoff containing the XLE communication messages, stunnel error evidence, connectivity-test outcomes, RMS or site operational observations, recovery actions attempted, role and authorization constraints, and validation results; the handoff must identify whether the unresolved boundary is network or firewall ownership, communication service health, or operational recovery.",
+        "expected_or_observed_result": "L1 or L2 support observes unresolved XLE or stunnel errors, failed connectivity that remains unexplained, continued sorter non-communication, or failed sustained tote-exchange validation. A safe completion signal is that the issue has a supported recovery path and validation has passed. Inconclusive evidence includes conflicting endpoints, unclear firewall ownership, missing recovery details, or temporary movement without stable operation.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [],
+        "stage8_candidate_surfaces": [],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The packet does not establish a canonical escalation role for firewall ownership or a validated evidence schema for XLE and stunnel failures."
+        ],
+        "ontology_contract_status": "not_required",
+        "healthy_indicators": [
+          "A supported recovery path is available and authorized.",
+          "Tote exchange, bag-out, sorter communication, and relevant communication checks validate successfully."
+        ],
+        "unhealthy_indicators": [
+          "Communication remains lost after the authorized recovery path.",
+          "The sorter remains non-communicating.",
+          "Connectivity remains failed without an identified supported next action.",
+          "Validation fails or only temporary movement is observed."
+        ],
+        "inconclusive_indicators": [
+          "The suspected firewall cause cannot be confirmed from available evidence.",
+          "Endpoint or port values are inconsistent or unreadable.",
+          "The source does not document the exact corrective change or sustained live-system validation."
+        ],
+        "stop_or_escalation_note": "Escalate only for an unsafe, unauthorized, unsupported, or unresolved path—not merely because another team participated historically.",
+        "related_artifact_ids": [
+          "artifact_incident_233681_page_006_detected_region_01",
+          "artifact_incident_233681_page_007_detected_region_01",
+          "artifact_incident_233681_page_010_embedded_image_01",
+          "artifact_incident_233681_page_012_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_233681_event_008",
+          "incident_233681_event_009",
+          "incident_233681_event_013",
+          "incident_233681_event_017"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_233681:page_7",
+            "artifact_id": "artifact_incident_233681_page_007_detected_region_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "support_type": "artifact_ocr",
+            "quote_or_summary": "The site was still investigating on the network side, the sorter was not communicating, and a firewall appeared to be causing the issue."
+          },
+          {
+            "page_ref": "case_233681:page_10",
+            "artifact_id": "artifact_incident_233681_page_010_embedded_image_01",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "support_type": "artifact_ocr",
+            "quote_or_summary": "The recorded resolution attributed XLE communication blocking to a firewall, without documenting the specific correction."
+          }
+        ]
+      }
+    ],
+    "branch_hints": [
+      {
+        "from_node_id": "node_1",
+        "condition_or_signal": "Broad tote-exchange or bag-out stoppage confirmed, with no clearly localized individual AGV fault",
+        "suggested_next_node_id": "node_2",
+        "reason": "The source-supported incident pattern continues into XLE and communication-loss investigation.",
+        "source_refs": [
+          "case_233681:page_1",
+          "case_233681:page_11"
+        ]
+      },
+      {
+        "from_node_id": "node_1",
+        "condition_or_signal": "Tote exchange and bag-out are normal, or the problem is localized and does not match the broad stoppage pattern",
+        "suggested_next_node_id": "",
+        "reason": "Exit this candidate and retriage the localized or non-matching symptom.",
+        "source_refs": [
+          "case_233681:page_1"
+        ]
+      },
+      {
+        "from_node_id": "node_2",
+        "condition_or_signal": "Current or relevant XLE communication-loss messages or stunnel errors are present",
+        "suggested_next_node_id": "node_3",
+        "reason": "The incident continued from communication-loss evidence to connectivity testing.",
+        "source_refs": [
+          "case_233681:page_5",
+          "case_233681:page_12"
+        ]
+      },
+      {
+        "from_node_id": "node_2",
+        "condition_or_signal": "No current XLE or stunnel communication-loss evidence is present",
+        "suggested_next_node_id": "",
+        "reason": "Exit or retriage to another investigation because the source-supported communication pattern is not indicated.",
+        "source_refs": [
+          "case_233681:page_5",
+          "case_233681:page_12"
+        ]
+      },
+      {
+        "from_node_id": "node_3",
+        "condition_or_signal": "Relevant TCP connectivity remains failed or the communication path is otherwise unhealthy",
+        "suggested_next_node_id": "node_4",
+        "reason": "Failed connectivity supports proceeding to an authorized communication recovery path.",
+        "source_refs": [
+          "case_233681:page_6"
+        ]
+      },
+      {
+        "from_node_id": "node_3",
+        "condition_or_signal": "Relevant TCP connectivity succeeds and no current communication-loss condition remains",
+        "suggested_next_node_id": "",
+        "reason": "Exit or use an alternate investigation because the source-supported connectivity-failure branch is not indicated.",
+        "source_refs": [
+          "case_233681:page_6"
+        ]
+      },
+      {
+        "from_node_id": "node_4",
+        "condition_or_signal": "Authorized communication recovery or approved system recovery action is completed",
+        "suggested_next_node_id": "node_5",
+        "reason": "Post-recovery validation must occur only after an authorized recovery action is complete.",
+        "source_refs": [
+          "case_233681:page_11",
+          "case_233681:page_12"
+        ]
+      },
+      {
+        "from_node_id": "node_4",
+        "condition_or_signal": "Recovery is unauthorized, unsupported, cannot be completed safely, or produces no progress",
+        "suggested_next_node_id": "node_6",
+        "reason": "The path must stop and hand off when it cannot continue within the supported role and evidence boundary.",
+        "source_refs": [
+          "case_233681:page_7",
+          "case_233681:page_10"
+        ]
+      },
+      {
+        "from_node_id": "node_5",
+        "condition_or_signal": "Sustained tote exchange, bag-out, and sorter operation are confirmed with no recurring communication errors",
+        "suggested_next_node_id": "",
+        "reason": "Exit the playbook after operational validation passes.",
+        "source_refs": [
+          "case_233681:page_8"
+        ]
+      },
+      {
+        "from_node_id": "node_5",
+        "condition_or_signal": "Tote exchange or sorter operation remains impaired, communication errors recur, or only temporary movement is observed",
+        "suggested_next_node_id": "node_6",
+        "reason": "Failed or incomplete validation requires an evidence-based handoff.",
+        "source_refs": [
+          "case_233681:page_11",
+          "case_233681:page_12"
+        ]
+      }
+    ],
+    "escalation_gates": [
+      {
+        "condition_or_signal": "The authorized recovery path is unavailable, unsafe, unauthorized, or unsupported by the available evidence.",
+        "required_role": "L2_support",
+        "reason": "The packet does not document a complete firewall, stunnel, XLE, or purge procedure, so unsupported changes must not be inferred.",
+        "source_refs": [
+          "case_233681:page_7",
+          "case_233681:page_10"
+        ]
+      },
+      {
+        "condition_or_signal": "Communication remains failed or sustained tote exchange and sorter operation cannot be validated after recovery.",
+        "required_role": "L2_support",
+        "reason": "The incident evidence records incomplete endpoint details and only limited live-system validation.",
+        "source_refs": [
+          "case_233681:page_6",
+          "case_233681:page_8",
+          "case_233681:page_11"
+        ]
+      }
+    ],
+    "validation_gates": [
+      {
+        "validation_goal": "Confirm sustained operational recovery.",
+        "expected_recovery_signal": "The site reports sustained tote exchange, bag-out, and sorter operation; current monitoring does not show recurring communication-loss symptoms.",
+        "failure_outcome": "Continue evidence collection or use the escalation gate; do not declare recovery from case closure or temporary movement alone.",
+        "source_refs": [
+          "case_233681:page_8",
+          "case_233681:page_11",
+          "case_233681:page_12"
+        ]
+      }
+    ],
+    "runbook_placeholders": [
+      {
+        "needed_procedure": "Site symptom and operational-state confirmation for tote exchange, bag-out, sorter communication, and individual AGV fault presence.",
+        "why_needed": "The first decision must distinguish the broad source-supported symptom pattern from a localized or unrelated issue.",
+        "suggested_role": "operator",
+        "risk_note": "Do not infer a root cause from the absence of individual AGV faults.",
+        "source_refs": [
+          "case_233681:page_1",
+          "case_233681:page_11"
+        ]
+      },
+      {
+        "needed_procedure": "RMS or system-message review for XLE communication-loss entries and stunnel error state.",
+        "why_needed": "The source troubleshooting path relied on explicit communication-loss and stunnel-error evidence.",
+        "suggested_role": "L1_support",
+        "risk_note": "Historical messages may not represent the current state.",
+        "source_refs": [
+          "case_233681:page_5",
+          "case_233681:page_12"
+        ]
+      },
+      {
+        "needed_procedure": "Network connectivity evidence review for XLE-related endpoints and the source-displayed communication port.",
+        "why_needed": "The incident included failed TCP connectivity and mixed ping results that supported further communication investigation.",
+        "suggested_role": "L1_support",
+        "risk_note": "Endpoint and port values are OCR-uncertain; do not copy them into a canonical procedure without source-image verification.",
+        "source_refs": [
+          "case_233681:page_6"
+        ]
+      },
+      {
+        "needed_procedure": "Authorized recovery procedure covering system purge, camera-tunnel or XLE reset, stunnel or network remediation, and role limits.",
+        "why_needed": "The incident records these as high-level recovery topics but does not provide safe, complete execution instructions.",
+        "suggested_role": "L2_support",
+        "risk_note": "Do not invent firewall changes, database changes, service mutations, or exact reset steps.",
+        "source_refs": [
+          "case_233681:page_5",
+          "case_233681:page_11",
+          "case_233681:page_12"
+        ]
+      },
+      {
+        "needed_procedure": "Sustained recovery validation for tote exchange, bag-out, sorter communication, current robot or task activity, and recurring XLE or stunnel errors.",
+        "why_needed": "The source reports resumed sorting and temporary movement but does not independently establish sustained normal operation.",
+        "suggested_role": "operator",
+        "risk_note": "Administrative case closure is not a live operational validation.",
+        "source_refs": [
+          "case_233681:page_8",
+          "case_233681:page_10",
+          "case_233681:page_11"
+        ]
+      },
+      {
+        "needed_procedure": "Escalation evidence package for unresolved communication failure or failed recovery validation.",
+        "why_needed": "A handoff needs the communication messages, connectivity results, monitoring observations, attempted recovery actions, authorization boundary, and validation outcome.",
+        "suggested_role": "L2_support",
+        "risk_note": "Escalation should reflect an unsupported, unsafe, or unresolved path rather than historical collaboration alone.",
+        "source_refs": [
+          "case_233681:page_6",
+          "case_233681:page_7",
+          "case_233681:page_10"
+        ]
+      }
+    ],
+    "ignored_non_playbook_content": [
+      {
+        "content_type": "intake",
+        "example_from_incident": "The case was opened as a high-priority production-impacting malfunction.",
+        "reason_ignored": "Priority and case creation are intake metadata, not troubleshooting orchestration."
+      },
+      {
+        "content_type": "support_coordination",
+        "example_from_incident": "Support attempted to reach escalation and discussed internal chat participation.",
+        "reason_ignored": "Coordination and participation do not define reusable diagnostic nodes."
+      },
+      {
+        "content_type": "communication",
+        "example_from_incident": "Case status changes from New to In Progress, Escalated, Resolved, and Closed.",
+        "reason_ignored": "Administrative case status is not technical recovery validation."
+      },
+      {
+        "content_type": "exact_procedure",
+        "example_from_incident": "The source shows a Test-NetConnection command and mentions a system purge or reset.",
+        "reason_ignored": "Exact commands and operational how-to steps belong in procedures or runbooks."
+      },
+      {
+        "content_type": "reference_background",
+        "example_from_incident": "Preventive maintenance was complete for 57 of 63 AGVs.",
+        "reason_ignored": "The maintenance-progress statement is not part of the supported tote-exchange communication response path."
+      },
+      {
+        "content_type": "other",
+        "example_from_incident": "A later report described one AGV stopping and starting and holding up part of the sorter.",
+        "reason_ignored": "This is a residual or potentially separate localized condition; it is retained only as a validation failure signal, not as a separate playbook."
+      }
+    ],
+    "source_refs": [
+      {
+        "page_ref": "case_233681:page_1",
+        "artifact_id": null,
+        "chunk_id": "stage4_page_chunk_001",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "support_type": "page_ocr",
+        "quote_or_summary": "Totes were not exchanging after startup and the site entered bag-out mode."
+      },
+      {
+        "page_ref": "case_233681:page_5",
+        "artifact_id": "artifact_incident_233681_page_005_nested_image_01",
+        "chunk_id": "stage4_artifact_chunk_001",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "support_type": "artifact_ocr",
+        "quote_or_summary": "The system lost connection to XLE and repeated communication-loss errors were shown."
+      },
+      {
+        "page_ref": "case_233681:page_6",
+        "artifact_id": "artifact_incident_233681_page_006_detected_region_01",
+        "chunk_id": "stage4_artifact_chunk_001",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "support_type": "artifact_ocr",
+        "quote_or_summary": "Connectivity tests showed failed TCP connections to multiple XLE-related targets."
+      },
+      {
+        "page_ref": "case_233681:page_10",
+        "artifact_id": "artifact_incident_233681_page_010_embedded_image_01",
+        "chunk_id": "stage4_artifact_chunk_001",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "support_type": "artifact_ocr",
+        "quote_or_summary": "Recorded resolution details attributed the XLE communication blockage to a firewall issue."
+      },
+      {
+        "page_ref": "case_233681:page_11",
+        "artifact_id": "artifact_incident_233681_page_011_nested_image_02",
+        "chunk_id": "stage4_artifact_chunk_001",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "support_type": "artifact_ocr",
+        "quote_or_summary": "Movement and tote exchange resumed while a system purge was in progress."
+      },
+      {
+        "page_ref": "case_233681:page_12",
+        "artifact_id": "artifact_incident_233681_page_012_nested_image_01",
+        "chunk_id": "stage4_artifact_chunk_002",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "support_type": "artifact_ocr",
+        "quote_or_summary": "Stunnel errors and firewall-related communication blocking were reported; the system was later described as getting back on track."
+      }
+    ],
+    "evidence_source_refs": [
+      {
+        "page_ref": "case_233681:page_1",
+        "artifact_id": null,
+        "chunk_id": "stage4_page_chunk_001",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "support_type": "page_ocr",
+        "quote_or_summary": "Totes were not exchanging after startup and the site entered bag-out mode."
+      },
+      {
+        "page_ref": "case_233681:page_5",
+        "artifact_id": "artifact_incident_233681_page_005_nested_image_01",
+        "chunk_id": "stage4_artifact_chunk_001",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "support_type": "artifact_ocr",
+        "quote_or_summary": "The system lost connection to XLE and repeated communication-loss errors were shown."
+      },
+      {
+        "page_ref": "case_233681:page_6",
+        "artifact_id": "artifact_incident_233681_page_006_detected_region_01",
+        "chunk_id": "stage4_artifact_chunk_001",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "support_type": "artifact_ocr",
+        "quote_or_summary": "Connectivity tests showed failed TCP connections to multiple XLE-related targets."
+      },
+      {
+        "page_ref": "case_233681:page_10",
+        "artifact_id": "artifact_incident_233681_page_010_embedded_image_01",
+        "chunk_id": "stage4_artifact_chunk_001",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "support_type": "artifact_ocr",
+        "quote_or_summary": "Recorded resolution details attributed the XLE communication blockage to a firewall issue."
+      },
+      {
+        "page_ref": "case_233681:page_11",
+        "artifact_id": "artifact_incident_233681_page_011_nested_image_02",
+        "chunk_id": "stage4_artifact_chunk_001",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "support_type": "artifact_ocr",
+        "quote_or_summary": "Movement and tote exchange resumed while a system purge was in progress."
+      },
+      {
+        "page_ref": "case_233681:page_12",
+        "artifact_id": "artifact_incident_233681_page_012_nested_image_01",
+        "chunk_id": "stage4_artifact_chunk_002",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "support_type": "artifact_ocr",
+        "quote_or_summary": "Stunnel errors and firewall-related communication blocking were reported; the system was later described as getting back on track."
+      }
+    ],
+    "extraction_notes": [
+      "The authoritative ingestion site is UPS Haslet TX (TXRTH), site_code ups_haslet_tx; all source references preserve that site metadata.",
+      "Evidence location text such as UPS Fort Worth, TX (Haslet) is consistent with the authoritative ingestion site, so no site conflict was identified.",
+      "The firewall explanation is source-supported but remains a tentative internal pattern in this candidate; the packet does not provide the exact firewall rule, endpoint, or corrective change.",
+      "The packet contains both a broad tote-exchange communication incident and a later localized report of one AGV intermittently stopping. The localized report is treated as a residual validation concern rather than a separate candidate because cardinality requires one broad response pattern.",
+      "Connectivity endpoint and port values are inconsistent or partly garbled in OCR and are intentionally not embedded in reusable node decision fields.",
+      "The source records resumed sorting and movement during or after recovery, but sustained live-system validation is incomplete.",
+      "No canonical runbook IDs, production automation bindings, final classification, or confirmed root cause were created."
+    ],
+    "summary": "Use this troubleshooting pattern when AGVs are not exchanging totes or the site cannot bag out, especially when the sorter is not communicating or the site reports communication errors.",
+    "separability_reason": "",
+    "likely_roles": [
+      "L1_support",
+      "L2_support",
+      "L3_support",
+      "operator"
+    ],
+    "related_artifact_ids": [],
+    "related_event_ids": [],
+    "source_id": "source_case_233681",
+    "source_type": "incident_case",
+    "source_title": "Case 233681 - UPS Haslet OptiSweep Incident Evidence",
+    "source_version": "0.1",
+    "ingestion_batch_id": "batch_20260910T143853Z",
+    "extraction_mode": "one_playbook_candidate_per_incident"
+  }
+]

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check Exchange Activity Tracking in Sorter Sweeper Database (Active Exchange vs Exchange Activity)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check Exchange Activity Tracking in Sorter Sweeper Database (Active Exchange vs Exchange Activity)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_exchange_activity_tracking_in_sorter_sweeper_database_active_exchange_vs_exchange_activity_v1</td></tr>
+<tr><th>Title</th><td>Check Exchange Activity Tracking in Sorter Sweeper Database (Active Exchange vs Exchange Activity)</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>sorter_item_or_scan_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>sort_lifecycle_stuck, system_fault</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Verify that chute exchange lifecycle is represented correctly in the Sorter Sweeper Database: when a chute closes, an active exchange record is created in the active exchange model; when an empty tote replaces the chute, the exchange is closed and archived to the exchange activity table, while the active exchange list remains limited to a few current items.</p>
+<h2>When To Use</h2>
+<p>Use when you need to confirm that chute exchange events are flowing into the Sorter Sweeper Database correctly—specifically that chute-close creates an active exchange record, and that empty-tote replacement closes and archives the exchange to the exchange activity archive.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/dede127121710b0e.jpg" alt="artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000" /><figcaption>Transcript evidence for exchange lifecycle: chute close creates active exchange; empty tote replacement closes and archives to exchange activity; active list remains small.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the Sorter Sweeper Database exchange tracking models (active exchange model and exchange activity archive)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In SSMS, open the Sorter Sweeper Database view(s)/table(s) for the exchange tracking models referenced in the segment: the active exchange model and the exchange activity archive table/model.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can view both (1) the active exchange model records and (2) the exchange activity archive records in the Sorter Sweeper Database.</p>
+<hr>
+<h3>Step 2 — Confirm active exchange records are created when a chute is closed</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Locate active exchange records in the active exchange model and confirm that an active exchange is created for recently closed chutes (i.e., active exchange entries corresponding to chute-close events).</p>
+<p><strong>Expected result:</strong></p>
+<p>Active exchange records exist for currently relevant chute exchanges, including entries corresponding to recently closed chutes.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If chute-close events do not create active exchange records, escalate for deeper investigation of the exchange lifecycle data flow described by the source.</li>
+</ul>
+<hr>
+<h3>Step 3 — Confirm exchange closure and archiving when an empty tote replaces the chute</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Identify the event where an empty tote replaces the chute, then confirm that the exchange is closed (no longer only present in the active exchange list) and that the corresponding record exists in the exchange activity archive table/model.</p>
+<p><strong>Expected result:</strong></p>
+<p>When an empty tote replaces a chute, the exchange record is closed and present in the exchange activity archive (and is no longer only in the active exchange list).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If empty-tote replacement does not result in closure/archiving, escalate for deeper investigation of the exchange lifecycle data flow described by the source.</li>
+</ul>
+<hr>
+<h3>Step 4 — Verify active exchange list remains small while older exchanges move to the archive</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Review the active exchange model and confirm it remains limited to a few current items, while older exchange records are moved into the larger exchange activity archive table/model.</p>
+<p><strong>Expected result:</strong></p>
+<p>The active exchange list contains only a few current exchange items; older exchanges are found in the exchange activity archive.</p>
+<hr>
+</body>
+</html>

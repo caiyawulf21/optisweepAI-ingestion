@@ -1,0 +1,353 @@
+{
+  "procedure_id": "proc_check_current_sort_and_sortguid_v1",
+  "candidate_id": "candidate_training_video_sorter_sweeper_current_sort_diagnostic",
+  "title": "Check Current Sort and SortGuid in the Sorter Sweeper Database",
+  "procedure_type": "diagnostic",
+  "summary": "Use the WCS / Helix DB (SSMS) to inspect the Sorter Sweeper Database Sort Model. Verify the visible SortName, Current Sort, and SortGuid values, identify the current sort entry, and use its SortGuid to associate investigated activity with historical sort-to-sort metrics.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "sort_lifecycle_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this read-only diagnostic on the WCS / Helix DB (SSMS) when troubleshooting live sort activity or validating which sort context owns activity. Inspect the Sorter Sweeper Database Sort Model and use the displayed SortGuid for historical sort-to-sort comparison.",
+  "not_for": [
+    "Do not use this procedure to invoke the Reset Metrics API.",
+    "Do not change Sort Model records or other database data.",
+    "Do not assign an undocumented numeric meaning to the Current Sort value."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Open the Sorter Sweeper Database Sort Model in WCS / Helix DB (SSMS), inspect the sort fields, and associate the investigated activity with the displayed SortGuid."
+    },
+    {
+      "role": "L3_support",
+      "responsibility": "Provide escalation support when the Sort Model cannot be opened, no current sort is identifiable, or the relevant SortGuid is missing."
+    }
+  ],
+  "safety_notes": [
+    "Perform this as a read-only diagnostic in WCS / Helix DB (SSMS).",
+    "Do not invoke Reset Metrics or alter database records. The source identifies Reset Metrics as the API operation that creates a new sort context."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "Sorter Sweeper Database",
+    "Sort Model",
+    "SortName field",
+    "Current Sort field",
+    "SortGuid field"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Read access to WCS / Helix DB (SSMS)"
+    ],
+    "system_preconditions": [
+      "The Sorter Sweeper Database is available.",
+      "The Sort Model can be opened in WCS / Helix DB (SSMS)."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_sort_model_reset_metrics_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+      "description": "Sorter Sweeper Database Sort Model view showing SortName, Current Sort, and SortGuid values and example sort rows.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Sorter Sweeper Database Sort Model",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Access the live sort-context records used to identify the active sort and its identifier.",
+      "instruction": "In the WCS / Helix DB (SSMS), open the Sorter Sweeper Database and locate the Sort Model. Inspect the displayed SortName, Current Sort, and SortGuid fields without modifying any records.",
+      "expected_result": "The Sort Model is open and the SortName, Current Sort, and SortGuid fields are visible for the available sort records.",
+      "healthy_condition": "The Sorter Sweeper Database Sort Model opens successfully and exposes all three required fields.",
+      "failure_condition": "The Sort Model cannot be opened, or one or more of SortName, Current Sort, or SortGuid is not available for inspection.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open Sort Model",
+          "exact_action": "Open the Sorter Sweeper Database and locate the Sort Model in WCS / Helix DB (SSMS).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The Sorter Sweeper Database or Sort Model cannot be opened.",
+        "The SortName, Current Sort, or SortGuid field is unavailable."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:18:40.000",
+          "timestamp_end": "02:24:24.000",
+          "start_time_seconds": 8320.0,
+          "end_time_seconds": 8664.0,
+          "segment_id": "segment_training_video_0025",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0025",
+          "page": 25,
+          "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+          "quote_or_summary": "The Sorter Sweeper Database Sort Model shows SortName, Current Sort, and SortGuid."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Record the current sort name and identifier",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Capture the identifiers needed to relate the live investigation to the sort context.",
+      "instruction": "In the WCS / Helix DB (SSMS) Sort Model, inspect the sort entry being investigated and record its displayed SortName and SortGuid.",
+      "expected_result": "A SortName and corresponding SortGuid are visible for the investigated sort entry.",
+      "healthy_condition": "The investigated entry has both a readable SortName and a non-missing SortGuid.",
+      "failure_condition": "The investigated entry has no identifiable SortName or its SortGuid is missing.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect sort identifiers",
+          "exact_action": "Inspect the current sort entry and record its SortName and SortGuid.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The relevant SortGuid is missing.",
+        "The sort entry cannot be associated with a SortName."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:21:32.000",
+          "timestamp_end": "02:21:32.000",
+          "start_time_seconds": 8492.0,
+          "end_time_seconds": 8492.0,
+          "segment_id": "segment_training_video_0025",
+          "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+          "quote_or_summary": "The Sort Model displays SortName and SortGuid, and sort activity is logged with these fields for historical sort-to-sort metrics."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Identify the current sort using Current Sort",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Determine which Sort Model row represents the current sort without relying on an undocumented interpretation of the indicator.",
+      "instruction": "In the WCS / Helix DB (SSMS) Sort Model, inspect the Current Sort value for the entry identified as current and compare it with the Current Sort values on the other visible sort records. Use the displayed indicator as shown; do not infer an undocumented numeric meaning.",
+      "expected_result": "One sort entry can be identified as the current sort from the displayed Current Sort values, with its associated SortName and SortGuid visible.",
+      "healthy_condition": "The current sort entry has an observable Current Sort indicator and its SortName and SortGuid can be read from the same record.",
+      "failure_condition": "No current sort entry is identifiable, or the Current Sort values are unavailable or ambiguous on the live Sort Model.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Compare Current Sort values",
+          "exact_action": "Check the Current Sort field for the entry identified as the current sort and compare the displayed indicator with the other sort records.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "No current sort entry is identifiable.",
+        "The Current Sort indicator is missing or cannot be compared across the visible records."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:21:32.000",
+          "timestamp_end": "02:21:32.000",
+          "start_time_seconds": 8492.0,
+          "end_time_seconds": 8492.0,
+          "segment_id": "segment_training_video_0025",
+          "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+          "quote_or_summary": "The Sort Model shows SortName, Current Sort, and SortGuid values across sort rows."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Associate investigated activity with SortGuid",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Use the current sort identifier to place the investigated activity in the correct historical sort-to-sort context.",
+      "instruction": "Use the displayed SortGuid from the identified current sort entry when reviewing the activity being investigated in the WCS / Helix DB (SSMS). Confirm that the activity can be associated with that SortGuid for historical sort-to-sort comparison.",
+      "expected_result": "The investigated activity can be associated with the displayed SortGuid, establishing its sort context for historical comparison.",
+      "healthy_condition": "A matching or usable SortGuid association is available for the activity under investigation.",
+      "failure_condition": "The activity cannot be associated with the displayed SortGuid, or the relevant SortGuid is missing.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Correlate activity to sort",
+          "exact_action": "Confirm that activity being investigated can be associated with the displayed SortGuid for historical sort-to-sort metrics.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The relevant activity cannot be associated with the displayed SortGuid.",
+        "The SortGuid needed for historical comparison is missing."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:21:32.000",
+          "timestamp_end": "02:21:32.000",
+          "start_time_seconds": 8492.0,
+          "end_time_seconds": 8492.0,
+          "segment_id": "segment_training_video_0025",
+          "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+          "quote_or_summary": "All activity is logged with SortName and SortGuid for historical sort-to-sort metrics."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The Sorter Sweeper Database Sort Model opens in WCS / Helix DB (SSMS).",
+    "SortName, Current Sort, and SortGuid are visible.",
+    "An identifiable current sort entry has an associated SortName and SortGuid.",
+    "The investigated activity can be associated with the displayed SortGuid for historical sort-to-sort comparison."
+  ],
+  "healthy_conditions": [
+    "The Sort Model is accessible in WCS / Helix DB (SSMS).",
+    "A current sort is identifiable from the displayed Current Sort indicator.",
+    "The current sort record contains a visible SortName and SortGuid.",
+    "Activity retains or can be correlated with the relevant SortGuid."
+  ],
+  "failure_conditions": [
+    "The Sort Model cannot be opened.",
+    "No current sort entry is identifiable.",
+    "SortName or SortGuid is missing from the relevant entry.",
+    "Investigated activity cannot be associated with the displayed SortGuid."
+  ],
+  "escalation_guidance": [
+    "Escalate to L3_support or the responsible system owner if the Sort Model cannot be opened.",
+    "Escalate if no current sort entry is identifiable.",
+    "Escalate if the relevant SortGuid is missing or activity cannot be associated with it.",
+    "Do not invoke Reset Metrics or modify database records during this diagnostic."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+      "what_to_look_at": "The Sorter Sweeper Database Sort Model rows and the visible SortName, Current Sort, and SortGuid fields. Use the displayed Current Sort indicator and the associated SortGuid; do not infer an undocumented numeric meaning."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "timestamp_start": "02:18:40.000",
+      "timestamp_end": "02:24:24.000",
+      "start_time_seconds": 8320.0,
+      "end_time_seconds": 8664.0,
+      "segment_id": "segment_training_video_0025",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0025",
+      "page": 25,
+      "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+      "quote_or_summary": "The Sorter Sweeper Database Sort Model shows SortName, Current Sort, and SortGuid. Sort activity is logged with SortGuid for historical sort-to-sort metrics."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "timestamp_start": "02:21:32.000",
+      "timestamp_end": "02:21:32.000",
+      "start_time_seconds": 8492.0,
+      "end_time_seconds": 8492.0,
+      "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+      "segment_id": "segment_training_video_0025"
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+      "what_to_look_at": "The Sorter Sweeper Database Sort Model rows and the visible SortName, Current Sort, and SortGuid fields. Use the displayed Current Sort indicator and the associated SortGuid; do not infer an undocumented numeric meaning."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_sorter_sweeper_current_sort_diagnostic"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide exact SSMS navigation, database schema, table name, or a query for the Sort Model.",
+    "The source does not define the numeric or boolean semantics of the Current Sort indicator.",
+    "The source does not identify the specific activity table or query needed to verify a SortGuid association.",
+    "The source does not provide live API request details for Reset Metrics; this runbook does not execute that API."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

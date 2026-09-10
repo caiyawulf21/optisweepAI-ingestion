@@ -1,0 +1,989 @@
+[
+  {
+    "playbook_candidate_id": "playbook_candidate_incident_218550_bagout_agv_sequence",
+    "title": "Bag-out stoppage with unresponsive or out-of-sequence AGVs",
+    "user_facing_summary": "Use this path when automated bag-out stops or progresses only partially and site personnel report that an AGV is not moving, a robot may be out of sequence, or a related HMI shows a fault.",
+    "playbook_goal": "Determine whether the bag-out stoppage is associated with an abnormal AGV, pairing or sequence state, or an HMI-visible task or tote condition; apply only source-supported authorized recovery direction; and confirm that AGVs and bag-out remain functional.",
+    "incident_context": {
+      "case_id": "218550",
+      "site": "UPS Haslet TX (TXRTH)",
+      "site_code": "ups_haslet_tx",
+      "site_location": {
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "customer": "UPS",
+        "city": "Haslet",
+        "state": "TX",
+        "country": "US",
+        "hub_code": "TXRTH",
+        "region_label": "Fort Worth, TX"
+      },
+      "incident_start_time": "2025-04-03T04:28:00",
+      "incident_resolved_time": "2025-04-03",
+      "time_to_resolve": "same_day",
+      "resolution_confirmed": true
+    },
+    "observed_entry_symptoms": [
+      "Automated bag-out stops after sorting or starts and then stops before completion.",
+      "Manual bagging out is required because the automated process does not progress.",
+      "One or more AGVs or robots appear not to be moving.",
+      "The site reports that a robot may be out of sequence or out of position.",
+      "An HMI associated with the hospital area shows a fault or a task-related condition."
+    ],
+    "negative_or_absent_signals": [
+      "No stack-light fault was reported during one bag-out observation.",
+      "The exact AGV identifier, active error, task state, and decisive recovery action were not consistently readable or isolated.",
+      "The source does not confirm that the HMI update or stuck-task recovery process was completed."
+    ],
+    "support_user_language_examples": [
+      "Bag-out stopped",
+      "Bag out started then stopped",
+      "We are manually bagging out",
+      "AGV stopped",
+      "The robot hasn't moved",
+      "Robots are out of sequence",
+      "One pair won't start bag-out",
+      "The hospital HMI has a fault",
+      "There is a stuck task"
+    ],
+    "tentative_internal_patterns": [
+      "Possible AGV sequence, pairing, roster, or position inconsistency.",
+      "Possible stuck task or tote association condition visible on an HMI.",
+      "Possible AGV inactivity or active-error condition.",
+      "Possible prior robot removal or replacement without a corresponding replacement in the operating sequence."
+    ],
+    "internal_pattern_notes": "These are tentative patterns from the source, not confirmed diagnoses. The customer and support team suspected an out-of-sequence robot; an AGV was reported inactive for three hours; HMI evidence referenced a stuck task; and support discussed removing and adding AGV pairs. The source does not isolate which condition caused the stoppage.",
+    "affected_systems_or_components": [
+      "Bag-out stage",
+      "AGV / robot fleet",
+      "AGV pairing or sequence state",
+      "RMS",
+      "Hospital-area HMI",
+      "Tote or task handling workflow",
+      "AVEVA screen visibility context"
+    ],
+    "confidence": "medium",
+    "confidence_reason": "The packet contains a clear observable symptom, repeated AGV-related troubleshooting observations, source-supported pairing and sequence recovery direction, HMI fault evidence, and a customer-confirmed recovery state. However, the exact fault, decisive action, and complete diagnostic evidence are incomplete or ambiguous.",
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm automated bag-out stoppage and affected operating scope",
+        "intent": "Confirm that automated bag-out is stopped or only partially progressing and determine whether the condition is site-wide, localized to a zone or pair, or limited to a tote or task.",
+        "goal": "Confirm that automated bag-out is stopped or only partially progressing and determine whether the condition is site-wide, localized to a zone or pair, or limited to a tote or task.",
+        "runbook_placeholder": "Procedure needed to interview the site about whether automated bag-out is stopped, whether it started and stopped again, whether manual bagging is being used, and which affected zone, pair, tote, or task is involved; use the incident-supported RMS activity or status view when available to compare the affected operating scope.",
+        "allowed_roles": [
+          "operator",
+          "L1_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "The case and chat evidence describe a bag-out stoppage after sorting, manual bagging, and a need to identify the affected robot or exchange pair.",
+        "needed_runbook_capability": "Procedure needed to interview the site about whether automated bag-out is stopped, whether it started and stopped again, whether manual bagging is being used, and which affected zone, pair, tote, or task is involved; use the incident-supported RMS activity or status view when available to compare the affected operating scope.",
+        "expected_or_observed_result": "The site operator or L1 support observes the bag-out state through site reporting and available operational views. Unhealthy evidence is automated bag-out stopped, only partially completed, or requiring manual bagging; healthy evidence is automated bag-out progressing normally; inconclusive evidence is an unclear scope, unavailable view, or conflicting site reports.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [
+          "site_interview",
+          "rms_ui"
+        ],
+        "source_used_surfaces": [
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "Site reports described bag-out stopping, manual bagging, affected exchange pairs, and suspected robot involvement."
+          },
+          {
+            "surface": "rms_ui",
+            "provenance": "source_artifact_visible",
+            "source_evidence": "Page 11 contains an RMS-style artifact showing AGV activity evidence."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "rms_ui",
+          "site_interview"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [
+          {
+            "id": "capability:agv_active_errors",
+            "support_contract": {},
+            "relevant_evidence": "The incident includes an RMS-style activity observation showing an AGV did not move for three hours."
+          }
+        ],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "No supplied ontology mapping establishes a specific bag-out progress or exchange-pair status surface."
+        ],
+        "ontology_contract_status": "complete",
+        "healthy_indicators": [
+          "Site reports automated bag-out is progressing and does not require manual intervention.",
+          "The affected scope cannot be reproduced or is limited to a resolved transient condition."
+        ],
+        "unhealthy_indicators": [
+          "Automated bag-out is stopped.",
+          "Bag-out starts but stops before completion.",
+          "Manual bagging out is required.",
+          "A specific zone, pair, tote, or task is identified as unable to progress."
+        ],
+        "inconclusive_indicators": [
+          "The site cannot identify whether the condition is automated or manual.",
+          "The RMS or other operational view is unavailable or does not show enough detail to determine scope."
+        ],
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_218550_page_001_nested_image_01",
+          "artifact_incident_218550_page_011_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_218550_event_002",
+          "incident_218550_event_016",
+          "incident_218550_event_019"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_1",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The system stopped at bag-out after sorting."
+          },
+          {
+            "page_ref": "case_218550:page_9",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "System is not going into bagout. Manual bagging out reported."
+          }
+        ]
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "diagnostic_decision",
+        "title": "Check for AGV inactivity or active fault evidence",
+        "intent": "Determine whether one or more AGVs show abnormal inactivity, active error, or a related sequence or pairing indication that correlates with the bag-out stoppage.",
+        "goal": "Determine whether one or more AGVs show abnormal inactivity, active error, or a related sequence or pairing indication that correlates with the bag-out stoppage.",
+        "runbook_placeholder": "Procedure needed to inspect RMS fleet activity and status for AGV movement, active fault indications, and sequence or pairing abnormalities, and to compare the affected AGV or pair with the bag-out stoppage; if the relevant screen is unavailable, use the source-mentioned system active-error view without assuming a specific backend field.",
+        "allowed_roles": [
+          "operator",
+          "L1_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "The source explicitly records an RMS-style observation that an AGV did not move for three hours and preserves a discussion about checking system active error.",
+        "needed_runbook_capability": "Procedure needed to inspect RMS fleet activity and status for AGV movement, active fault indications, and sequence or pairing abnormalities, and to compare the affected AGV or pair with the bag-out stoppage; if the relevant screen is unavailable, use the source-mentioned system active-error view without assuming a specific backend field.",
+        "expected_or_observed_result": "The site operator or L1 support observes the RMS activity or status view; support may also use the source-mentioned system active-error view when available. Unhealthy evidence is an AGV not moving for an extended period, an active robot fault, or a sequence or pairing indication associated with the stoppage; healthy evidence is normal movement and no relevant active fault; inconclusive evidence is an unreadable or unavailable view, unidentified AGV, or no correlation to bag-out.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [
+          "rms_ui"
+        ],
+        "source_used_surfaces": [
+          {
+            "surface": "rms_ui",
+            "provenance": "source_artifact_visible",
+            "source_evidence": "The page 11 artifact is classified as an RMS screenshot and visibly supports the statement that an AGV did not move for three hours."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "rms_ui",
+          "wcs_sql",
+          "wcs_api"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [
+          {
+            "id": "capability:agv_active_errors",
+            "support_contract": {},
+            "relevant_evidence": "The source reports an AGV that did not move for three hours and mentions checking system active error."
+          }
+        ],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied capability snippet lists backend models but does not provide a complete Stage 5 mapping for this incident's exact active-error evidence."
+        ],
+        "ontology_contract_status": "complete",
+        "healthy_indicators": [
+          "Affected AGVs show current movement or normal activity.",
+          "No relevant active AGV fault or sequence indication is present.",
+          "The bag-out stoppage does not correlate with AGV inactivity."
+        ],
+        "unhealthy_indicators": [
+          "An AGV is shown as not moving for an extended period.",
+          "An active robot fault or abnormal sequence or pairing indication is present.",
+          "AGV inactivity or abnormal state corresponds with the stalled bag-out scope."
+        ],
+        "inconclusive_indicators": [
+          "The AGV identifier or status details cannot be read.",
+          "RMS activity is stale, unavailable, or does not explain the bag-out condition.",
+          "Only a suspected out-of-sequence condition is reported without corroborating status evidence."
+        ],
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_218550_page_011_nested_image_01",
+          "artifact_incident_218550_page_011_nested_image_02"
+        ],
+        "related_event_ids": [
+          "incident_218550_event_023",
+          "incident_218550_event_022",
+          "incident_218550_event_003"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_11",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "artifact_id": "artifact_incident_218550_page_011_nested_image_01",
+            "quote_or_summary": "An AGV did not move for 3 hours."
+          },
+          {
+            "page_ref": "case_218550:page_11",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "You can check system active error."
+          }
+        ]
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "diagnostic_decision",
+        "title": "Check HMI-visible task, tote, or lane fault",
+        "intent": "Determine whether an HMI-visible fault, stuck task, tote association, or hospital-area workflow condition is preventing bag-out from progressing.",
+        "goal": "Determine whether an HMI-visible fault, stuck task, tote association, or hospital-area workflow condition is preventing bag-out from progressing.",
+        "runbook_placeholder": "Procedure needed to inspect the source-named hospital-area HMI for the displayed fault, task state, tote identity or location indication, and whether the workflow request progresses; include the approved HMI acknowledgement or retry decision rubric without prescribing exact screen navigation or physical disconnection.",
+        "allowed_roles": [
+          "operator",
+          "L1_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "The source reports a hospital HMI fault, a tote read at an unexpected location, a stuck task visible only on that HMI, and guidance to acknowledge and try again.",
+        "needed_runbook_capability": "Procedure needed to inspect the source-named hospital-area HMI for the displayed fault, task state, tote identity or location indication, and whether the workflow request progresses; include the approved HMI acknowledgement or retry decision rubric without prescribing exact screen navigation or physical disconnection.",
+        "expected_or_observed_result": "The site operator observes the named HMI or hospital-area interface. Unhealthy evidence is a displayed fault, stuck task, tote mismatch or location discrepancy, or a request that does not progress; healthy evidence is no relevant HMI fault and normal task or tote progression; inconclusive evidence is an unreadable screen, an HMI that cannot be reached, or a reported fault whose relationship to bag-out is unclear.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [
+          "hospital_hmi",
+          "aveva_hmi"
+        ],
+        "source_used_surfaces": [
+          {
+            "surface": "hospital_hmi",
+            "provenance": "explicit_source",
+            "source_evidence": "Chat states that the HMI at the hospital was showing a fault and later references the HMI as the location of a stuck task."
+          },
+          {
+            "surface": "aveva_hmi",
+            "provenance": "explicit_source",
+            "source_evidence": "Chat states that the team could not see the screen in Aveva."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "hospital_hmi",
+          "aveva_hmi",
+          "site_interview"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology snippets do not provide a validated HMI task or tote-state mapping for this incident."
+        ],
+        "ontology_contract_status": "missing",
+        "healthy_indicators": [
+          "The HMI shows no relevant fault or stuck task.",
+          "The relevant tote or task is correctly identified and the workflow request progresses.",
+          "The site confirms the HMI-related condition is no longer blocking operation."
+        ],
+        "unhealthy_indicators": [
+          "The HMI shows a fault.",
+          "A stuck task is visible only on the HMI.",
+          "A tote is reported at an unexpected location or the request enters a state but does not progress."
+        ],
+        "inconclusive_indicators": [
+          "The HMI screen is unavailable, unreadable, or not updated.",
+          "The referenced hospital area cannot be reconciled with the ingestion site metadata.",
+          "The fault is visible but its relationship to the bag-out stoppage is not established."
+        ],
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_218550_page_012_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_218550_event_017",
+          "incident_218550_event_024",
+          "incident_218550_event_025",
+          "incident_218550_event_028"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_12",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The HMI at the hospital is showing a fault."
+          },
+          {
+            "page_ref": "case_218550:page_13",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "One of last night's errors, a stuck task, is only visible on that HMI."
+          }
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "procedure_reference",
+        "title": "Restore the affected AGV sequence or pairing state through an authorized recovery path",
+        "intent": "Use an approved, role-authorized recovery procedure to restore the affected AGV or pair to a valid operating sequence when the diagnostic evidence supports that direction.",
+        "goal": "Use an approved, role-authorized recovery procedure to restore the affected AGV or pair to a valid operating sequence when the diagnostic evidence supports that direction.",
+        "runbook_placeholder": "Procedure needed for authorized AGV sequence, pairing, removal, replacement, or controlled return-to-operation recovery, including the requirement that an AGV removed from the grid be appropriately replaced and that safety and role limits be respected; do not infer a specific robot or exact recovery action.",
+        "allowed_roles": [
+          "L2_support",
+          "L3_support"
+        ],
+        "preferred_audience": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "Support asked the site to remove and add AGV pairs; the source also states that a removed AGV without a tote must be replaced and later reports robots in proper sequence.",
+        "needed_runbook_capability": "Procedure needed for authorized AGV sequence, pairing, removal, replacement, or controlled return-to-operation recovery, including the requirement that an AGV removed from the grid be appropriately replaced and that safety and role limits be respected; do not infer a specific robot or exact recovery action.",
+        "expected_or_observed_result": "L2 support or another authorized role records that the approved recovery path was completed. Progress evidence is that affected robots remain on, the relevant sequence or pairing state is restored, and bag-out can proceed; failure evidence is continued inactivity, repeated stopping, or an unresolved sequence or pairing condition; inconclusive evidence is that the exact recovery action or resulting state cannot be verified.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [
+          "rms_ui"
+        ],
+        "source_used_surfaces": [
+          {
+            "surface": "rms_ui",
+            "provenance": "explicit_source",
+            "source_evidence": "Support messages directed removal and addition of AGV pairs and discussed restoring robots to proper sequence."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "rms_ui",
+          "physical_floor"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The packet does not establish the exact authorized AGV recovery procedure or the decisive action used in this case."
+        ],
+        "ontology_contract_status": "not_required",
+        "healthy_indicators": [
+          "Authorized personnel confirm the affected AGV or pair is in the expected sequence.",
+          "Robots remain on and available after the approved recovery.",
+          "The recovery path reports completion without introducing a new fault."
+        ],
+        "unhealthy_indicators": [
+          "The affected AGV or pair remains out of sequence or unavailable.",
+          "Robots turn off again or remain unable to support bag-out.",
+          "Bag-out starts but stops again after the recovery attempt."
+        ],
+        "inconclusive_indicators": [
+          "The source does not identify which action restored service.",
+          "The sequence or pairing state cannot be confirmed.",
+          "The role authorized to perform the recovery is unavailable."
+        ],
+        "stop_or_escalation_note": "Do not proceed with physical or state-changing recovery unless the role, safety conditions, and approved procedure are established.",
+        "related_artifact_ids": [],
+        "related_event_ids": [
+          "incident_218550_event_009",
+          "incident_218550_event_019",
+          "incident_218550_event_020",
+          "incident_218550_event_010"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_9",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Asked the site to remove and add AGV pairs; bag-out started, processed most, then stopped."
+          },
+          {
+            "page_ref": "case_218550:page_5",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "When all robots were in proper sequence, the customer confirmed they were functional."
+          }
+        ]
+      },
+      {
+        "node_id": "node_5",
+        "node_order": 5,
+        "node_type": "validation_gate",
+        "title": "Validate stable AGV operation and automated bag-out",
+        "intent": "Confirm that the recovery restored the affected workflow and that AGVs remain functional rather than merely showing a temporary improvement.",
+        "goal": "Confirm that the recovery restored the affected workflow and that AGVs remain functional rather than merely showing a temporary improvement.",
+        "runbook_placeholder": "Procedure needed to validate sustained AGV availability and sequence state through the source-supported RMS activity view, confirm bag-out progress with the site, and check the relevant hospital-area HMI for recurrence of the fault or stuck-task indication before declaring recovery.",
+        "allowed_roles": [
+          "operator",
+          "L1_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "The source records customer confirmation that robots were functional in proper sequence and a later all-good response after HMI-related troubleshooting.",
+        "needed_runbook_capability": "Procedure needed to validate sustained AGV availability and sequence state through the source-supported RMS activity view, confirm bag-out progress with the site, and check the relevant hospital-area HMI for recurrence of the fault or stuck-task indication before declaring recovery.",
+        "expected_or_observed_result": "The site operator confirms automated bag-out progress and normal AGV operation, while support observes the available RMS or HMI status. Healthy evidence is AGVs moving or available, the relevant sequence or pairing state remaining valid, bag-out completing or continuing normally, and no relevant HMI fault; unhealthy evidence is renewed inactivity, another partial bag-out stop, or a recurring task or HMI fault; inconclusive evidence is only a verbal improvement without observable continued operation.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [
+          "rms_ui",
+          "hospital_hmi",
+          "site_interview"
+        ],
+        "source_used_surfaces": [
+          {
+            "surface": "rms_ui",
+            "provenance": "source_artifact_visible",
+            "source_evidence": "The incident includes an RMS-style activity view used to identify an AGV that had not moved."
+          },
+          {
+            "surface": "hospital_hmi",
+            "provenance": "explicit_source",
+            "source_evidence": "The source reports HMI fault and stuck-task visibility and later records an all-good confirmation after HMI-related troubleshooting."
+          },
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "The customer confirmed that robots were functional when in proper sequence and later reported that everything was good."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "rms_ui",
+          "hospital_hmi",
+          "site_interview"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [
+          {
+            "id": "capability:agv_active_errors",
+            "support_contract": {},
+            "relevant_evidence": "The source used AGV activity and active-error discussion as evidence during troubleshooting."
+          }
+        ],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "No supplied ontology mapping defines a complete automated bag-out validation contract."
+        ],
+        "ontology_contract_status": "complete",
+        "healthy_indicators": [
+          "The customer confirms AGVs are functional.",
+          "AGVs remain available or moving after recovery.",
+          "Automated bag-out continues or completes without another stoppage.",
+          "The relevant HMI no longer shows the blocking fault or stuck task."
+        ],
+        "unhealthy_indicators": [
+          "AGV inactivity returns.",
+          "Bag-out stops again after partial progress.",
+          "The HMI fault or stuck task recurs.",
+          "The affected sequence or pairing state is not maintained."
+        ],
+        "inconclusive_indicators": [
+          "Only a temporary 'all good' report is available.",
+          "No continued bag-out or AGV activity can be observed.",
+          "The HMI or RMS view remains unavailable."
+        ],
+        "stop_or_escalation_note": "Do not declare recovery from a temporary improvement alone; use the escalation path if stable operation cannot be demonstrated.",
+        "related_artifact_ids": [
+          "artifact_incident_218550_page_011_nested_image_01",
+          "artifact_incident_218550_page_012_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_218550_event_010",
+          "incident_218550_event_023",
+          "incident_218550_event_026"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_5",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "With all robots in proper sequence, the customer confirmed they were functional."
+          },
+          {
+            "page_ref": "case_218550:page_13",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Yes, the tote at hospital is 28. Yes Sir, all good."
+          }
+        ]
+      },
+      {
+        "node_id": "node_6",
+        "node_order": 6,
+        "node_type": "escalation_gate",
+        "title": "Stop and escalate when the supported path cannot establish stable recovery",
+        "intent": "Hand off when the available evidence does not identify a supported recovery path, authorized recovery cannot be completed safely, or validation fails after recovery.",
+        "goal": "Hand off when the available evidence does not identify a supported recovery path, authorized recovery cannot be completed safely, or validation fails after recovery.",
+        "runbook_placeholder": "Procedure needed to prepare an escalation handoff with RMS activity evidence, HMI or hospital-area fault evidence, affected scope, sequence or pairing state, recovery attempts, role and safety constraints, and validation outcomes; include stop criteria for repeated bag-out stoppage or unresolved AGV inactivity.",
+        "allowed_roles": [
+          "L2_support",
+          "L3_support"
+        ],
+        "preferred_audience": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "The source states that available troubleshooting options were exhausted, additional technical assistance was requested, and the exact decisive recovery was not isolated.",
+        "needed_runbook_capability": "Procedure needed to prepare an escalation handoff with RMS activity evidence, HMI or hospital-area fault evidence, affected scope, sequence or pairing state, recovery attempts, role and safety constraints, and validation outcomes; include stop criteria for repeated bag-out stoppage or unresolved AGV inactivity.",
+        "expected_or_observed_result": "L2 or L3 support receives an evidence package containing the observable bag-out behavior, RMS activity or fault evidence, HMI fault or task evidence, sequence or pairing actions attempted, and validation results. Escalation is required when the condition persists or evidence remains ambiguous; the path may continue only when a supported and authorized recovery is identified.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [
+          "rms_ui",
+          "hospital_hmi",
+          "site_interview"
+        ],
+        "source_used_surfaces": [
+          {
+            "surface": "rms_ui",
+            "provenance": "source_artifact_visible",
+            "source_evidence": "RMS-style activity evidence was used to identify prolonged AGV inactivity."
+          },
+          {
+            "surface": "hospital_hmi",
+            "provenance": "explicit_source",
+            "source_evidence": "The source records a hospital-area HMI fault and stuck-task visibility."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "rms_ui",
+          "hospital_hmi"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The incident packet does not define a complete evidence package or formal escalation role boundary beyond the need for additional technical assistance."
+        ],
+        "ontology_contract_status": "not_required",
+        "healthy_indicators": [],
+        "unhealthy_indicators": [
+          "Bag-out remains stopped or repeatedly stops.",
+          "AGV inactivity or sequence abnormality remains unresolved.",
+          "The HMI fault or stuck task cannot be cleared or interpreted.",
+          "Validation cannot demonstrate stable automated operation."
+        ],
+        "inconclusive_indicators": [
+          "The source-supported surfaces are unavailable or unreadable.",
+          "The decisive recovery action cannot be identified.",
+          "The relationship between the HMI condition and bag-out remains ambiguous."
+        ],
+        "stop_or_escalation_note": "Stop the playbook path when the authorized recovery and validation evidence are insufficient; do not represent historical collaboration or case escalation as the reason for handoff.",
+        "related_artifact_ids": [
+          "artifact_incident_218550_page_011_nested_image_01",
+          "artifact_incident_218550_page_012_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_218550_event_005",
+          "incident_218550_event_021",
+          "incident_218550_event_023",
+          "incident_218550_event_024"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_10",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "They had run out of options to try."
+          },
+          {
+            "page_ref": "case_218550:page_3",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "FORTNA Technical Support requested assistance on the case."
+          }
+        ]
+      }
+    ],
+    "branch_hints": [
+      {
+        "from_node_id": "node_1",
+        "condition_or_signal": "Automated bag-out is stopped or only partially progressing and the affected operating scope is identified",
+        "suggested_next_node_id": "node_2",
+        "reason": "The source-supported path next examines AGV inactivity, active errors, and sequence or pairing state.",
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_9",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Bag-out did not progress and manual bagging was reported."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_1",
+        "condition_or_signal": "Automated bag-out is progressing normally or the reported stoppage cannot be reproduced",
+        "suggested_next_node_id": "",
+        "reason": "Exit or retriage rather than entering a recovery path that assumes a confirmed stoppage.",
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_1",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The source reports a stoppage, but does not establish a continuously reproducible condition."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_2",
+        "condition_or_signal": "AGV inactivity, active fault, or sequence or pairing abnormality is indicated",
+        "suggested_next_node_id": "node_4",
+        "reason": "The source describes AGV inactivity and support-directed sequence or pairing recovery.",
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_11",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "An AGV did not move for 3 hours."
+          },
+          {
+            "page_ref": "case_218550:page_9",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Support asked the site to remove and add AGV pairs."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_2",
+        "condition_or_signal": "No relevant AGV abnormality is indicated or the AGV evidence is inconclusive",
+        "suggested_next_node_id": "node_3",
+        "reason": "The HMI and task path is a source-supported alternate investigation and must not be skipped when AGV evidence is normal or insufficient.",
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_12",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The HMI at the hospital is showing a fault."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_3",
+        "condition_or_signal": "HMI fault, stuck task, tote inconsistency, or non-progressing workflow request is indicated",
+        "suggested_next_node_id": "node_4",
+        "reason": "The source records HMI-visible faults and task or tote conditions followed by high-level retry and sequence recovery discussion.",
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_12",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The HMI was showing a fault and support advised acknowledging and trying again."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_3",
+        "condition_or_signal": "No relevant HMI condition is indicated or the HMI evidence is unavailable and cannot be interpreted",
+        "suggested_next_node_id": "",
+        "reason": "Exit or retriage because the packet does not support another specific technical branch.",
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_13",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The source confirms that the HMI task visibility was relevant, but does not provide another confirmed branch when it is absent."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_4",
+        "condition_or_signal": "Authorized recovery of the affected sequence, pairing, or related AGV state is completed",
+        "suggested_next_node_id": "node_5",
+        "reason": "Validation must occur only after an explicit recovery completion signal.",
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_5",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "With all robots in proper sequence the customer confirmed they were functional."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_4",
+        "condition_or_signal": "Authorized recovery cannot be completed safely or the affected state remains unresolved",
+        "suggested_next_node_id": "node_6",
+        "reason": "The path must stop when the supported recovery boundary is reached without a verified completion state.",
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_10",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Available troubleshooting options were reported as exhausted."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_5",
+        "condition_or_signal": "AGVs remain functional and automated bag-out continues or completes without recurrence",
+        "suggested_next_node_id": "",
+        "reason": "Healthy validation exits the playbook.",
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_5",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The customer confirmed that the robots were functional."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_5",
+        "condition_or_signal": "AGV inactivity, repeated bag-out stoppage, or HMI task or fault recurrence is observed",
+        "suggested_next_node_id": "node_6",
+        "reason": "Failed validation indicates that the available recovery path did not produce stable operation.",
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_9",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Bag-out started, processed most items, and stopped again."
+          }
+        ]
+      }
+    ],
+    "escalation_gates": [
+      {
+        "condition_or_signal": "Authorized recovery cannot be completed safely, the AGV or HMI condition remains unresolved, or validation shows renewed bag-out stoppage or AGV inactivity.",
+        "required_role": "L2_support",
+        "reason": "The source does not establish a further supported recovery path and records that available troubleshooting options were exhausted.",
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_10",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "They had run out of options to try."
+          }
+        ]
+      }
+    ],
+    "validation_gates": [
+      {
+        "validation_goal": "Confirm stable AGV operation and automated bag-out after recovery.",
+        "expected_recovery_signal": "The site confirms that AGVs are functional and remain in proper sequence while automated bag-out progresses or completes; relevant HMI fault or stuck-task evidence does not recur.",
+        "failure_outcome": "Stop the path and use the escalation gate if AGV inactivity, repeated partial bag-out, or the HMI condition returns or cannot be assessed.",
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_5",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "With all robots in proper sequence the customer confirms that they are functional."
+          },
+          {
+            "page_ref": "case_218550:page_13",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Yes Sir all good."
+          }
+        ]
+      }
+    ],
+    "runbook_placeholders": [
+      {
+        "needed_procedure": "Bag-out scope and symptom confirmation using site interview and the source-supported RMS activity or status view.",
+        "why_needed": "The path must distinguish a reproducible automated bag-out stoppage from a resolved or unclear report.",
+        "suggested_role": "L1_support",
+        "risk_note": "Do not treat the reported robot or pair as a confirmed fault without corroborating evidence.",
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_1",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The system stopped at bag-out after sorting."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "RMS AGV activity, active-error, and sequence or pairing evidence review.",
+        "why_needed": "The source used RMS-style activity evidence to identify prolonged AGV inactivity and discussed sequence or pairing issues.",
+        "suggested_role": "L1_support",
+        "risk_note": "The exact AGV identifier and active error were not fully readable in the source.",
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_11",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "An AGV did not move for 3 hours."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Hospital-area HMI fault, task, and tote-state inspection with an approved acknowledgement or retry decision rubric.",
+        "why_needed": "The source identifies HMI-visible faults, a stuck task, and tote-location inconsistency as relevant troubleshooting evidence.",
+        "suggested_role": "operator",
+        "risk_note": "Do not unplug the HMI based solely on the historical question; use an approved procedure and role boundary.",
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_12",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The HMI at the hospital is showing a fault."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Authorized AGV sequence, pairing, removal, replacement, or return-to-operation recovery.",
+        "why_needed": "Support directed removal and addition of AGV pairs and explained that a removed AGV must be replaced to preserve the operating sequence.",
+        "suggested_role": "L2_support",
+        "risk_note": "The exact decisive recovery action is not isolated; physical or state-changing actions require approved authorization and safety controls.",
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_9",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Asked the site to remove and add AGV pairs."
+          },
+          {
+            "page_ref": "case_218550:page_5",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Every time you remove an AGV that has no tote from the grid, you need to replace it with another one."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Post-recovery validation of RMS AGV activity, HMI task or fault state, customer-observed bag-out progress, and sustained functional operation.",
+        "why_needed": "The source reports both temporary partial progress and final customer confirmation, so validation must distinguish stable recovery from a transient improvement.",
+        "suggested_role": "L1_support",
+        "risk_note": "Do not declare recovery from a single acknowledgement or temporary movement report.",
+        "source_refs": [
+          {
+            "page_ref": "case_218550:page_9",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Bag-out started, bagged out most, but stopped."
+          },
+          {
+            "page_ref": "case_218550:page_5",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The customer confirmed that the robots were functional."
+          }
+        ]
+      }
+    ],
+    "ignored_non_playbook_content": [
+      {
+        "content_type": "intake",
+        "example_from_incident": "Case number, priority, opened date, and account fields.",
+        "reason_ignored": "These establish incident context but are not troubleshooting orchestration."
+      },
+      {
+        "content_type": "support_coordination",
+        "example_from_incident": "Bridge-call participation, requests for assistance, and meeting-link sharing.",
+        "reason_ignored": "These are historical coordination facts rather than reusable technical nodes."
+      },
+      {
+        "content_type": "communication",
+        "example_from_incident": "Chat comments about who joined, who was asked to help, or case status updates.",
+        "reason_ignored": "They do not define a diagnostic direction or validation gate."
+      },
+      {
+        "content_type": "exact_procedure",
+        "example_from_incident": "Advice to acknowledge and try again.",
+        "reason_ignored": "The exact operational instruction belongs in a controlled HMI procedure; the candidate retains only the decision direction."
+      },
+      {
+        "content_type": "reference_background",
+        "example_from_incident": "The issue had reportedly occurred before and the occurrence frequency was unknown.",
+        "reason_ignored": "This is contextual history and does not by itself define a troubleshooting node."
+      }
+    ],
+    "source_refs": [
+      {
+        "page_ref": "case_218550:page_1",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "The system stopped at bag-out after sorting."
+      },
+      {
+        "page_ref": "case_218550:page_5",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "With all robots in proper sequence, the customer confirmed they were functional."
+      },
+      {
+        "page_ref": "case_218550:page_11",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "An AGV did not move for 3 hours."
+      },
+      {
+        "page_ref": "case_218550:page_12",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "The HMI at the hospital is showing a fault."
+      }
+    ],
+    "evidence_source_refs": [
+      {
+        "event_id": "incident_218550_event_019",
+        "page_ref": "case_218550:page_9",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)"
+      },
+      {
+        "event_id": "incident_218550_event_023",
+        "page_ref": "case_218550:page_11",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)"
+      },
+      {
+        "event_id": "incident_218550_event_024",
+        "page_ref": "case_218550:page_12",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)"
+      },
+      {
+        "event_id": "incident_218550_event_010",
+        "page_ref": "case_218550:page_5",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)"
+      }
+    ],
+    "extraction_notes": [
+      "Ingestion metadata is authoritative for site assignment: UPS Haslet TX (TXRTH), site_code ups_haslet_tx.",
+      "Evidence uses several location phrases, including UPS Haslet, UPS Fort Worth, and hospital. The hospital wording may refer to an internal operating area; it is preserved as an ambiguity and does not replace the ingestion site.",
+      "The suspected out-of-sequence robot, stuck task, tote mismatch, and AGV inactivity are source-supported tentative patterns, not confirmed root causes.",
+      "The decisive recovery action is not isolated. The packet supports a broad recovery direction involving AGV sequence or pairing restoration and HMI/task investigation, but not a canonical procedure.",
+      "The source includes unreadable or garbled artifacts and does not provide validated backend mappings for bag-out, task, tote, or pairing state.",
+      "No production automation, canonical runbook ID, final issue classification, or support-coordination node was created."
+    ],
+    "summary": "Use this path when automated bag-out stops or progresses only partially and site personnel report that an AGV is not moving, a robot may be out of sequence, or a related HMI shows a fault.",
+    "separability_reason": "",
+    "likely_roles": [
+      "L1_support",
+      "L2_support",
+      "L3_support",
+      "operator"
+    ],
+    "related_artifact_ids": [],
+    "related_event_ids": [],
+    "source_id": "source_case_218550",
+    "source_type": "incident_case",
+    "source_title": "Case 218550 Data",
+    "source_version": "0.1",
+    "ingestion_batch_id": "batch_20260720T121856Z",
+    "extraction_mode": "one_playbook_candidate_per_incident"
+  }
+]

@@ -1,0 +1,401 @@
+{
+  "procedure_id": "proc_clear_agv_motionless_fault_using_rms_estop_zone_reset_v1",
+  "candidate_id": "candidate_manual_optisweep_agv_motionless_fault_estop_zone_reset",
+  "title": "Clear AGV Motionless on Floor Fault Using RMS (If Needed), E-Stop Zone Map, and Blue RESET",
+  "procedure_type": "recovery",
+  "summary": "For an AGV motionless on the floor (fault), locate the faulted AGV (optionally using RMS to identify the AGV error), stop the appropriate E-stop zone using the E-stop zone map, remove the faulted AGV, pull the E-STOP, and press the blue RESET button to resume operation.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_active_errors",
+    "agv_physical_recovery"
+  ],
+  "access_surface": [
+    "rms_ui",
+    "physical_floor"
+  ],
+  "audience_roles": [
+    "operator"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when an AGV is motionless on the floor and the issue is identified as a fault, requiring physical removal of the faulted AGV and an E-stop zone reset to resume system operation.",
+  "not_for": [],
+  "roles_and_responsibilities": [],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "RMS / fleet status UI (if needed to identify the faulted AGV error)",
+    "Physical access to the appropriate E-stop(s)",
+    "E-stop zone map",
+    "Blue RESET button"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "RMS / fleet status UI (if needed to identify the faulted AGV error)",
+      "Physical access to the appropriate E-stop(s)",
+      "E-stop zone map",
+      "Blue RESET button"
+    ],
+    "system_preconditions": [],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_manual_agv_motionless_fault_v1",
+    "ctx_manual_esop_zone_reset_procedure_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+      "description": "RMS screen showing the AGV “Bump” fault with exception codes 21057 and 21060 (used as an example of how RMS may display the AGV fault/error).",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+      "description": "HMI screenshot showing a faulted AGV with tote state (used to support identifying the faulted AGV context).",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "description": "AGV API Controls screen (Remove AGV / Recover AGV / Pause/Resume / Execute/Resend commands) referenced by the manual for AGV management.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Locate the faulted AGV (use RMS if needed)",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Identify which AGV is faulted so the correct E-stop zone can be stopped and the correct unit can be removed.",
+      "instruction": "If the faulted AGV is not immediately obvious, use the RMS / fleet status UI to identify the AGV error/faulted unit.",
+      "expected_result": "You have identified the faulted AGV that is motionless on the floor.",
+      "healthy_condition": "RMS indicates the faulted AGV/error state for the unit you are targeting for removal.",
+      "failure_condition": "RMS does not clearly identify the faulted AGV (or you cannot confidently determine which AGV is faulted).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check RMS for faulted AGV",
+          "exact_action": "Reference RMS for AGV error (if needed to locate the faulted AGV).",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If RMS does not clearly identify the faulted AGV, escalate for assistance locating the faulted unit."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 95,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_6_1_pneumatic_troubleshooting",
+          "quote_or_summary": "AGV motionless on floor — Corrective Action: Locate the faulted AGV (may need to reference RMS for AGV error)."
+        },
+        {
+          "context_id": "ctx_manual_agv_motionless_fault_v1",
+          "context_type": "troubleshooting_reference",
+          "retrieval_text": "Locate the faulted AGV (possibly using RMS for AGV error)."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Stop the appropriate E-stop zone using the E-stop zone map",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Bring the correct zone to a stopped state before removing the faulted AGV.",
+      "instruction": "Reference the E-stop zone map and press the E-STOP for the appropriate E-stop zone.",
+      "expected_result": "The appropriate E-stop zone is stopped.",
+      "healthy_condition": "The E-stop you pressed corresponds to the zone for the faulted AGV identified in Step 1.",
+      "failure_condition": "You press the wrong E-stop zone (zone does not match the faulted AGV location).",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Press zone E-stop",
+          "exact_action": "Press E-STOP to stop the appropriate E-stop zone (per E-stop zone map).",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 95,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_6_1_pneumatic_troubleshooting",
+          "quote_or_summary": "Reference E-stop zone map. Press E-STOP to stop the appropriate E-stop zone."
+        },
+        {
+          "context_id": "ctx_manual_esop_zone_reset_procedure_v1",
+          "context_type": "operation_reference",
+          "retrieval_text": "Reference E-stop zone map, press E-STOP for appropriate zone."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Remove the faulted AGV",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Clear the physical fault condition by removing the faulted AGV from the system/floor.",
+      "instruction": "Remove the faulted AGV from the floor/system area.",
+      "expected_result": "The faulted AGV has been removed.",
+      "healthy_condition": "The faulted AGV is no longer present in the faulted location/zone.",
+      "failure_condition": "The faulted AGV remains in place (fault condition not cleared).",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Remove AGV",
+          "exact_action": "Remove the faulted AGV.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 95,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_6_1_pneumatic_troubleshooting",
+          "quote_or_summary": "Remove the faulted AGV."
+        },
+        {
+          "context_id": "ctx_manual_agv_motionless_fault_v1",
+          "context_type": "troubleshooting_reference",
+          "retrieval_text": "Remove the faulted AGV."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Pull the E-STOP",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Complete the E-stop reset sequence before pressing blue RESET.",
+      "instruction": "Pull the E-STOP.",
+      "expected_result": "The E-STOP has been pulled (reset sequence is ready for blue RESET).",
+      "healthy_condition": "E-STOP is in the pulled state as part of the reset procedure.",
+      "failure_condition": "E-STOP is not pulled (blue RESET is pressed without completing the sequence).",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Pull E-STOP",
+          "exact_action": "Pull E-STOP.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 95,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_6_1_pneumatic_troubleshooting",
+          "quote_or_summary": "Pull E-STOP."
+        },
+        {
+          "context_id": "ctx_manual_esop_zone_reset_procedure_v1",
+          "context_type": "operation_reference",
+          "retrieval_text": "Pull E-STOP."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Press the blue RESET button",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Reset the system so operation resumes after the faulted AGV is removed and E-stop is pulled.",
+      "instruction": "Press the blue RESET button.",
+      "expected_result": "The system resumes operation after the reset.",
+      "healthy_condition": "System operation resumes (no longer remains in the faulted/stopped state).",
+      "failure_condition": "System does not resume operation after pressing the blue RESET button.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Press blue RESET",
+          "exact_action": "Press the blue RESET button.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the system does not resume operation after pressing the blue RESET button, escalate."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 95,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_6_1_pneumatic_troubleshooting",
+          "quote_or_summary": "Press the blue RESET button. The system will resume operation."
+        },
+        {
+          "context_id": "ctx_manual_agv_motionless_fault_v1",
+          "context_type": "troubleshooting_reference",
+          "retrieval_text": "Pull E-STOP; press blue RESET button; system will resume operation."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Confirm the system resumes operation",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Verify recovery succeeded and the system is back to running.",
+      "instruction": "Confirm that the system resumes operation following the blue RESET.",
+      "expected_result": "Operation resumes.",
+      "healthy_condition": "System is running/operational after reset.",
+      "failure_condition": "System remains stopped/not resumed after reset.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify operation resumed",
+          "exact_action": "Confirm the system resumes operation.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the system does not resume operation after pressing the blue RESET button, escalate."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "manual_optisweep_om_v3",
+          "source_type": "manual",
+          "source_title": "OptiSweep Operation and Maintenance Manual",
+          "source_version": "3",
+          "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+          "page": 95,
+          "section_id": "optisweep_operation_and_maintenance_manual_final_1_6_1_pneumatic_troubleshooting",
+          "quote_or_summary": "Press the blue RESET button. The system will resume operation."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "After pulling the E-STOP and pressing the blue RESET button, the system resumes operation."
+  ],
+  "healthy_conditions": [
+    "System resumes operation after blue RESET."
+  ],
+  "failure_conditions": [
+    "System does not resume operation after pressing the blue RESET button.",
+    "RMS does not clearly identify the faulted AGV."
+  ],
+  "escalation_guidance": [
+    "Escalate if the system does not resume operation after pressing the blue RESET button.",
+    "If RMS does not clearly identify the faulted AGV, escalate for assistance locating the faulted unit."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+      "page": 95,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_6_1_pneumatic_troubleshooting",
+      "site_code": "",
+      "site_label": "",
+      "quote_or_summary": "AGV motionless on floor — Fault — Corrective Action: Locate the faulted AGV (may need to reference RMS for AGV error); Reference E-stop zone map; Press E-STOP to stop the appropriate E-stop zone; Remove the faulted AGV; Pull E-STOP; Press the blue RESET button; The system will resume operation."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen"
+    },
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen"
+    },
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_manual_optisweep_agv_motionless_fault_estop_zone_reset"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The packet does not specify the exact RMS navigation path/buttons to identify the faulted AGV error; it only states that RMS may be referenced for AGV error.",
+    "The packet does not provide the exact physical location/labeling of the blue RESET button or the specific E-stop zone map legend details."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_fig_4_12_agv_api_controls",
+    "artifact_fig_5_2_agv_bump_fault_screen",
+    "artifact_fig_5_4_faulted_agv_with_tote_screen"
+  ]
+}

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Add an AGV to a Zone When There Is No Empty AGV Available (RMS Fault Recovery)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Add an AGV to a Zone When There Is No Empty AGV Available (RMS Fault Recovery)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_add_agv_to_zone_no_empty_agv_rms_fault_recovery_v1</td></tr>
+<tr><th>Title</th><td>Add an AGV to a Zone When There Is No Empty AGV Available (RMS Fault Recovery)</td></tr>
+<tr><th>Procedure Type</th><td>recovery</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>agv_physical_recovery</td></tr>
+<tr><th>Access Surface</th><td>rms_ui, hospital_hmi, physical_floor</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>None</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Recover operation by stopping RMS, physically placing an AGV into the zone under the tote rack, adding the AGV in RMS using Tote API Controls, verifying the AGV turns blue and reaches AGV status/state &quot;szonestaging&quot; on the Hospital HMI/lane UI, then stopping again and resuming RMS.</p>
+<h2>When To Use</h2>
+<p>Use when there is no empty AGV available for a zone and you must recover by adding an AGV into the zone under the tote rack, ensuring it reaches the required &quot;szonestaging&quot; state before resuming RMS.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/ec83d895fff08cd8.jpeg" alt="artifact_fig_5_3_add_agv_to_zone_with_no_empty_agv_screen" /><figcaption>RMS screen for &quot;Add AGV to Zone with No Empty AGV&quot; (includes E-stop RMS, add AGV in RMS, wait for blue, and E-stop again/resume RMS steps).</figcaption></figure>
+<figure><img src="assets/4f58f8bb3f0f6aea.jpeg" alt="artifact_fig_4_12_agv_api_controls" /><figcaption>AGV API Controls screen showing controls used to remove/recover/add AGVs and pause/resume movement (used by the RMS Tote API Controls function referenced by the procedure).</figcaption></figure>
+<figure><img src="assets/d87070d22301b81d.jpeg" alt="artifact_fig_5_4_faulted_agv_with_tote_screen" /><figcaption>Fault recovery HMI example showing E-stop RMS and remove/add AGV via RMS/Hospital HMI workflow (supporting context for remove/re-add behavior).</figcaption></figure>
+<figure><img src="assets/597651fff1a13999.jpeg" alt="artifact_fig_5_1_system_in_shut_down_mode" /><figcaption>System in Shut-down Mode screen (referenced as part of the broader AGV fault recovery/startup context).</figcaption></figure>
+<figure><img src="assets/1612450530188bc6.png" alt="artifact_fig_4_36_hospital_hmi_sent_from_bagging_station_screen" /><figcaption>Hospital HMI screen example (context for Hospital HMI usage; procedure requires verifying AGV state on Hospital HMI/lane UI).</figcaption></figure>
+<figure><img src="assets/2c21ae93aa1bc610.png" alt="artifact_fig_4_37_hospital_hmi_add_remove_agv_screen" /><figcaption>Hospital HMI Add/Remove AGV screen (used when the AGV is moving to the Hospital and must be removed and added again).</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — E-stop RMS on the RMS / fleet status UI</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS / fleet status UI (rms_ui), press the E-stop for RMS.</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS is in an E-stopped state on the RMS / fleet status UI.</p>
+<hr>
+<h3>Step 2 — Move an AGV into the zone under the tote rack</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Move an AGV into the zone under the tote rack (physical_floor).</p>
+<p><strong>Expected result:</strong></p>
+<p>An AGV is physically positioned in the zone under the tote rack.</p>
+<hr>
+<h3>Step 3 — Add the AGV in RMS using Tote API Controls</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS / fleet status UI (rms_ui), add the AGV using the &quot;Tote API Controls&quot; function.</p>
+<p><strong>Expected result:</strong></p>
+<p>The AGV is added in RMS via Tote API Controls (AGV appears in RMS roster/map context for the add operation).</p>
+<hr>
+<h3>Step 4 — Wait for the AGV to turn blue on the RMS UI</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Wait for the AGV to turn blue on the RMS / fleet status UI (rms_ui).</p>
+<p><strong>Expected result:</strong></p>
+<p>The added AGV changes to blue on the RMS UI.</p>
+<hr>
+<h3>Step 5 — Verify AGV status/state is exactly &quot;szonestaging&quot; on the Hospital HMI</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the Hospital HMI / lane UI (hospital_hmi), verify the AGV status/state is exactly &quot;szonestaging&quot;.</p>
+<p><strong>Expected result:</strong></p>
+<p>Hospital HMI shows the AGV state/status value &quot;szonestaging&quot;.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Do not proceed to resume RMS until the AGV state verification step shows &quot;szonestaging&quot;.</li>
+</ul>
+<hr>
+<h3>Step 6 — If AGV is moving to the Hospital, remove and add it again</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the AGV is moving to the Hospital (Hospital HMI shows Hospital destination/state), remove the AGV and add it again (repeat the add step).</p>
+<p><strong>Expected result:</strong></p>
+<p>AGV is removed from the system and then re-added so it can transition back toward &quot;szonestaging&quot;.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the AGV does not reach &quot;szonestaging&quot; after being added, or if it repeatedly moves to the Hospital instead of staging.</li>
+</ul>
+<hr>
+<h3>Step 7 — Press E-stop again on the RMS / fleet status UI</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Press the E-stop again on the RMS / fleet status UI (rms_ui).</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS reflects the E-stopped state again on the RMS / fleet status UI.</p>
+<hr>
+<h3>Step 8 — Resume RMS on the RMS / fleet status UI</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Resume RMS on the RMS / fleet status UI (rms_ui) (Starting the System procedure reference).</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS is resumed/started on the RMS / fleet status UI.</p>
+<hr>
+</body>
+</html>

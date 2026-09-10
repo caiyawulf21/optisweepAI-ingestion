@@ -38,7 +38,9 @@ def main(
     buffer_after_seconds: float = typer.Option(3.0, "--buffer-after-seconds", min=0.0),
     extra_frame_threshold: float = typer.Option(8.0, "--extra-frame-threshold", min=0.1),
     max_extra_frames_per_segment: int = typer.Option(0, "--max-extra-frames-per-segment", min=0),
-    ocr_backend: str = typer.Option("none", "--ocr-backend", help="none or tesseract"),
+    ocr_backend: str = typer.Option(
+        "azure_cv", "--ocr-backend", help="azure_cv (default), tesseract, or none"
+    ),
     tesseract_command: str | None = typer.Option(None, "--tesseract-command"),
     sample_ocr_interval_seconds: float = typer.Option(3.0, "--sample-ocr-interval-seconds", min=1.0),
     max_segment_seconds: float = typer.Option(120.0, "--max-segment-seconds", min=10.0),

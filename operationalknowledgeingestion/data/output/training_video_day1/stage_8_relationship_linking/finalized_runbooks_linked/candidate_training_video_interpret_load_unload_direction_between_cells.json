@@ -1,0 +1,294 @@
+{
+  "procedure_id": "proc_interpret_load_unload_direction_between_cells_v1",
+  "candidate_id": "candidate_training_video_interpret_load_unload_direction_between_cells",
+  "title": "Interpret Load Direction vs Unload Direction Between Cells for AGV Tote Access",
+  "procedure_type": "diagnostic",
+  "summary": "Use the cell-to-cell load/unload direction settings to determine which AGVs are permitted to travel between two cells: unload direction allows AGVs without a tote; loaded direction allows AGVs with a tote. If both are enabled, both tote states can travel between the cells. If the observed behavior contradicts the configured direction permissions, treat it as a design/map issue and escalate rather than attempting an operator-level fix.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_active_errors"
+  ],
+  "access_surface": [
+    "rms_ui"
+  ],
+  "audience_roles": [
+    "L1_support"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to interpret the tote-dependent travel permissions between two cells based on the load/unload direction settings visible in the cell-to-cell configuration context.",
+  "not_for": [
+    "Do not use this procedure to perform a configuration change or to attempt to correct a load/unload direction problem directly on the live system."
+  ],
+  "roles_and_responsibilities": [
+    "L1_support: Interpret the configured load/unload direction permissions between two cells (tote vs no-tote travel) and determine whether the issue is consistent with the configuration.",
+    "Escalation owner (per site/support process): Handle cases where the system behavior does not match the configured direction permissions (treated as a design problem)."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "OptiSweep map/cell configuration view that shows load direction and unload direction between cells"
+  ],
+  "prerequisites": {
+    "access_required": [],
+    "system_preconditions": [],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_load_unload_direction_meaning_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0046_all_right_the_next_object_is_primary_01_42_16_500",
+      "description": "Training frame showing cell selection (node code/cell code) and the explanation of unload direction vs loaded direction between two cells, including the tote/no-tote travel permission rules and note that most areas have both turned on.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Locate the load/unload direction settings for the connection between two cells",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Identify the configured direction permissions that determine whether AGVs with a tote, without a tote, or both can travel between the two cells.",
+      "instruction": "In the OptiSweep map/cell configuration context where the cell-to-cell connection is visible, locate the fields for unload direction and loaded direction for that specific connection between the two cells.",
+      "expected_result": "You can see whether unload direction and/or loaded direction are activated for the connection between the two selected cells.",
+      "healthy_condition": "Both unload direction and loaded direction fields are visible for the connection, and their activated/not-activated state can be determined.",
+      "failure_condition": "You cannot determine the activated state of unload direction and loaded direction for the connection between the two cells.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Find unload/loaded direction fields for the cell-to-cell connection",
+          "exact_action": "Locate the settings for the connection between the two cells in the map/cell configuration context where load direction and unload direction between cells is visible.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Interpret unload direction-only activation (no tote travel allowed)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Determine the tote-dependent travel permission when only unload direction is enabled between the two cells.",
+      "instruction": "If only “unload direction” is activated between the two cells (and loaded direction is not), conclude that only AGVs without a tote can travel there.",
+      "expected_result": "Your conclusion is: only AGVs without a tote are allowed to travel between the two cells.",
+      "healthy_condition": "The configuration shows unload direction enabled while loaded direction is not enabled for that connection.",
+      "failure_condition": "The configuration does not clearly show unload direction-only activation, or you cannot confirm that loaded direction is not enabled.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check unload direction-only state",
+          "exact_action": "Check whether only “unload direction” is activated between the two cells.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Interpret loaded direction-only activation (tote travel allowed)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Determine the tote-dependent travel permission when only loaded direction is enabled between the two cells.",
+      "instruction": "If only “loaded direction” is activated between the two cells (and unload direction is not), conclude that only AGVs with a tote can travel between those cells (AGVs without a tote cannot).",
+      "expected_result": "Your conclusion is: only AGVs with a tote are allowed to travel between the two cells.",
+      "healthy_condition": "The configuration shows loaded direction enabled while unload direction is not enabled for that connection.",
+      "failure_condition": "The configuration does not clearly show loaded direction-only activation, or you cannot confirm that unload direction is not enabled.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check loaded direction-only state",
+          "exact_action": "Check whether only “loaded direction” is activated between the two cells.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Interpret both load and unload direction activation (both tote states allowed)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Determine the tote-dependent travel permission when both direction permissions are enabled between the two cells.",
+      "instruction": "If both unload direction and loaded direction are turned on between the two cells, conclude that both AGVs with a tote and without a tote can access travel between those cells.",
+      "expected_result": "Your conclusion is: both tote and no-tote AGVs are allowed to travel between the two cells.",
+      "healthy_condition": "The configuration shows both unload direction and loaded direction enabled for that connection.",
+      "failure_condition": "You cannot confirm that both direction permissions are enabled for the connection.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check both directions enabled",
+          "exact_action": "Check whether both load and unload direction are turned on between the two cells.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Escalate if observed behavior contradicts configured direction permissions",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Avoid incorrect operator-level remediation when the source frames direction behavior as a design problem.",
+      "instruction": "If the system behavior you observe does not match the tote-dependent travel permissions implied by the configured load/unload direction settings between the two cells, stop and escalate. Treat it as a design/map issue rather than something support should fix at the operator level.",
+      "expected_result": "You stop attempting fixes and escalate the mismatch as a design problem.",
+      "healthy_condition": "The configured direction permissions are clear, and the observed behavior is inconsistent with those permissions.",
+      "failure_condition": "You attempt to resolve the mismatch via operator-level actions instead of escalating.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Stop and escalate direction mismatch",
+          "exact_action": "If the source’s described direction behavior does not match what the system appears to allow, stop and escalate.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Observed behavior contradicts the tote/no-tote travel permissions implied by the configured unload/loaded direction activation between the two cells."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You can state, based on the activated unload direction and/or loaded direction between two cells, whether AGVs with a tote, without a tote, or both are allowed to travel between those cells."
+  ],
+  "healthy_conditions": [
+    "Unload direction-only: only AGVs without a tote are permitted between the two cells.",
+    "Loaded direction-only: only AGVs with a tote are permitted between the two cells.",
+    "Both enabled: both tote and no-tote AGVs are permitted between the two cells."
+  ],
+  "failure_conditions": [
+    "You cannot determine the activated state of unload direction and loaded direction for the connection between the two cells.",
+    "Observed behavior contradicts the configured direction permissions; you proceed with operator-level fixes instead of escalating."
+  ],
+  "escalation_guidance": [
+    "Escalate when observed behavior does not match the configured load/unload direction permissions. The source frames load/unload direction issues as a design problem, not something support should deal with at the operator level."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0046_all_right_the_next_object_is_primary_01_42_16_500",
+      "what_to_look_at": "The frame where the training explains: unload direction-only allows AGVs without a tote; loaded direction-only allows AGVs with a tote; most areas have both turned on."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "section_id": "training_video_day1_segment_0046",
+      "page": 46,
+      "timestamp_start": "01:38:56.000",
+      "timestamp_end": "01:45:37.000",
+      "artifact_id": "artifact_training_video_training_video_day1_0046_all_right_the_next_object_is_primary_01_42_16_500",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0046_all_right_the_next_object_is_primary_01_42_16_500",
+      "what_to_look_at": "The frame where the training explains: unload direction-only allows AGVs without a tote; loaded direction-only allows AGVs with a tote; most areas have both turned on."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0011_so_before_a_parcel_reaches_our_primary_00_17_45_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0029_all_right_so_the_robot_selection_primary_01_15_18_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0045_i_i_would_say_like_the_primary_01_37_38_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_interpret_load_unload_direction_between_cells"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The packet does not name the exact OptiSweep UI screen/control labels where the unload direction and loaded direction fields are shown for a cell-to-cell connection; it only states that such settings are visible in the cell-to-cell configuration context."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day1_0011_so_before_a_parcel_reaches_our_primary_00_17_45_500",
+    "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+    "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+    "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000",
+    "artifact_training_video_training_video_day1_0029_all_right_so_the_robot_selection_primary_01_15_18_000",
+    "artifact_training_video_training_video_day1_0045_i_i_would_say_like_the_primary_01_37_38_000",
+    "artifact_training_video_training_video_day1_0046_all_right_the_next_object_is_primary_01_42_16_500",
+    "artifact_training_video_training_video_day1_0069_on_the_tote_side_you_can_primary_02_22_24_000"
+  ]
+}

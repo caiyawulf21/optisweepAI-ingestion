@@ -1,0 +1,398 @@
+{
+  "procedure_id": "proc_check_agv_state_command_vitals_and_errors_in_the_optisweep_wcs_api_v1",
+  "candidate_id": "candidate_training_video_get_agv_statuses_diagnostic",
+  "title": "Check AGV State, Command Vitals, and Errors in the OptiSweep WCS API",
+  "procedure_type": "diagnostic",
+  "summary": "Use the OptiSweep / WCS API through Apidog to inspect an AGV's live state, current command fields, vitals, network identity, AGV errors, system errors, and errorAlert indicator.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [
+    "L2_support"
+  ],
+  "capability_tags": [
+    "agv_active_errors",
+    "robot_command_or_task_state"
+  ],
+  "access_surface": [
+    "wcs_api",
+    "apidog"
+  ],
+  "audience_roles": [
+    "L1_support",
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive"
+  ],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this Apidog / OptiSweep WCS API diagnostic when support needs to verify an AGV's live state, current command information, vitals, network identity, or AGV and system error indications.",
+  "not_for": [
+    "Do not use this procedure to remove, recover, pause, resume, or execute an AGV command.",
+    "Do not use this procedure to infer a healthy battery or voltage range; the source provides example values but no complete operating thresholds.",
+    "Do not use this procedure as a physical AGV recovery or E-stop procedure."
+  ],
+  "roles_and_responsibilities": [
+    "L1_support may perform the read-only inspection through the Apidog / OptiSweep WCS API client.",
+    "Escalate to L2_support when the response cannot be obtained, required fields are unavailable, or reported AGV or system errors require further investigation."
+  ],
+  "safety_notes": [
+    "This procedure is diagnostic and does not direct a production stop, physical intervention, or AGV control request.",
+    "Do not substitute a control request such as PauseAgvs, RemoveAgv, RecoverAgv, or Resend Geek Command for this read-only status inspection."
+  ],
+  "access_or_tools_needed": [
+    "OptiSweep / WCS API",
+    "Apidog / WCS API client on the primary server",
+    "The AGV request labeled \"Get Agv Statuses\""
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L1_support access to the OptiSweep / WCS API through Apidog"
+    ],
+    "system_preconditions": [
+      "The OptiSweep / WCS API client must be available and able to return the Get Agv Statuses response."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_agv_status_screen_v1",
+    "ctx_training_video_agv_status_fields_v1",
+    "ctx_training_video_agv_error_alert_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+      "description": "Apidog / WCS API overview showing the AGVS area and the Get Agv Statuses request.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0030_get_agv_status_shows_the_current_primary_02_43_04_500",
+      "description": "Get Agv Statuses response showing AGV name, state, command fields, battery, voltage, status, IP, error fields, and errorAlert.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open Get Agv Statuses in the Apidog WCS API client",
+      "responsible_role": "L1_support",
+      "supporting_role": "L2_support",
+      "purpose": "Open the live OptiSweep WCS API request that returns AGV status information.",
+      "instruction": "In the Apidog / WCS API client, open the AGVS area and select the request labeled \"Get Agv Statuses\".",
+      "expected_result": "The Get Agv Statuses request is open and can return an AGV status response.",
+      "healthy_condition": "The Apidog / WCS API client displays the Get Agv Statuses request and its response area.",
+      "failure_condition": "The request is unavailable, cannot be opened, or does not return a response.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open AGV status request",
+          "exact_action": "Select \"Get Agv Statuses\" in the AGVS area of the Apidog / WCS API client.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop the diagnostic and escalate to L2_support if the Get Agv Statuses response cannot be obtained."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "section_id": "training_video_day2_segment_0030",
+          "timestamp_start": "02:42:32.000",
+          "timestamp_end": "02:43:37.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0030_get_agv_status_shows_the_current_primary_02_43_04_500",
+          "quote_or_summary": "The API view shows Get Agv Statuses in the AGVS area."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "section_id": "training_video_day2_segment_0027",
+          "timestamp_start": "02:39:55.500",
+          "timestamp_end": "02:39:55.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+          "quote_or_summary": "Apidog is installed on the primary server and provides OptiSweep APIs for data and requests."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Identify the AGV and inspect its state in the Apidog WCS API response",
+      "responsible_role": "L1_support",
+      "supporting_role": "L2_support",
+      "purpose": "Associate the returned status information with the affected AGV and its current operating or location state.",
+      "instruction": "In the Apidog / WCS API response, locate the affected AGV by its \"name\" and review its \"state\". Record the returned value exactly, including values such as \"AtSorterEntranceQueue\" or \"SWaitingInzone\".",
+      "expected_result": "The response identifies the AGV and provides its current state value.",
+      "healthy_condition": "The affected AGV has a returned \"name\" and a readable \"state\" value.",
+      "failure_condition": "The response does not identify the AGV or the \"state\" field is absent or unreadable.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect AGV identity and state",
+          "exact_action": "Review the returned \"name\" and \"state\" fields for the affected AGV.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2_support if the response does not identify the AGV or provide its state."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "section_id": "training_video_day2_segment_0030",
+          "timestamp_start": "02:42:32.000",
+          "timestamp_end": "02:43:37.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0030_get_agv_status_shows_the_current_primary_02_43_04_500",
+          "quote_or_summary": "The response includes name and state fields, with examples such as AtSorterEntranceQueue and SWaitingInzone."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Inspect current command fields in the Apidog WCS API response",
+      "responsible_role": "L1_support",
+      "supporting_role": "L2_support",
+      "purpose": "Determine whether the response contains current AGV command information without assuming a command when fields are empty.",
+      "instruction": "In the Apidog / WCS API response for the identified AGV, review \"commandGuid\", \"commandName\", and \"commandStatus\". Record empty command fields as empty.",
+      "expected_result": "The response shows the available command GUID, command name, and command status values for the AGV.",
+      "healthy_condition": "The command fields are present and their returned values, including empty values, are recorded accurately.",
+      "failure_condition": "The command fields are unavailable or the response cannot be associated with the identified AGV.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect command information",
+          "exact_action": "Review \"commandGuid\", \"commandName\", and \"commandStatus\" in the Get Agv Statuses response.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2_support if the command fields are unavailable or cannot be associated with the affected AGV."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "section_id": "training_video_day2_segment_0030",
+          "timestamp_start": "02:42:32.000",
+          "timestamp_end": "02:43:37.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0030_get_agv_status_shows_the_current_primary_02_43_04_500",
+          "quote_or_summary": "The Get Agv Statuses response includes commandGuid, commandName, and commandStatus; displayed command fields may be empty."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Inspect AGV vitals and network identity in the Apidog WCS API",
+      "responsible_role": "L1_support",
+      "supporting_role": "L2_support",
+      "purpose": "Capture the AGV's returned battery, voltage, status, and IP values for live diagnostic comparison.",
+      "instruction": "In the Apidog / WCS API response, review \"battery\", \"voltage\", \"status\", and \"ip\" for the identified AGV. Record the displayed values without applying an unsupported battery or voltage threshold.",
+      "expected_result": "The response provides the AGV's displayed battery value, voltage value, status, and IP address.",
+      "healthy_condition": "The vitals and identity fields are present; the source example shows values such as battery 78, voltage 56200, and \"status\": \"NORMAL\".",
+      "failure_condition": "One or more vitals or identity fields are unavailable, or the response cannot identify the AGV's returned values.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect AGV vitals and IP",
+          "exact_action": "Review \"battery\", \"voltage\", \"status\", and \"ip\" in the Get Agv Statuses response.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2_support if the response does not provide the AGV vitals or network identity needed for the diagnostic."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "section_id": "training_video_day2_segment_0030",
+          "timestamp_start": "02:42:32.000",
+          "timestamp_end": "02:43:37.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0030_get_agv_status_shows_the_current_primary_02_43_04_500",
+          "quote_or_summary": "The response includes battery, voltage, status, and IP fields; displayed examples include battery percentages, voltage values, IP addresses, and status NORMAL."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Inspect AGV and system errors in the Apidog WCS API response",
+      "responsible_role": "L1_support",
+      "supporting_role": "L2_support",
+      "purpose": "Determine whether the AGV or system has a reported error and whether the error alert is active.",
+      "instruction": "In the Apidog / WCS API response, review \"errorCode\", \"errorDescription\", \"errorCause\", \"systemErrorDescription\", \"systemErrorResolution\", and \"errorAlert\". Treat populated error fields or \"errorAlert\": true as reported error indications. For active system errors, the related error information can include the error name, area, error code, last-seen time, system error description, and system error resolution.",
+      "expected_result": "The response shows the AGV and system error fields and indicates whether errorAlert is true or false.",
+      "healthy_condition": "The source's no-error example has \"status\": \"NORMAL\", empty AGV and system error fields, and \"errorAlert\": false.",
+      "failure_condition": "An error field contains a reported value or \"errorAlert\": true. A system error may identify an area such as AGV or Communication and include a system error description or resolution.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect error indicators",
+          "exact_action": "Review the AGV error fields, system error fields, and \"errorAlert\" in the Get Agv Statuses response.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2_support when \"errorAlert\" is true.",
+        "Escalate when AGV or system error fields contain a reported error requiring further investigation."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "section_id": "training_video_day2_segment_0030",
+          "timestamp_start": "02:42:32.000",
+          "timestamp_end": "02:43:37.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0030_get_agv_status_shows_the_current_primary_02_43_04_500",
+          "quote_or_summary": "The response includes AGV and system error fields and errorAlert. The alert becomes true for a system or Geek+ error; the no-error example has empty error fields and errorAlert false."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "section_id": "training_video_day2_segment_0017",
+          "timestamp_start": "01:34:34.500",
+          "timestamp_end": "01:34:34.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0017_so_moving_on_system_error_definition_primary_01_34_34_500",
+          "quote_or_summary": "Active system error information includes the error name, area, error code, description, and resolution; resolved errors are archived."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The Apidog / WCS API Get Agv Statuses request returns a response.",
+    "The affected AGV is identified by name and its state is recorded.",
+    "Command fields, vitals, status, IP, AGV error fields, system error fields, and errorAlert are reviewed.",
+    "Any reported error or true errorAlert is escalated to L2_support."
+  ],
+  "healthy_conditions": [
+    "The Get Agv Statuses response identifies the AGV and provides a readable state.",
+    "Command, vitals, and network identity fields are available for inspection, including empty command fields when returned.",
+    "The no-error example shows status NORMAL, empty AGV and system error fields, and errorAlert false."
+  ],
+  "failure_conditions": [
+    "The Get Agv Statuses response cannot be obtained.",
+    "The response does not identify the AGV or does not provide state and error fields.",
+    "AGV or system error fields are populated.",
+    "errorAlert is true."
+  ],
+  "escalation_guidance": [
+    "Escalate to L2_support if the Apidog / OptiSweep WCS API response cannot be obtained or does not contain the required AGV state and error fields.",
+    "Escalate to L2_support when errorAlert is true or AGV or system error fields contain a reported error.",
+    "Include the AGV name, state, command fields, vitals, IP, error fields, system error fields, and errorAlert value in the escalation record."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 30,
+      "section_id": "training_video_day2_segment_0030",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "Get AGV status shows the current state of AGVs, current command vitals, AGV errors, and system errors. The displayed response includes AGV identity, state, command fields, battery, voltage, status, IP, error fields, system error fields, and errorAlert.",
+      "timestamp_start": "02:42:32.000",
+      "timestamp_end": "02:43:37.000",
+      "segment_id": "segment_training_video_0030"
+    }
+  ],
+  "evidence_source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "section_id": "training_video_day2_segment_0030",
+      "artifact_id": "artifact_training_video_training_video_day2_0030_get_agv_status_shows_the_current_primary_02_43_04_500",
+      "timestamp_start": "02:43:04.500",
+      "timestamp_end": "02:43:04.500",
+      "quote_or_summary": "The API view shows Get Agv Statuses and response fields including name, state, commandGuid, battery, voltage, status, IP, error fields, and errorAlert."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0030_get_agv_status_shows_the_current_primary_02_43_04_500"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_get_agv_statuses_diagnostic"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not define complete healthy or failure thresholds for battery, voltage, or AGV state values.",
+    "The source does not provide the exact API endpoint, authentication method, or request execution control beyond the Get Agv Statuses request label.",
+    "The source does not define an escalation destination or detailed remediation procedure for each reported AGV or system error.",
+    "The source does not establish whether production stopping is required for any condition in this read-only diagnostic."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+    "artifact_training_video_training_video_day2_0030_get_agv_status_shows_the_current_primary_02_43_04_500"
+  ]
+}

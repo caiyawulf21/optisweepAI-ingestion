@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Look Up an AGV Error Code and Severity Classification</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Look Up an AGV Error Code and Severity Classification</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_look_up_agv_error_code_and_severity_classification_v1</td></tr>
+<tr><th>Title</th><td>Look Up an AGV Error Code and Severity Classification</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>agv_active_errors</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>bump_fault</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use read-only WCS / Helix DB (SSMS) access to compare an observed AGV ErrorCode with the Robotics database AGV error reference and active AGV error record. Read the stored description and critical or non-critical classification when available.</p>
+<h2>When To Use</h2>
+<p>Use this diagnostic when an AGV error code needs to be interpreted in the Robotics database through WCS / Helix DB (SSMS), including comparison with an active AGV error record.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/0060f6132e5274b9.jpg" alt="artifact_training_video_training_video_day2_0015_right_moving_on_excuse_me_the_primary_01_28_41_500" /><figcaption>Robotics database AGV error reference and active-error examples showing Name, ErrorCode, Description, and SortGuid; the example includes ErrorCode 21057 with description &quot;Front bumper trigger.&quot;</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the Robotics database in WCS / Helix DB (SSMS)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In WCS / Helix DB (SSMS), open the Robotics database and locate the AGV Error model table. Use read-only access.</p>
+<p><strong>Expected result:</strong></p>
+<p>The AGV Error model table is available for inspection in the Robotics database.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the Robotics database or AGV Error model table cannot be located.</li>
+<li>Stop if the procedure would require modifying the lookup table.</li>
+</ul>
+<hr>
+<h3>Step 2 — Find the observed ErrorCode and read its description</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the AGV Error model table in WCS / Helix DB (SSMS), find the row matching the observed ErrorCode and read the stored error description. The source example shows ErrorCode 21057 with the description &quot;Front bumper trigger.&quot;</p>
+<p><strong>Expected result:</strong></p>
+<p>A matching row returns the observed ErrorCode and its stored description.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate when the observed ErrorCode has no matching AGV Error model row.</li>
+<li>Escalate when the returned description conflicts with the active AGV error record.</li>
+</ul>
+<hr>
+<h3>Step 3 — Read the critical or non-critical classification</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the AGV Error model table in WCS / Helix DB (SSMS), inspect the row or field that classifies the observed error as critical or non-critical.</p>
+<p><strong>Expected result:</strong></p>
+<p>The matching AGV error reference provides an observable critical or non-critical classification.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the matching error row has no observable critical or non-critical classification.</li>
+</ul>
+<hr>
+<h3>Step 4 — Compare the reference row with the active AGV error record</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In WCS / Helix DB (SSMS), compare the reference ErrorCode and description with the active AGV error record. The active record includes the robot code in Name, ErrorCode, Description, and SortGuid, which identifies the sort during which the error occurred.</p>
+<p><strong>Expected result:</strong></p>
+<p>The active AGV error record contains an ErrorCode and Description consistent with the reference lookup; the active record&#x27;s Name and SortGuid identify the robot and associated sort when present.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate when the reference description conflicts with the active-error record.</li>
+<li>Do not infer an RMS/API mapping from a discrepancy; the source indicates that this relationship is uncertain.</li>
+</ul>
+<hr>
+</body>
+</html>

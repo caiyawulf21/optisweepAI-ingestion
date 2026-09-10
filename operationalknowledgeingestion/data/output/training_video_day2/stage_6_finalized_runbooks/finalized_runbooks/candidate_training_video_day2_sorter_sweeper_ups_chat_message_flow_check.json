@@ -1,0 +1,504 @@
+{
+  "procedure_id": "proc_verify_ups_chat_message_flow_sorter_sweeper_induction_v1",
+  "candidate_id": "candidate_training_video_day2_sorter_sweeper_ups_chat_message_flow_check",
+  "title": "Verify UPS chat message flow for sorter induction, destination enable/close, and label print triggers",
+  "procedure_type": "diagnostic",
+  "summary": "Verify that the live Sorter Sweeper ↔ UPS chat message sequence is occurring for a tote/parcel: tote inducted + destination enabled, scan-derived dimensions/load category collection, sort confirmation, optional hot bin/hop-in closeout triggering exchange, destination close before exchange, and print label message to the printer at the tipper stage.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "tote_exchange_sequence",
+    "wcs_api_responsiveness"
+  ],
+  "access_surface": [
+    "wcs_api",
+    "apidog",
+    "ignition_gateway"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when you need to confirm that the UPS-facing chat message sequence described for the Sorter Sweeper module is present and progressing for totes/parcels (induction → destination enable → scan data → sort confirmation → hot bin/hop-in exchange → destination close → print label).",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Execute live checks using the OptiSweep/WCS API client (Apidog / WCS API) and, if needed, corroborate via Ignition gateway tag surfaces."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Apidog / WCS API client (wcs_api)",
+    "Live tote/parcel identifiers to correlate message evidence"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Apidog / WCS API client access (primary server)"
+    ],
+    "system_preconditions": [
+      "Sorter Sweeper ↔ UPS chat messaging is expected to be active for the tote/parcel being investigated."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_ups_chat_message_flow_v1",
+    "ctx_training_video_sorter_sweeper_system_overview_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500",
+      "description": "Frame showing the UPS chat message sequence: tote inducted + destination enabled; scan data (dimensions/load category); sort sent and sort confirmation; hot bin/hop-in closeout triggers exchange; destination close before exchange; print label message to printer.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the live OptiSweep/WCS API client surface (Apidog / WCS API)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish the live API view needed to query message evidence for the UPS chat sequence.",
+      "instruction": "Open the live OptiSweep/WCS API client surface (Apidog / WCS API) to begin querying for message evidence tied to the tote/parcel in process.",
+      "expected_result": "You are able to run live API queries against the OptiSweep/WCS API from the Apidog client.",
+      "healthy_condition": "API queries return responses (no timeouts/connection failures) sufficient to locate message evidence for the target tote/parcel.",
+      "failure_condition": "API queries fail (e.g., no response/timeout) such that message evidence cannot be retrieved.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open API client",
+          "exact_action": "Open the live OptiSweep/WCS API client surface (Apidog / WCS API).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the API cannot be queried reliably, escalate for deeper API responsiveness investigation (wcs_api_responsiveness)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 4,
+          "section_id": "training_video_day2_segment_0004",
+          "timestamp_start": "00:03:53.000",
+          "timestamp_end": "00:07:52.000",
+          "quote_or_summary": "XLE COM manages communication between the Sorter Sweeper module and the UPS chat server; Sorter Sweeper sends tote inducted + destination enabled to the chat and listens for scan data; sort is sent from XLE to the chat; sort confirmation is sent from the sorter onto the chat; destination close is sent before exchange; print label message is sent to the printer."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Identify the live API requests/endpoints that correspond to each UPS chat message type in the sequence",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Map the described UPS chat message sequence to concrete live API queries so you can verify ordered presence for the same tote/parcel.",
+      "instruction": "Using the live OptiSweep/WCS API client, identify the API requests/endpoints that provide evidence for: tote inducted message, destination enabled message, scan-derived dimensions/load category, sort confirmation, hot bin/hop-in message (if applicable), destination close message, and print label message to the printer.",
+      "expected_result": "You have a set of live API queries that can return evidence records for each message type listed above.",
+      "healthy_condition": "Each message type can be retrieved as a distinct evidence record set that can be correlated by tote/parcel identifier.",
+      "failure_condition": "You cannot locate any live API evidence for one or more required message types (tote inducted, destination enabled, sort confirmation, destination close, print label).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Map message types to API evidence",
+          "exact_action": "Identify the live API endpoints/requests that correspond to the UPS chat message exchanges described in the segment (tote inducted message, destination enabled message, sort confirmation, hot bin message/hop-in message, destination close message, print label message).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the API evidence mapping cannot be established for required message types, stop and escalate for SME mapping of message types to live API fields/endpoints."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0004",
+          "timestamp_start": "00:05:52.500",
+          "timestamp_end": "00:05:52.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500",
+          "quote_or_summary": "Sequence described: send tote inducted + destination enabled to chat; listen for scan data from scan tunnel; collect dimensions and load category; sort sent from XLE to chat; collect possible destinations; sort confirmation sent from sorter onto chat; UPS can trigger hot bin close out via hot bin message for totes that are hot bin and exchange immediately; send destination close message onto chat before exchange; at tipper send print label message to printer so it can print a label provided by XLE."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Verify tote inducted + destination enabled evidence for the same tote/parcel",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the induction stage of the UPS chat sequence is present and not stuck before destination enable.",
+      "instruction": "For a tote/parcel currently in process, query the live OptiSweep/WCS API evidence for both: (1) tote inducted message and (2) destination enabled message. Correlate both evidence records to the same tote/parcel identifier.",
+      "expected_result": "Both tote inducted and destination enabled evidence records are present for the same tote/parcel identifier.",
+      "healthy_condition": "The two evidence records are present together for the same tote/parcel and do not indicate the process is stuck before destination enable.",
+      "failure_condition": "Tote inducted exists but destination enabled is missing for the same tote/parcel, or the evidence indicates the sequence is stuck earlier.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Query induction evidence",
+          "exact_action": "Query the API for evidence that a tote inducted message and a destination enabled message were sent/received for that tote.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if tote inducted is present but destination enabled is missing for the same tote/parcel."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0004",
+          "timestamp_start": "00:03:53.000",
+          "timestamp_end": "00:07:52.000",
+          "quote_or_summary": "“So the tote arrives at the sorter, we send a tote inducted message and a destination enabled message to the chat.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify scan-derived dimensions and load category evidence",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the scan tunnel data collection stage is occurring and populating the parcel attributes used downstream.",
+      "instruction": "For the same tote/parcel context, query the live OptiSweep/WCS API evidence for scan-derived parcel dimensions and load category fields that are described as coming from the scan tunnel onto the chat.",
+      "expected_result": "Dimensions and load category fields are populated for the parcel/tote context.",
+      "healthy_condition": "Dimension and load category values are present (not null/empty) for the same tote/parcel identifier that has induction evidence.",
+      "failure_condition": "Scan-derived dimensions and/or load category are missing or not populated for the tote/parcel in process.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Query scan data evidence",
+          "exact_action": "Query for scan/parcel data collection evidence (dimensions and load category) that is described as coming from the scan tunnel onto the chat.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If scan-derived dimensions/load category are missing while induction evidence exists, escalate for deeper module-level investigation (Sorter Sweeper vs XLE COM vs OPC COM)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0004",
+          "timestamp_start": "00:03:53.000",
+          "timestamp_end": "00:07:52.000",
+          "quote_or_summary": "“We listen to scan data too, which is from the scan tunnel. We collect the dimensions of the parcel and the load category.”"
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0059",
+          "timestamp_start": "03:28:03.000",
+          "timestamp_end": "03:28:03.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000",
+          "quote_or_summary": "Example evidence view includes columns for TrackingNumber and Length/Width/Height/Weight (dimension fields) alongside sort confirmation filtering."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Verify sort confirmation evidence includes final destination",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the sort stage is completed and that the parcel has a final destination in the confirmation evidence.",
+      "instruction": "For the same tote/parcel, query the live OptiSweep/WCS API evidence for sort confirmation records. Confirm that a sort confirmation record exists and includes a final destination for the parcel.",
+      "expected_result": "A sort confirmation evidence record exists for the tote/parcel and includes a final destination.",
+      "healthy_condition": "Sort confirmation evidence is present and shows a final destination value for the same tote/parcel identifier.",
+      "failure_condition": "Sort confirmation evidence is missing, or it exists without a final destination value.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Query sort confirmation",
+          "exact_action": "Query for sort confirmation evidence that sort was sent from XLE onto the chat and that a sort confirmation was sent from the sorter onto the chat.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if sort confirmation evidence is missing for the tote/parcel."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0004",
+          "timestamp_start": "00:03:53.000",
+          "timestamp_end": "00:07:52.000",
+          "quote_or_summary": "“Sort is sent from XLE so it's UPS version of WCS on to the chat… We collect the possible destinations for each parcel and then we get a sort confirmation as sent from the sorter onto the chat.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Verify hot bin closeout / hop-in exchange evidence (when expected)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the hot bin/hop-in closeout path triggers an exchange immediately when UPS sends the hot bin message.",
+      "instruction": "If the tote(s) are expected to be hop-in/hot-bin, query the live OptiSweep/WCS API evidence for hot bin message/hop-in message records for those totes. Confirm that the exchange-related state advances immediately after the hot bin/hop-in evidence.",
+      "expected_result": "Hot bin/hop-in evidence exists for the tote(s) and exchange-related state advances immediately after.",
+      "healthy_condition": "For hop-in/hot-bin totes, hot bin/hop-in evidence is present and exchange advancement is observable in the evidence timeline for the same tote(s).",
+      "failure_condition": "Hot bin/hop-in evidence is missing when expected, or exchange advancement does not occur immediately after hot bin/hop-in evidence.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Query hot bin/hop-in evidence",
+          "exact_action": "Query for a hot bin message/hop-in message for totes that are hop in and confirm an exchange is triggered immediately.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if hot bin/hop-in evidence is missing for totes that are expected to be hop-in."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0004",
+          "timestamp_start": "00:03:53.000",
+          "timestamp_end": "00:07:52.000",
+          "quote_or_summary": "“UPS can trigger a hop in close out by sending us a hop in message for all totes that are hop in and we do an exchange immediately.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Verify destination close message exists before exchange advancement",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the destination close stage is sent before the exchange occurs.",
+      "instruction": "Before the exchange-related state advances for the tote/parcel, query the live OptiSweep/WCS API evidence for a destination close message being sent onto the chat. Correlate it to the destination tied to the tote.",
+      "expected_result": "A destination close message evidence record exists for the destination tied to the tote before exchange-related state advances.",
+      "healthy_condition": "Destination close evidence is present and occurs earlier in the evidence timeline than exchange advancement for the same tote/parcel.",
+      "failure_condition": "Destination close message is missing, or exchange advancement occurs without destination close evidence preceding it.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Query destination close evidence",
+          "exact_action": "Before an exchange, query for a destination close message being sent onto the chat.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if destination close message is missing before the exchange-related state advances."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0004",
+          "timestamp_start": "00:03:53.000",
+          "timestamp_end": "00:07:52.000",
+          "quote_or_summary": "“And then when the totes is ready to leave… we send the destination close message onto the chat before we do an exchange.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 8,
+      "title": "Verify print label message is sent at the tipper stage",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the final stage: label print trigger message is sent to the printer with the label provided by XLE.",
+      "instruction": "At the tipper stage for the tote/parcel, query the live OptiSweep/WCS API evidence for a print label message being sent to the printer. Confirm it is associated with the label provided by XLE (e.g., label payload/identifier present).",
+      "expected_result": "A print label message evidence record exists and is associated with the label provided by XLE (label payload/identifier present).",
+      "healthy_condition": "Print label evidence is present for the tote/parcel at the tipper stage and includes an associated label identifier/payload.",
+      "failure_condition": "Print label message evidence is missing at the tipper stage.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Query print label evidence",
+          "exact_action": "At the tipper stage, query for a print label message being sent to the printer.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if print label message evidence is missing at the tipper stage."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0004",
+          "timestamp_start": "00:03:53.000",
+          "timestamp_end": "00:07:52.000",
+          "quote_or_summary": "“And then at the tipper, we send a print label message to the printer so it can print a label provided by the XLE.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 9,
+      "title": "Stop and escalate on missing/out-of-order message evidence",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure rapid escalation when the required message sequence is incomplete or out of order for the same tote/parcel.",
+      "instruction": "If any required message evidence is missing or out of order for the same tote/parcel (tote inducted present but destination enabled missing; sort confirmation missing; destination close missing before exchange; print label missing at tipper), stop further checks and escalate for deeper module-level investigation.",
+      "expected_result": "A clear escalation decision is made based on which message evidence is missing/out of order.",
+      "healthy_condition": "All required message evidence is present in the expected order for the tote/parcel under investigation.",
+      "failure_condition": "Any required evidence is missing or the order is violated for the same tote/parcel.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Escalate based on evidence gap",
+          "exact_action": "Stop and escalate if any required message evidence is missing (e.g., tote inducted present but destination enabled missing; sort confirmation missing; destination close missing before exchange; print label message missing at tipper).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "tote inducted present but destination enabled missing",
+        "sort confirmation missing",
+        "destination close missing before exchange",
+        "print label message missing at tipper",
+        "only one side present (e.g., scan data present but sort confirmation missing)"
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0004",
+          "timestamp_start": "00:05:52.500",
+          "timestamp_end": "00:05:52.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500",
+          "quote_or_summary": "The segment defines the required ordered sequence and the hot bin closeout/destination close/print label triggers that must occur for the tote lifecycle."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "For the tote/parcel in process, evidence shows tote inducted + destination enabled present for the same identifier.",
+    "Scan-derived dimensions and load category are populated for the same tote/parcel context.",
+    "Sort confirmation evidence exists and includes a final destination for the parcel.",
+    "If hop-in/hot-bin is expected, hot bin/hop-in evidence exists and exchange advancement occurs immediately.",
+    "Destination close message evidence exists before exchange advancement.",
+    "At the tipper stage, print label message evidence exists and is associated with the label provided by XLE."
+  ],
+  "healthy_conditions": [
+    "Induction stage evidence: tote inducted and destination enabled are both present for the same tote/parcel.",
+    "Scan stage evidence: dimensions and load category are populated.",
+    "Sort stage evidence: sort confirmation exists with final destination.",
+    "Closeout/exchange stage evidence: destination close occurs before exchange; hot bin/hop-in triggers exchange immediately when applicable.",
+    "Tipper stage evidence: print label message exists with associated label identifier/payload."
+  ],
+  "failure_conditions": [
+    "Destination enabled missing after tote inducted for the same tote/parcel.",
+    "Scan-derived dimensions/load category missing or not populated for the tote/parcel.",
+    "Sort confirmation missing or missing final destination.",
+    "Hot bin/hop-in evidence missing when tote(s) are expected to be hop-in.",
+    "Destination close missing before exchange advancement.",
+    "Print label message missing at the tipper stage."
+  ],
+  "escalation_guidance": [
+    "If required message evidence is missing or out of order for the same tote/parcel, escalate for deeper module-level investigation (Sorter Sweeper vs XLE COM vs OPC COM).",
+    "If the API cannot be queried reliably, escalate for WCS/OptiSweep API responsiveness investigation."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500",
+      "description": "Frame capturing the UPS chat message sequence and module communication roles (Sorter Sweeper, XLE COM, scan tunnel, destination close, print label).",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000",
+      "description": "Example evidence view showing dimension fields (Length/Width/Height/Weight) alongside sort confirmation filtering; used to visually confirm that dimension fields should be populated when sort confirmation exists.",
+      "required_level": "optional"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 4,
+      "section_id": "training_video_day2_segment_0004",
+      "timestamp_start": "00:03:53.000",
+      "timestamp_end": "00:07:52.000",
+      "quote_or_summary": "Sorter Sweeper sends tote inducted + destination enabled to chat; listens to scan data from scan tunnel; collects dimensions and load category; sort sent from XLE to chat; sort confirmation sent from sorter to chat; UPS triggers hop-in closeout via hop-in message and exchange immediately; destination close message sent before exchange; print label message sent to printer at tipper."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_sorter_sweeper_ups_chat_message_flow_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The candidate does not provide concrete live API endpoint names, request names, or exact field names to query for each message type (tote inducted, destination enabled, sort confirmation, hot bin/hop-in, destination close, print label). Stage 6 requires SME mapping from the live API catalog to concrete endpoints/fields."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

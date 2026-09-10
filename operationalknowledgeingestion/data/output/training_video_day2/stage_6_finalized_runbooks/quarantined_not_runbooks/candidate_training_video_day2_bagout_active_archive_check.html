@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check Bag Out Activity Tracking in Sorter Sweeper Database (Active Bag Out vs Bag Out Archive)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check Bag Out Activity Tracking in Sorter Sweeper Database (Active Bag Out vs Bag Out Archive)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_bag_out_activity_tracking_sorter_sweeper_db_active_vs_archive_v1</td></tr>
+<tr><th>Title</th><td>Check Bag Out Activity Tracking in Sorter Sweeper Database (Active Bag Out vs Bag Out Archive)</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>bag_out_or_closeout_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>bag_out_stuck, sort_lifecycle_stuck, system_fault</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Verify that bag out lifecycle events are represented correctly in the Sorter Sweeper Database: when a bag out closes out as requested, open shoots are closed and totes with items are marked for exchange with an entry created in the active bag out model; after the tote is tipped, the record is archived to the bag out archive.</p>
+<h2>When To Use</h2>
+<p>Use when you need to confirm that bag out closeout and tote tipping are reflected in the Sorter Sweeper Database as active bag out entries first, then archived bag out records after tipping.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/dede127121710b0e.jpg" alt="artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000" /><figcaption>Transcript frame describing bag out lifecycle tracking: active bag out entry created when bag out closes out as requested; once tote is tipped, record is archived to bag out.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the Sorter Sweeper Database view for active bag out and bag out archive tracking models</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In SSMS, open the Sorter Sweeper Database views/tables/models for the bag out tracking surfaces referenced in the segment: the active bag out model and the bag out archive model.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can view both the active bag out tracking entries and the bag out archive tracking records in the Sorter Sweeper Database.</p>
+<hr>
+<h3>Step 2 — Validate active bag out entries created at bag out closeout (open shoots closed; totes with items marked for exchange)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Locate active bag out entries and confirm that when a bag out closes out as requested: (1) open shoots are closed, and (2) any tote with an item is marked for an exchange, with an entry created in the active bag out model.</p>
+<p><strong>Expected result:</strong></p>
+<p>For the bag out closeout you are validating, there are corresponding entries in the active bag out model indicating totes with items are marked for exchange (active bag out contains current bag-out-related tote exchange entries until the tote is tipped).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If bag out closeout does not create active bag out entries, escalate for investigation of the bag out lifecycle data flow described by the source.</li>
+</ul>
+<hr>
+<h3>Step 3 — Validate archiving after tote is tipped (active -&gt; bag out archive)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Identify a tote that has been tipped and confirm that the corresponding record is archived to the bag out archive (i.e., moved from active bag out tracking to the archived bag out record).</p>
+<p><strong>Expected result:</strong></p>
+<p>For the tipped tote under review, the record appears in the bag out archive model after tipping, consistent with the behavior that active bag out retains entries until the tote is tipped and then archives them.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If tipped totes do not result in archiving, escalate for investigation of the bag out lifecycle data flow described by the source.</li>
+</ul>
+<hr>
+<h3>Step 4 — Confirm active vs archived tracking difference matches expected bag out lifecycle behavior</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Confirm that the difference between active tracking and archived tracking matches the source’s described behavior for the bag out lifecycle you validated.</p>
+<p><strong>Expected result:</strong></p>
+<p>Active bag out shows current bag-out-related tote exchange entries prior to tipping, and the bag out archive shows the corresponding records after tipping.</p>
+<hr>
+</body>
+</html>

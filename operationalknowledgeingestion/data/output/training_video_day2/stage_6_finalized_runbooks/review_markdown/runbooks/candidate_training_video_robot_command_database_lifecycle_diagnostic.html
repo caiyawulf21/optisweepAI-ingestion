@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Diagnose AGV Robot Command State in WCS / Helix DB (SSMS)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Diagnose AGV Robot Command State in WCS / Helix DB (SSMS)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_diagnose_agv_robot_command_state_in_robotics_database_v1</td></tr>
+<tr><th>Title</th><td>Diagnose AGV Robot Command State in WCS / Helix DB (SSMS)</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>robot_command_or_task_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>robot_task_or_command_stuck</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the WCS / Helix DB (SSMS) in read-only mode to trace an AGV command through the Robotics Database RobotCommandDatabaseModel active-command table and Robot Command Activity history. Review command identity, status, robot, container, station, location, parameters, and lifecycle timing fields to determine whether the command was sent, started, completed, errored, or cancelled.</p>
+<h2>When To Use</h2>
+<p>Use this diagnostic on the live WCS / Helix DB (SSMS) when support needs to verify the lifecycle of an AGV command requested by the Robotics module, including whether an active command is Sent or InProgress, whether it has been archived, or whether it has an errored or cancelled status.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/bc80d134a7f69ff3.jpg" alt="artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000" /><figcaption>WCS / Helix DB (SSMS) view of the Robotics Database RobotCommandDatabaseModel table, including command name, status, CommandGuid, RobotCode, parameters, Sent Time, InProgress Time, and Executed Time, with the active-versus-archived command relationship.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the active command table in WCS / Helix DB (SSMS)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS), open the OptiSweep Robotics database and locate the RobotCommandDatabaseModel table. Review the active command rows and the command/status columns.</p>
+<p><strong>Expected result:</strong></p>
+<p>The live WCS / Helix DB (SSMS) view shows active robot commands requested by the Robotics module, with fields including CommandGuid, CommandName, Status, RobotCode, Parameters, Sent Time, InProgress Time, and Executed Time.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L3_support if the WCS / Helix DB (SSMS) or Robotics database cannot be accessed.</li>
+<li>Escalate if the relevant command cannot be located in the active table after checking the available command identifiers.</li>
+</ul>
+<hr>
+<h3>Step 2 — Identify the command in WCS / Helix DB (SSMS)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS) RobotCommandDatabaseModel table, find the relevant row using the command name, RobotCode, CommandGuid, container or station parameters. For a Move Tote command, compare the ContainerId and StationId values in Parameters with the reported movement.</p>
+<p><strong>Expected result:</strong></p>
+<p>One active RobotCommandDatabaseModel row is matched to the reported AGV command using command identity and parameter values.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the command cannot be uniquely matched using the available command name, RobotCode, CommandGuid, container, station, or parameter values.</li>
+</ul>
+<hr>
+<h3>Step 3 — Interpret command status and lifecycle timing in WCS / Helix DB (SSMS)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the matched WCS / Helix DB (SSMS) row, review Status, Sent Time, InProgress Time, and Executed Time. A Sent command may have InProgress Time and Executed Time as NULL. An InProgress command has an InProgress Time while Executed Time remains NULL until the command is finalized.</p>
+<p><strong>Expected result:</strong></p>
+<p>The live row provides an observable lifecycle state through Status and the presence or absence of Sent Time, InProgress Time, and Executed Time.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop the database diagnostic and escalate to L2/L3 support if Status is errored or cancelled.</li>
+<li>Escalate if the command remains active without the expected InProgress or Executed Time evidence.</li>
+</ul>
+<hr>
+<h3>Step 4 — Check AGV location fields in WCS / Helix DB (SSMS)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS) Robotics data, review the matched command&#x27;s related robot location information, including CurrentLocationId and DestinationLocationId when available. Compare the location state with the command&#x27;s station or destination parameters.</p>
+<p><strong>Expected result:</strong></p>
+<p>The live WCS / Helix DB (SSMS) data shows the AGV&#x27;s current location and destination location in relation to the command being diagnosed.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if current or destination location data conflicts with the command parameters or indicates a stuck command.</li>
+</ul>
+<hr>
+<h3>Step 5 — Review finalized command history in WCS / Helix DB (SSMS)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the command is no longer active in the WCS / Helix DB (SSMS) RobotCommandDatabaseModel table, locate the corresponding record in Robot Command Activity. Review the command name, status, robot name, container, station, parameters, Sent Time, InProgress Time, Executed Time, station circuit, and total time.</p>
+<p><strong>Expected result:</strong></p>
+<p>The live Robot Command Activity record provides the historical status and execution/timing information for the finalized command.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L2/L3 support if the command cannot be located in either the active RobotCommandDatabaseModel table or Robot Command Activity history.</li>
+<li>Escalate if the historical status is errored or cancelled.</li>
+</ul>
+<hr>
+</body>
+</html>

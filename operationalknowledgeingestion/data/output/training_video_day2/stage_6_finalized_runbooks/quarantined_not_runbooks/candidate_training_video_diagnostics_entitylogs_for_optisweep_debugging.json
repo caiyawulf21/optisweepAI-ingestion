@@ -1,0 +1,303 @@
+{
+  "procedure_id": "proc_use_wcs_entitylogs_developerlogs_v1",
+  "candidate_id": "candidate_training_video_diagnostics_entitylogs_for_optisweep_debugging",
+  "title": "Use WCS EntityLogs (DeveloperLogs) to find OptiSweep application logging evidence for debugging",
+  "procedure_type": "diagnostic",
+  "summary": "Use the WCS Entity Logs database (specifically the DeveloperLogs table/model) to locate OptiSweep logging records and use the recorded log attributes (log level, code area/part of code, and line of code) as evidence for debugging.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "wcs_api_responsiveness"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to find OptiSweep application logging evidence in the WCS Entity Logs database to support debugging, and you want to use the log’s recorded attributes (log level, code area/part of code, and line of code) to pinpoint where the error originated.",
+  "not_for": [
+    "Do not use this procedure as the only step when EntityLogs/DeveloperLogs is missing or contains no relevant OptiSweep entries; escalate to deeper WCS/OptiSweep database support instead."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support: Connect to the WCS SQL Server database via SSMS, locate the EntityLogs database and DeveloperLogs table/model, and extract the log attributes needed to support debugging."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "SSMS",
+    "WCS SQL Server connection",
+    "EntityLogs database",
+    "DeveloperLogs table/model"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "SSMS access to the WCS SQL Server instance that hosts the EntityLogs database"
+    ],
+    "system_preconditions": [
+      "EntityLogs database exists within Fortna’s WCS SQL Server environment"
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_optisweep_database_overview_v1",
+    "ctx_training_video_entity_logs_logging_reference_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+      "description": "Frame showing that OptiSweep only utilizes WCS Entity Logs for logging and that logs include level, code area/part of code, and line of code; also references DeveloperLogs.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open SSMS and connect to the WCS SQL Server database that contains EntityLogs",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish database connectivity so you can query the WCS EntityLogs database where OptiSweep logging evidence is stored.",
+      "instruction": "Using SSMS, connect to the WCS SQL Server instance that contains the EntityLogs database (EntityLogs is within Fortna’s WCS).",
+      "expected_result": "SSMS is connected to the WCS SQL Server instance and you can view/select the EntityLogs database.",
+      "healthy_condition": "EntityLogs database is visible in the connected SQL Server instance.",
+      "failure_condition": "EntityLogs database is not present/visible in the connected SQL Server instance.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Connect to WCS SQL Server in SSMS",
+          "exact_action": "Open SSMS and connect to the WCS SQL Server database that contains the EntityLogs database",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "EntityLogs/DeveloperLogs is not present in the connected WCS SQL Server environment"
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 8,
+          "section_id": "training_video_day2_segment_0008",
+          "quote_or_summary": "“Opti sweep only utilizes entity logs for logging…” (EntityLogs is within Fortna’s WCS)."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Select EntityLogs and locate the DeveloperLogs table/model",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Identify the specific logging table/model within EntityLogs that contains OptiSweep logging records.",
+      "instruction": "In SSMS, select the EntityLogs database and locate the DeveloperLogs table/model referenced in the source.",
+      "expected_result": "DeveloperLogs table/model is found within the EntityLogs database.",
+      "healthy_condition": "DeveloperLogs appears as a selectable table/model under EntityLogs in SSMS.",
+      "failure_condition": "DeveloperLogs table/model is not present within EntityLogs.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate DeveloperLogs within EntityLogs",
+          "exact_action": "Select the EntityLogs database and locate the DeveloperLogs table/model referenced in the source",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "EntityLogs/DeveloperLogs is not present"
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0008",
+          "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+          "quote_or_summary": "OCR references DeveloperLogs within the EntityLogs context (DeveloperLogs shown in the EntityLogs frame)."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Review OptiSweep-related log entries and extract debugging attributes (level, code area, line of code)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Use the log attributes stored in DeveloperLogs to support debugging by identifying where the log came from (level/part of code/line of code).",
+      "instruction": "Query or browse DeveloperLogs entries for OptiSweep-related errors, and extract the fields the source says are useful for debugging: log level, what part of the code it came from (code area/part of code), and the line of the code.",
+      "expected_result": "You have one or more OptiSweep logging records from DeveloperLogs with values for: (1) log level, (2) code area/part of code, and (3) line of code.",
+      "healthy_condition": "DeveloperLogs records show the debugging attributes described by the source (log level, code area/part of code, and line of code).",
+      "failure_condition": "DeveloperLogs contains no relevant OptiSweep entries, or the entries do not provide the debugging attributes (level/code area/line of code) needed to support debugging.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Extract log level, code area, and line of code",
+          "exact_action": "Review log entries for OptiSweep-related errors and identify the fields useful for debugging: log level, what part of the code it came from, and the line of the code",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "EntityLogs/DeveloperLogs is present but contains no relevant OptiSweep entries"
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 8,
+          "section_id": "training_video_day2_segment_0008",
+          "quote_or_summary": "“Opti sweep only utilizes entity logs for logging… whatever level… what part of the code it came from, what line of the code it came from. So it’s all useful for us in debugging when we have errors.”"
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0008",
+          "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+          "quote_or_summary": "Frame transcript includes: OptiSweep only utilizes entity logs for logging and the logs include level, code area/part of code, and line of code."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Use the log evidence to explain where the error occurred (based on logging attributes)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Translate the DeveloperLogs evidence into a debugging explanation that identifies the code area/part of code and line of code associated with the error.",
+      "instruction": "Based on the extracted logging attributes from the DeveloperLogs record(s), explain what part of the code produced the error and where it occurred using the recorded code area/part of code and line of code.",
+      "expected_result": "A debugging explanation is produced that ties the error to the recorded log level, code area/part of code, and line of code from the DeveloperLogs record(s).",
+      "healthy_condition": "Your explanation references the specific logging attributes present in the DeveloperLogs record(s) you extracted (level, code area/part of code, line of code).",
+      "failure_condition": "You cannot connect the error to the recorded code area/part of code and line of code because those attributes are missing or unusable in the retrieved log entries.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Map log attributes to error origin",
+          "exact_action": "Use the log evidence to explain what part of the code produced the error and where it occurred (based on the source-provided logging attributes)",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "DeveloperLogs entries do not contain the debugging attributes needed to identify the code area/part of code and line of code"
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 8,
+          "section_id": "training_video_day2_segment_0008",
+          "quote_or_summary": "“whatever level… what part of the code it came from, what line of the code it came from… useful for us in debugging when we have errors.”"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "DeveloperLogs records for OptiSweep-related errors are located in the WCS EntityLogs database.",
+    "The retrieved records include log level, code area/part of code, and line of code values.",
+    "You can produce a debugging explanation that identifies the code area/part of code and line of code associated with the error using those recorded attributes."
+  ],
+  "healthy_conditions": [
+    "EntityLogs database is present in the connected WCS SQL Server instance.",
+    "DeveloperLogs table/model is present within EntityLogs.",
+    "DeveloperLogs entries include the debugging attributes described by the source: log level, code area/part of code, and line of code."
+  ],
+  "failure_conditions": [
+    "EntityLogs database is not present/visible in the connected WCS SQL Server instance.",
+    "DeveloperLogs table/model is not present within EntityLogs.",
+    "DeveloperLogs contains no relevant OptiSweep entries.",
+    "Retrieved log entries do not provide the debugging attributes needed (log level, code area/part of code, line of code)."
+  ],
+  "escalation_guidance": [
+    "If EntityLogs/DeveloperLogs is not present or contains no relevant OptiSweep entries, stop and escalate to deeper WCS/OptiSweep database support (the source only states that OptiSweep uses EntityLogs for logging, not how to remediate missing logs)."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+      "description": "EntityLogs/DeveloperLogs evidence: OptiSweep only utilizes entity logs for logging; logs include level, code area/part of code, and line of code for debugging.",
+      "required_level": "required"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 8,
+      "section_id": "training_video_day2_segment_0008",
+      "quote_or_summary": "“Opti sweep only utilizes entity logs for logging… whatever level… what part of the code it came from, what line of the code it came from.”",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000",
+      "what_to_look_at": "Frame showing that OptiSweep only utilizes WCS Entity Logs for logging and that logs include level, code area/part of code, and line of code; also references DeveloperLogs."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_diagnostics_entitylogs_for_optisweep_debugging"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide exact SSMS navigation steps (e.g., specific object tree path) or exact column names for log level / code area / line of code within DeveloperLogs.",
+    "The source does not specify how to filter DeveloperLogs to “OptiSweep-related errors” (no example query or filter criteria provided)."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

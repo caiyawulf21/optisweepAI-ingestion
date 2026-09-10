@@ -1,0 +1,326 @@
+{
+  "procedure_id": "proc_hospital_hmi_lane_ui_fault_acknowledge_retry_check_v1",
+  "candidate_id": "candidate_incident_218550_hospital_hmi_acknowledge_retry",
+  "title": "Hospital HMI / lane UI fault acknowledge-and-retry check",
+  "procedure_type": "recovery",
+  "summary": "Use the Hospital HMI / lane UI at UPS Haslet TX (TXRTH) to acknowledge a displayed fault, retry the operation without unplugging the Hospital HMI / lane UI, confirm that the affected tote is tote 28, and verify that the site reports the condition as all good.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [
+    "L2_support"
+  ],
+  "capability_tags": [
+    "hospital_diversion"
+  ],
+  "access_surface": [
+    "hospital_hmi"
+  ],
+  "audience_roles": [
+    "operator",
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this Hospital HMI / lane UI check when the Hospital HMI / lane UI displays a fault associated with a hospital-station tote and an acknowledge-and-retry response is appropriate.",
+  "not_for": [
+    "Do not use this as a recovery sequence for a stuck task; the incident identifies a stuck-task visibility limitation on the Hospital HMI / lane UI but does not provide a reusable stuck-task recovery sequence.",
+    "Do not unplug the Hospital HMI / lane UI as a troubleshooting action."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "operator",
+      "responsibility": "Operate the Hospital HMI / lane UI, acknowledge the displayed fault, retry the operation, and confirm the tote and resulting site condition."
+    },
+    {
+      "role": "L2_support",
+      "responsibility": "Provide remote guidance and review the result when the Hospital HMI / lane UI fault remains, tote 28 cannot be confirmed, or an all-good state cannot be reported."
+    }
+  ],
+  "safety_notes": [
+    "Do not unplug the Hospital HMI / lane UI as a troubleshooting action.",
+    "Stop and escalate if the fault remains after acknowledge-and-retry."
+  ],
+  "access_or_tools_needed": [
+    "Hospital HMI / lane UI"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Operator access to the Hospital HMI / lane UI at the affected hospital station."
+    ],
+    "system_preconditions": [
+      "A fault is displayed on the Hospital HMI / lane UI."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [],
+  "related_event_ids": [
+    "incident_218550_event_024",
+    "incident_218550_event_025",
+    "incident_218550_event_026"
+  ],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_incident_218550_page_012_nested_image_01",
+      "description": "Hospital HMI / lane UI screenshot showing a small HMI-like tote screen with a red header and green list elements; text inside the crop is mostly unreadable.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Inspect the displayed Hospital HMI / lane UI fault",
+      "responsible_role": "operator",
+      "supporting_role": "L2_support",
+      "purpose": "Confirm that the reported fault is present on the live Hospital HMI / lane UI before taking the acknowledge-and-retry action.",
+      "instruction": "Open the Hospital HMI / lane UI and inspect the live station screen for the reported fault. Do not unplug the Hospital HMI / lane UI.",
+      "expected_result": "The reported fault is visible on the Hospital HMI / lane UI and the live screen is available for interaction.",
+      "healthy_condition": "The Hospital HMI / lane UI remains displayed and usable, with the reported fault visible for acknowledgement.",
+      "failure_condition": "The Hospital HMI / lane UI cannot be accessed, the reported fault is not visible, or the screen is not usable for the next action.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Inspect Hospital HMI / lane UI fault",
+          "exact_action": "Open the Hospital HMI / lane UI and confirm that the fault is displayed; do not unplug the HMI.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The Hospital HMI / lane UI cannot be accessed or the fault is not visible.",
+        "The HMI appears to require unplugging; do not unplug it and escalate for further support."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_218550:page_12",
+          "artifact_id": "artifact_incident_218550_page_012_nested_image_01",
+          "event_id": "incident_218550_event_024",
+          "chunk_id": "stage4_page_chunk_002",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "support_type": "artifact_visual",
+          "quote_or_summary": "The HMI at the hospital is showing a fault; the HMI artifact is a small HMI-like tote screen with a red header and green list elements."
+        },
+        {
+          "page_ref": "case_218550:page_12",
+          "artifact_id": null,
+          "event_id": "incident_218550_event_024",
+          "chunk_id": "stage4_page_chunk_002",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "support_type": "teams_message",
+          "quote_or_summary": "The HMI at the hospital is showing a fault ... Should I unplug it?"
+        }
+      ],
+      "related_event_ids": [
+        "incident_218550_event_024"
+      ]
+    },
+    {
+      "step_number": 2,
+      "title": "Acknowledge the fault and retry the operation",
+      "responsible_role": "operator",
+      "supporting_role": "L2_support",
+      "purpose": "Apply the incident-supported acknowledge-and-retry response to the displayed Hospital HMI / lane UI fault.",
+      "instruction": "On the Hospital HMI / lane UI, select the acknowledge control and retry the operation. Do not unplug the Hospital HMI / lane UI.",
+      "expected_result": "The Hospital HMI / lane UI accepts the acknowledgement and the operation enters a retry state rather than remaining blocked by the same displayed fault.",
+      "healthy_condition": "The retry proceeds on the Hospital HMI / lane UI without the reported fault continuing to block the operation.",
+      "failure_condition": "The acknowledgement or retry does not take effect, or the same fault remains after the retry.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Acknowledge and retry",
+          "exact_action": "Select the HMI acknowledge control, then retry the operation.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The fault remains after acknowledge-and-retry.",
+        "The Hospital HMI / lane UI does not accept the acknowledgement or retry."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_218550:page_12",
+          "artifact_id": null,
+          "event_id": "incident_218550_event_025",
+          "chunk_id": "stage4_page_chunk_002",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "support_type": "teams_message",
+          "quote_or_summary": "Hit acknowledge and try again. No. Is the tote ID 28?"
+        }
+      ],
+      "related_event_ids": [
+        "incident_218550_event_025"
+      ]
+    },
+    {
+      "step_number": 3,
+      "title": "Confirm tote 28 and the cleared Hospital HMI / lane UI state",
+      "responsible_role": "operator",
+      "supporting_role": "L2_support",
+      "purpose": "Validate that the retry addressed the affected tote and that the site condition is clear.",
+      "instruction": "On the Hospital HMI / lane UI and with the site contact, confirm that the tote at the hospital station is tote 28 and verify that the site reports the condition as all good.",
+      "expected_result": "The tote at the hospital station is confirmed as tote 28 and the site reports that everything is good.",
+      "healthy_condition": "The Hospital HMI / lane UI shows or supports confirmation of tote 28, and the site reports an all-good condition.",
+      "failure_condition": "Tote 28 cannot be confirmed, or the site cannot report an all-good condition after the retry.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Confirm tote ID and cleared state",
+          "exact_action": "Confirm that the tote at the hospital station is tote 28 and verify that the site reports the condition as all good.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Tote 28 cannot be confirmed.",
+        "The site cannot report an all-good state.",
+        "The fault remains after acknowledge-and-retry."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_218550:page_13",
+          "artifact_id": null,
+          "event_id": "incident_218550_event_026",
+          "chunk_id": "stage4_page_chunk_002",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "support_type": "teams_message",
+          "quote_or_summary": "Yes the tote at hospital is 28. Yes Sir all good."
+        }
+      ],
+      "related_event_ids": [
+        "incident_218550_event_026"
+      ]
+    }
+  ],
+  "success_criteria": [
+    "The Hospital HMI / lane UI fault is acknowledged.",
+    "The retry succeeds without unplugging the Hospital HMI / lane UI.",
+    "The tote at the hospital station is confirmed as tote 28.",
+    "The site reports that everything is good."
+  ],
+  "healthy_conditions": [
+    "The Hospital HMI / lane UI is usable and no longer has the reported fault blocking the retried operation.",
+    "The affected tote is confirmed as tote 28.",
+    "The site reports an all-good condition."
+  ],
+  "failure_conditions": [
+    "The Hospital HMI / lane UI fault remains after acknowledgement and retry.",
+    "The acknowledgement or retry does not take effect.",
+    "Tote 28 cannot be confirmed.",
+    "The site cannot report an all-good condition."
+  ],
+  "escalation_guidance": [
+    "Stop and escalate to L2 support if the fault remains after acknowledge-and-retry.",
+    "Escalate if tote 28 cannot be confirmed or the site cannot report an all-good state.",
+    "Do not unplug the Hospital HMI / lane UI.",
+    "The incident identifies a stuck-task visibility limitation on this Hospital HMI / lane UI, but does not provide a reusable stuck-task recovery sequence."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_incident_218550_page_012_nested_image_01",
+      "what_to_look_at": "Use the screenshot as a visual reference for the reported Hospital HMI / lane UI fault: a small HMI-like tote screen with a red header and green list elements. The embedded text is largely unreadable."
+    }
+  ],
+  "source_refs": [
+    {
+      "page_ref": "case_218550:page_12",
+      "artifact_id": "artifact_incident_218550_page_012_nested_image_01",
+      "event_id": "incident_218550_event_024",
+      "chunk_id": "stage4_page_chunk_002",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)",
+      "support_type": "artifact_visual",
+      "quote_or_summary": "The HMI at the hospital is showing a fault; the HMI artifact is a small HMI-like tote screen with a red header and green list elements."
+    },
+    {
+      "page_ref": "case_218550:page_12",
+      "artifact_id": null,
+      "event_id": "incident_218550_event_025",
+      "chunk_id": "stage4_page_chunk_002",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)",
+      "support_type": "teams_message",
+      "quote_or_summary": "Hit acknowledge and try again. No. Is the tote ID 28?"
+    },
+    {
+      "page_ref": "case_218550:page_13",
+      "artifact_id": null,
+      "event_id": "incident_218550_event_026",
+      "chunk_id": "stage4_page_chunk_002",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)",
+      "support_type": "teams_message",
+      "quote_or_summary": "Yes the tote at hospital is 28. Yes Sir all good."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_incident_218550_page_012_nested_image_01",
+      "what_to_look_at": "Use the screenshot as a visual reference for the reported Hospital HMI / lane UI fault: a small HMI-like tote screen with a red header and green list elements. The embedded text is largely unreadable."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_incident_218550_hospital_hmi_acknowledge_retry"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "source_case_218550",
+      "source_case_id": "218550",
+      "source_type": "incident_evidence_pdf",
+      "source_title": "Case 218550 Data",
+      "source_version": "0.1",
+      "ingestion_batch_id": "batch_20260720T121856Z",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)"
+    }
+  ],
+  "missing_details": [
+    "The embedded Hospital HMI / lane UI text is largely unreadable, so exact fault wording and exact control labels beyond the acknowledge instruction are not established.",
+    "The packet does not provide a reusable recovery sequence for a stuck task that is visible only on this Hospital HMI / lane UI.",
+    "The incident messages use the term hospital while authoritative ingestion metadata identifies UPS Haslet TX (TXRTH); the exact station naming within the site is not established."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_incident_runbook_finalization",
+    "source_id": "source_case_218550",
+    "source_type": "incident_case",
+    "source_title": "Case 218550 Data",
+    "source_version": "0.1",
+    "ingestion_batch_id": "batch_20260720T121856Z",
+    "source_quality": "incident_case",
+    "incident_context": {
+      "case_id": "218550",
+      "site": "UPS Haslet TX (TXRTH)",
+      "site_code": "ups_haslet_tx",
+      "site_location": {
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "customer": "UPS",
+        "city": "Haslet",
+        "state": "TX",
+        "country": "US",
+        "hub_code": "TXRTH",
+        "region_label": "Fort Worth, TX"
+      },
+      "incident_start_time": "2025-04-03T04:28:00",
+      "incident_resolved_time": "2025-04-03",
+      "time_to_resolve": "same_day",
+      "resolution_confirmed": true
+    }
+  }
+}

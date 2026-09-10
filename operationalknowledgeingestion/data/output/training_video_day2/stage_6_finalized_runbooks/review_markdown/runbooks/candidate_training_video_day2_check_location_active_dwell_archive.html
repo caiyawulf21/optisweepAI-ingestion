@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check Active and Archived Location Dwell Records</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check Active and Archived Location Dwell Records</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_active_and_archived_location_dwell_records_v1</td></tr>
+<tr><th>Title</th><td>Check Active and Archived Location Dwell Records</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>robot_dwell_or_shutdown_staging</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>shutdown_or_dwell_abnormal</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use read-only SSMS access to the WCS / Helix Robotics database to inspect active AGV dwell records at locations marked for dwell tracking, determine dwell time, and verify that the record is archived to Location Dwell Activity after the AGV leaves.</p>
+<h2>When To Use</h2>
+<p>Use this diagnostic when investigating how long an AGV has remained at a tracked sort location or when verifying the transition from an active dwell record to an archived dwell record in the WCS / Helix DB (SSMS).</p>
+<h2>Visual References</h2>
+<figure><img src="assets/4da092dc0229edfc.jpg" alt="artifact_training_video_training_video_day2_0016_so_everybody_s_at_a_location_primary_01_32_39_000" /><figcaption>Robotics Database Location Active Dwell Model showing AgvName, Station, SortGuid, and archived dwell examples with Start Time, Finish Time, and Total Time.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the Robotics database dwell model in SSMS</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS), open the Robotics database and locate the Location Active Dwell model table.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Location Active Dwell table is available for inspection and represents active dwells at sort locations marked for dwell tracking.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the Robotics database or Location Active Dwell model table is unavailable.</li>
+</ul>
+<hr>
+<h3>Step 2 — Inspect the active dwell record</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Location Active Dwell table on the WCS / Helix DB (SSMS), inspect the active record for the investigated sort location and AGV. Use the displayed AgvName, Station, and SortGuid values to identify the current dwell.</p>
+<p><strong>Expected result:</strong></p>
+<p>An AGV currently sitting at a tracked location has a corresponding active dwell record.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate when an expected active dwell record is missing.</li>
+</ul>
+<hr>
+<h3>Step 3 — Determine the active dwell time</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS), use the available dwell-time information associated with the active dwell record to determine how long the AGV has been sitting at the location.</p>
+<p><strong>Expected result:</strong></p>
+<p>The active dwell record provides enough observable time information to determine the AGV&#x27;s dwell duration.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate when the dwell duration cannot be determined.</li>
+</ul>
+<hr>
+<h3>Step 4 — Verify the archived dwell record after departure</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>After the AGV leaves the tracked location, inspect Location Dwell Activity in the WCS / Helix DB (SSMS). Locate the completed dwell using the available AGV, station, sort, and time information rather than expecting it to remain in Location Active Dwell.</p>
+<p><strong>Expected result:</strong></p>
+<p>The completed dwell is present in Location Dwell Activity after the AGV leaves, with observable archived timing such as Start Time, Finish Time, and Total Time when displayed.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate when a record remains active after the AGV has left.</li>
+<li>Escalate when the same dwell cannot be located in Location Dwell Activity.</li>
+</ul>
+<hr>
+</body>
+</html>

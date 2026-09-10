@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Interpret How Generic Robot Commands Are Translated to Vendor REST API via Geek Plus COM Module</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Interpret How Generic Robot Commands Are Translated to Vendor REST API via Geek Plus COM Module</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_interpret_generic_robot_command_translation_to_vendor_rest_api_v1</td></tr>
+<tr><th>Title</th><td>Interpret How Generic Robot Commands Are Translated to Vendor REST API via Geek Plus COM Module</td></tr>
+<tr><th>Procedure Type</th><td>reference</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>robot_command_or_task_state, wcs_api_responsiveness</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql, wcs_api</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>api_unresponsive</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the Robot Command Database model command names to understand how OptiSweep’s Robotics module issues generic internal robot commands to the Geek Plus COM module, and how that COM module translates those vendor-agnostic commands into the vendor-specific REST API POST requests (then converts responses back to what OptiSweep expects). This supports vendor-agnostic command modeling and helps interpret why command names remain generic.</p>
+<h2>When To Use</h2>
+<p>When you need to interpret the vendor-agnostic internal robot command model (generic command names) and understand the translation layer that produces vendor REST API POST requests via the Geek Plus COM module.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/bc80d134a7f69ff3.jpg" alt="artifact_training_video_training_video_day2_0014_the_robot_command_database_model_table_primary_01_18_59_000" /><figcaption>RobotCommandDatabaseModel command names list (e.g., EmptyGoTo, PickupTote, MoveTote, DropOffTote, RemoveAgv, ReleaseAgv, GoCharge) and description that these are generic internal commands translated by Geek Plus COM module into REST API POST requests.</figcaption></figure>
+<figure><img src="assets/f7783ed9b4087772.jpg" alt="artifact_training_video_training_video_day2_0008_we_use_for_this_database_when_primary_00_11_14_000" /><figcaption>WCS creates several databases; OptiSweep only utilizes entity logs for logging; includes context about debugging/logging and related database models (Audit Geek, OPC Comms, Robotics, Sworder Sweeper).</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Review generic command names in RobotCommandDatabaseModel</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the Robot Command Database model table view (RobotCommandDatabaseModel) and review the listed generic command names shown in the artifact (e.g., EmptyGoTo, PickupTote, MoveTote, DropOffTote, RemoveAgv, ReleaseAgv, GoCharge).</p>
+<p><strong>Expected result:</strong></p>
+<p>You can point to the generic command names in RobotCommandDatabaseModel that represent internal actions (tote pickup/move/drop-off, AGV remove/release, and charging-related commands).</p>
+<hr>
+<h3>Step 2 — Confirm the commands are internal/generic (not vendor-specific)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the source description, confirm that the RobotCommandDatabaseModel commands are described as generic internal commands between the Robotics module and the Geek Plus COM module (and that a different vendor would use a different translation module while keeping the internal command model generic).</p>
+<p><strong>Expected result:</strong></p>
+<p>You can state (based on the source) that these commands are “very generic” and “not vendor specific,” and that the Geek Plus COM module translates them into the vendor REST API POST requests.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you need endpoint/payload verification (URL, request body fields, response fields), stop—this packet does not provide those details.</li>
+</ul>
+<hr>
+<h3>Step 3 — Interpret the translation path to vendor REST API POST requests</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the source description, interpret the translation path as: Robotics module issues generic internal commands -&gt; Geek Plus COM module translates them into the actual vendor REST API POST request -&gt; Geek Plus COM module converts it back to the way OptiSweep expects.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can correctly describe the translation layer: Geek Plus COM module is the component that translates internal generic commands into the vendor REST API POST request (and then converts responses back to OptiSweep’s expected format).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you require REST endpoint/payload details, escalate—this packet only states “POST request” and “REST API” without endpoint/payload fields.</li>
+</ul>
+<hr>
+<h3>Step 4 — If troubleshooting vendor differences, note translation module swap while internal model stays generic</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>When troubleshooting requires understanding vendor differences, use the source statement that a different vendor would have a different translation module, while the internal command model remains generic.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can explain that vendor-specific behavior is handled by the translation module (Geek Plus COM module for Geek Plus), while the internal command names remain generic in RobotCommandDatabaseModel.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you need API request/response fields (endpoint, payload, response schema), escalate because the packet does not include them.</li>
+</ul>
+<hr>
+</body>
+</html>

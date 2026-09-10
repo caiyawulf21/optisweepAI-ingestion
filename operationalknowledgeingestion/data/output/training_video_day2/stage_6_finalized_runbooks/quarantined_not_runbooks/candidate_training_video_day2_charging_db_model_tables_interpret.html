@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Interpret Charging Database Model Tables to Understand Charging Areas, Chargers, and Thresholds</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Interpret Charging Database Model Tables to Understand Charging Areas, Chargers, and Thresholds</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_interpret_charging_db_model_tables_v1</td></tr>
+<tr><th>Title</th><td>Interpret Charging Database Model Tables to Understand Charging Areas, Chargers, and Thresholds</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>agv_charging_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>charging_abnormal, system_fault</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the charging-related database model tables in the OptiSweep/WCS database to explain how charging areas (with entrance/exit IDs and disabled flags), charging locations (chargers tied to stations and tote stands, with disabled flags), and charging threshold variables drive AGV charging decisions—normal charge, kick-off, and emergency charging behavior.</p>
+<h2>When To Use</h2>
+<p>When you need to interpret how the system’s charging configuration and threshold variables are represented in the charging database model tables, to explain or troubleshoot AGV charging behavior (including emergency charging) based on the stored mappings and variables.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/7f73e84f02ceaaf8.jpg" alt="artifact_training_video_training_video_day2_0013_let_s_see_and_the_last_primary_00_53_44_500" /><figcaption>Segment frame describing the three charging-related database model tables (charging areas with entrance/exit IDs, charging locations with chargers/stations/tote stands and disabled flags, and charging threshold variables used by code for charge/kick-off/emergency charge).</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Identify the charging database model tables described in the segment</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Helix/WCS database accessed via SSMS, identify the three charging-related database model tables described in the segment: (1) charging area database model table, (2) charging location database model table, and (3) charging threshold database model table.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can name and locate the three charging-related database model tables in the database that correspond to: charging areas (entrance/exit IDs), charging locations (chargers/stations/tote stands and disabled flags), and charging threshold variables (values used by code for charge/kick-off/emergency charge).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the database does not contain the described tables/fields, escalate to deeper support for database schema/model verification.</li>
+</ul>
+<hr>
+<h3>Step 2 — Verify charging area records: entrance IDs, exit IDs, and disabled state</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using SSMS, query the charging area database model table and locate records for charging areas. Verify that each charging area record includes: entrance IDs, exit IDs, and whether the area is marked disabled or not.</p>
+<p><strong>Expected result:</strong></p>
+<p>For the charging area(s) relevant to the behavior you are explaining, you can point to the stored entrance IDs and exit IDs and confirm the disabled/not-disabled state for that area.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the expected mappings (entrance/exit IDs, disabled flags) cannot be found, escalate to deeper support for database schema/model verification.</li>
+</ul>
+<hr>
+<h3>Step 3 — Verify charging location records: charger-to-station, charger-to-tote-stand, and disabled state</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using SSMS, query the charging location database model table and locate individual charger records. Verify the stored station association and tote stand association for each charger record, and confirm whether each charger record is marked disabled or not.</p>
+<p><strong>Expected result:</strong></p>
+<p>For the charger(s) relevant to the behavior you are explaining, you can point to the stored station association and tote stand association and confirm the disabled/not-disabled state for each charger record.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the expected mappings (charger-to-station, charger-to-tote-stand associations, disabled flags) cannot be found, escalate to deeper support for database schema/model verification.</li>
+</ul>
+<hr>
+<h3>Step 4 — Verify charging threshold values used by code for charge, kick-off, and emergency charge</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using SSMS, query the charging threshold database model table and locate the threshold values/variables described as being used by code to decide: (a) whether an AGV needs charge, (b) whether it can be kicked off the charger, and (c) whether it needs an emergency charge.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can point to the specific threshold values/variables in the charging threshold database model table that correspond to normal charge vs kick-off vs emergency charge decisions.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the expected threshold variables cannot be found, escalate to deeper support for database schema/model verification.</li>
+</ul>
+<hr>
+<h3>Step 5 — Explain charging behavior using the stored layout mapping and threshold variables</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the records you identified in Steps 2–4, explain how the stored mapping/variables determine charging behavior: charging decisions are driven by the threshold values, and the layout mapping ties entrance/exit IDs and tote stand IDs to the chargers/areas.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can produce an evidence-based explanation that references: (1) the charging area entrance/exit IDs and disabled state, (2) the charger-to-station and charger-to-tote-stand associations and disabled state, and (3) the threshold variables used by code for charge vs kick-off vs emergency charge.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the database does not contain the described tables/fields or the expected mappings (entrance/exit IDs, disabled flags, charger-to-tote stand associations, threshold values) cannot be found, escalate to deeper support for database schema/model verification.</li>
+<li>Do not attempt configuration changes based only on this training segment; use it to gather evidence and explain behavior.</li>
+</ul>
+<hr>
+<h3>Step 6 — If emergency charging is involved, verify emergency fallback behavior and cycling/lowest-charge behavior</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>When the issue involves emergency charging, verify the segment’s described emergency behavior: if an AGV’s own sorter-side charger is not available, it can use a charger from another sorter side; also note that AGVs keep cycling on the charge and the system keeps the lowest charge on the charger.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can explain emergency charging behavior using the described fallback rule (use another sorter side’s free charger when own is unavailable) and the described cycling/lowest-charge behavior.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the database does not contain the described tables/fields or the expected mappings (entrance/exit IDs, disabled flags, charger-to-tote stand associations, threshold values) cannot be found, escalate to deeper support for database schema/model verification.</li>
+</ul>
+<hr>
+</body>
+</html>

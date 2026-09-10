@@ -1,0 +1,604 @@
+Stage 8 — Canonical Playbook Enrichment & Procedure Resolution
+Purpose
+
+Stage 8 transforms a Stage 5 playbook candidate into a reusable, executable troubleshooting playbook.
+
+It does not redesign the workflow.
+
+The Stage 5 output is considered the source of truth for:
+
+diagnostic reasoning
+troubleshooting flow
+decision branches
+objectives
+healthy/unhealthy conditions
+expected observations
+escalation boundaries
+source-supported explanations
+
+Stage 8 enriches that information by resolving reusable procedures and evidence collection methods.
+
+It does not replace or simplify the reasoning produced in Stage 5.
+
+Design Philosophy
+
+A playbook and a runbook solve different problems.
+
+Playbook
+
+Answers:
+
+What am I trying to determine?
+
+Why am I checking this?
+
+What evidence matters?
+
+What do I do depending on what I observe?
+
+A playbook is diagnostic reasoning.
+
+Runbook
+
+Answers:
+
+How do I perform this procedure?
+
+Which screen do I open?
+
+Which buttons do I press?
+
+Which SQL query do I run?
+
+What does success look like?
+
+A runbook is executable documentation.
+
+The playbook orchestrates runbooks.
+
+It should never become a collection of embedded runbooks.
+
+Responsibilities of Stage 8
+
+Stage 8 SHOULD:
+
+Preserve every Stage 5 node.
+Preserve every diagnostic objective.
+Preserve all healthy, unhealthy, and inconclusive outcomes.
+Preserve branch logic.
+Preserve investigative reasoning.
+Resolve reusable procedures.
+Attach evidence collection procedures.
+Identify missing procedures.
+Normalize terminology.
+Produce a polished troubleshooting playbook.
+
+Stage 8 MUST NOT:
+
+Rewrite troubleshooting logic.
+Collapse multiple nodes into one.
+Remove reasoning.
+Replace reasoning with procedures.
+Embed entire runbooks.
+Change decision branches.
+Invent new troubleshooting paths.
+Invent new evidence.
+Invent new healthy or unhealthy outcomes.
+Workflow Layer vs Procedure Layer
+
+The architecture should always look like this.
+
+Playbook
+
+Node
+
+↓
+
+Objective
+
+↓
+
+Reasoning
+
+↓
+
+Evidence Required
+
+↓
+
+Interpretation
+
+↓
+
+Branch
+
+↓
+
+Referenced Runbooks
+
+NOT
+
+Playbook
+
+↓
+
+Node
+
+↓
+
+Entire Runbook
+
+↓
+
+Entire Runbook
+
+↓
+
+Entire Runbook
+
+↓
+
+Next Node
+
+The workflow should remain readable.
+
+The procedures should remain reusable.
+
+Node Structure
+
+Every node should follow the same structure.
+
+Node
+
+Purpose
+
+Diagnostic Reasoning
+
+Evidence Required
+
+Healthy Indicators
+
+Unhealthy Indicators
+
+Inconclusive Indicators
+
+Evidence Collection Procedures
+
+Catalog Gaps
+
+Next Branches
+
+Source Evidence
+
+Notice that "Evidence Collection Procedures" comes near the end.
+
+The procedures support the reasoning.
+
+They do not replace it.
+
+Example
+BAD (Current Stage 8)
+Node 2
+
+Intent
+
+Runbook Links
+
+Check AGV Status
+
+Check Overall AGV Status
+
+SQL Query Active Errors
+
+Runbook
+
+(4 pages)
+
+Runbook
+
+(5 pages)
+
+Runbook
+
+(3 pages)
+
+Decision Outcomes
+
+Problems
+
+diagnostic reasoning almost disappears
+workflow becomes documentation
+difficult to scan
+procedures dominate the node
+impossible to understand why checks are occurring
+GOOD (Desired Stage 8)
+Node 2
+
+Title
+
+Check AGV roster, location, and tote association state
+
+--------------------------------------------------
+
+Objective
+
+Determine whether abnormal AGV state,
+unexpected robot location,
+duplicate occupancy,
+or disconnected tote associations
+are contributing to the observed operational issue.
+
+--------------------------------------------------
+
+Diagnostic Reasoning
+
+Historical incidents show that
+hospital induction failures,
+system stoppages,
+and routing failures
+may be caused by abnormal AGV state.
+
+Before attempting recovery,
+the support engineer must determine whether:
+
+• AGVs are mapped correctly
+
+• robots occupy expected locations
+
+• tote associations are intact
+
+• shutdown states exist
+
+• duplicate occupancy exists
+
+The purpose of this node is evidence collection,
+NOT recovery.
+
+--------------------------------------------------
+
+Evidence Required
+
+Required
+
+✓ RMS AGV roster
+
+✓ AGV locations
+
+✓ Active AGV errors
+
+✓ Tote association state
+
+Optional
+
+✓ WCS read-only validation
+
+✓ SSMS diagnostics
+
+--------------------------------------------------
+
+Healthy Indicators
+
+• Expected AGV roster
+
+• No duplicate occupancy
+
+• No disconnected tote
+
+• No shutdown state
+
+• Normal associations
+
+--------------------------------------------------
+
+Unhealthy Indicators
+
+• Unexpected AGV location
+
+• Duplicate occupancy
+
+• Shutdown robot
+
+• Disconnected tote
+
+• Incorrect associations
+
+--------------------------------------------------
+
+Inconclusive
+
+• RMS unavailable
+
+• WCS unavailable
+
+• RMS disagrees with WCS
+
+• Missing backend visibility
+
+--------------------------------------------------
+
+Evidence Collection Procedures
+
+Primary Procedures
+
+✓ Check AGV Status
+
+✓ Overall System AGV Status
+
+Optional Procedures
+
+• Query Active AGV Errors
+
+--------------------------------------------------
+
+Catalog Gaps
+
+Missing reusable procedure:
+
+• RMS Robot Roster Validation
+
+--------------------------------------------------
+
+Next Branches
+
+Healthy
+
+→ Continue to Service Health
+
+Unhealthy
+
+→ AGV Recovery
+
+Inconclusive
+
+→ Escalation
+
+--------------------------------------------------
+
+Supporting Sources
+
+Case 223554
+
+Case 228086
+
+Manual Section 4.1
+
+Training Video Day 2
+
+Notice something.
+
+The node is still almost entirely Stage 5.
+
+Stage 8 only added
+
+procedure references
+catalog gaps
+organization
+
+Nothing else changed.
+
+Procedures Should Be References
+
+Instead of
+
+Runbook
+
+Check AGV Status
+
+Summary
+
+Step 1
+
+Step 2
+
+Step 3
+
+...
+
+
+Stage 8 should only include
+
+Primary Procedure
+
+Check AGV Status
+
+Role
+
+L1 Support
+
+Purpose
+
+Collect AGV state,
+command status,
+active errors,
+and heartbeat.
+
+Reference
+
+proc_check_agv_status_v1
+
+The runtime UI can expand it later.
+
+The playbook should stay concise.
+
+Evidence vs Procedure
+
+One of the biggest conceptual mistakes in the current Stage 8 is confusing evidence with procedures.
+
+Current logic:
+
+Need AGV State
+
+↓
+
+Attach 4 procedures
+
+Instead:
+
+Need AGV State
+
+↓
+
+Evidence
+
+RMS
+
+Overall Status
+
+Active Errors
+
+↓
+
+Which procedures collect that evidence?
+
+Check AGV Status
+
+Overall AGV Status
+
+SQL Active Errors
+
+Evidence drives procedure selection.
+
+Not the other way around.
+
+Multiple Procedures Can Support One Node
+
+A node may require multiple procedures.
+
+That does NOT mean those procedures become workflow steps.
+
+Example
+
+Node
+
+Determine whether service failure exists.
+
+Evidence Required
+
+✓ Windows Services
+
+✓ Event Viewer
+
+✓ GetAgvStatuses
+
+↓
+
+Procedures
+
+Verify Windows Service Health
+
+Restart Ignition
+
+Run GetAgvStatuses
+
+↓
+
+Interpret Results
+
+↓
+
+Branch
+
+The procedures are tools.
+
+The node remains the reasoning.
+
+Source Evidence Should Stay Visible
+
+One of the strongest parts of Stage 5 is the source-backed reasoning.
+
+Keep it.
+
+Instead of hiding references inside runbooks:
+
+Supporting Evidence
+
+Cases
+
+223554
+
+228086
+
+229488
+
+Manual
+
+Section 4.1.2
+
+Training
+
+Day 2
+
+Confidence
+
+High
+
+Support engineers immediately understand why this node exists.
+
+Catalog Gaps Become First-Class Citizens
+
+Stage 8 already detects missing procedures.
+
+Do not bury them.
+
+Example
+
+Catalog Gaps
+
+No reusable RMS Robot Mapping procedure exists.
+
+No reusable Hospital Lane Validation procedure exists.
+
+No reusable AGV Association Validation procedure exists.
+
+These become future ingestion priorities.
+
+Why This Architecture Is Better
+
+This architecture preserves the separation of concerns established throughout the ingestion pipeline.
+
+Operational Knowledge
+
+↓
+
+Runbooks
+
+Reusable Procedures
+
+↓
+
+Playbooks
+
+Diagnostic Reasoning
+
+↓
+
+Runtime
+
+Interactive Troubleshooting
+
+If Stage 8 embeds runbooks directly into playbooks, this separation is lost.
+
+Runbooks become duplicated.
+
+Playbooks become bloated.
+
+Maintenance becomes significantly harder because updating a runbook would require updating every playbook that contains it.
+
+Instead, the playbook should simply orchestrate reusable procedures.
+
+Cursor Implementation Rules
+
+Stage 8 should follow these rules without exception:
+
+Preserve every Stage 5 node exactly. Never remove, merge, or rewrite diagnostic reasoning.
+Treat Stage 5 as the authoritative source for workflow structure and branching.
+Separate diagnostic reasoning ("what are we trying to determine?") from procedure execution ("how do we collect this evidence?").
+Resolve evidence requirements into reusable procedure references rather than embedding full runbooks.
+Keep healthy, unhealthy, and inconclusive observations visible and unchanged.
+Present procedures as references with IDs, titles, purpose, and required role—not expanded step-by-step instructions.
+Surface catalog gaps as explicit missing capabilities instead of attempting poor matches.
+Preserve source-backed explanations and confidence so every diagnostic decision remains traceable.
+Optimize for readability. A support engineer should understand the workflow by reading the playbook alone; detailed runbooks should only be opened when needed.
+The final Stage 8 artifact should feel like the original Stage 5 playbook with reusable procedures attached—not a completely different document.
+
+This approach keeps the playbook as the diagnostic brain of the system while allowing the runbook library to evolve independently as reusable operational documentation. It also aligns much better with your long-term architecture of reusable runbooks, workflow orchestration, and future knowledge graph relationships, instead of tightly coupling everything into one monolithic artifact.

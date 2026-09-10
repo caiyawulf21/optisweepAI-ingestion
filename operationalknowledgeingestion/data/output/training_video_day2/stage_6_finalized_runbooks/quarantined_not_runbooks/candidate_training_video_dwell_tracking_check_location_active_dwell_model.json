@@ -1,0 +1,374 @@
+{
+  "procedure_id": "proc_check_active_dwell_events_ssms_locationactivedwellmodel_v1",
+  "candidate_id": "candidate_training_video_dwell_tracking_check_location_active_dwell_model",
+  "title": "Check active dwell events in SSMS via LocationActiveDwellModel (dwell tracking true/false per station)",
+  "procedure_type": "diagnostic",
+  "summary": "Use SSMS to verify which stations/locations are currently accumulating dwell time by checking the robot location database model’s DwellTracking (true/false) flag and then inspecting the LocationActiveDwellModel table for active dwell rows. Active dwell events should appear with timing fields such as SatTime, FinishTime, and TotalTime, and completed dwell should be archived to LocationDwellActivity after the AGV leaves.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_active_errors"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive",
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to determine which dwell-tracked stations/locations currently have active dwell events and to interpret the active dwell timing fields shown in LocationActiveDwellModel.",
+  "not_for": [
+    "Do not use this procedure as a substitute for investigating physical safety stops (E-stop). This procedure is limited to database dwell tracking visibility and timing fields."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the SSMS database checks for DwellTracking configuration and active dwell rows in LocationActiveDwellModel."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "SSMS",
+    "Robot location database model (with DwellTracking true/false field)",
+    "LocationActiveDwellModel table",
+    "LocationDwellActivity table (for understanding that completed dwell is archived)"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "SSMS access to the OptiSweep/WCS database that contains the robot location database model and dwell tracking tables"
+    ],
+    "system_preconditions": [
+      "Dwell tracking is configured per station via the robot location database model’s DwellTracking true/false field"
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_dwell_tracking_overview_v1",
+    "ctx_training_video_location_dwell_tracking_flag_v1",
+    "ctx_training_video_location_active_dwell_model_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0016_so_everybody_s_at_a_location_primary_01_32_39_000",
+      "description": "Slide/frame showing LocationActiveDwellModel displays active dwells at locations marked for DwellTracking (true/false) and lists fields including AgvName, Station, SortGuid, SatTime, FinishTime, TotalTime; also notes archiving to LocationDwellActivity once the AGV leaves.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open SSMS and connect to the OptiSweep/WCS database that contains dwell tracking tables",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish access to the database objects needed to verify dwell tracking configuration and active dwell rows.",
+      "instruction": "Open SSMS and connect to the OptiSweep/WCS database that contains the robot location database model and dwell tracking tables.",
+      "expected_result": "SSMS is connected and you can browse/query the database objects needed for dwell tracking (robot location database model and LocationActiveDwellModel).",
+      "healthy_condition": "You can view the database schema and locate dwell-related tables/models.",
+      "failure_condition": "You cannot access the database or cannot locate dwell tracking tables/models after connecting.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Connect in SSMS",
+          "exact_action": "Open SSMS and connect to the OptiSweep/WCS database that contains the robot location database model and dwell tracking tables.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot access the database or cannot locate the dwell tracking tables/models, stop and escalate to L3_support/vendor support for database access/schema clarification."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 16,
+          "section_id": "training_video_day2_segment_0016",
+          "quote_or_summary": "LocationActiveDwellModel displays the active dwells at locations marked for DwellTracking; DwellTracking is a true/false field in the robot location database model; once the AGV leaves, activity is archived to LocationDwellActivity; the table includes fields like AgvName, Station, SortGuid, SatTime, FinishTime, TotalTime.",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Identify stations/locations with DwellTracking = true in the robot location database model",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine which stations/locations are configured to collect dwell so you know what active dwell rows should appear.",
+      "instruction": "Locate the robot location database model that includes the DwellTracking true/false field, and identify which stations/locations are marked for dwell tracking (DwellTracking set to true).",
+      "expected_result": "You can identify the set of stations/locations where DwellTracking is true.",
+      "healthy_condition": "The robot location database model exposes a DwellTracking true/false field and you can filter/identify stations where it is set to true.",
+      "failure_condition": "The DwellTracking field is not present, or you cannot find the robot location database model that contains it.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Find DwellTracking flag",
+          "exact_action": "Locate the robot location database model that includes the DwellTracking true/false field, and identify which stations/locations are marked for dwell tracking (set to true).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the expected tables/fields (including DwellTracking) are not present or cannot be found, stop and escalate to L3_support/vendor support for database access/schema clarification."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 16,
+          "section_id": "training_video_day2_segment_0016",
+          "quote_or_summary": "There is a robot location database model with a dwell tracking field that is true or false; for stations they want dwell tracking on, it is set to true.",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Open LocationActiveDwellModel and confirm it shows active dwells for DwellTracking=true locations",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Verify that dwell tracking configuration is producing active dwell records in the active dwell table.",
+      "instruction": "Open the LocationActiveDwellModel table and confirm it is displaying active dwells at locations marked for DwellTracking.",
+      "expected_result": "LocationActiveDwellModel contains active dwell rows corresponding to stations/locations where DwellTracking is true.",
+      "healthy_condition": "Active dwell rows are visible in LocationActiveDwellModel for the dwell-tracked stations/locations you identified.",
+      "failure_condition": "LocationActiveDwellModel shows no active dwell rows for stations/locations you expect to be dwell-tracked.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect active dwell rows",
+          "exact_action": "Open the LocationActiveDwellModel table and confirm it is displaying active dwells at locations marked for DwellTracking.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If LocationActiveDwellModel shows no active dwell rows for stations you expect to be dwell-tracked, re-check the robot location database model’s DwellTracking true/false setting for those stations.",
+        "If the expected tables/fields (LocationActiveDwellModel) are not present or cannot be found, stop and escalate to L3_support/vendor support for database access/schema clarification."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 16,
+          "section_id": "training_video_day2_segment_0016",
+          "quote_or_summary": "LocationActiveDwellModel table displays the active dwells at locations marked for DwellTracking; once the AGV leaves it is done dwelling and the activity is archived to the LocationDwellActivity.",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Review LocationActiveDwellModel timing and identity fields (AgvName, Station, SortGuid, SatTime, FinishTime, TotalTime)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Interpret the active dwell rows by confirming the expected columns/fields are present and understanding what timing fields represent.",
+      "instruction": "In LocationActiveDwellModel, review the columns/fields shown in the source: AgvName, Station, SortGuid, SatTime, FinishTime, and TotalTime.",
+      "expected_result": "The LocationActiveDwellModel view/table shows the fields AgvName, Station, SortGuid, SatTime, FinishTime, and TotalTime for active dwell rows.",
+      "healthy_condition": "For each active dwell row, the timing fields (SatTime, FinishTime, TotalTime) are populated as shown in the table.",
+      "failure_condition": "The expected columns/fields are missing or not populated for active dwell rows.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify columns/fields",
+          "exact_action": "In LocationActiveDwellModel, review the columns/fields shown in the source: AgvName, Station, SortGuid, SatTime, FinishTime, and TotalTime.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the expected tables/fields (LocationActiveDwellModel and the listed columns) are not present or cannot be found, stop and escalate to L3_support/vendor support for database access/schema clarification."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 16,
+          "section_id": "training_video_day2_segment_0016",
+          "quote_or_summary": "The table includes fields like AgvName, Station, SortGuid, SatTime, FinishTime, TotalTime.",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Confirm the dwell event is represented as an active record (current in LocationActiveDwellModel vs archived)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure you are looking at the current dwell event state (active) rather than only historical/archived dwell activity.",
+      "instruction": "For the active dwell rows you are investigating, confirm the dwell event is currently represented in LocationActiveDwellModel (active) rather than only archived.",
+      "expected_result": "The dwell event you are investigating appears in LocationActiveDwellModel as an active record.",
+      "healthy_condition": "Active dwell rows remain present in LocationActiveDwellModel while the AGV is dwelling at the tracked location; completed dwell is archived to LocationDwellActivity after the AGV leaves.",
+      "failure_condition": "The dwell event is not present in LocationActiveDwellModel (suggesting it may have already been archived).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check active vs archived",
+          "exact_action": "For the active dwell rows, check that the dwell event is represented as an active record (i.e., it is currently in LocationActiveDwellModel rather than only archived).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 16,
+          "section_id": "training_video_day2_segment_0016",
+          "quote_or_summary": "Once the AGV leaves it is done dwelling and the activity is archived to the LocationDwellActivity.",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Record observed active dwell values for the dwell rows under investigation",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Capture the specific active dwell row values needed for follow-up analysis or escalation.",
+      "instruction": "Record the relevant observed values for the active dwell rows you are investigating (AgvName, Station, SortGuid, SatTime/FinishTime/TotalTime as displayed).",
+      "expected_result": "You have a list of active dwell rows with the values for AgvName, Station, SortGuid, SatTime, FinishTime, and TotalTime.",
+      "healthy_condition": "Recorded values match what is displayed in LocationActiveDwellModel for the active dwell rows.",
+      "failure_condition": "You cannot capture the values due to missing columns/fields or inability to view the table contents.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Capture row values",
+          "exact_action": "Record the relevant observed values for the active dwell rows you are investigating (AgvName, Station, SortGuid, SatTime/FinishTime/TotalTime as displayed).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 16,
+          "section_id": "training_video_day2_segment_0016",
+          "quote_or_summary": "The table includes fields like AgvName, Station, SortGuid, SatTime, FinishTime, TotalTime.",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You identify stations/locations with DwellTracking set to true in the robot location database model.",
+    "LocationActiveDwellModel shows active dwell rows for those DwellTracking=true stations/locations.",
+    "Active dwell rows display the expected fields: AgvName, Station, SortGuid, SatTime, FinishTime, TotalTime."
+  ],
+  "healthy_conditions": [
+    "LocationActiveDwellModel contains active dwell rows for dwell-tracked locations (DwellTracking=true).",
+    "Timing fields (SatTime, FinishTime, TotalTime) are populated for active dwell rows.",
+    "Completed dwell events are no longer present as active rows and are instead archived to LocationDwellActivity after the AGV leaves."
+  ],
+  "failure_conditions": [
+    "No active dwell rows appear in LocationActiveDwellModel for stations/locations expected to be dwell-tracked.",
+    "DwellTracking true/false field is missing or cannot be found in the robot location database model.",
+    "LocationActiveDwellModel or the expected columns (AgvName, Station, SortGuid, SatTime, FinishTime, TotalTime) are missing or cannot be found."
+  ],
+  "escalation_guidance": [
+    "If LocationActiveDwellModel shows no active dwell rows for stations you expect to be dwell-tracked, re-check the robot location database model’s DwellTracking true/false setting for those stations.",
+    "If the expected tables/fields (LocationActiveDwellModel and the listed columns, or the DwellTracking field) are not present or cannot be found, stop and escalate to L3_support/vendor support for database access/schema clarification."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0016_so_everybody_s_at_a_location_primary_01_32_39_000",
+      "description": "LocationActiveDwellModel slide/frame showing active dwell rows at DwellTracking-marked locations and listing fields (AgvName, Station, SortGuid, SatTime, FinishTime, TotalTime) plus note about archiving to LocationDwellActivity after AGV leaves.",
+      "required_level": "required"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 16,
+      "section_id": "training_video_day2_segment_0016",
+      "quote_or_summary": "LocationActiveDwellModel displays the active dwells at locations marked for DwellTracking; DwellTracking is a true/false field in the robot location database model; once the AGV leaves, activity is archived to LocationDwellActivity; the table includes fields like AgvName, Station, SortGuid, SatTime, FinishTime, TotalTime.",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0016_so_everybody_s_at_a_location_primary_01_32_39_000",
+      "what_to_look_at": "Slide/frame showing LocationActiveDwellModel displays active dwells at locations marked for DwellTracking (true/false) and lists fields including AgvName, Station, SortGuid, SatTime, FinishTime, TotalTime; also notes archiving to LocationDwellActivity once the AGV leaves."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_dwell_tracking_check_location_active_dwell_model"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide exact SSMS navigation steps (server/database name, schema name, or specific query syntax). Steps are kept at the table/model and field level."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

@@ -8,7 +8,11 @@ from shared_pipeline_stages.stage_6_5.schemas import RunbookPoolEntry
 
 ARTIFACT_RELATIVE_PATHS = (
     "stage_3_artifact_enrichment/source_artifacts_enriched.json",
+    "stage_2_ocr_artifacts/source_artifacts_enriched.json",
+    "stage_2_ocr_artifacts/source_artifacts.json",
     "stage_2_source_artifacts/source_artifacts_enriched.json",
+    "stage_2_source_artifacts/source_artifacts.json",
+    "stage_8_relationship_linking/source_artifacts_linked.json",
 )
 
 

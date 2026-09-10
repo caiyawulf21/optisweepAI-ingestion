@@ -1,0 +1,304 @@
+{
+  "procedure_id": "proc_recover_agv_bump_fault_rms_estop_agv_reset_v1",
+  "candidate_id": "candidate_manual_optisweep_bump_fault_recovery_rms_estop_reset",
+  "title": "Recover an AGV from a \"Bump\" fault (Exception Codes 21057/21060) using RMS E-stop and AGV RESET",
+  "procedure_type": "recovery",
+  "summary": "When an AGV cannot be recovered by Geek+ and the RMS shows an AGV \"Bump\" fault (Exception Codes 21057 or 21060), stop RMS, remove the obstruction, hold the AGV RESET button for two seconds to clear the fault, press E-stop again, and resume RMS.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_physical_recovery"
+  ],
+  "access_surface": [
+    "rms_ui"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "bump_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this procedure when the RMS / fleet status UI shows an AGV \"Bump\" fault and the exception code is 21057 or 21060, and the AGV needs on-site recovery by removing the obstruction and resetting the AGV.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the RMS E-stop / fault recovery sequence and coordinate the reset/resume actions in RMS.",
+    "Operator (site): Remove the physical obstruction causing the bump (if required for safe recovery) and ensure the area is safe before RMS is resumed."
+  ],
+  "safety_notes": [
+    "Stop RMS (E-stop) before removing the obstruction and performing the AGV RESET sequence.",
+    "Do not proceed with reset/resume if you cannot safely remove the obstruction."
+  ],
+  "access_or_tools_needed": [
+    "RMS / fleet status UI (rms_ui)"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "rms_ui"
+    ],
+    "system_preconditions": [
+      "Geek+ cannot recover the AGV (fault recovery procedure context).",
+      "RMS is displaying the AGV \"Bump\" fault screen with an Exception Code of 21057 or 21060."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_manual_dance_floor_entry_info_v1",
+    "ctx_manual_bump_fault_codes_v1",
+    "ctx_manual_agv_reset_button_v1",
+    "ctx_manual_rms_e_stop_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+      "description": "RMS screen figure showing the AGV \"Bump\" fault and Exception Code values (21057, 21060).",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Identify the AGV \"Bump\" fault and confirm the Exception Code (21057 or 21060)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the fault type and exception code so the correct recovery sequence is used.",
+      "instruction": "In the RMS / fleet status UI, locate the AGV \"Bump\" fault screen and confirm the Exception Code shown is 21057 or 21060.",
+      "expected_result": "The RMS \"Bump\" fault screen for the affected AGV shows Exception Code 21057 (Robot front collision bar triggers) or 21060 (robot triggers the obstacle avoidance).",
+      "healthy_condition": "The active fault shown on the RMS \"Bump\" fault screen matches 21057 or 21060 for the intended AGV.",
+      "failure_condition": "The RMS fault screen shows a different exception code than 21057/21060, or the \"Bump\" fault screen cannot be found for the affected AGV.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify Exception Code",
+          "exact_action": "Identify the AGV \"Bump\" fault screen and confirm the exception code shown is 21057 or 21060.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the exception code is not 21057 or 21060, stop and use the appropriate recovery procedure for that fault."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "E-stop the RMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Put RMS into a stopped state before physical obstruction removal and AGV reset.",
+      "instruction": "On the RMS / fleet status UI, activate the E-stop function.",
+      "expected_result": "RMS is in an E-stopped state (E-stop activated) while the \"Bump\" fault recovery sequence proceeds.",
+      "healthy_condition": "E-stop is active and the recovery sequence is not attempted while RMS is running.",
+      "failure_condition": "E-stop is not activated (RMS continues running) while attempting obstruction removal or AGV RESET.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Activate RMS E-stop",
+          "exact_action": "E-stop the RMS.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot reliably activate RMS E-stop, stop and escalate for further recovery steps."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Remove the obstruction that caused the bump",
+      "responsible_role": "L2_support",
+      "supporting_role": "operator",
+      "purpose": "Clear the physical cause of the bump so the AGV can recover.",
+      "instruction": "Remove the physical obstruction causing the bump (for example, at the AGV/robot front collision bar area).",
+      "expected_result": "The physical obstruction is removed so the AGV/robot front collision bar area is clear.",
+      "healthy_condition": "The obstruction is cleared and the area is safe for the AGV to be reset and RMS to be resumed.",
+      "failure_condition": "The obstruction remains in place or cannot be removed safely.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Remove obstruction",
+          "exact_action": "Remove the obstruction.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot safely remove the obstruction, do not proceed with reset/resume; escalate."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Click and hold AGV RESET for two seconds to clear the fault",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Clear the \"Bump\" fault on the affected AGV.",
+      "instruction": "On the RMS / fleet status UI, click the AGV RESET button and hold it for two (2) seconds.",
+      "expected_result": "The AGV RESET action is held for two seconds to clear the fault.",
+      "healthy_condition": "The fault-clearing action completes (as indicated by the recovery sequence proceeding to the next step).",
+      "failure_condition": "AGV RESET is not held for two seconds, or the fault does not clear after the sequence.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Hold AGV RESET",
+          "exact_action": "Click the AGV RESET button for two (2) seconds to clear the fault.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the \"Bump\" fault does not clear after the two-second AGV RESET, stop and escalate for further recovery steps."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Press E-stop again",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Follow the required recovery sequence after AGV RESET.",
+      "instruction": "On the RMS / fleet status UI, press E-stop again.",
+      "expected_result": "RMS E-stop is pressed again as part of the recovery sequence.",
+      "healthy_condition": "The sequence proceeds exactly as specified: E-stop again after AGV RESET.",
+      "failure_condition": "E-stop is not pressed again after AGV RESET.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Activate RMS E-stop again",
+          "exact_action": "Press E-stop again.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Resume RMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Return RMS to normal operation after the fault is cleared.",
+      "instruction": "On the RMS / fleet status UI, resume RMS to normal operation.",
+      "expected_result": "RMS is resumed to normal operation and the affected AGV is no longer showing the active \"Bump\" fault.",
+      "healthy_condition": "The RMS no longer displays the active \"Bump\" fault for the affected AGV and RMS is back in normal operation.",
+      "failure_condition": "The \"Bump\" fault remains active after the sequence, or RMS cannot be resumed to normal operation.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Resume RMS",
+          "exact_action": "Resume RMS.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the \"Bump\" fault does not clear after the two-second AGV RESET, stop and escalate for further recovery steps."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Exception Code 21057/21060 \"Bump\" fault is cleared for the affected AGV after holding AGV RESET for two seconds.",
+    "RMS is resumed to normal operation and the RMS no longer shows the active \"Bump\" fault for the affected AGV."
+  ],
+  "healthy_conditions": [
+    "RMS shows no active \"Bump\" fault for the affected AGV after the recovery sequence.",
+    "RMS is resumed to normal operation."
+  ],
+  "failure_conditions": [
+    "The \"Bump\" fault does not clear after holding AGV RESET for two seconds.",
+    "The obstruction cannot be safely removed."
+  ],
+  "escalation_guidance": [
+    "If the \"Bump\" fault does not clear after the two-second AGV RESET, stop and escalate for further recovery steps (the source only specifies this sequence for clearing the fault).",
+    "If you cannot safely remove the obstruction, do not proceed with reset/resume; escalate."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+      "what_to_look_at": "Exception Code field/value showing 21057 (Robot front collision bar triggers) or 21060 (robot triggers the obstacle avoidance)."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "page": 89,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_5_8_2_fault_recovery",
+      "quote_or_summary": "Bump fault recovery steps: 1) E-stop the RMS. 2) Remove the obstruction. 3) Click the AGV RESET button for two (2) seconds to clear the fault. 4) Press E-stop again. 5) Resume RMS. Exception codes: 21057 and 21060."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_fig_5_2_agv_bump_fault_screen",
+      "what_to_look_at": "Exception Code field/value showing 21057 (Robot front collision bar triggers) or 21060 (robot triggers the obstacle avoidance)."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_manual_optisweep_bump_fault_recovery_rms_estop_reset"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide a specific RMS UI label/state for the E-stop control or the exact visual indicator that confirms RMS has resumed to normal operation; steps rely on the manual’s named sequence only."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

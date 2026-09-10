@@ -1,0 +1,46 @@
+# Brain HTTP server image: only application source code ships. Every data/
+# output/local-corpus directory is excluded -- the container reads Cosmos
+# (OPTISWEEP_STORAGE_BACKEND=azure), never brain/data/local, and none of
+# the ingestion pipelines' own data outputs are needed to serve HTTP
+# requests. Confirmed the real source needed is under 2MB
+# (brain/, brain_service/, providers/, mcp_server/, http_server/, plus
+# ~1.4MB of shared_pipeline_stages/*.py the embedding provider imports) --
+# everything below is what keeps the build context from being ~4.6GB.
+
+.git/
+tmp_checkout_test/
+
+# Generated/local corpus data -- never shipped, container uses Cosmos.
+brain/data/
+data/
+shared_pipeline_stages/data/
+incidenceknowledgeingestion/data/
+operationalknowledgeingestion/data/
+app_handoff_package/
+sme_review_runbooks/
+
+# Test suites, docs, and scratch files not needed at runtime.
+**/tests/
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+docs/
+newdesigndoc/
+cursorprompts/
+node5_dump.json
+brain_alarm_all.json
+brain_database_all.json
+brain_metric_sample.json
+brain_role_all.json
+brain_state_sample.json
+brain_symptom_remaining.json
+*.pdf
+*.pptx
+
+# Local env files -- secrets come from Key Vault via managed identity in
+# the deployed container, never baked into the image.
+.env
+.env.*
+!.env.example

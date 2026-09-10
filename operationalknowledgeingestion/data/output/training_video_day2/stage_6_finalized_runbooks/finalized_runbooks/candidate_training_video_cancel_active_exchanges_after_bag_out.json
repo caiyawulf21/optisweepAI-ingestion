@@ -1,0 +1,390 @@
+{
+  "procedure_id": "proc_cancel_active_exchanges_after_manual_bag_out_purge_close_recovery_v1",
+  "candidate_id": "candidate_training_video_cancel_active_exchanges_after_bag_out",
+  "title": "Cancel active exchanges after a manual bag out (purge/close recovery)",
+  "procedure_type": "recovery",
+  "summary": "After a manual bag out/back out was used because recovery took too long, and the system is back up and running, cancel the active exchanges that were marked by the bag out so operators don’t have to complete the remaining bag out exchange/tote processing.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "bag_out_or_closeout_state",
+    "wcs_api_responsiveness"
+  ],
+  "access_surface": [
+    "apidog",
+    "wcs_api"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive",
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when a manual bag out/back out occurred as a fallback because recovery took too long, and the system is now back up and running; then cancel active exchanges that were marked to exchange by the bag out.",
+  "not_for": [
+    "Do not use if the system is not actually back up and running yet (cancel may not have the intended effect).",
+    "Do not use as a generic response to unrelated exchange activity without evidence of a manual bag out/back out event."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the cancel action via the OptiSweep/WCS API using Apidog on a primary server, then verify that bag-out-marked exchanges are canceled."
+  ],
+  "safety_notes": [
+    "Manual bag out/back out is described as a major, labor-intensive event; only proceed with cancel after confirming the system is back up and running."
+  ],
+  "access_or_tools_needed": [
+    "Apidog / WCS API client (API Dog) on a primary server",
+    "Primary server access to run the API calls"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Apidog / WCS API client access on a primary server"
+    ],
+    "system_preconditions": [
+      "A manual bag out/back out occurred because recovery took too long",
+      "The system is back up and running"
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_cancel_exchanges_after_bag_out_v1",
+    "ctx_training_video_manual_bag_out_overview_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+      "description": "Training frame showing: manual back out due to slow recovery; once system is back up, cancel all active exchanges; bag out marks everything to exchange and cancel cancels those bag out requests.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0028_so_we_have_open_all_shoots_primary_02_40_50_000",
+      "description": "Training frame listing related API system actions (e.g., Closeout/Purge) and describing bag out context; used here only as supporting context for the API action set.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0031_for_totes_we_have_exchange_sorter_primary_02_44_11_000",
+      "description": "Training frame describing tote/exchange-related API concepts (e.g., ExchangeTote / ExchangeLane / GetToteTask) that relate to exchange activity verification context.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Confirm manual bag out/back out occurred and the system is back up and running",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure cancel is only attempted after the system is restored and the exchange activity is specifically tied to a manual bag out/back out event.",
+      "instruction": "Confirm the situation matches a manual bag out/back out fallback (recovery took too long) and that the system is now back up and running before attempting to cancel active exchanges.",
+      "expected_result": "You have confirmation that (1) the event was a manual bag out/back out due to slow recovery and (2) the system is back up and running.",
+      "healthy_condition": "System is back up and running (cancel is appropriate once restored).",
+      "failure_condition": "System is not actually back up and running yet.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm bag out/back out fallback and system restored",
+          "exact_action": "Confirm the situation is a manual bag out/back out that occurred because recovery took too long, and that the system is now back up and running.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "System is not actually back up and running yet."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "timestamp_start": "02:50:45.500",
+          "timestamp_end": "02:50:45.500",
+          "quote_or_summary": "Manual back out described; cancel active exchanges after bag out once system is back up."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "timestamp_start": "02:44:50.000",
+          "timestamp_end": "02:56:41.000",
+          "quote_or_summary": "“And now that the system is back up and running, we can cancel all active … exchanges. So when you do a bag out, everything's marked to exchange and this cancels the exchanges …”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Locate the cancel function for active exchanges after bag out and identify required request parameters",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Prepare the exact API call and parameters needed to cancel the bag-out-marked active exchanges.",
+      "instruction": "On the live API surface (Apidog / API Dog on a primary server), locate the cancel function described for canceling active exchanges after bag out and identify the request parameters needed for the cancel action.",
+      "expected_result": "You have identified the specific cancel endpoint/function in Apidog and the request parameters required to execute it.",
+      "healthy_condition": "Cancel function and its request parameters are available in Apidog for execution.",
+      "failure_condition": "Cancel function/parameters cannot be identified (missing endpoint/fields).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Find cancel endpoint and parameters in Apidog",
+          "exact_action": "On the live API surface (API Dog on a primary server), locate the cancel function described for canceling active exchanges after bag out, and identify the request parameters needed for the cancel action.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "You cannot identify the cancel request parameters needed for the cancel action."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "timestamp_start": "02:44:50.000",
+          "timestamp_end": "02:56:41.000",
+          "quote_or_summary": "“Now that the system is back up and running, we can cancel all active … exchanges … cancel just allows you to cancel those bag out requests in that manual.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Execute the cancel request for bag-out-marked active exchanges",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Perform the API action that cancels the active exchanges created/marked by the bag out event.",
+      "instruction": "Using Apidog on the primary server, execute the cancel request for the active exchanges created by the bag out event using the request parameters identified in the previous step.",
+      "expected_result": "The cancel request returns a successful response in Apidog.",
+      "healthy_condition": "Apidog shows a successful response for the cancel request.",
+      "failure_condition": "Cancel request does not return a successful response.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Run cancel request in Apidog",
+          "exact_action": "Execute the cancel request for the active exchanges created by the bag out event, using the request parameters shown in the API Dog documentation/guide.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Cancel request does not return a successful response."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "timestamp_start": "02:44:50.000",
+          "timestamp_end": "02:56:41.000",
+          "quote_or_summary": "“...we can cancel all active … exchanges... this cancels the exchanges so that you don't have to.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify bag-out-marked exchanges are canceled (not remaining active)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the cancel action had the intended effect: bag-out-marked exchange requests no longer require processing.",
+      "instruction": "Verify on the live exchange/exchange-request status view that active exchanges marked by the bag out are canceled after the cancel request.",
+      "expected_result": "Active exchanges that were marked by the bag out are canceled (i.e., they are no longer active).",
+      "healthy_condition": "Exchange/exchange-request status shows canceled vs active for the bag-out-marked exchanges.",
+      "failure_condition": "Exchange requests remain active after the cancel attempt.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check exchange/exchange-request status",
+          "exact_action": "Verify the observable result: active exchanges that were marked by the bag out are canceled (so the remaining bag out exchange requests do not need to be processed).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Exchange requests remain active after the cancel attempt."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "timestamp_start": "02:44:50.000",
+          "timestamp_end": "02:56:41.000",
+          "quote_or_summary": "“...cancel all active … exchanges... this cancels the exchanges so that you don't have to.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Stop and escalate if cancel fails or exchanges remain active",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure timely escalation when the cancel action does not succeed or does not produce the expected cancellation outcome.",
+      "instruction": "If the cancel request fails or if exchange requests remain active after the cancel attempt, stop and escalate.",
+      "expected_result": "Escalation is triggered when cancel response is not successful or when exchanges remain active.",
+      "healthy_condition": "Cancel succeeds and exchanges are no longer active.",
+      "failure_condition": "Cancel request fails or exchanges remain active after cancel.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Escalate on failure",
+          "exact_action": "Stop and escalate if the cancel request does not return a successful response or if exchange requests remain active after the cancel attempt.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Cancel request does not return a successful response.",
+        "Exchange requests remain active after the cancel attempt.",
+        "System is not actually back up and running yet."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "timestamp_start": "02:44:50.000",
+          "timestamp_end": "02:56:41.000",
+          "quote_or_summary": "Cancel is described as appropriate only once the system is back up and running; cancel cancels bag-out-marked exchange requests."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Cancel request returns a successful response in Apidog.",
+    "Bag-out-marked exchange requests are no longer active after the cancel attempt."
+  ],
+  "healthy_conditions": [
+    "System is back up and running after manual bag out/back out.",
+    "Apidog cancel request succeeds.",
+    "Exchange/exchange-request status shows canceled vs active for bag-out-marked exchanges."
+  ],
+  "failure_conditions": [
+    "System is not back up and running yet.",
+    "Cancel request does not return a successful response.",
+    "Exchange requests remain active after the cancel attempt."
+  ],
+  "escalation_guidance": [
+    "Escalate if the cancel request fails (no successful response) or if exchange requests remain active after the cancel attempt.",
+    "Escalate if the system is not actually back up and running yet (cancel may not have the intended effect)."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+      "description": "Manual back out due to slow recovery; once system is back up, cancel all active exchanges; bag out marks everything to exchange and cancel cancels those bag out requests.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0028_so_we_have_open_all_shoots_primary_02_40_50_000",
+      "description": "Context for related API system actions around bag out/closeout/purge.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0031_for_totes_we_have_exchange_sorter_primary_02_44_11_000",
+      "description": "Context for exchange-related API concepts and active state visibility for totes/exchanges.",
+      "required_level": "optional"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 33,
+      "section_id": "training_video_day2_segment_0033",
+      "timestamp_start": "02:44:50.000",
+      "timestamp_end": "02:56:41.000",
+      "quote_or_summary": "Manual back out is fallback when recovery takes too long; once system is back up and running, cancel all active exchanges; bag out marks everything to exchange and cancel cancels those bag out requests."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 33,
+      "section_id": "training_video_day2_segment_0033",
+      "timestamp_start": "02:50:45.500",
+      "timestamp_end": "02:50:45.500",
+      "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+      "quote_or_summary": "Manual back out described; cancel active exchanges after bag out once system is back up."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+      "what_to_look_at": "Manual back out described; cancel active exchanges after bag out once system is back up."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0028_so_we_have_open_all_shoots_primary_02_40_50_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0031_for_totes_we_have_exchange_sorter_primary_02_44_11_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_cancel_active_exchanges_after_bag_out"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not include the exact Apidog cancel endpoint/function name and the specific request parameter field names/values needed to execute the cancel action.",
+    "The packet does not include a captured live view (RMS/fleet status UI or other exchange-request status UI) showing the canceled vs active exchange state after cancel; therefore the verification step cannot name the exact live UI fields/labels to check."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

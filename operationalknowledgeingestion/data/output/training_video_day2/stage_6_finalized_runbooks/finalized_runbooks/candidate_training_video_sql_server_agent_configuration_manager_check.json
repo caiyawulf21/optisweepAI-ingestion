@@ -1,0 +1,340 @@
+{
+  "procedure_id": "proc_check_sql_server_agent_status_in_sql_server_configuration_manager_v1",
+  "candidate_id": "candidate_training_video_sql_server_agent_configuration_manager_check",
+  "title": "Check SQL Server Agent Status in SQL Server Configuration Manager",
+  "procedure_type": "diagnostic",
+  "summary": "Use the Windows Event Viewer / services surface to RDP to the identified WCS backup server, open SQL Server Configuration Manager, and verify that SQL Server Agent (MSSQLSERVER) shows State as Running and Start Mode as Automatic. Then check the RMS / fleet status UI to confirm that RMS is up and running.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [
+    "L2_support"
+  ],
+  "capability_tags": [
+    "wcs_service_health"
+  ],
+  "access_surface": [
+    "event_viewer",
+    "rms_ui"
+  ],
+  "audience_roles": [
+    "L1_support",
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "unplanned_restart",
+    "service_crash_or_restart"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this diagnostic after an unplanned restart or while verifying WCS/RMS service health. Check SQL Server Agent on the Windows Event Viewer / services surface and corroborate availability in the RMS / fleet status UI.",
+  "not_for": [
+    "Do not use this procedure to change SQL Server Agent configuration.",
+    "Do not use this procedure to restart services.",
+    "Do not use this procedure to troubleshoot or remediate SQL Server Agent jobs beyond escalating the issue.",
+    "Do not use this procedure as a substitute for detailed RMS field-level diagnosis; the source does not identify additional RMS status fields."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L1_support",
+      "responsibility": "RDP to the identified WCS backup server, inspect SQL Server Configuration Manager through the Windows Event Viewer / services surface, and check RMS availability."
+    },
+    {
+      "role": "L2_support",
+      "responsibility": "Review or coordinate escalation when SQL Server Agent is not Running, does not show Automatic start mode, or jobs do not clean up after an unplanned restart."
+    }
+  ],
+  "safety_notes": [
+    "This is an inspection-only diagnostic. Do not change service configuration or restart services.",
+    "The source identifies DBAs as the owner for fixing the related SQL Server Agent issue."
+  ],
+  "access_or_tools_needed": [
+    "Windows Event Viewer / services",
+    "RDP access to the identified WCS backup server",
+    "SQL Server Configuration Manager",
+    "RMS / fleet status UI"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L1 support access through RDP to the identified WCS backup server.",
+      "Access to the Windows Event Viewer / services surface.",
+      "Access to the RMS / fleet status UI."
+    ],
+    "system_preconditions": [
+      "An unplanned restart or RMS/WCS service-health verification is in scope."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_sql_server_agent_service_v1",
+    "ctx_training_video_sql_server_configuration_manager_services_v1",
+    "ctx_training_video_unplanned_restart_job_cleanup_issue_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0054_and_then_check_rms_to_make_primary_03_14_29_500",
+      "description": "SQL Server Configuration Manager (Local) service view showing SQL Server Agent (MSSQLSERVER), State, and Start Mode columns.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open SQL Server Configuration Manager on the WCS backup server",
+      "responsible_role": "L1_support",
+      "supporting_role": "L2_support",
+      "purpose": "Access the live Windows Event Viewer / services surface where SQL Server Agent status can be inspected.",
+      "instruction": "Using the Windows Event Viewer / services surface, RDP into the identified WCS backup server at fortna-wcs-backup.txrth.otnet.ups.com and open SQL Server Configuration Manager.",
+      "expected_result": "SQL Server Configuration Manager (Local) opens and exposes the SQL Server Services view.",
+      "healthy_condition": "The SQL Server Configuration Manager (Local) window is available with the SQL Server Services view accessible.",
+      "failure_condition": "The WCS backup server cannot be reached through RDP or SQL Server Configuration Manager cannot be opened.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open SQL Server Configuration Manager",
+          "exact_action": "RDP into fortna-wcs-backup.txrth.otnet.ups.com and open SQL Server Configuration Manager.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the identified WCS backup server is not reachable through the available RDP access.",
+        "Escalate if SQL Server Configuration Manager is unavailable."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "page": 54,
+          "section_id": "training_video_day2_segment_0054",
+          "timestamp_start": "03:14:14.000",
+          "timestamp_end": "03:14:45.000",
+          "quote_or_summary": "The displayed procedure says to RDP into fortna-wcs-backup.txrth.otnet.ups.com and open SQL Server Configuration Manager."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Locate SQL Server Agent (MSSQLSERVER)",
+      "responsible_role": "L1_support",
+      "supporting_role": "L2_support",
+      "purpose": "Identify the SQL Server Agent service associated with the RMS service-health check.",
+      "instruction": "In SQL Server Configuration Manager on the Windows Event Viewer / services surface, open SQL Server Services and locate the row named SQL Server Agent (MSSQLSERVER).",
+      "expected_result": "The SQL Server Agent (MSSQLSERVER) row is visible in the SQL Server Services list.",
+      "healthy_condition": "SQL Server Agent (MSSQLSERVER) is present and its service row can be inspected.",
+      "failure_condition": "SQL Server Agent (MSSQLSERVER) is not present in the SQL Server Services list.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate the SQL Server Agent service",
+          "exact_action": "Open the SQL Server Services view and locate SQL Server Agent (MSSQLSERVER).",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if SQL Server Agent (MSSQLSERVER) is not listed."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "page": 54,
+          "section_id": "training_video_day2_segment_0054",
+          "timestamp_start": "03:14:29.500",
+          "timestamp_end": "03:14:29.500",
+          "quote_or_summary": "OCR shows SQL Server Configuration Manager (Local) and the SQL Server Agent (MSSQLSERVER) service row."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Verify SQL Server Agent state and start mode",
+      "responsible_role": "L1_support",
+      "supporting_role": "L2_support",
+      "purpose": "Determine whether SQL Server Agent is in the service state associated with healthy RMS/WCS operation.",
+      "instruction": "In the SQL Server Services view on the Windows Event Viewer / services surface, inspect the State and Start Mode fields for SQL Server Agent (MSSQLSERVER).",
+      "expected_result": "The SQL Server Agent (MSSQLSERVER) row shows State as Running and Start Mode as Automatic.",
+      "healthy_condition": "State is Running and Start Mode is Automatic.",
+      "failure_condition": "State is not Running, Start Mode is not Automatic, or either field cannot be determined.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect State and Start Mode",
+          "exact_action": "Check the State and Start Mode fields for SQL Server Agent (MSSQLSERVER).",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to the DBA/support owner if SQL Server Agent (MSSQLSERVER) is not Running.",
+        "Escalate to the DBA/support owner if SQL Server Agent (MSSQLSERVER) does not show Automatic start mode.",
+        "Do not change the service configuration or restart the service."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "page": 54,
+          "section_id": "training_video_day2_segment_0054",
+          "timestamp_start": "03:14:29.500",
+          "timestamp_end": "03:14:29.500",
+          "quote_or_summary": "OCR shows SQL Server Agent (MSSQLSERVER) with State Running and Start Mode Automatic."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Check RMS availability",
+      "responsible_role": "L1_support",
+      "supporting_role": "L2_support",
+      "purpose": "Corroborate the SQL Server Agent inspection with a live RMS availability check.",
+      "instruction": "Open the RMS / fleet status UI and check whether the RMS view is up and running.",
+      "expected_result": "RMS is available for the corresponding operational check.",
+      "healthy_condition": "The RMS / fleet status UI is available and indicates that RMS is up and running.",
+      "failure_condition": "RMS is unavailable or is not up and running.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check RMS availability",
+          "exact_action": "Check RMS to make sure everything is up and running.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if RMS is unavailable or is not up and running.",
+        "Record that the RMS-specific status fields are not defined by this procedure and require deeper support if further diagnosis is needed."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "page": 54,
+          "section_id": "training_video_day2_segment_0054",
+          "timestamp_start": "03:14:14.000",
+          "timestamp_end": "03:14:45.000",
+          "quote_or_summary": "The transcript instructs support to check RMS to make sure everything is up and running."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "SQL Server Agent (MSSQLSERVER) is present in SQL Server Configuration Manager.",
+    "SQL Server Agent (MSSQLSERVER) shows State as Running.",
+    "SQL Server Agent (MSSQLSERVER) shows Start Mode as Automatic.",
+    "RMS / fleet status UI is available and up and running."
+  ],
+  "healthy_conditions": [
+    "The Windows Event Viewer / services surface opens SQL Server Configuration Manager (Local).",
+    "SQL Server Agent (MSSQLSERVER) is listed in SQL Server Services.",
+    "The SQL Server Agent State field is Running.",
+    "The SQL Server Agent Start Mode field is Automatic.",
+    "The RMS / fleet status UI is available."
+  ],
+  "failure_conditions": [
+    "The WCS backup server cannot be reached through RDP.",
+    "SQL Server Configuration Manager cannot be opened.",
+    "SQL Server Agent (MSSQLSERVER) is missing from the SQL Server Services list.",
+    "SQL Server Agent (MSSQLSERVER) is not Running.",
+    "SQL Server Agent (MSSQLSERVER) does not show Automatic start mode.",
+    "RMS is unavailable or is not up and running.",
+    "Jobs do not clean up expected items after an unplanned restart."
+  ],
+  "escalation_guidance": [
+    "Escalate SQL Server Agent state or start-mode failures to the DBA/support owner.",
+    "Escalate job-cleanup issues after an unplanned restart for deeper database administration; the source does not identify the affected jobs, cleanup objects, or remediation.",
+    "Escalate RMS unavailability for further WCS/RMS service-health diagnosis.",
+    "Do not mutate service configuration or restart services within this runbook."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0054_and_then_check_rms_to_make_primary_03_14_29_500",
+      "what_to_look_at": "SQL Server Configuration Manager (Local), the SQL Server Services list, and the SQL Server Agent (MSSQLSERVER) row with State and Start Mode columns."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 54,
+      "section_id": "training_video_day2_segment_0054",
+      "figure_id": null,
+      "figure_number": null,
+      "timestamp_start": "03:14:14.000",
+      "timestamp_end": "03:14:45.000",
+      "quote_or_summary": "The segment instructs support to check RMS and verify in SQL Server Configuration Manager that SQL Server Agent is running. The displayed service view shows SQL Server Agent (MSSQLSERVER) as Running with Automatic start mode."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0054_and_then_check_rms_to_make_primary_03_14_29_500",
+      "what_to_look_at": "SQL Server Configuration Manager (Local), the SQL Server Services list, and the SQL Server Agent (MSSQLSERVER) row with State and Start Mode columns."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_sql_server_agent_configuration_manager_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not define additional RMS screen fields or status values beyond confirming that the RMS view is up and running.",
+    "The source does not identify the DBA/support owner by name or provide contact or routing details.",
+    "The source associates an earlier unplanned restart with jobs not cleaning up items but does not identify the jobs, cleanup objects, or remediation steps.",
+    "The source does not provide service-change, restart, or recovery instructions."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

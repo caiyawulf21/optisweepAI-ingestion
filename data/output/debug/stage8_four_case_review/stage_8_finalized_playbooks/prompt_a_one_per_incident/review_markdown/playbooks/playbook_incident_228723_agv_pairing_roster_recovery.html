@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AMR pairing failure with abnormal fleet roster or mapping state</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+.warn { color: #8a4b00; }
+details.linked-runbook { border: 1px solid #ddd; border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0; }
+details.linked-runbook > summary { cursor: pointer; font-size: 1.05rem; margin-bottom: 0.5rem; }
+details.linked-runbook-group { border: 1px solid #e0e0e0; border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0; background: #fafafa; }
+details.linked-runbook-group > summary { cursor: pointer; font-weight: 600; margin-bottom: 0.5rem; }
+details.linked-runbook-operator { border-left: 4px solid #2f6f4e; }
+details.linked-runbook-support { border-left: 4px solid #2f4f7f; }
+.missing-image { border: 1px dashed #bbb; padding: 1rem; background: #fafafa; }
+.missing-image-label { font-family: monospace; font-weight: 600; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>AMR pairing failure with abnormal fleet roster or mapping state</h1>
+<h2>Playbook Header</h2>
+<table>
+<tr><th>Playbook ID</th><td>playbook_incident_228723_agv_pairing_roster_recovery</td></tr>
+<tr><th>Case ID</th><td>228723</td></tr>
+<tr><th>Extraction Mode</th><td>one_playbook_candidate_per_incident</td></tr>
+<tr><th>Confidence</th><td>medium</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+</table>
+<h2>Entry Symptoms</h2>
+<ul>
+<li>A site reports that an ACB or affected zone cannot get a pair.</li>
+<li>The ACB system is described as down or production is seriously impacted.</li>
+<li>Replacement AMRs reportedly route to the hospital lane instead of supporting the affected workflow.</li>
+<li>An AMR was previously reported with low battery or in an abnormal physical location.</li>
+<li>The issue follows an AMR replacement, add, or remove activity.</li>
+</ul>
+<h2>Nodes</h2>
+<h3>1 — Confirm the observable pairing and routing pattern (diagnostic_decision)</h3>
+<p><strong>Objective:</strong> Determine whether the site is experiencing an active pairing failure with abnormal AMR routing or behavior after a replacement or add/remove event.</p>
+<p><strong>Why this check is next:</strong> The source records site-reported inability to get a pair, replacement AMRs going to the hospital lane, and earlier low-battery and robot-location circumstances.</p>
+<p><strong>Action:</strong> Confirm with the site (interview and/or immediate physical observation) whether the affected zone can’t obtain a pair and whether AMRs are routing to the hospital lane after the recent add/remove or replacement event.</p>
+<p><strong>Healthy:</strong> The site operator or L1 support confirms pairing is available for the affected workflow and AMRs route to the intended workflow rather than consistently to the hospital lane.</p>
+<p><strong>Unhealthy:</strong> The site operator or L1 support confirms the affected zone/workflow still cannot obtain a pair and/or multiple replacement AMRs continue routing to the hospital lane, coinciding with the recent replacement/add/remove context.</p>
+<p><strong>Inconclusive:</strong> The site cannot reproduce the issue, cannot identify the affected workflow/robots, or cannot confirm current pairing/routing behavior or timing relative to the replacement/add/remove event.</p>
+<p><strong>Suggested database check:</strong></p>
+<ul>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> RobotDatabaseModel</li>
+<li><strong>Inspect:</strong> State</li>
+<li><strong>Inspect:</strong> CurrentLocationId</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> RobotLocationDatabaseModel</li>
+<li><strong>Inspect:</strong> StationNumber</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> AgvActiveErrorDatabaseModel</li>
+<li><strong>Inspect:</strong> Robot code.</li>
+<li><strong>Inspect:</strong> Active error code.</li>
+<li><strong>Inspect:</strong> Error description.</li>
+<li><strong>Inspect:</strong> Sort identifier during which the error occurred.</li>
+</ul></li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L1_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li><code>proc_check_rms_fleet_status_shutdown_queues_zone_cycling_v1</code> (medium, support, score=0.6101) — Check RMS fleet status for AGVs in shutdown queues and zone cycling</li>
+</ul>
+<p><strong>Evidence Collection Procedures:</strong></p>
+<ul>
+<li><code>proc_check_rms_fleet_status_shutdown_queues_zone_cycling_v1</code> — Check RMS fleet status for AGVs in shutdown queues and zone cycling (L1_support): Use the RMS / fleet status UI to verify that AGVs are held in shutdown queues (shutdown state), then cycle into their assigned zones (4 zones) after startup, consistent with the system state model described in the segment.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>Site reported that the affected zone was unable to get a pair.</li>
+<li>Site reported an earlier low-battery AMR issue and replacement AMRs going to the hospital lane.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_2</code> when Pairing failure + abnormal routing confirmed (with recent add/remove context)</li>
+<li><code>healthy</code> → <code></code> when Pairing is available and abnormal routing pattern is not present</li>
+<li><code>inconclusive</code> → <code></code> when Inconclusive (cannot confirm current pairing/routing behavior)</li>
+</ul>
+<details class="linked-runbook-group linked-runbook-support" open><summary><strong>Support runbooks</strong> (1)</summary>
+<details class="linked-runbook linked-runbook-support" open><summary><strong>Support runbook:</strong> Check RMS fleet status for AGVs in shutdown queues and zone cycling (<code>proc_check_rms_fleet_status_shutdown_queues_zone_cycling_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> L1_support</li>
+<li><strong>Audience:</strong> support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use the RMS / fleet status UI to verify that AGVs are held in shutdown queues (shutdown state), then cycle into their assigned zones (4 zones) after startup, consistent with the system state model described in the segment.</p>
+<p><strong>When To Use:</strong></p>
+<p>When you need to confirm that AGVs are in the shutdown state (shutdown queues) and then transition into their assigned zones (4 zones) after startup, using the live fleet status view in RMS.</p>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>Pairing is available and AMRs route to the intended workflow (not consistently to hospital).</td><td><code></code></td></tr>
+<tr><td><code>unhealthy</code></td><td>Pairing remains unavailable and abnormal hospital-lane routing persists after add/remove or replacement.</td><td><code>node_2</code></td></tr>
+<tr><td><code>inconclusive</code></td><td>Site cannot confirm the affected workflow, the timing, or current pairing/routing behavior.</td><td><code></code></td></tr>
+</table>
+<p><strong>Source:</strong> training_video / training_video_day1</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Open RMS / fleet status UI and view AGV roster/map</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the RMS / fleet status UI (rms_ui) and navigate to the AGV list/map view where you can see each AGV’s current state and/or location/zone assignment.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The RMS fleet status view is accessible and shows AGVs with state/location/zone information (enough to distinguish shutdown queues vs zone assignments).</p>
+<p><strong>Expected result:</strong></p>
+<p>You can see the AGV list/map view in RMS with each AGV’s current state and/or location/zone assignment visible.</p>
+<hr>
+<h5>Step 2 — Confirm AGVs are in shutdown queues (shutdown state)</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the RMS AGV list/map view, identify the relevant AGVs and confirm that their current state and/or location/zone assignment corresponds to shutdown queues (shutdown state), not idle/running zones.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>AGVs expected to be in shutdown are consistently shown as being in shutdown queues/shutdown state.</p>
+<p><strong>Expected result:</strong></p>
+<p>AGVs that should be in shutdown are displayed in a shutdown queues/shutdown state condition in RMS (observable via their state and/or location/zone assignment).</p>
+<hr>
+<h5>Step 3 — Observe transition from shutdown queues into assigned zones (4 zones)</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Observe the AGVs in RMS over the expected startup transition window and confirm they move from shutdown queues into their assigned zones. The segment references 4 zones.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>AGVs move out of shutdown queues into zone assignments rather than remaining in shutdown state.</p>
+<p><strong>Expected result:</strong></p>
+<p>AGVs transition from shutdown queues/shutdown state into their assigned zones (4 zones referenced in the segment).</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/f18746c1af8c4b3c.jpg" alt="artifact_training_video_training_video_day1_0021_yes_so_there_s_something_wrong_primary_00_47_36_500"><figcaption>Training video frame segment (timestamp ~00:47:36.500) containing the shutdown queues → cycle → 4 zones explanation and the mention of AGVs cycling through charging while in shutdown logic.</figcaption></figure>
+<hr>
+<h5>Step 4 — If tipper/hospital scenario is active, confirm shutdown/startup cycle still holds</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the segment’s scenario is active (tipper issue leading to hospital/reject handling), confirm in RMS that AGVs still follow the shutdown/startup cycle model: shutdown queues → assigned zones, rather than remaining stuck in shutdown queues.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>No prolonged retention in shutdown queues beyond what the shutdown/startup logic implies; AGVs still enter their zone assignments.</p>
+<p><strong>Expected result:</strong></p>
+<p>Even during the tipper/hospital scenario, AGVs still transition from shutdown queues into their assigned zones in RMS.</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>In RMS, AGVs expected to be in shutdown are shown in shutdown queues/shutdown state.</li>
+<li>After startup, those AGVs transition from shutdown queues into their assigned zones (4 zones referenced).</li>
+<li>During any tipper/hospital scenario, AGVs still follow shutdown queues → zones behavior rather than remaining stuck in shutdown.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>AGVs remain in shutdown queues/shutdown state without transitioning into their assigned zones when startup is expected.</li>
+<li>RMS shows AGVs in non-shutdown zone assignments during a shutdown period.</li>
+</ul>
+</details>
+</details>
+<hr>
+<h3>2 — Check fleet roster and mapping state (diagnostic_decision)</h3>
+<p><strong>Objective:</strong> Determine whether RMS shows an abnormal robot membership, mapping, or status condition that could explain the pairing failure.</p>
+<p><strong>Why this check is next:</strong> The source identifies RMS as the system used to view robot status and states that a removed robot was shown as not mapped; the artifact shows red-highlighted RMS table entries.</p>
+<p><strong>Action:</strong> Inspect RMS fleet/robot status views to determine whether the roster/mapping state is abnormal for the affected workflow (e.g., missing/not mapped, exception-highlighted, or otherwise inconsistent membership).</p>
+<p><strong>Healthy:</strong> RMS shows roster/mapping consistent with normal operation for the affected workflow; no abnormal/unmapped/exception indicators remain for the relevant robot(s).</p>
+<p><strong>Unhealthy:</strong> RMS shows abnormal roster/mapping for relevant robot(s) (e.g., a robot shown as not mapped, missing, duplicated, or exception-highlighted and correlating to the affected workflow).</p>
+<p><strong>Inconclusive:</strong> RMS state is unreadable/unavailable or the abnormal entry cannot be reliably correlated to the affected workflow.</p>
+<p><strong>Suggested database check:</strong></p>
+<ul>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> RobotDatabaseModel</li>
+<li><strong>Inspect:</strong> State</li>
+<li><strong>Inspect:</strong> CurrentLocationId</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> RobotLocationDatabaseModel</li>
+<li><strong>Inspect:</strong> StationNumber</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> AgvActiveErrorDatabaseModel</li>
+<li><strong>Inspect:</strong> Robot code.</li>
+<li><strong>Inspect:</strong> Active error code.</li>
+<li><strong>Inspect:</strong> Error description.</li>
+<li><strong>Inspect:</strong> Sort identifier during which the error occurred.</li>
+</ul></li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L1_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li><code>proc_check_rms_fleet_status_shutdown_queues_zone_cycling_v1</code> (medium, support, score=0.6961) — Check RMS fleet status for AGVs in shutdown queues and zone cycling</li>
+</ul>
+<p><strong>Evidence Collection Procedures:</strong></p>
+<ul>
+<li><code>proc_check_rms_fleet_status_shutdown_queues_zone_cycling_v1</code> — Check RMS fleet status for AGVs in shutdown queues and zone cycling (L1_support): Use the RMS / fleet status UI to verify that AGVs are held in shutdown queues (shutdown state), then cycle into their assigned zones (4 zones) after startup, consistent with the system state model described in the segment.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>RMS robot status tables show red-highlighted entries; exact values are unreadable.</li>
+<li>Resolution details state that the removed robot was shown as not mapped.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_3</code> when RMS abnormal roster/mapping supported</li>
+<li><code>healthy</code> → <code></code> when RMS shows normal roster/mapping or suspected pattern not indicated</li>
+<li><code>inconclusive</code> → <code>node_5</code> when RMS unreadable/un-correlatable</li>
+</ul>
+<details class="linked-runbook-group linked-runbook-support" open><summary><strong>Support runbooks</strong> (1)</summary>
+<details class="linked-runbook linked-runbook-support" open><summary><strong>Support runbook:</strong> Check RMS fleet status for AGVs in shutdown queues and zone cycling (<code>proc_check_rms_fleet_status_shutdown_queues_zone_cycling_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> L1_support</li>
+<li><strong>Audience:</strong> support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use the RMS / fleet status UI to verify that AGVs are held in shutdown queues (shutdown state), then cycle into their assigned zones (4 zones) after startup, consistent with the system state model described in the segment.</p>
+<p><strong>When To Use:</strong></p>
+<p>When you need to confirm that AGVs are in the shutdown state (shutdown queues) and then transition into their assigned zones (4 zones) after startup, using the live fleet status view in RMS.</p>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>RMS shows normal relevant roster/mapping; suspected pattern not indicated.</td><td><code></code></td></tr>
+<tr><td><code>inconclusive</code></td><td>RMS is unreadable/unavailable or abnormal entry cannot be correlated to the affected workflow.</td><td><code>node_5</code></td></tr>
+<tr><td><code>unhealthy</code></td><td>AGVs remain in shutdown queues/shutdown state without transitioning into their assigned zones when startup is expected.</td><td><code>node_5</code></td></tr>
+</table>
+<p><strong>Source:</strong> training_video / training_video_day1</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Open RMS / fleet status UI and view AGV roster/map</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the RMS / fleet status UI (rms_ui) and navigate to the AGV list/map view where you can see each AGV’s current state and/or location/zone assignment.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The RMS fleet status view is accessible and shows AGVs with state/location/zone information (enough to distinguish shutdown queues vs zone assignments).</p>
+<p><strong>Expected result:</strong></p>
+<p>You can see the AGV list/map view in RMS with each AGV’s current state and/or location/zone assignment visible.</p>
+<hr>
+<h5>Step 2 — Confirm AGVs are in shutdown queues (shutdown state)</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the RMS AGV list/map view, identify the relevant AGVs and confirm that their current state and/or location/zone assignment corresponds to shutdown queues (shutdown state), not idle/running zones.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>AGVs expected to be in shutdown are consistently shown as being in shutdown queues/shutdown state.</p>
+<p><strong>Expected result:</strong></p>
+<p>AGVs that should be in shutdown are displayed in a shutdown queues/shutdown state condition in RMS (observable via their state and/or location/zone assignment).</p>
+<hr>
+<h5>Step 3 — Observe transition from shutdown queues into assigned zones (4 zones)</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Observe the AGVs in RMS over the expected startup transition window and confirm they move from shutdown queues into their assigned zones. The segment references 4 zones.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>AGVs move out of shutdown queues into zone assignments rather than remaining in shutdown state.</p>
+<p><strong>Expected result:</strong></p>
+<p>AGVs transition from shutdown queues/shutdown state into their assigned zones (4 zones referenced in the segment).</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/f18746c1af8c4b3c.jpg" alt="artifact_training_video_training_video_day1_0021_yes_so_there_s_something_wrong_primary_00_47_36_500"><figcaption>Training video frame segment (timestamp ~00:47:36.500) containing the shutdown queues → cycle → 4 zones explanation and the mention of AGVs cycling through charging while in shutdown logic.</figcaption></figure>
+<hr>
+<h5>Step 4 — If tipper/hospital scenario is active, confirm shutdown/startup cycle still holds</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the segment’s scenario is active (tipper issue leading to hospital/reject handling), confirm in RMS that AGVs still follow the shutdown/startup cycle model: shutdown queues → assigned zones, rather than remaining stuck in shutdown queues.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>No prolonged retention in shutdown queues beyond what the shutdown/startup logic implies; AGVs still enter their zone assignments.</p>
+<p><strong>Expected result:</strong></p>
+<p>Even during the tipper/hospital scenario, AGVs still transition from shutdown queues into their assigned zones in RMS.</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>In RMS, AGVs expected to be in shutdown are shown in shutdown queues/shutdown state.</li>
+<li>After startup, those AGVs transition from shutdown queues into their assigned zones (4 zones referenced).</li>
+<li>During any tipper/hospital scenario, AGVs still follow shutdown queues → zones behavior rather than remaining stuck in shutdown.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>AGVs remain in shutdown queues/shutdown state without transitioning into their assigned zones when startup is expected.</li>
+<li>RMS shows AGVs in non-shutdown zone assignments during a shutdown period.</li>
+</ul>
+</details>
+</details>
+<hr>
+<h3>3 — Use an authorized site-side robot isolation or removal path (procedure_reference)</h3>
+<p><strong>Objective:</strong> If an abnormal roster or mapping condition is supported, use the approved site procedure to isolate or remove the affected robot from the operating system and place it in a safe non-operational state.</p>
+<p><strong>Why this check is next:</strong> The incident reports site-side removal of a robot from the system and placement on a charger, followed by reported system recovery.</p>
+<p><strong>Action:</strong> If an abnormal roster/mapping condition is supported, isolate/remove the affected robot using the authorized site-side physical action path and place it into a safe non-operational state (e.g., charging) without creating hazards; then confirm the corresponding RMS state as feasible.</p>
+<p><strong>Healthy:</strong> Authorized site personnel confirm the robot is safely isolated/removed from active operation and placed in the intended safe state without creating a new physical hazard.</p>
+<p><strong>Unhealthy:</strong> Robot remains active/obstructed or still associated with the abnormal roster state, and pairing failure continues after the supported action.</p>
+<p><strong>Inconclusive:</strong> The site cannot confirm physical state or corresponding RMS state; or the action cannot be performed safely/within authorization.</p>
+<p><strong>Procedure Reference:</strong></p>
+<ul>
+<li><strong>Trigger condition:</strong> The authorized site operator observes that the identified robot has been removed or isolated from active operation and placed in the reported safe state, such as charging, without creating a new physical hazard. Successful completion is confirmed by the site; failure or uncertainty means the robot cannot be safely isolated, the system-side state is unclear, or the action is outside the executor&#x27;s authorization.</li>
+<li><strong>Selected procedure:</strong> unresolved</li>
+<li><strong>Selection rationale:</strong> n/a</li>
+<li><strong>Success confirmation:</strong> n/a</li>
+<li><strong>Failure boundary:</strong> Stop at the documented failure condition and escalate; do not invent a recovery path.</li>
+</ul>
+<p><strong>Prerequisites:</strong></p>
+<ul>
+<li>None</li>
+<li>None</li>
+</ul>
+<p><strong>Safety checks:</strong></p>
+<ul>
+<li>None</li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>Site removed the robot from the system, placed it on a charger, and reported that the system began functioning again.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Decision Outcomes:</strong></p>
+<ul>
+<li><code>healthy</code> (observer=site; tool=physical_floor): Authorized site-side isolation/removal completed; robot is in a safe non-operational state.</li>
+<li><code>unhealthy</code> (observer=site_or_remote; tool=physical_floor): Robot remains active/unsafe or still associated with abnormal roster/mapping; pairing failure persists.</li>
+<li><code>inconclusive</code> (observer=site; tool=physical_floor): Cannot confirm safe completion or corresponding system-side state; action cannot proceed safely/authorized.</li>
+</ul>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>healthy</code> → <code>node_4</code> when Isolation/removal completed safely and robot isolated</li>
+<li><code>inconclusive</code> → <code>node_5</code> when Unsafe/unauthorized/inconclusive action</li>
+</ul>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h3>4 — Confirm pairing and operational stability (validation_gate)</h3>
+<p><strong>Objective:</strong> Determine whether the affected workflow has recovered after the authorized robot isolation or removal action.</p>
+<p><strong>Why this check is next:</strong> The source reports that the system began functioning after robot removal and remained operational during approximately ten minutes of monitoring, while acknowledging that the recovery was not independently validated by readable RMS data.</p>
+<p><strong>Validate:</strong> Validate recovery by confirming pairing availability and operational stability after the authorized isolation/removal action during a monitoring window, and check RMS for persistent abnormal roster/mapping indicators if readable.</p>
+<p><strong>Success:</strong> Pairing resumes and operation remains stable during observation; RMS no longer shows the relevant abnormal roster/mapping indicator (where readable).</p>
+<p><strong>Failure:</strong> Pairing remains unavailable, AMRs continue abnormal routing, or RMS still shows the relevant unmapped/abnormal state.</p>
+<p><strong>Inconclusive:</strong> Recovery is only reported administratively without direct operational confirmation; RMS screenshots do not show readable final status details; stability monitoring window is not completed.</p>
+<p><strong>Validation Gate:</strong></p>
+<p><strong>Validation checklist:</strong></p>
+<ul>
+<li>Confirm the owning service remains running and stable.</li>
+<li>Confirm the supported API or control endpoint responds.</li>
+<li>Confirm the source-observed HMI state and ask the site to repeat the affected workflow.</li>
+<li>Observe the affected workflow for recurrence during the stated observation window.</li>
+</ul>
+<p><strong>Required evidence sources:</strong> a site interview</p>
+<p><strong>Stable-operation observation:</strong> Observe the affected workflow for recurrence during the defined observation window; a reachable screen or successful request alone is not recovery.</p>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L1_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li><code>proc_display_station_ids_on_map_monitor_quick_select_v1</code> (medium, support, score=0.472) — Display Station IDs on the Map Using Map Monitor Quick Select</li>
+</ul>
+<p><strong>Evidence Collection Procedures:</strong></p>
+<ul>
+<li><code>proc_display_station_ids_on_map_monitor_quick_select_v1</code> — Display Station IDs on the Map Using Map Monitor Quick Select (L1_support): Use the RMS / fleet status UI Map Monitor Quick Select icon “View Station Ids” to overlay unique station identifiers on the live map. This helps identify/debug station-related issues by confirming station locations and their unique IDs are visible.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>Site believed removal may have fixed the issue and support monitored operation.</li>
+<li>System reportedly began functioning again and remained operational during approximately ten minutes of monitoring.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>healthy</code> → <code></code> when Pairing and routing recovered; operation stable during monitoring</li>
+<li><code>unhealthy</code> → <code>node_5</code> when Validation failure (pairing/routing abnormal persists)</li>
+</ul>
+<details class="linked-runbook-group linked-runbook-support" open><summary><strong>Support runbooks</strong> (1)</summary>
+<details class="linked-runbook linked-runbook-support" open><summary><strong>Support runbook:</strong> Display Station IDs on the Map Using Map Monitor Quick Select (<code>proc_display_station_ids_on_map_monitor_quick_select_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> L1_support</li>
+<li><strong>Audience:</strong> support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use the RMS / fleet status UI Map Monitor Quick Select icon “View Station Ids” to overlay unique station identifiers on the live map. This helps identify/debug station-related issues by confirming station locations and their unique IDs are visible.</p>
+<p><strong>When To Use:</strong></p>
+<p>When you need to visually confirm station locations and their unique station IDs on the RMS Map Monitor map (stations are special locations distinct from cells) to support station-related identification/debugging.</p>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>unhealthy</code></td><td>Pairing remains unavailable and abnormal routing persists, or abnormal roster/mapping persists in RMS.</td><td><code>node_5</code></td></tr>
+<tr><td><code>inconclusive</code></td><td>Recovery stated but not independently validated; RMS screenshots are unreadable; monitoring window not completed.</td><td><code>node_5</code></td></tr>
+<tr><td><code>healthy</code></td><td>After selecting “View Station Ids”, station locations on the RMS Map Monitor map display unique station IDs.</td><td><code>node_5</code></td></tr>
+</table>
+<p><strong>Source:</strong> training_video / training_video_day1</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Open RMS Map Monitor Quick Select panel</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the RMS / fleet status UI (Map Monitor) and locate the left-side “Map Monitor Quick Select” panel.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>You can see the Quick Select icons on the left panel, including the “View Station Ids” icon.</p>
+<p><strong>Expected result:</strong></p>
+<p>The left-side “Map Monitor Quick Select” panel is visible with Quick Select icons including “View Station Ids”.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/8de8739ca708d504.jpg" alt="artifact_training_video_training_video_day1_0028_so_this_one_over_here_is_primary_01_12_24_500"><figcaption>Map Monitor Quick Select panel showing the “View Station Ids” icon and related Quick Select icons (e.g., View all AGV active paths, View Charger Ids, Robot/Cell/Charger selection).</figcaption></figure>
+<hr>
+<h5>Step 2 — Select “View Station Ids” overlay</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Click the “View Station Ids” icon in the Quick Select panel.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Unique station IDs appear at station locations on the map.</p>
+<p><strong>Expected result:</strong></p>
+<p>Station locations on the map display unique station IDs after selecting “View Station Ids”.</p>
+<hr>
+<h5>Step 3 — Verify station unique IDs display on the map</h5>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the map, verify that station locations display unique station IDs.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>Station locations (special locations distinct from cells) have visible unique station IDs.</p>
+<p><strong>Expected result:</strong></p>
+<p>Station locations show unique station IDs on the map.</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>After selecting “View Station Ids”, station locations on the RMS Map Monitor map display unique station IDs.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>Station IDs do not appear on the map after selecting “View Station Ids”.</li>
+</ul>
+</details>
+</details>
+<hr>
+<h3>5 — Stop when the supported roster-recovery path is unsafe or unsuccessful (escalation_gate)</h3>
+<p><strong>Objective:</strong> Hand off when the abnormal state cannot be safely isolated, the available evidence is inconclusive, or pairing and stable operation do not return after the supported path.</p>
+<p><strong>Why this check is next:</strong> The incident record shows incomplete and partly conflicting evidence, including unreadable RMS details, a delayed recovery report, and unresolved ambiguity about the cause.</p>
+<p><strong>Action:</strong> If the supported roster-recovery path is unsafe/unsuccessful or validation does not confirm recovery, prepare an escalation handoff with site-observed symptoms, RMS evidence status (including unreadable portions), physical robot state, actions attempted, authorization/safety constraints, and validation results.</p>
+<p><strong>Healthy:</strong> Handoff includes all required evidence and stop criteria; a supported continuation exists only when authorization, safety, system-side state, and recovery evidence are sufficient.</p>
+<p><strong>Unhealthy:</strong> Evidence is missing/contradictory, physical safety or authorization cannot be ensured, or pairing/routing did not recover after supported action.</p>
+<p><strong>Inconclusive:</strong> Cannot determine whether the issue is mechanical vs mapping-related vs another subsystem due to insufficient evidence; RMS values are unreadable and cannot be correlated to pairing workflow.</p>
+<p><strong>Escalation Gate:</strong></p>
+<ul>
+<li><strong>Reason:</strong> Hand off when the abnormal state cannot be safely isolated, the available evidence is inconclusive, or pairing and stable operation do not return after the supported path.</li>
+<li><strong>Required next team:</strong> The owning L2/L3 service or controls team</li>
+</ul>
+<p><strong>Evidence package:</strong></p>
+<ul>
+<li>Site-observed pairing and routing symptoms (what is happening now).</li>
+<li>RMS screenshots/status evidence and whether key values are unreadable.</li>
+<li>Physical robot state (whether isolation/removal occurred and in what safe state).</li>
+<li>Actions attempted and what could not be completed safely or within authorization.</li>
+<li>Validation results (monitoring window outcome: recovered vs not recovered).</li>
+<li>Explicit statement of any ambiguity/inconclusive evidence and missing correlatable identifiers.</li>
+<li>{&#x27;page_ref&#x27;: &#x27;case_228723:page_6&#x27;, &#x27;artifact_id&#x27;: &#x27;artifact_incident_228723_page_006_embedded_image_01&#x27;, &#x27;quote_or_summary&#x27;: &#x27;RMS details are partly unreadable and the meaning of red entries cannot be confirmed.&#x27;}</li>
+<li>{&#x27;page_ref&#x27;: &#x27;case_228723:page_10&#x27;, &#x27;artifact_id&#x27;: &#x27;artifact_incident_228723_page_010_embedded_image_01&#x27;, &#x27;quote_or_summary&#x27;: &#x27;Recovery was reported after robot removal, but direct independent system validation was limited.&#x27;}</li>
+</ul>
+<p><strong>Actions attempted:</strong></p>
+<ul>
+<li>None</li>
+</ul>
+<p><strong>Unresolved questions:</strong></p>
+<ul>
+<li>None</li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> L2_support, L3_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>RMS details are partly unreadable and the meaning of red entries cannot be confirmed.</li>
+<li>Recovery was reported after robot removal, but direct independent system validation was limited.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Decision Outcomes:</strong></p>
+<ul>
+<li><code>escalate</code> (observer=remote; tool=RMS / AGV status UI + site interview + physical_floor notes): Supported recovery cannot be safely continued or validation fails; prepare escalation handoff.</li>
+</ul>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>escalate</code> → <code></code> when Stop and handoff to L2/L3 support</li>
+</ul>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h2>Branch Graph</h2>
+<table>
+<tr><th>From Node</th><th>Outcome</th><th>Condition</th><th>Next Node</th></tr>
+<tr><td><code>node_1</code></td><td><code>unhealthy</code></td><td>Pairing failure + abnormal routing confirmed (with recent add/remove context)</td><td><code>node_2</code></td></tr>
+<tr><td><code>node_1</code></td><td><code>healthy</code></td><td>Pairing is available and abnormal routing pattern is not present</td><td><code></code></td></tr>
+<tr><td><code>node_1</code></td><td><code>inconclusive</code></td><td>Inconclusive (cannot confirm current pairing/routing behavior)</td><td><code></code></td></tr>
+<tr><td><code>node_2</code></td><td><code>unhealthy</code></td><td>RMS abnormal roster/mapping supported</td><td><code>node_3</code></td></tr>
+<tr><td><code>node_2</code></td><td><code>healthy</code></td><td>RMS shows normal roster/mapping or suspected pattern not indicated</td><td><code></code></td></tr>
+<tr><td><code>node_2</code></td><td><code>inconclusive</code></td><td>RMS unreadable/un-correlatable</td><td><code>node_5</code></td></tr>
+<tr><td><code>node_3</code></td><td><code>healthy</code></td><td>Isolation/removal completed safely and robot isolated</td><td><code>node_4</code></td></tr>
+<tr><td><code>node_3</code></td><td><code>inconclusive</code></td><td>Unsafe/unauthorized/inconclusive action</td><td><code>node_5</code></td></tr>
+<tr><td><code>node_4</code></td><td><code>healthy</code></td><td>Pairing and routing recovered; operation stable during monitoring</td><td><code></code></td></tr>
+<tr><td><code>node_4</code></td><td><code>unhealthy</code></td><td>Validation failure (pairing/routing abnormal persists)</td><td><code>node_5</code></td></tr>
+<tr><td><code>node_5</code></td><td><code>escalate</code></td><td>Stop and handoff to L2/L3 support</td><td><code></code></td></tr>
+</table>
+</body>
+</html>

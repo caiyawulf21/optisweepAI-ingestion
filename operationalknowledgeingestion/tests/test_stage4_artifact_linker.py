@@ -115,3 +115,134 @@ def test_collect_candidate_artifact_ids_uses_context_image_refs() -> None:
     artifact_ids = collect_candidate_artifact_ids(candidate, _artifacts(), contexts)
 
     assert "artifact_fig_3_1_operator_station" in artifact_ids
+
+
+def test_prefer_same_section_over_nearby_qa_slide() -> None:
+    artifacts = [
+        {
+            "artifact_id": "artifact_training_ignition_log_ui",
+            "section_id": "training_segment_0012",
+            "page_number": 12,
+            "image_type": "training_video_frame",
+            "title": "Ignition web UI log viewer",
+            "nearby_text": "Open Ignition and review the gateway log for faults.",
+            "retrieval_text": "Ignition web UI log viewer gateway faults",
+            "tags": ["ignition", "log"],
+        },
+        {
+            "artifact_id": "artifact_training_qa_lunch",
+            "section_id": "training_segment_0040",
+            "page_number": 40,
+            "image_type": "training_video_frame",
+            "title": "Questions Comments Concerns Lunch",
+            "nearby_text": "Any questions? Lunch break agenda.",
+            "retrieval_text": "Questions comments concerns lunch break",
+            "tags": ["questions", "lunch"],
+        },
+        {
+            "artifact_id": "artifact_training_db_nearby",
+            "section_id": "training_segment_0013",
+            "page_number": 13,
+            "image_type": "training_video_frame",
+            "title": "SSMS Helix Robotics module",
+            "nearby_text": "SSMS Helix Robotics database module tables",
+            "retrieval_text": "SSMS Helix Robotics database module",
+            "tags": ["ssms", "robotics"],
+        },
+    ]
+    candidate = {
+        "candidate_id": "candidate_training_video_check_ignition_log_in_web_ui",
+        "title": "Check Ignition Log In Web UI",
+        "summary": "Open Ignition web UI and review the gateway log.",
+        "rough_steps": ["Open Ignition", "Review the gateway log"],
+        "related_artifact_ids": [],
+        "source_refs": [{"page": 12, "section_id": "training_segment_0012"}],
+    }
+
+    matched = collect_candidate_artifact_ids(candidate, artifacts, max_results=3)
+
+    assert matched[0] == "artifact_training_ignition_log_ui"
+    assert "artifact_training_qa_lunch" not in matched
+
+
+def test_training_linker_excludes_qa_and_unrelated_database_frames() -> None:
+    artifacts = [
+        {
+            "artifact_id": "artifact_robot_command_database_model",
+            "section_id": "training_segment_0014",
+            "page_number": 14,
+            "image_type": "training_video_frame",
+            "title": "Robot Command Database Model",
+            "short_description": "RobotCommandDatabaseModel active command status sent in progress",
+            "retrieval_text": "Robot Command Database Model EmptyGoTo PickupTote command status",
+            "ocr_text": "Robot Command Database Model",
+            "tags": ["robot_command", "database"],
+        },
+        {
+            "artifact_id": "artifact_agv_active_error_database",
+            "section_id": "training_segment_0015",
+            "page_number": 15,
+            "image_type": "training_video_frame",
+            "title": "AgvActiveErrorDatabaseModel",
+            "short_description": "AGV active error database model ErrorCode SortGuid",
+            "retrieval_text": "AgvActiveErrorDatabaseModel active errors archived activity",
+            "ocr_text": "Agv Active Error Database Model",
+            "tags": ["agv", "error", "database"],
+        },
+        {
+            "artifact_id": "artifact_entity_logs_overview",
+            "section_id": "training_segment_0008",
+            "page_number": 8,
+            "image_type": "training_video_frame",
+            "title": "EntityLogs WCS databases",
+            "short_description": "WCS created databases OptiSweep utilizes entity logs",
+            "retrieval_text": "database model table entity logs overview",
+            "ocr_text": "EntityLogs",
+            "tags": ["database", "entitylogs"],
+        },
+        {
+            "artifact_id": "artifact_questions_comments_lunch",
+            "section_id": "training_segment_0055",
+            "page_number": 55,
+            "image_type": "training_video_frame",
+            "title": "Questions Comments Concerns Lunch",
+            "nearby_text": "check database heartbeats restart OptiSweep RMS",
+            "retrieval_text": "questions comments concerns lunch restart database heartbeats",
+            "tags": ["questions", "lunch"],
+        },
+    ]
+    candidate = {
+        "candidate_id": "candidate_training_video_robot_command_database_check_active_command_status",
+        "title": "Check Robot Command Database model table for active robot command status",
+        "summary": "Use RobotCommandDatabaseModel to determine whether a robot command is active.",
+        "rough_steps": [
+            "Open RobotCommandDatabaseModel",
+            "Check sent versus in-progress timing fields",
+        ],
+        "related_artifact_ids": [],
+        "related_context_ids": ["ctx_robot_command"],
+        "source_refs": [{"page": 14, "section_id": "training_segment_0014"}],
+    }
+    contexts = {
+        "ctx_robot_command": {
+            "context_id": "ctx_robot_command",
+            "related_artifact_ids": [
+                "artifact_robot_command_database_model",
+                "artifact_agv_active_error_database",
+                "artifact_entity_logs_overview",
+                "artifact_questions_comments_lunch",
+            ],
+            "image_refs": [
+                "artifact_robot_command_database_model",
+                "artifact_agv_active_error_database",
+                "artifact_entity_logs_overview",
+            ],
+        }
+    }
+
+    matched = collect_candidate_artifact_ids(candidate, artifacts, contexts, max_results=4)
+
+    assert matched[0] == "artifact_robot_command_database_model"
+    assert "artifact_questions_comments_lunch" not in matched
+    assert "artifact_entity_logs_overview" not in matched
+    assert "artifact_agv_active_error_database" not in matched

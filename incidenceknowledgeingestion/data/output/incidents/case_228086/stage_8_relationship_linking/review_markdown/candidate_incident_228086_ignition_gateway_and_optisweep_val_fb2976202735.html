@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ignition gateway restart and OptiSweep / WCS API response validation</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Ignition gateway restart and OptiSweep / WCS API response validation</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_ignition_gateway_restart_and_optisweep_response_validation_v1</td></tr>
+<tr><th>Title</th><td>Ignition gateway restart and OptiSweep / WCS API response validation</td></tr>
+<tr><th>Procedure Type</th><td>recovery</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>gateway_health, wcs_api_responsiveness, e_stop_or_safety_stop</td></tr>
+<tr><th>Access Surface</th><td>ignition_gateway, apidog, wcs_api, event_viewer, physical_floor</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, operator</td></tr>
+<tr><th>Failure Pattern Tags</th><td>gateway_unhealthy, api_unresponsive, service_crash_or_restart</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the Ignition gateway, Windows Event Viewer / services, and Apidog / WCS API surfaces to restart the Ignition gateway, verify the GetAgvStatuses response, and restart OptiSweep only if the API does not respond. The site operator must place and release the physical E-stop; support must not release it until the API response is confirmed.</p>
+<h2>When To Use</h2>
+<p>Use when the Ignition gateway or OptiSweep / WCS API is not responding and the site is held in the physical E-stop state pending recovery validation. Perform the Ignition gateway restart, verify the Ignition gateway, then validate OptiSweep through the GetAgvStatuses request before returning the system to operation.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/30dd5b0a07803c56.png" alt="artifact_incident_228086_page_015_embedded_image_01" /><figcaption>Windows Administrator Command Prompt showing the Ignition directory, `gwcmd -r`, and `Waiting for Gateway restart...`.</figcaption></figure>
+<figure><img src="assets/6e057be40744620d.png" alt="artifact_incident_228086_page_016_embedded_image_01" /><figcaption>Ignition gateway Status &gt; Systems &gt; Overview showing Current Response Time and Recent Slow Response Events.</figcaption></figure>
+<figure><img src="assets/8625154eb02b186c.png" alt="artifact_incident_228086_page_017_embedded_image_01" /><figcaption>Apidog / WCS API GetAgvStatuses response showing HTTP 200, AGV records, visible NORMAL values, and the response-schema warning.</figcaption></figure>
+<figure><img src="assets/3832c5ce44b05a86.png" alt="artifact_incident_228086_page_019_embedded_image_01" /><figcaption>Windows Event Viewer / services surface showing OptiSweep selected with status Running and the Restart the service control visible.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Place the system in the physical E-stop state</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the physical floor / grid, have the site operator place the system in the physical E-stop state and keep it active throughout recovery.</p>
+<p><strong>Expected result:</strong></p>
+<p>The physical E-stop is active and remains active while the Ignition gateway and OptiSweep / WCS API are restarted or checked.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop if the site cannot confirm the physical E-stop state.</li>
+<li>Escalate any safety uncertainty; do not continue toward E-stop release.</li>
+</ul>
+<hr>
+<h3>Step 2 — Restart the Ignition gateway</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the Windows Event Viewer / services surface, open a Windows Administrator Command Prompt, navigate to the Inductive Automation Ignition installation directory, run `gwcmd -r`, and wait for the console to show `Waiting for Gateway restart...`.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Windows Administrator Command Prompt shows `gwcmd -r` executed from the Ignition directory and displays `Waiting for Gateway restart...`.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if the Ignition gateway restart command cannot be executed or the gateway does not return for later verification.</li>
+</ul>
+<hr>
+<h3>Step 3 — Verify the Ignition gateway Systems Overview</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the Ignition gateway, open Status &gt; Systems &gt; Overview and check that the page responds, including Current Response Time and Recent Slow Response Events.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Ignition gateway Systems Overview responds and displays a Current Response Time; the incident evidence showed 11 ms and `No events to display` under Recent Slow Response Events.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the Ignition gateway does not return to the Systems Overview page.</li>
+</ul>
+<hr>
+<h3>Step 4 — Validate OptiSweep / WCS API responsiveness</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the Apidog / WCS API surface, send the `GetAgvStatuses` request and inspect the response for HTTP Success / Status 200 and returned AGV records, including visible status values such as `NORMAL`.</p>
+<p><strong>Expected result:</strong></p>
+<p>The GetAgvStatuses request returns HTTP 200 with AGV records; the incident response showed visible `NORMAL` status values.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop before releasing the physical E-stop if GetAgvStatuses does not return a response.</li>
+<li>Record the response-schema warning `Response data differs from endpoint spec` and `$ should be object` for review even when HTTP 200 and AGV records are returned.</li>
+</ul>
+<hr>
+<h3>Step 5 — Restart OptiSweep only if GetAgvStatuses does not respond</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If GetAgvStatuses does not respond, open Windows Event Viewer / services, select OptiSweep, use the visible `Restart the service` control, then return to Apidog / WCS API and send GetAgvStatuses again.</p>
+<p><strong>Expected result:</strong></p>
+<p>After the documented OptiSweep service restart, GetAgvStatuses returns a response with AGV records; Windows Event Viewer / services shows OptiSweep in a Running state when inspected.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop before releasing the physical E-stop if GetAgvStatuses remains nonresponsive after the documented OptiSweep restart and repeat check.</li>
+<li>Escalate if OptiSweep does not show Running.</li>
+</ul>
+<hr>
+<h3>Step 6 — Release the physical E-stop and confirm auto bag-out</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>After the GetAgvStatuses response is confirmed, have the site operator release the physical E-stop on the physical floor / grid and confirm that the site can resume the auto bag-out operation.</p>
+<p><strong>Expected result:</strong></p>
+<p>The site operator releases the physical E-stop and confirms that auto bag-out can resume.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Do not release the physical E-stop until GetAgvStatuses responsiveness is confirmed.</li>
+<li>Escalate if the site cannot resume auto bag-out after the operator releases the E-stop.</li>
+</ul>
+<hr>
+</body>
+</html>

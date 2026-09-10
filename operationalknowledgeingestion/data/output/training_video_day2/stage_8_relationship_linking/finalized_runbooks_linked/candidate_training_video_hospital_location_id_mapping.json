@@ -1,0 +1,342 @@
+{
+  "procedure_id": "proc_verify_hospital_pickup_and_drop_off_location_id_mapping_v1",
+  "candidate_id": "candidate_training_video_hospital_location_id_mapping",
+  "title": "Verify Hospital Pickup and Drop-Off Location ID Mapping",
+  "procedure_type": "diagnostic",
+  "summary": "Use the WCS / Helix DB (SSMS) read-only view of the Sorter Sweeper Database to verify that hospital station pickup and drop-off identifiers resolve to the intended Location records.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "hospital_diversion"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "mapping_abnormal"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this WCS / Helix DB (SSMS) diagnostic when validating hospital station configuration or investigating whether hospital pickup and drop-off identifiers resolve to Location records.",
+  "not_for": [
+    "Do not use this WCS / Helix DB (SSMS) procedure to change hospital station IDs, pickup IDs, drop-off IDs, or database relationships.",
+    "Do not use this procedure as a general database-model orientation or training walkthrough without a live mapping check."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support performs the read-only WCS / Helix DB (SSMS) inspection and records the matched identifiers.",
+    "L3_support reviews or receives escalation for missing, unexpected, ambiguous, or otherwise unresolved relationships."
+  ],
+  "safety_notes": [
+    "Use the WCS / Helix DB (SSMS) view in read-only mode.",
+    "Do not alter IDs or database relationships during this diagnostic."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "Sorter Sweeper Database",
+    "Location table/model",
+    "HospitalStation table/model",
+    "HospitalStationId",
+    "PickupId",
+    "DropOffId",
+    "Location ID"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Read-only access to the WCS / Helix DB (SSMS) Sorter Sweeper Database."
+    ],
+    "system_preconditions": [
+      "A hospital station or hospital station identifier is available for inspection."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_hospital_location_ids_v1",
+    "ctx_training_video_hospital_tags_model_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+      "description": "WCS / Helix DB (SSMS) Hospital Tags model view showing HospitalStation, PickupId, DropOffId, HospitalStationId, Location-related fields, and tag model fields.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Sorter Sweeper location models",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Establish the live WCS / Helix DB (SSMS) records needed for the mapping check.",
+      "instruction": "In the WCS / Helix DB (SSMS) read-only view, open the Sorter Sweeper Database and locate the Location and HospitalStation records or models. Identify the available HospitalStationId, PickupId, DropOffId, and Location ID fields.",
+      "expected_result": "The WCS / Helix DB (SSMS) view exposes the hospital station and location records needed for comparison.",
+      "healthy_condition": "Both the HospitalStation information and the Location records are available, with location-related identifier fields visible.",
+      "failure_condition": "The required HospitalStation or Location records are unavailable, or the relevant identifier fields cannot be identified.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open location models",
+          "exact_action": "Locate the Location and HospitalStation records in the Sorter Sweeper Database.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate to L3_support if the required WCS / Helix DB (SSMS) records or identifier fields are not available."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "source_document_id": "training_video_day2_video",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:48:01.000",
+          "timestamp_end": "02:01:19.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+          "quote_or_summary": "The HospitalStation and Location models include the hospital station pickup and drop-off identifiers and location identifiers."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Identify the hospital station pickup and drop-off IDs",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Obtain the identifiers that must resolve to Location records.",
+      "instruction": "In the WCS / Helix DB (SSMS) HospitalStation record, identify the hospital station's HospitalStationId, PickupId, and DropOffId. Treat the pickup and drop-off identifiers as the location identifiers described for the hospital station.",
+      "expected_result": "The WCS / Helix DB (SSMS) HospitalStation record provides the pickup and drop-off identifiers associated with the selected hospital station.",
+      "healthy_condition": "A HospitalStationId is associated with identifiable PickupId and DropOffId values.",
+      "failure_condition": "A PickupId or DropOffId is absent, cannot be associated with a HospitalStationId, or is not identifiable in the HospitalStation record.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect hospital station identifiers",
+          "exact_action": "Locate the HospitalStationId, PickupId, and DropOffId values in the HospitalStation record.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate to L3_support if the selected hospital station has no identifiable PickupId or DropOffId."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "source_document_id": "training_video_day2_video",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:54:40.000",
+          "timestamp_end": "01:54:40.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+          "quote_or_summary": "The hospital station pickup and drop-off IDs are described as location IDs associated with entries in the Location table."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Compare identifiers with Location records",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Verify that each hospital station identifier resolves to an intended Location row.",
+      "instruction": "In the WCS / Helix DB (SSMS) Location records, compare the HospitalStation PickupId and DropOffId from the selected HospitalStation record with the corresponding Location IDs. Check each identifier separately and determine whether it resolves to one identifiable Location row.",
+      "expected_result": "Each hospital station PickupId and DropOffId resolves to an identifiable Location record, with the associated location identifier visible in the WCS / Helix DB (SSMS).",
+      "healthy_condition": "Both identifiers resolve to Location rows and the relationship is unambiguous for the hospital station being checked.",
+      "failure_condition": "A PickupId or DropOffId has no matching Location row, maps to an unexpected location, or produces multiple or otherwise ambiguous matches.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check pickup location",
+          "exact_action": "Compare the hospital station PickupId with the Location records.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Check drop-off location",
+          "exact_action": "Compare the hospital station DropOffId with the Location records.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate to L2_support or L3_support if a PickupId or DropOffId has no matching Location row.",
+        "Stop and escalate if an identifier maps to an unexpected or ambiguous Location relationship."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "source_document_id": "training_video_day2_video",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:54:40.000",
+          "timestamp_end": "01:54:40.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+          "quote_or_summary": "The implementation was described as having one pickup ID and one drop-off ID resolving to location IDs in the Location table; the relationship should be checked against the Location records."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Record the matched location records",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Preserve the observed mapping for the hospital station under investigation.",
+      "instruction": "From the WCS / Helix DB (SSMS) inspection, record the HospitalStationId, PickupId, DropOffId, the matched Location IDs, and the associated HospitalStation or Location records. Record any missing, unexpected, or ambiguous relationship without modifying the database.",
+      "expected_result": "The diagnostic record contains the observed hospital station identifiers and their matched Location records, or clearly identifies an unresolved mapping.",
+      "healthy_condition": "The recorded PickupId and DropOffId each have one identifiable associated Location record.",
+      "failure_condition": "The recorded result shows a missing, unexpected, or ambiguous Location relationship.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Record mapping result",
+          "exact_action": "Record the matched location IDs and the associated hospital station or location records.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate the recorded result to L3_support when a pickup or drop-off ID does not resolve or resolves unexpectedly.",
+        "Do not modify IDs or database relationships."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "source_document_id": "training_video_day2_video",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:54:40.000",
+          "timestamp_end": "01:54:40.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+          "quote_or_summary": "Hospital pickup and drop-off IDs are associated with Location identifiers; unresolved relationships require investigation rather than modification."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The HospitalStationId, PickupId, and DropOffId are identifiable in the WCS / Helix DB (SSMS).",
+    "The PickupId resolves to an identifiable Location record.",
+    "The DropOffId resolves to an identifiable Location record.",
+    "The observed relationships are unambiguous and are recorded without changing database data."
+  ],
+  "healthy_conditions": [
+    "The hospital station pickup and drop-off identifiers each resolve to one identifiable Location row.",
+    "The matched Location records correspond to the intended hospital station relationship."
+  ],
+  "failure_conditions": [
+    "A PickupId has no matching Location record.",
+    "A DropOffId has no matching Location record.",
+    "An identifier maps to an unexpected Location record.",
+    "An identifier produces an ambiguous or unresolved relationship.",
+    "The required HospitalStation or Location fields cannot be identified in the WCS / Helix DB (SSMS)."
+  ],
+  "escalation_guidance": [
+    "Escalate to L2_support or L3_support when a pickup or drop-off ID has no matching Location record, maps to an unexpected location, or produces an unresolved or ambiguous relationship.",
+    "Do not alter IDs or database relationships during the diagnostic."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 22,
+      "section_id": "training_video_day2_segment_0022",
+      "timestamp_start": "01:48:01.000",
+      "timestamp_end": "02:01:19.000",
+      "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+      "quote_or_summary": "Hospital station pickup and drop-off IDs are described as location IDs associated with entries in the Location table."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+      "what_to_look_at": "Hospital station pickup and drop-off IDs are described as location IDs associated with entries in the Location table."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_hospital_location_id_mapping"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide a complete read-only SQL query.",
+    "The packet does not provide the exact live database name, schema name, or complete production column names for the Location and HospitalStation models.",
+    "The database model view indicates that some primary-key or location-related fields were not shown; an SME must confirm the exact live field names before operational use.",
+    "The current implementation was described as one-to-one for pickup and drop-off location mapping, but the packet does not define the validation rule for future one-to-many configurations.",
+    "The packet does not define the required recording system or template for storing matched identifiers."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000"
+  ]
+}

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Verify Sorter Queue Routing: Entrance Queue → Queue Locations → Sorter Queue Locations → Exit Queue → Shutdown Queues</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Verify Sorter Queue Routing: Entrance Queue → Queue Locations → Sorter Queue Locations → Exit Queue → Shutdown Queues</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_verify_sorter_queue_routing_entrance_to_shutdown_v1</td></tr>
+<tr><th>Title</th><td>Verify Sorter Queue Routing: Entrance Queue → Queue Locations → Sorter Queue Locations → Exit Queue → Shutdown Queues</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L1_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>robot_dwell_or_shutdown_staging</td></tr>
+<tr><th>Access Surface</th><td>rms_ui, site_interview</td></tr>
+<tr><th>Audience Roles</th><td>L1_support, operator</td></tr>
+<tr><th>Failure Pattern Tags</th><td>sort_lifecycle_stuck, zone_agv_mismatch</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the live sorter layout view (via RMS / fleet status UI when available, or site visual confirmation) to verify that AGVs/totes follow the documented sorter queue routing sequence: entrance queue first, then exchange staging (queue locations), then sorter queue locations for tote pickup/aisle entry, then exit queue after exchange, and finally shutdown queue positioning based on tote presence (including the &#x27;off the end&#x27; path when entering shutdown from the entrance with a tote).</p>
+<h2>When To Use</h2>
+<p>When you need to confirm that sorter queue routing is behaving correctly during normal sorter flow and during shutdown entry, specifically validating the expected queue-to-queue transitions and tote-dependent shutdown positioning.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/d4c5dd8d9edcbcd4.jpg" alt="artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000" /><figcaption>Training segment frame used as the evidence for the named sorter queue areas and the documented routing behavior (entrance queue, queue locations for exchange staging, sorter queue locations for tote pickup/aisle entry, exit queue, shutdown queues under the rack vs tote-dependent shutdown location, and &#x27;off the end&#x27; when entering shutdown from entrance with a tote).</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Identify the sorter queue areas in the live layout view</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the live sorter layout view available to support (RMS / fleet status UI when available), identify the following queue areas: entrance queue; queue locations (exchange staging); sorter queue locations (tote pickup / aisle entry); exit queue; shutdown queues (including under-rack shutdown locations for AGVs without totes and the shutdown location for AGVs with totes). If the live layout does not clearly label these areas, use site interview / visual confirmation to map the live labels to these documented queue-area names.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can point to (or otherwise map) each of the named queue areas in the live view: entrance queue, queue locations for exchange staging, sorter queue locations for tote pickup/aisle entry, exit queue, and shutdown queues with tote-dependent positioning.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the live layout view does not clearly label these queue areas, stop and use the site interview/visual confirmation to map the live labels to the documented queue names.</li>
+</ul>
+<hr>
+<h3>Step 2 — Confirm AGV/tote enters via the entrance queue first</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Observe an AGV/tote that is entering the sorter area in the live view and confirm it first appears in the entrance queue.</p>
+<p><strong>Expected result:</strong></p>
+<p>The observed AGV/tote appears first in the entrance queue (no bypass to later queue areas).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if an AGV/tote appears to bypass the entrance queue.</li>
+</ul>
+<hr>
+<h3>Step 3 — Confirm transition from entrance queue to exchange staging (queue locations)</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>After the entrance queue, confirm the same AGV/tote transitions to the queue locations area where AGVs stage behind for an exchange.</p>
+<p><strong>Expected result:</strong></p>
+<p>The observed AGV/tote moves from the entrance queue into the queue locations (exchange staging) area.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the AGV/tote does not stage in the exchange queue locations before sorter pickup.</li>
+</ul>
+<hr>
+<h3>Step 4 — Confirm tote pickup at sorter queue locations (aisle entry)</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Confirm that after exchange staging, the tote is picked up at the sorter queue locations (the area described as where you pick up the tote and leave into the aisle).</p>
+<p><strong>Expected result:</strong></p>
+<p>The observed item reaches the sorter queue locations area where tote pickup/aisle entry occurs.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the AGV/tote does not reach the sorter queue locations for tote pickup/aisle entry after exchange staging.</li>
+</ul>
+<hr>
+<h3>Step 5 — Confirm post-exchange routing to exit queue</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>After an exchange, confirm the AGV/tote goes to the exit queue (described as where it goes as it leaves before it could go to anywhere else for shutdown).</p>
+<p><strong>Expected result:</strong></p>
+<p>The observed item transitions to the exit queue after exchange.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the AGV/tote does not go to the exit queue after exchange.</li>
+</ul>
+<hr>
+<h3>Step 6 — Confirm shutdown queue positioning based on tote presence</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>When the system is in shutdown, confirm shutdown queue positioning based on tote presence: observe AGVs without totes moving to shutdown locations under the rack, and observe AGVs with totes moving to the shutdown location described as “for AGVs with Tots.”</p>
+<p><strong>Expected result:</strong></p>
+<p>In shutdown, the observed AGV/tote ends up in the correct shutdown location corresponding to whether a tote is present.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the AGV/tote ends up in the wrong shutdown location for tote presence.</li>
+</ul>
+<hr>
+<h3>Step 7 — Confirm &#x27;off the end&#x27; behavior when entering shutdown from the entrance with a tote</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If entering shutdown from the entrance while a tote is present, confirm the documented &#x27;off the end&#x27; path occurs before the shutdown location (entrance → off the end → shutdown).</p>
+<p><strong>Expected result:</strong></p>
+<p>For a tote-present item entering shutdown from the entrance, the item is observed at the &#x27;off the end&#x27; location before it reaches the shutdown location.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the &#x27;off the end&#x27; path does not occur when entering shutdown from the entrance with a tote.</li>
+</ul>
+<hr>
+</body>
+</html>

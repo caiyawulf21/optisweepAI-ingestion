@@ -60,7 +60,6 @@ def main(
     typer.echo(f"Dropped candidates:         {report['dropped_candidate_count']}")
     typer.echo(f"Deduped candidates:         {report['deduped_candidate_count']}")
     typer.echo(f"Missing sections:           {len(report['missing_candidate_sections'])}")
-    typer.echo(f"Missing priorities:         {len(report['missing_priority_candidates'])}")
 
 
 if __name__ == "__main__":

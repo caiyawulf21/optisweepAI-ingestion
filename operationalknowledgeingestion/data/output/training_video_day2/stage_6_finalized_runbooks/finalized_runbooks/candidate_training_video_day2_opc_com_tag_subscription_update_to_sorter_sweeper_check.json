@@ -1,0 +1,458 @@
+{
+  "procedure_id": "proc_check_opc_com_tag_subscription_updates_to_sorter_sweeper_v1",
+  "candidate_id": "candidate_training_video_day2_opc_com_tag_subscription_update_to_sorter_sweeper_check",
+  "title": "Check OPC COM tag subscription updates flowing to Sorter Sweeper (Ignition tag provider → OPC server → Sorter Sweeper processing)",
+  "procedure_type": "diagnostic",
+  "summary": "Verify that OPC COM is actively subscribing to tags and that tag updates are being written to the OPC server and forwarded to the Sorter Sweeper module for processing by checking live WCS/Helix DB (SSMS) tables/models for OPC COM activity and correlating it to Sorter Sweeper processing records; also confirm Ignition gateway health when needed.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "wcs_api_responsiveness",
+    "gateway_health"
+  ],
+  "access_surface": [
+    "wcs_sql",
+    "ignition_gateway"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive",
+    "gateway_unhealthy"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when you need to confirm the live tag flow: OPC COM subscribes to tags, tag updates are written via the OPC server/ignition tag provider, and Sorter Sweeper receives/acts on those updates.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Execute live database correlation checks (WCS/Helix DB via SSMS) and validate Ignition gateway health when required."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "SSMS / Helix DB (wcs_sql)",
+    "Ignition gateway (ignition_gateway) for basic health check"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2_support access to WCS/Helix DB via SSMS (wcs_sql)"
+    ],
+    "system_preconditions": [
+      "Live OptiSweep/WCS database is reachable from SSMS."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_opc_com_tag_flow_v1",
+    "ctx_training_video_sorter_sweeper_system_overview_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0041_this_is_just_the_gateway_and_primary_03_03_43_000",
+      "description": "Ignition gateway performance page used as a support view for memory/performance behavior (used here only as a health-check visual reference).",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open WCS/Helix DB (SSMS) and connect to the live OptiSweep/WCS database catalog",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish a live view of the OptiSweep/WCS databases that include OPC Comms and Sorter Sweeper data needed for correlation.",
+      "instruction": "Using SSMS / Helix DB (wcs_sql), connect to the live OptiSweep/WCS database catalog that includes the OPC Comms and Sorter Sweeper modules.",
+      "expected_result": "SSMS connection is established and you can browse the live database objects for the OPC Comms and Sorter Sweeper modules.",
+      "healthy_condition": "You can access the live database objects needed to query OPC Comms and Sorter Sweeper-related models/tables.",
+      "failure_condition": "You cannot connect to the live database or cannot access the relevant module databases/objects.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Connect to live WCS/Helix DB",
+          "exact_action": "Open SSMS / Helix DB (wcs_sql) and connect to the live OptiSweep/WCS database catalog that includes the OPCComms and SorterSweeper modules.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot connect to the live WCS/Helix DB, stop and escalate (database access/connectivity issue)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 4,
+          "section_id": "training_video_day2_segment_0004",
+          "timestamp_start": "00:03:53.000",
+          "timestamp_end": "00:07:52.000",
+          "quote_or_summary": "OPC COM module connects to the OPC server and subscribes to tags; when a tag is updated, it sends the update to the Sortersweeper module for processing."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 8,
+          "section_id": "training_video_day2_segment_0008",
+          "timestamp_start": "00:11:14.000",
+          "timestamp_end": "00:11:14.000",
+          "quote_or_summary": "As an overview... we have our databases, which is Audit Geek, OPC Comms, Robotics, and Sworder Sweeper."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Locate live OPC COM communications and Sorter Sweeper processing models/tables",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Identify the specific live objects that represent OPC COM tag subscription/update activity and Sorter Sweeper processing so you can correlate them by timeframe/tag identity.",
+      "instruction": "In SSMS / Helix DB (wcs_sql), locate the live tables/models for OPC COM communications and for Sorter Sweeper processing.",
+      "expected_result": "You have identified the live OPC COM communications objects and the live Sorter Sweeper processing objects that will be used for correlation.",
+      "healthy_condition": "The identified objects correspond to OPC Comms and Sorter Sweeper databases/models used for tag subscription/update and processing.",
+      "failure_condition": "You cannot identify the correct live objects for OPC COM communications and Sorter Sweeper processing (no clear mapping to the live schema).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate module objects",
+          "exact_action": "Locate the live tables/models for OPC COM communications (opc_comms) and Sorter Sweeper processing (sorter_sweeper).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot locate the correct live OPC Comms and Sorter Sweeper objects, stop and escalate (schema mapping gap)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 8,
+          "section_id": "training_video_day2_segment_0008",
+          "timestamp_start": "00:11:14.000",
+          "timestamp_end": "00:11:14.000",
+          "quote_or_summary": "we have our databases, which is Audit Geek, OPC Comms, Robotics, and Sworder Sweeper."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 4,
+          "section_id": "training_video_day2_segment_0004",
+          "timestamp_start": "00:05:52.500",
+          "timestamp_end": "00:05:52.500",
+          "segment_id": "segment_training_video_0004",
+          "artifact_id": "artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500",
+          "quote_or_summary": "The OPC communication module connects to the OPC server and subscribes to tags. When a tag is updated, it sends the update to the Sortersweeper module for processing."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Check for recent OPC COM tag update activity in OPC COM communications objects",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm that OPC COM is actively receiving/subscribing to tag updates and that updates are being written to the OPC server (observable as recent update activity in OPC COM-related records).",
+      "instruction": "Using the OPC COM communications objects you identified in SSMS / Helix DB (wcs_sql), check for recent tag update activity (e.g., recently updated records/timestamps) for the relevant subscribed tags.",
+      "expected_result": "There are recent records showing tag update activity (updated timestamps/entries) in the OPC COM communications objects.",
+      "healthy_condition": "OPC COM shows continuous/recent tag update activity (recent rows/records with updated timestamps for relevant tags).",
+      "failure_condition": "No recent tag update activity is present in OPC COM communications objects.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify recent tag updates",
+          "exact_action": "Check for recent tag update activity in the OPC COM tables/models (evidence of tag updates being written to the OPC server).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if OPC COM shows no recent tag updates (possible OPC server connectivity/subscription issue)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 4,
+          "section_id": "training_video_day2_segment_0004",
+          "timestamp_start": "00:05:52.500",
+          "timestamp_end": "00:05:52.500",
+          "segment_id": "segment_training_video_0004",
+          "artifact_id": "artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500",
+          "quote_or_summary": "The OPC communication module connects to the OPC server and subscribes to tags. When a tag is updated, it sends the update to the Sortersweeper module for processing."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 4,
+          "section_id": "training_video_day2_segment_0004",
+          "timestamp_start": "00:03:53.000",
+          "timestamp_end": "00:07:52.000",
+          "quote_or_summary": "Sorter Sweeper also sends messages to the OPC communication module, which writes the data to the OPC server and using tag provider gets back to Todd."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Correlate OPC COM tag updates to Sorter Sweeper processing records",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm that tag updates observed in OPC COM are actually being forwarded/processed by Sorter Sweeper (not just received by OPC COM).",
+      "instruction": "In SSMS / Helix DB (wcs_sql), correlate the timeframe of the recent OPC COM tag update activity to Sorter Sweeper processing records; if available, match tag identifiers between the two.",
+      "expected_result": "Sorter Sweeper has corresponding processing entries for the same tag update timeframe (and, if available, matching tag identifiers).",
+      "healthy_condition": "For recent OPC COM updates, Sorter Sweeper shows corresponding processing entries in the same timeframe.",
+      "failure_condition": "OPC COM updates exist, but there are no corresponding Sorter Sweeper processing records for that timeframe.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Timeframe correlation",
+          "exact_action": "Correlate those tag updates to Sorter Sweeper processing records.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if OPC COM updates exist but there are no corresponding Sorter Sweeper processing records."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 4,
+          "section_id": "training_video_day2_segment_0004",
+          "timestamp_start": "00:05:52.500",
+          "timestamp_end": "00:05:52.500",
+          "segment_id": "segment_training_video_0004",
+          "artifact_id": "artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500",
+          "quote_or_summary": "When a tag is updated, it sends the update to the Sortersweeper module for processing."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "If applicable, verify Ignition gateway health for tag provider connectivity",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure the Ignition gateway is not in a failed/unreachable state that would prevent tag updates from being provided to the OPC COM/OPC server path.",
+      "instruction": "Using Ignition gateway (ignition_gateway), perform a basic health check to confirm the gateway is not in a failed/unreachable state.",
+      "expected_result": "Ignition gateway status indicates it is reachable/healthy enough to provide tag updates.",
+      "healthy_condition": "Ignition gateway is not in a failed/unreachable state; performance indicators do not show obvious crash behavior (e.g., memory spiked then dropped to 0).",
+      "failure_condition": "Ignition gateway appears failed/unreachable or shows obvious crash/performance failure behavior.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check gateway performance/health",
+          "exact_action": "Use the Ignition gateway performance page as a support view for memory/performance behavior.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if Ignition gateway health indicates it is failed/unreachable (tag provider connectivity issue)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 4,
+          "section_id": "training_video_day2_segment_0004",
+          "timestamp_start": "00:03:53.000",
+          "timestamp_end": "00:07:52.000",
+          "quote_or_summary": "The OPC COM module, ignition's built in tag provider is used to connect to the hospital and the tippers relaying the relevant tags."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 41,
+          "section_id": "training_video_day2_segment_0041",
+          "timestamp_start": "03:03:43.000",
+          "timestamp_end": "03:03:43.000",
+          "segment_id": "segment_training_video_0041",
+          "artifact_id": "artifact_training_video_training_video_day2_0041_this_is_just_the_gateway_and_primary_03_03_43_000",
+          "quote_or_summary": "Ignition gateway performance page: if you had a crash, memory spiked and then dropped to 0."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Stop and escalate based on correlation results",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure fast routing when the tag flow is broken at either the OPC COM subscription/update stage or the Sorter Sweeper processing stage.",
+      "instruction": "Based on your findings from Steps 3–4, stop and escalate using the failure mode that matches the observed evidence.",
+      "expected_result": "Escalation is triggered only when the evidence indicates missing tag updates or missing Sorter Sweeper processing correlation.",
+      "healthy_condition": "OPC COM shows recent tag updates and Sorter Sweeper shows corresponding processing entries for the same timeframe.",
+      "failure_condition": "Either OPC COM has no recent tag updates, or OPC COM updates exist but Sorter Sweeper has no corresponding processing records.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Escalate with failure mode",
+          "exact_action": "Stop and escalate if OPC COM tag updates are not present or if OPC COM updates exist but there are no corresponding Sorter Sweeper processing records.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "OPC COM shows no recent tag updates (possible OPC server connectivity/subscription issue).",
+        "OPC COM updates exist but there are no corresponding Sorter Sweeper processing records (possible Sorter Sweeper subscription/processing failure)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 4,
+          "section_id": "training_video_day2_segment_0004",
+          "timestamp_start": "00:05:52.500",
+          "timestamp_end": "00:05:52.500",
+          "segment_id": "segment_training_video_0004",
+          "artifact_id": "artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500",
+          "quote_or_summary": "OPC communication module subscribes to tags; when a tag is updated, it sends the update to the Sortersweeper module for processing."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Live evidence shows recent OPC COM tag update activity (recent records with updated timestamps for relevant tags).",
+    "Sorter Sweeper has corresponding processing entries for the same tag update timeframe (and, if available, matching tag identifiers)."
+  ],
+  "healthy_conditions": [
+    "OPC COM communications objects show continuous/recent tag update activity.",
+    "Sorter Sweeper processing records correlate to the same tag update timeframe."
+  ],
+  "failure_conditions": [
+    "No recent tag update activity in OPC COM communications objects.",
+    "OPC COM updates exist but Sorter Sweeper processing records are missing for the same timeframe."
+  ],
+  "escalation_guidance": [
+    "If OPC COM shows no recent tag updates: escalate as a likely OPC server connectivity/subscription issue.",
+    "If OPC COM updates exist but Sorter Sweeper processing does not: escalate as a likely Sorter Sweeper subscription/processing failure."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0041_this_is_just_the_gateway_and_primary_03_03_43_000",
+      "description": "Ignition gateway performance page (memory/performance behavior example).",
+      "required_level": "optional"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 4,
+      "section_id": "training_video_day2_segment_0004",
+      "timestamp_start": "00:03:53.000",
+      "timestamp_end": "00:07:52.000",
+      "quote_or_summary": "OPC COM module connects to the OPC server and subscribes to tags; when a tag is updated, it sends the update to the Sorter Sweeper module for processing; Ignition built-in tag provider is used to connect to the hospital and the tippers."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 4,
+      "section_id": "training_video_day2_segment_0004",
+      "timestamp_start": "00:05:52.500",
+      "timestamp_end": "00:05:52.500",
+      "segment_id": "segment_training_video_0004",
+      "artifact_id": "artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500",
+      "quote_or_summary": "When a tag is updated, it sends the update to the Sortersweeper module for processing."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 8,
+      "section_id": "training_video_day2_segment_0008",
+      "timestamp_start": "00:11:14.000",
+      "timestamp_end": "00:11:14.000",
+      "quote_or_summary": "WCS creates several databases as default; OptiSweep uses databases including OPC Comms and Sworder Sweeper."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 41,
+      "section_id": "training_video_day2_segment_0041",
+      "timestamp_start": "03:03:43.000",
+      "timestamp_end": "03:03:43.000",
+      "artifact_id": "artifact_training_video_training_video_day2_0041_this_is_just_the_gateway_and_primary_03_03_43_000",
+      "quote_or_summary": "Ignition gateway performance page: if you had a crash, memory spiked and then dropped to 0."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0041_this_is_just_the_gateway_and_primary_03_03_43_000",
+      "what_to_look_at": "Ignition gateway performance page: if you had a crash, memory spiked and then dropped to 0."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500",
+      "what_to_look_at": "When a tag is updated, it sends the update to the Sortersweeper module for processing."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_opc_com_tag_subscription_update_to_sorter_sweeper_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The training segment does not provide concrete SSMS table/model names or column names for the OPC COM communications objects and Sorter Sweeper processing objects; the runbook therefore cannot specify exact queries/fields beyond the observable requirement of recent updated records and correlated processing entries.",
+    "The candidate references specific model/table identifiers (opc_comms, sorter_sweeper), but the packet does not confirm exact live object names/fields for those identifiers."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

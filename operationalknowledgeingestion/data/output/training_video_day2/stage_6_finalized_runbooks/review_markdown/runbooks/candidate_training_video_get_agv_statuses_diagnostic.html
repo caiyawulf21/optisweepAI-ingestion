@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check AGV State, Command Vitals, and Errors in the OptiSweep WCS API</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check AGV State, Command Vitals, and Errors in the OptiSweep WCS API</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_agv_state_command_vitals_and_errors_in_the_optisweep_wcs_api_v1</td></tr>
+<tr><th>Title</th><td>Check AGV State, Command Vitals, and Errors in the OptiSweep WCS API</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L1_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>agv_active_errors, robot_command_or_task_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_api, apidog</td></tr>
+<tr><th>Audience Roles</th><td>L1_support, L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>api_unresponsive</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the OptiSweep / WCS API through Apidog to inspect an AGV&#x27;s live state, current command fields, vitals, network identity, AGV errors, system errors, and errorAlert indicator.</p>
+<h2>When To Use</h2>
+<p>Use this Apidog / OptiSweep WCS API diagnostic when support needs to verify an AGV&#x27;s live state, current command information, vitals, network identity, or AGV and system error indications.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/adfdc59640e17900.jpg" alt="artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500" /><figcaption>Apidog / WCS API overview showing the AGVS area and the Get Agv Statuses request.</figcaption></figure>
+<figure><img src="assets/30f5c770747ce298.jpg" alt="artifact_training_video_training_video_day2_0030_get_agv_status_shows_the_current_primary_02_43_04_500" /><figcaption>Get Agv Statuses response showing AGV name, state, command fields, battery, voltage, status, IP, error fields, and errorAlert.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open Get Agv Statuses in the Apidog WCS API client</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Apidog / WCS API client, open the AGVS area and select the request labeled &quot;Get Agv Statuses&quot;.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Get Agv Statuses request is open and can return an AGV status response.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop the diagnostic and escalate to L2_support if the Get Agv Statuses response cannot be obtained.</li>
+</ul>
+<hr>
+<h3>Step 2 — Identify the AGV and inspect its state in the Apidog WCS API response</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Apidog / WCS API response, locate the affected AGV by its &quot;name&quot; and review its &quot;state&quot;. Record the returned value exactly, including values such as &quot;AtSorterEntranceQueue&quot; or &quot;SWaitingInzone&quot;.</p>
+<p><strong>Expected result:</strong></p>
+<p>The response identifies the AGV and provides its current state value.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L2_support if the response does not identify the AGV or provide its state.</li>
+</ul>
+<hr>
+<h3>Step 3 — Inspect current command fields in the Apidog WCS API response</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Apidog / WCS API response for the identified AGV, review &quot;commandGuid&quot;, &quot;commandName&quot;, and &quot;commandStatus&quot;. Record empty command fields as empty.</p>
+<p><strong>Expected result:</strong></p>
+<p>The response shows the available command GUID, command name, and command status values for the AGV.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L2_support if the command fields are unavailable or cannot be associated with the affected AGV.</li>
+</ul>
+<hr>
+<h3>Step 4 — Inspect AGV vitals and network identity in the Apidog WCS API</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Apidog / WCS API response, review &quot;battery&quot;, &quot;voltage&quot;, &quot;status&quot;, and &quot;ip&quot; for the identified AGV. Record the displayed values without applying an unsupported battery or voltage threshold.</p>
+<p><strong>Expected result:</strong></p>
+<p>The response provides the AGV&#x27;s displayed battery value, voltage value, status, and IP address.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L2_support if the response does not provide the AGV vitals or network identity needed for the diagnostic.</li>
+</ul>
+<hr>
+<h3>Step 5 — Inspect AGV and system errors in the Apidog WCS API response</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Apidog / WCS API response, review &quot;errorCode&quot;, &quot;errorDescription&quot;, &quot;errorCause&quot;, &quot;systemErrorDescription&quot;, &quot;systemErrorResolution&quot;, and &quot;errorAlert&quot;. Treat populated error fields or &quot;errorAlert&quot;: true as reported error indications. For active system errors, the related error information can include the error name, area, error code, last-seen time, system error description, and system error resolution.</p>
+<p><strong>Expected result:</strong></p>
+<p>The response shows the AGV and system error fields and indicates whether errorAlert is true or false.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L2_support when &quot;errorAlert&quot; is true.</li>
+<li>Escalate when AGV or system error fields contain a reported error requiring further investigation.</li>
+</ul>
+<hr>
+</body>
+</html>

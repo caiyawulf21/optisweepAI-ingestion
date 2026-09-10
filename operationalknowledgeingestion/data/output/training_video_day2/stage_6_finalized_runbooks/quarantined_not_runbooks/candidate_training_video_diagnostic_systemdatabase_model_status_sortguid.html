@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check live system state and current Sort GUID in SSMS via Robotics [SystemDatabaseModel]</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check live system state and current Sort GUID in SSMS via Robotics [SystemDatabaseModel]</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_live_system_state_and_sort_guid_in_ssms_systemdatabasemodel_v1</td></tr>
+<tr><th>Title</th><td>Check live system state and current Sort GUID in SSMS via Robotics [SystemDatabaseModel]</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>fleet_system_status, sort_lifecycle_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>system_fault</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use SSMS to query the Robotics database model [Helix2x_1Prod_Robotics].[dbo].[SystemDatabaseModel] and confirm the live system state (Status) and the current active sort identifier (SortGuid).</p>
+<h2>When To Use</h2>
+<p>When you need to verify the current OptiSweep system state and which sort is currently active by reading the live values stored in [dbo].[SystemDatabaseModel] (Status and SortGuid) in the Robotics database.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/ddafaa4a681bc7fb.jpg" alt="artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000" /><figcaption>SSMS/Robotics database screen showing the query against [Helix2x_1Prod_Robotics].[dbo].[SystemDatabaseModel] WITH (SNAPSHOT) and the columns including Status and SortGuid.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open SSMS and connect to the Robotics database [Helix2x_1Prod_Robotics]</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In SSMS, connect to the Robotics database shown as [Helix2x_1Prod_Robotics].</p>
+<p><strong>Expected result:</strong></p>
+<p>SSMS is connected to [Helix2x_1Prod_Robotics] and you can access [dbo].[SystemDatabaseModel].</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you cannot connect to [Helix2x_1Prod_Robotics], stop and escalate for deeper investigation.</li>
+</ul>
+<hr>
+<h3>Step 2 — Query [dbo].[SystemDatabaseModel] using WITH (SNAPSHOT)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Run the query/view for [dbo].[SystemDatabaseModel] as shown in the source, using WITH (SNAPSHOT).</p>
+<p><strong>Expected result:</strong></p>
+<p>A result set is displayed for [Helix2x_1Prod_Robotics].[dbo].[SystemDatabaseModel] that includes columns such as Status and SortGuid.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the query cannot be run, stop and escalate for deeper investigation.</li>
+<li>If the expected columns (Status, SortGuid) are not present in the results, stop and escalate.</li>
+</ul>
+<hr>
+<h3>Step 3 — Locate Status and SortGuid in the results</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the query results, locate the columns/fields labeled Status and SortGuid (the source also shows fields like EntityInserted and EntityLastUpdate).</p>
+<p><strong>Expected result:</strong></p>
+<p>You can see a row where Status and SortGuid values are both visible in the results.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If Status is missing/blank or not one of the documented values, stop and escalate for deeper investigation.</li>
+<li>If the expected columns (Status, SortGuid) are not present, stop and escalate.</li>
+</ul>
+<hr>
+<h3>Step 4 — Validate Status against the documented allowed system states</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Read the current Status value and compare it to the documented set of states: StartingUp, StartUpRequested, Running, ShutDownRequested, Shutdown, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, CloseOutStaged.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Status value shown in the results matches one of the documented allowed values.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If Status is missing/blank or not one of the documented values, stop and escalate for deeper investigation.</li>
+</ul>
+<hr>
+<h3>Step 5 — Confirm SortGuid corresponds to the active sort in the same row as Status</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Read the current SortGuid value from the same row where Status is shown, and confirm it represents the active sort being processed.</p>
+<p><strong>Expected result:</strong></p>
+<p>SortGuid value is visible and is taken from the same row as the current Status value.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If Status is missing/blank or not one of the documented values, stop and escalate for deeper investigation.</li>
+<li>If the query cannot be run or the expected columns (Status, SortGuid) are not present, stop and escalate.</li>
+</ul>
+<hr>
+</body>
+</html>

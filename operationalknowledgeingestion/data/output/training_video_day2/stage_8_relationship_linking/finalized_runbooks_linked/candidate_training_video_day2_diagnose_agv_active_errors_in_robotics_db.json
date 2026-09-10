@@ -1,0 +1,345 @@
+{
+  "procedure_id": "proc_diagnose_active_agv_errors_in_the_robotics_database_v1",
+  "candidate_id": "candidate_training_video_day2_diagnose_agv_active_errors_in_robotics_db",
+  "title": "Diagnose Active AGV Errors in the Robotics Database",
+  "procedure_type": "diagnostic",
+  "summary": "Use read-only SSMS access to the WCS / Helix DB (SSMS) Robotics database to inspect current AGV active-error records and identify the affected robot code, error code, description, and SortGuid. When an error is resolved or an AGV is removed, verify that the record is archived to AGVErrorActivityDatabaseModel with available timing fields.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_active_errors"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "bump_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use the WCS / Helix DB (SSMS) Robotics database when an AGV error must be correlated to the affected robot code, error code, error description, and sort during which the error occurred.",
+  "not_for": [
+    "Do not use this procedure to modify or delete database records.",
+    "Do not use this procedure as a physical AGV recovery or production-stop procedure."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support performs the read-only SSMS inspection of the Robotics database.",
+    "Escalate when the active record cannot be correlated to the reported AGV condition or lacks expected identifying fields."
+  ],
+  "safety_notes": [
+    "Use read-only inspection only.",
+    "Do not modify or delete database records."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "SSMS",
+    "Robotics database",
+    "AgvActiveErrorDatabaseModel",
+    "AGVErrorActivityDatabaseModel"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2_support access to the WCS / Helix DB (SSMS)"
+    ],
+    "system_preconditions": [
+      "An affected AGV or reported AGV error has been identified for correlation."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_agv_active_error_activity_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0015_right_moving_on_excuse_me_the_primary_01_28_41_500",
+      "description": "Robotics database view showing AgvActiveErrorDatabaseModel fields including Name, ErrorCode, error description, and SortGuid.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Robotics active-error table in WCS / Helix DB (SSMS)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Access the live Robotics database table that stores AGV errors currently present in the system.",
+      "instruction": "In WCS / Helix DB (SSMS), open the Robotics database and locate the AgvActiveErrorDatabaseModel table.",
+      "expected_result": "The AgvActiveErrorDatabaseModel table is available for read-only inspection and exposes the active-error fields used for correlation.",
+      "healthy_condition": "The table can be opened and shows active-error records or an empty result set without requiring record changes.",
+      "failure_condition": "The Robotics database or AgvActiveErrorDatabaseModel table cannot be accessed.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open active AGV error table",
+          "exact_action": "Open the Robotics database and locate the AgvActiveErrorDatabaseModel table in SSMS.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if L2_support cannot access the Robotics database or the AgvActiveErrorDatabaseModel table."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0015",
+          "page": 15,
+          "timestamp_start": "01:26:19.000",
+          "timestamp_end": "01:31:04.000",
+          "quote_or_summary": "The AGV Active Error Database model table logs AGV active errors that are currently in the system."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Check for the affected AGV active-error row",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the affected AGV currently has an active error record.",
+      "instruction": "In the AgvActiveErrorDatabaseModel table in WCS / Helix DB (SSMS), check whether a row is present for the affected AGV. Use the Name field as the robot code and inspect ErrorCode, the error description, and SortGuid.",
+      "expected_result": "The result shows either no active-error row for the affected AGV or a row containing the robot code, error code, error description, and SortGuid.",
+      "healthy_condition": "The active-error row, when present, has a Name value identifying the affected robot and populated ErrorCode, description, and SortGuid values.",
+      "failure_condition": "The active record lacks the expected robot code, error code, error description, or SortGuid, or the row cannot be correlated to the affected AGV.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect active AGV error fields",
+          "exact_action": "Check whether a row is present for the affected AGV and inspect Name, ErrorCode, the error description, and SortGuid.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate when the active record lacks the expected robot code, error code, description, or SortGuid fields.",
+        "Escalate when an active-error row cannot be correlated to the reported AGV condition."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0015",
+          "page": 15,
+          "timestamp_start": "01:26:19.000",
+          "timestamp_end": "01:31:04.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0015_right_moving_on_excuse_me_the_primary_01_28_41_500",
+          "quote_or_summary": "The table includes the name, which is the robot code, the error code, a description of the error, and the sort GUID used to identify during which sort the error occurred."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Capture the active error and sort correlation",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Preserve the live database evidence needed to identify the reported AGV error and the associated sort.",
+      "instruction": "From the active-error row in WCS / Helix DB (SSMS), capture the Name robot code, ErrorCode, error description, and SortGuid. For example, the source shows error code 21057 with the description \"Front bumper trigger.\" Use SortGuid as the identifier for the sort during which the error occurred.",
+      "expected_result": "The diagnostic record contains the affected robot code, active error code, description, and SortGuid, including the sort association when the active row provides it.",
+      "healthy_condition": "The captured values form a consistent active-error record that can be correlated to the affected AGV and reported condition.",
+      "failure_condition": "The error description cannot be correlated to the reported condition, or the active row does not provide enough identifying information.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Capture error evidence",
+          "exact_action": "Capture Name, ErrorCode, the error description, and SortGuid from the active-error row.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop the database diagnostic and escalate when the error description cannot be correlated to the reported condition.",
+        "Escalate when the active record is missing the robot code, error code, description, or SortGuid."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0015",
+          "page": 15,
+          "timestamp_start": "01:28:41.500",
+          "timestamp_end": "01:28:41.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0015_right_moving_on_excuse_me_the_primary_01_28_41_500",
+          "quote_or_summary": "The Robotics Database active-error table shows Name 1555024, ErrorCode 21057, Front bumper trigger, and a SortGuid."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify resolution in AGV error activity",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm that a resolved or removed AGV error is no longer active and has been archived with available duration information.",
+      "instruction": "After the error is resolved or the AGV is removed, recheck AgvActiveErrorDatabaseModel in WCS / Helix DB (SSMS) and verify that the record is no longer an active-error row. Then inspect AGVErrorActivityDatabaseModel for the archived record and available Start Time, Finish Time, and Total Time fields.",
+      "expected_result": "The resolved or removed error is absent from the active-error table and is present in AGVErrorActivityDatabaseModel with Start Time, Finish Time, and Total Time when those fields are available.",
+      "healthy_condition": "The active row is no longer present and the corresponding archived record contains timing fields that show the error interval.",
+      "failure_condition": "The error remains in AgvActiveErrorDatabaseModel after resolution or removal, or no corresponding archived record or expected timing fields are available.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify active row removal",
+          "exact_action": "Recheck AgvActiveErrorDatabaseModel and verify that the resolved or removed error is no longer an active-error row.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect archived error activity",
+          "exact_action": "Inspect AGVErrorActivityDatabaseModel for Start Time, Finish Time, and Total Time when those fields are available.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate when an active-error row remains for the AGV after the error is reported resolved or the AGV has been removed.",
+        "Escalate when the corresponding archived record or expected timing fields cannot be found."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0015",
+          "page": 15,
+          "timestamp_start": "01:26:19.000",
+          "timestamp_end": "01:31:04.000",
+          "quote_or_summary": "When an error is resolved or the AGV is removed, the errors are archived to the AGVErrorActivityDatabaseModel."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0015",
+          "page": 15,
+          "timestamp_start": "01:28:41.500",
+          "timestamp_end": "01:28:41.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0015_right_moving_on_excuse_me_the_primary_01_28_41_500",
+          "quote_or_summary": "The archived AGV error activity view includes Start Time, Finish Time, and Total Time fields."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The affected AGV can be identified by the Name robot code in the Robotics database.",
+    "The active error evidence includes ErrorCode, error description, and SortGuid when an active row is present.",
+    "A resolved or removed error is no longer present as an active-error row and is archived to AGVErrorActivityDatabaseModel with available timing fields.",
+    "No database records are modified or deleted."
+  ],
+  "healthy_conditions": [
+    "AgvActiveErrorDatabaseModel contains no row for the AGV after the error is resolved or the AGV is removed.",
+    "An active row, when present, contains Name, ErrorCode, error description, and SortGuid.",
+    "AGVErrorActivityDatabaseModel contains the archived error with Start Time, Finish Time, and Total Time when available."
+  ],
+  "failure_conditions": [
+    "An active-error row remains after the error is reported resolved or the AGV is removed.",
+    "The active row lacks the robot code, error code, description, or SortGuid.",
+    "The error description cannot be correlated to the reported AGV condition.",
+    "The corresponding archived error activity record or expected timing fields cannot be found."
+  ],
+  "escalation_guidance": [
+    "Escalate to the appropriate WCS / Helix database support path when the Robotics database or required table cannot be accessed.",
+    "Escalate when an active error remains after resolution or AGV removal.",
+    "Escalate when the active record lacks expected identifying fields or cannot be correlated to the reported condition.",
+    "Do not modify or delete database records while investigating."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "timestamp_start": "01:26:19.000",
+      "timestamp_end": "01:31:04.000",
+      "segment_id": "segment_training_video_0015",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0015",
+      "page": 15,
+      "quote_or_summary": "The AGV Active Error Database model table logs AGV active errors and includes the robot code, error code, description, and Sort GUID. Resolved or removed errors are archived to the AGVErrorActivityDatabaseModel."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "timestamp_start": "01:28:41.500",
+      "timestamp_end": "01:28:41.500",
+      "segment_id": "segment_training_video_0015",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0015",
+      "page": 15,
+      "artifact_id": "artifact_training_video_training_video_day2_0015_right_moving_on_excuse_me_the_primary_01_28_41_500",
+      "quote_or_summary": "Robotics Database AGV active-error table showing Name, ErrorCode, error description, and SortGuid."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0015_right_moving_on_excuse_me_the_primary_01_28_41_500",
+      "what_to_look_at": "Robotics Database AGV active-error table showing Name, ErrorCode, error description, and SortGuid."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_diagnose_agv_active_errors_in_robotics_db"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "No supplied artifact specifically shows the AGVErrorActivityDatabaseModel archived table; archived-record verification is supported by transcript and OCR text only.",
+    "The packet does not provide connection details, database server names, or an approved query for locating the tables.",
+    "The packet does not define a separate escalation owner or response path for an active row that remains after resolution.",
+    "The source discussion is uncertain about whether RMS or an API provides equivalent error-code mapping; this procedure relies on the Robotics database fields and does not assume that mapping."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0015_right_moving_on_excuse_me_the_primary_01_28_41_500"
+  ]
+}

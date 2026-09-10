@@ -1,4 +1,4 @@
-﻿
+
 ## Goals
 Build a repeatable OptiSweep manual knowledge extraction agent.
 
@@ -86,7 +86,18 @@ Relationship Linking
 
         ↓
 
-Validation
+Shared Stage 9
+Corpus Validation
+
+        ↓
+
+Shared Stage 10
+Vector Embedding Generation
+
+        ↓
+
+Shared Stage 11
+Cosmos DB Publishing And Manifest
 
 Source-specific assets are preserved through Stage 6.
 
@@ -390,10 +401,9 @@ Implement the following outputs:
 
 ```text
 data/generated/manual_optisweep_om_v3/stage_2_source_artifacts/source_artifacts.json
-data/generated/manual_optisweep_om_v3/stage_10_final_outputs/manual_references.json
+data/generated/manual_optisweep_om_v3/stage_9_validation_repair/extraction_report.json
 data/generated/manual_optisweep_om_v3/stage_4_operational_context/operational_context.json
 data/generated/manual_optisweep_om_v3/stage_5_runbook_candidates/runbook_candidates.json
-data/generated/manual_optisweep_om_v3/stage_10_final_outputs/extraction_report.json
 ```
 
 Do not write directly to Cosmos yet.
@@ -726,69 +736,49 @@ playbook_runbook_links.json
 playbook_finalization_report.json
 ```
 
-## Stage 9: Link Relationships
+## Stage 9: Corpus Validation
 
-Tool: relationship_linker.py
+Tool: corpus_validator.py
 
-Prompt: stage8_relationship_linking_prompt.md only if deterministic matching is not enough.
-
-Responsibilities:
-
-* Populate linked_context_ids and linked_runbook_ids after all records exist.
-* Link artifacts to context records.
-* Link artifacts to runbooks.
-* Link context records to related runbooks.
-* Keep this conservative.
-* Prefer links based on shared section IDs, source refs, artifact refs, title similarity, and component/screen tags.
-* Do not create workflow links yet.
-
-Example final relationship:
-
-```text
-artifact_manual_fig_4_22_heartbeat_stats
-  linked_context_ids:
-    ctx_manual_operator_station_heartbeat_stats_v1
-  linked_runbook_ids:
-    proc_check_operator_station_heartbeat_stats_v1
-```
-
-## Stage 10: Validate and Repair
-
-Tool: manual_knowledge_validator.py
-
-Prompt: stage9_validation_repair_prompt.md
+Prompt: stage9_corpus_validation_prompt.md
 
 Responsibilities:
 
-* Validate schemas.
-* Validate required fields.
-* Validate enum values.
-* Validate source refs exist.
-* Validate image refs exist.
-* Validate linked IDs exist.
-* Validate no forbidden fields exist.
-* Validate action/command separation.
-* Validate no invented commands/access paths.
-* Validate linked_context_ids and linked_runbook_ids are only populated after the linking stage.
+* Validate shared Stage 7 canonical runbooks and Stage 8 finalized playbooks.
+* Validate schema shape, source refs, procedure refs, and playbook node refs.
+* Validate playbook branch coverage and zero unresolved runbook links.
+* Validate linked_context_ids and linked_runbook_ids only after relationship linking.
+* Write `validation_report.json` and `extraction_report.json`.
 * Send failed records to LLM repair only for formatting or wording issues.
 * Do not let repair invent missing facts.
 
-## Stage 11: Write Outputs
+Per-source extraction helpers in `operationalknowledgeingestion` (`stage9_validation_repair.py`, `stage10_report_writer.py`) may run during Stages 1–6 QA. They are not the publish gate. **Shared Stage 9** validates the merged Stage 7+8 corpus before Stage 10–11.
 
-Tool: extraction_report_writer.py
+## Stage 10: Vector Embedding Generation
+
+Tool: embedding_generator.py
+
+Prompt: stage10_embedding_generation_prompt.md
 
 Responsibilities:
 
-* Write final JSON files.
-* Write extraction_report.json.
-* Include counts.
-* Include missing images.
-* Include missing command details.
-* Include missing access details.
-* Include possible duplicates.
-* Include conflicts.
-* Include warnings.
-* Include validation errors that could not be repaired.
+* Generate `EmbeddingRecord` exports for canonical runbook retrieval cards.
+* Generate `EmbeddingRecord` exports for playbook entry-symptom retrieval cards (Prompt A and Prompt B).
+* Write `embedding_records.json` and `embedding_generation_report.json`.
+* Run only after Stage 9 passes.
+
+## Stage 11: Cosmos DB Publishing And Manifest
+
+Tool: cosmos_publisher.py
+
+Prompt: stage11_cosmos_publish_prompt.md
+
+Responsibilities:
+
+* Publish runbooks, playbooks, and embeddings to Cosmos DB as versioned documents.
+* Write `publish_manifest.json` with version ID, record counts, embedding model, and checksums.
+* Write `cosmos_publish_report.json`.
+* Run retrieval smoke tests for demo prompts 1–2 before marking publish complete.
 
 Create these prompt files:
 
@@ -801,7 +791,9 @@ Create these prompt files:
 7. stage7_runbook_merge_prompt.md
 8. stage8_playbook_finalization_prompt.md
 9. stage9_relationship_linking_prompt.md
-10. stage10_validation_repair_prompt.md
+10. stage9_corpus_validation_prompt.md
+11. stage10_embedding_generation_prompt.md
+12. stage11_cosmos_publish_prompt.md
 
 The master prompt should tell the agent to run source-specific stages 1–6 in
 order, then invoke shared stages 6.5–8. Stage 7 runs only on merge clusters.
@@ -824,9 +816,9 @@ Shared finalization then runs:
 6.5. Build shared runbook pool and merge clusters
 7. Merge cross-source runbook clusters only (not every runbook)
 8. Link runbooks to playbooks and finalize playbooks
-9. Link artifacts, context, and runbooks
-10. Validate and repair
-11. Write outputs
+9. Validate shared corpus (Stage 7 runbooks + Stage 8 playbooks)
+10. Generate embeddings
+11. Publish to Cosmos + manifest
 
 Do not skip stages.
 
@@ -959,7 +951,9 @@ Shared finalization subgraph
   Stage 6.5  [Deterministic]  pool + merge clusters + pass-through
   Stage 7    [LLM Assisted]    merge clusters only
   Stage 8    [LLM Assisted]    playbook linking + finalization
-  Stage 9+   [mixed]            links, validation, publish
+  Stage 9    [Deterministic]  corpus validation
+  Stage 10   [Deterministic]  vector embedding generation
+  Stage 11   [Deterministic]  Cosmos DB publishing and manifest
 ```
 
 - Stages 1–6 are source-specific nodes.

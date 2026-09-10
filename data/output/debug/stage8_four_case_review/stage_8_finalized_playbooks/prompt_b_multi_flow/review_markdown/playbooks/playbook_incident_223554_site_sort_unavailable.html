@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Site cannot start or sustain sort</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+.warn { color: #8a4b00; }
+details.linked-runbook { border: 1px solid #ddd; border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0; }
+details.linked-runbook > summary { cursor: pointer; font-size: 1.05rem; margin-bottom: 0.5rem; }
+details.linked-runbook-group { border: 1px solid #e0e0e0; border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0; background: #fafafa; }
+details.linked-runbook-group > summary { cursor: pointer; font-weight: 600; margin-bottom: 0.5rem; }
+details.linked-runbook-operator { border-left: 4px solid #2f6f4e; }
+details.linked-runbook-support { border-left: 4px solid #2f4f7f; }
+.missing-image { border: 1px dashed #bbb; padding: 1rem; background: #fafafa; }
+.missing-image-label { font-family: monospace; font-weight: 600; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Site cannot start or sustain sort</h1>
+<h2>Playbook Header</h2>
+<table>
+<tr><th>Playbook ID</th><td>playbook_incident_223554_site_sort_unavailable</td></tr>
+<tr><th>Case ID</th><td>223554</td></tr>
+<tr><th>Extraction Mode</th><td>one_or_more_playbook_candidates_when_separable</td></tr>
+<tr><th>Confidence</th><td>medium</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+</table>
+<h2>Entry Symptoms</h2>
+<ul>
+<li>The site is reported down.</li>
+<li>The site cannot start sort.</li>
+<li>The site goes down in the middle of sort.</li>
+<li>Movement stops or the system is not running.</li>
+<li>A work-order or repair note reports AGV hospital-station server issues and a need to reset services.</li>
+</ul>
+<h2>Nodes</h2>
+<h3>1 — Confirm site-wide sort unavailability (diagnostic_decision)</h3>
+<p><strong>Objective:</strong> Determine whether the report is a broad inability to start or sustain sort rather than only a localized hospital-station symptom.</p>
+<p><strong>Why this check is next:</strong> The source reports that the site was down and could not start sort or went down in the middle of sort; the associated dashboard screenshot is not readable enough to interpret independently.</p>
+<p><strong>Action:</strong> Confirm with the site whether sort is unavailable site-wide (and whether broad movement is absent), and treat any unreadable dashboard colors as un-interpretable until readable operational state is provided.</p>
+<p><strong>Healthy:</strong> Sort starts and continues with normal movement across the operation (not just a single hospital station).</p>
+<p><strong>Unhealthy:</strong> The site is down, sort cannot start, or sort stops broadly with movement broadly absent.</p>
+<p><strong>Inconclusive:</strong> The dashboard/screenshot is unreadable (no interpretable legend/labels), or the report is limited to one station/one AGV and cannot establish site-wide impact.</p>
+<p><strong>Suggested database check:</strong></p>
+<ul>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> HospitalDatabaseModel</li>
+<li><strong>Inspect:</strong> Hospital entrance and exit queue locations.</li>
+<li><strong>Inspect:</strong> Hospital tote drop-off location.</li>
+</ul></li>
+<li><strong>Database:</strong> sorter_sweeper
+<ul><li><strong>Model:</strong> HospitalTagsModel</li>
+<li><strong>Inspect:</strong> Whether tag is in or out; drives action.</li>
+<li><strong>Inspect:</strong> List of hospital controller tags.</li>
+<li><strong>Inspect:</strong> Modular typed value columns (string/bool) selected by variable type.</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> RobotDatabaseModel</li>
+<li><strong>Inspect:</strong> Robot state enum (Tipper/Hospital/Charger/Sorter/GLD/ShutDown family).</li>
+<li><strong>Inspect:</strong> Tote currently associated with robot.</li>
+<li><strong>Inspect:</strong> Assigned sorter side.</li>
+</ul></li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L1_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>Site was reported down and could not start sort or went down during sort.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_2</code> when Broad unavailability confirmed</li>
+<li><code>healthy</code> → <code></code> when Hospital-only symptom</li>
+<li><code>inconclusive</code> → <code>node_5</code> when Unclear / unreadable evidence</li>
+</ul>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h3>2 — Check for source-supported service or server abnormality (diagnostic_decision)</h3>
+<p><strong>Objective:</strong> Determine whether the broad outage correlates with the documented AGV hospital-station server or service abnormality.</p>
+<p><strong>Why this check is next:</strong> The case artifacts and closure details mention AGV hospital-station server issues, services needing reset, and later reset of OptiSweep services, but do not show the live service state or exact service names.</p>
+<p><strong>Action:</strong> Inspect the documented OptiSweep/AGV hospital-station server or related service evidence to determine whether the abnormality is live (responsive issues) versus only a historical work-order note.</p>
+<p><strong>Healthy:</strong> Relevant services/host state are responsive and no current abnormal condition is observed in the evidence you can inspect.</p>
+<p><strong>Unhealthy:</strong> The evidence indicates a live service/server abnormality consistent with the outage symptom (e.g., stopped services or crash/restart abnormality).</p>
+<p><strong>Inconclusive:</strong> Only a historical notes/work-order entry is available; exact service names or live state cannot be confirmed from the available artifact(s).</p>
+<p><strong>Suggested database check:</strong></p>
+<ul>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> HospitalDatabaseModel</li>
+<li><strong>Inspect:</strong> Hospital entrance and exit queue locations.</li>
+<li><strong>Inspect:</strong> Hospital tote drop-off location.</li>
+</ul></li>
+<li><strong>Database:</strong> sorter_sweeper
+<ul><li><strong>Model:</strong> HospitalTagsModel</li>
+<li><strong>Inspect:</strong> Whether tag is in or out; drives action.</li>
+<li><strong>Inspect:</strong> List of hospital controller tags.</li>
+<li><strong>Inspect:</strong> Modular typed value columns (string/bool) selected by variable type.</li>
+</ul></li>
+<li><strong>Database:</strong> robotics
+<ul><li><strong>Model:</strong> RobotDatabaseModel</li>
+<li><strong>Inspect:</strong> Robot state enum (Tipper/Hospital/Charger/Sorter/GLD/ShutDown family).</li>
+<li><strong>Inspect:</strong> Tote currently associated with robot.</li>
+<li><strong>Inspect:</strong> Assigned sorter side.</li>
+</ul></li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> L1_support, L2_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li class="warn"><code>proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1</code> (low, support, score=0.5828) — Windows Event Viewer and Services diagnostic for OptiSweep and WCSWebApplication failures</li>
+</ul>
+<p><strong>Evidence Collection Procedures:</strong></p>
+<ul>
+<li><code>proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1</code> — Windows Event Viewer and Services diagnostic for OptiSweep and WCSWebApplication failures (L2_support): Use Windows Event Viewer / services to inspect the live Windows Application and System logs, then verify the current OptiSweep service state. Correlate WCSWebApplication database-command errors around 6:35-6:36 AM with OptiSweep Service Control Manager Event 7031 and the current Windows Services status before further recovery.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>AGV hospital station is described as having server issues and needing services reset.</li>
+<li>Resolution details state that Opti sweep services were reset.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>unhealthy</code> → <code>node_5</code> when Current service abnormality indicated</li>
+<li><code>inconclusive</code> → <code>node_5</code> when No current abnormality / only historical notes</li>
+</ul>
+<details class="linked-runbook-group linked-runbook-support" open><summary><strong>Support runbooks</strong> (1)</summary>
+<details class="linked-runbook linked-runbook-support" open><summary><strong>Support runbook:</strong> Windows Event Viewer and Services diagnostic for OptiSweep and WCSWebApplication failures (<code>proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1</code>)</summary>
+<ul>
+<li><strong>Procedure Type:</strong> diagnostic</li>
+<li><strong>Role:</strong> L2_support</li>
+<li><strong>Audience:</strong> support</li>
+<li><strong>Merge Status:</strong> pass_through</li>
+</ul>
+<p><strong>Summary:</strong></p>
+<p>Use Windows Event Viewer / services to inspect the live Windows Application and System logs, then verify the current OptiSweep service state. Correlate WCSWebApplication database-command errors around 6:35-6:36 AM with OptiSweep Service Control Manager Event 7031 and the current Windows Services status before further recovery.</p>
+<p><strong>When To Use:</strong></p>
+<p>Use Windows Event Viewer / services when the live OptiSweep or WCS-backed system is unresponsive, when clustered WCSWebApplication errors are suspected, or when a service crash or restart must be correlated with the incident. Inspect the live Windows Application and System logs and current Windows Services state before performing further recovery.</p>
+<p><strong>Safety Notes:</strong></p><ul>
+<li>This is an inspection and diagnostic procedure; do not infer root cause from clustered errors.</li>
+<li>Automatic restart configuration records an intended Windows action, not confirmed service recovery.</li>
+<li>Do not perform further recovery based only on the historical service-state screenshot.</li>
+</ul>
+<p><strong>Runbook Branches:</strong></p>
+<table>
+<tr><th>Outcome</th><th>Descriptor</th><th>Next</th></tr>
+<tr><td><code>healthy</code></td><td>No live OptiSweep/WCSWebApplication service abnormality is observed in Event Viewer/Services evidence you can access.</td><td><code>node_5</code></td></tr>
+<tr><td><code>unhealthy</code></td><td>Live service/server abnormality is indicated and correlates with the outage timing/symptom.</td><td><code>node_3</code></td></tr>
+<tr><td><code>inconclusive</code></td><td>Only historical work-order notes are available; live service names/state cannot be confirmed.</td><td><code>node_5</code></td></tr>
+<tr><td><code>escalate</code></td><td>Unable to confirm service abnormality due to missing evidence but further changes would be unsafe/unsupported.</td><td><code>node_5</code></td></tr>
+</table>
+<p><strong>Source:</strong> incident_case / source_case_228086</p>
+<p><strong>Procedure Steps:</strong></p>
+<h5>Step 1 — Inspect the Windows Event Viewer Application log</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In Windows Event Viewer / services, open Windows Logs &gt; Application and inspect entries around 2/20/2026 6:35:24-6:36:07 AM. Open the WCSWebApplication error details, including Event ID 20102, and check nearby Application Error or Windows Error Reporting entries.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>No new or repeated WCSWebApplication or related application errors appear in the current inspection window.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Application log shows whether WCSWebApplication Event ID 20102 with &#x27;Failed executing DbCommand (1,840ms)&#x27; and nearby clustered application errors are present in the inspected time window.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/abd43e133aa30f1d.jpeg" alt="artifact_incident_228086_page_027_embedded_image_01"><figcaption>Windows Event Viewer Application log showing Windows Error Reporting Event 1001 and clustered WCSWebApplication and Application Error entries around 6:36 AM.</figcaption></figure>
+<figure><img src="assets/d4f3abbd8bd09df2.jpeg" alt="artifact_incident_228086_page_028_embedded_image_01"><figcaption>Windows Event Viewer Application log showing WCSWebApplication Event ID 20102 and the &#x27;Failed executing DbCommand (1,840ms)&#x27; message.</figcaption></figure>
+<hr>
+<h5>Step 2 — Inspect the OptiSweep termination event</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In Windows Event Viewer / services, select Windows Logs &gt; System and open the Service Control Manager event for OptiSweep. Check for Event ID 7031, Level Error, and inspect whether the message states that OptiSweep terminated unexpectedly and Windows planned to restart it after 60000 milliseconds.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>No new or repeated OptiSweep Event ID 7031 termination is present in the current System log inspection.</p>
+<p><strong>Expected result:</strong></p>
+<p>The System log identifies whether an OptiSweep Event ID 7031 termination is present and whether the event contains the 60000-millisecond restart message.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/dabb6bbd62f07c7c.png" alt="artifact_incident_228086_page_029_embedded_image_01"><figcaption>Windows Event Viewer System log showing OptiSweep Service Control Manager Event 7031, unexpected termination, and the planned 60000-millisecond restart.</figcaption></figure>
+<hr>
+<h5>Step 3 — Verify the current OptiSweep service state</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In Windows Event Viewer / services, open Windows Services, select OptiSweep, and inspect the current Status and Startup Type.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>OptiSweep is currently shown as Running and its Startup Type is shown as Automatic.</p>
+<p><strong>Expected result:</strong></p>
+<p>Windows Services displays the current OptiSweep Status and Startup Type, allowing the live service state to be compared with the Event Viewer evidence.</p>
+<p><strong>Step Images:</strong></p>
+<figure><img src="assets/3832c5ce44b05a86.png" alt="artifact_incident_228086_page_019_embedded_image_01"><figcaption>Windows Services showing OptiSweep selected with Status Running and Startup Type Automatic.</figcaption></figure>
+<hr>
+<h5>Step 4 — Correlate Windows Event Viewer / services evidence with the live incident state</h5>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Compare the timestamps and live entries in Windows Event Viewer / services with the current incident state and the current OptiSweep status in Windows Services. Do not treat the configured automatic restart as proof that recovery completed.</p>
+<p><strong>Healthy condition:</strong></p>
+<p>The current Windows Services state is Running and the current Event Viewer inspection shows no new or repeated relevant errors.</p>
+<p><strong>Expected result:</strong></p>
+<p>The diagnostic conclusion separately identifies the observed WCSWebApplication errors, any OptiSweep Event 7031 termination, and the current OptiSweep service state.</p>
+<hr>
+<p><strong>Success Criteria:</strong></p><ul>
+<li>Windows Event Viewer / services inspection identifies whether current Application log evidence includes WCSWebApplication Event ID 20102 or clustered related errors.</li>
+<li>Windows Event Viewer / services inspection identifies whether an OptiSweep Event ID 7031 termination is present and whether a 60000-millisecond restart was configured.</li>
+<li>Windows Services shows the current OptiSweep Status and Startup Type.</li>
+<li>The diagnostic conclusion does not claim recovery or root cause without live supporting evidence.</li>
+</ul>
+<p><strong>Failure Conditions:</strong></p><ul>
+<li>WCSWebApplication Event ID 20102 or clustered application errors are present or repeating in the current inspection.</li>
+<li>OptiSweep Event ID 7031 is present or repeating in the current System log inspection.</li>
+<li>OptiSweep is not shown as Running in Windows Services.</li>
+<li>The available evidence only shows a configured restart and does not establish that recovery completed.</li>
+<li>The evidence is insufficient to establish a definitive root cause.</li>
+</ul>
+</details>
+</details>
+<hr>
+<h3>3 — Perform authorized service or lane recovery (procedure_reference)</h3>
+<p><strong>Objective:</strong> Use the approved procedure for the documented service or Hospital Lane recovery path when the responsible role confirms that it is authorized and supported.</p>
+<p><strong>Why this check is next:</strong> The closure summary says OptiSweep services were reset and the site restarted Hospital Lane; the packet does not provide exact steps.</p>
+<p><strong>Action:</strong> Perform an authorized OptiSweep service recovery and Hospital Lane restart only when the responsible role confirms it is authorized and supported, then prepare evidence that the recovery completed successfully and did not uncover unsafe anomalies.</p>
+<p><strong>Healthy:</strong> Authorized recovery/restart is completed and service/lane responsiveness returns (movement begins again).</p>
+<p><strong>Unhealthy:</strong> Recovery is rejected, service/lane remains abnormal, or the action would affect an unsafe/unknown operational state.</p>
+<p><strong>Inconclusive:</strong> Recovery completion is asserted but no direct service/lane/movement evidence is observable; or no authorized role is available.</p>
+<p><strong>Procedure Reference:</strong></p>
+<ul>
+<li><strong>Trigger condition:</strong> L1/L2 support or the authorized site role observes that the approved service recovery or Hospital Lane restart has completed. Progress signal: service responsiveness or lane availability returns. Unhealthy signal: the recovery is rejected, the service remains abnormal, or the action would affect an unsafe or unknown operational state. Inconclusive: completion is asserted but no observable service, lane, or movement change is available.</li>
+<li><strong>Selected procedure:</strong> unresolved</li>
+<li><strong>Selection rationale:</strong> n/a</li>
+<li><strong>Success confirmation:</strong> n/a</li>
+<li><strong>Failure boundary:</strong> Stop at the documented failure condition and escalate; do not invent a recovery path.</li>
+</ul>
+<p><strong>Prerequisites:</strong></p>
+<ul>
+<li>None</li>
+<li>None</li>
+</ul>
+<p><strong>Safety checks:</strong></p>
+<ul>
+<li>None</li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> L1_support, operator</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>Reset Opti sweep services and had site restart Hospital Lane.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Decision Outcomes:</strong></p>
+<ul>
+<li><code>healthy</code> (observer=site_or_remote; tool=Hospital HMI / operational status view): Authorized recovery completes; service/lane responsiveness returns and movement begins again.</li>
+<li><code>unhealthy</code> (observer=site_or_remote; tool=Hospital HMI / service evidence view): Recovery fails or is rejected; service/lane remains abnormal.</li>
+<li><code>inconclusive</code> (observer=remote; tool=Hospital HMI / site interview): Recovery completion cannot be directly observed with service/lane/movement evidence.</li>
+</ul>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>healthy</code> → <code>node_4</code> when Recovery completed and observable</li>
+<li><code>unhealthy</code> → <code>node_5</code> when Recovery cannot be performed or remains abnormal</li>
+</ul>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h3>4 — Validate stable sort and movement recovery (validation_gate)</h3>
+<p><strong>Objective:</strong> Confirm that the site can start or sustain sort and that movement remains active after service or lane recovery.</p>
+<p><strong>Why this check is next:</strong> The packet reports that movement started and the system was running, while the earlier symptom was inability to start or sustain sort.</p>
+<p><strong>Validate:</strong> Validate stable sort and movement recovery after service/lane recovery by confirming sort startup, continued movement, and absence of immediate recurrence.</p>
+<p><strong>Success:</strong> Sort starts and remains active; movement is active and the site remains running/stable after recovery.</p>
+<p><strong>Failure:</strong> Sort cannot start, stops again after recovery, or movement does not resume / quickly stops.</p>
+<p><strong>Inconclusive:</strong> Only generic &#x27;system is running&#x27; message is available; insufficient evidence of sustained sort or movement.</p>
+<p><strong>Validation Gate:</strong></p>
+<p><strong>Validation checklist:</strong></p>
+<ul>
+<li>Confirm the owning service remains running and stable.</li>
+<li>Confirm the supported API or control endpoint responds.</li>
+<li>Confirm the source-observed HMI state and ask the site to repeat the affected workflow.</li>
+<li>Observe the affected workflow for recurrence during the stated observation window.</li>
+</ul>
+<p><strong>Required evidence sources:</strong> a site interview</p>
+<p><strong>Stable-operation observation:</strong> Observe the affected workflow for recurrence during the defined observation window; a reachable screen or successful request alone is not recovery.</p>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> operator, L1_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>Chat reports that movement started and the system was running.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Branches:</strong></p>
+<ul>
+<li><code>healthy</code> → <code></code> when Stable recovery confirmed</li>
+<li><code>unhealthy</code> → <code>node_5</code> when Validation failure</li>
+</ul>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h3>5 — Stop if service recovery or sort validation fails (escalation_gate)</h3>
+<p><strong>Objective:</strong> Hand off when the service or server condition cannot be confirmed, authorized recovery does not restore operation, or the site remains unable to start or sustain sort.</p>
+<p><strong>Why this check is next:</strong> The source contains incomplete service evidence, an unreadable dashboard artifact, and a site-wide outage that eventually recovered through multiple actions.</p>
+<p><strong>Action:</strong> Stop and prepare a controlled handoff to L2/L3 when service recovery or sustained sort validation cannot be confirmed; compile evidence and ensure receiving role has what is needed to proceed safely.</p>
+<p><strong>Healthy:</strong> A complete evidence package is produced and the handoff is controlled (no further unsupported troubleshooting).</p>
+<p><strong>Unhealthy:</strong> Sort remains unavailable after supported recovery attempts or evidence is insufficient and continued changes would be unsafe/unauthorized.</p>
+<p><strong>Inconclusive:</strong> Only unreadable dashboard or historical notes are available and current service name/state cannot be identified; evidence package must be completed as best as possible.</p>
+<p><strong>Escalation Gate:</strong></p>
+<ul>
+<li><strong>Reason:</strong> Hand off when the service or server condition cannot be confirmed, authorized recovery does not restore operation, or the site remains unable to start or sustain sort.</li>
+<li><strong>Required next team:</strong> The owning L2/L3 service or controls team</li>
+</ul>
+<p><strong>Evidence package:</strong></p>
+<ul>
+<li>Sort availability/sort-start and sustained movement results (site reports)</li>
+<li>Service/server observations attempted and their outcomes (Event Viewer / Windows Services if available)</li>
+<li>Hospital Lane state evidence (where available) and recovery actions attempted</li>
+<li>Any recurrence signals and why further recovery would be unsafe/unsupported</li>
+<li>{&#x27;page_ref&#x27;: &#x27;case_223554:page_6&#x27;, &#x27;chunk_id&#x27;: &#x27;stage4_page_chunk_001&#x27;, &#x27;site_code&#x27;: &#x27;ups_haslet_tx&#x27;, &#x27;site_label&#x27;: &#x27;UPS Haslet TX (TXRTH)&#x27;, &#x27;quote_or_summary&#x27;: &#x27;The site was reported down and could not start sort or went down during sort.&#x27;}</li>
+</ul>
+<p><strong>Actions attempted:</strong></p>
+<ul>
+<li>None</li>
+</ul>
+<p><strong>Unresolved questions:</strong></p>
+<ul>
+<li>None</li>
+</ul>
+<p><strong>Expects capability:</strong> n/a</p>
+<p><strong>Expects surface:</strong> n/a</p>
+<p><strong>Preferred audience:</strong> L2_support, L3_support</p>
+<p><strong>Runbook Links:</strong></p>
+<ul>
+<li>No linked procedure; escalate if the required state cannot be confirmed using the available approved evidence sources.</li>
+</ul>
+<p><strong>Source Evidence:</strong></p>
+<ul>
+<li>The site was reported down and could not start sort or went down during sort.</li>
+</ul>
+<p><strong>Linked Runbook Procedures:</strong></p>
+<p><strong>Decision Outcomes:</strong></p>
+<ul>
+<li><code>healthy</code> (observer=remote; tool=compiled evidence (Event Viewer + site reports)): Evidence package complete; controlled handoff to L2/L3 ready.</li>
+<li><code>unhealthy</code> (observer=remote; tool=site interview + Event Viewer evidence (if available)): Service recovery/validation failed and further changes would be unsafe or unsupported.</li>
+<li><code>inconclusive</code> (observer=remote; tool=site interview + partial artifacts): Evidence insufficient due to unreadable dashboard or missing service state; escalate with what is available.</li>
+<li><code>escalate</code> (observer=remote; tool=handoff package): Escalation required to L2/L3 for next corrective actions.</li>
+</ul>
+<p><strong>Branches:</strong> no branch outcomes — proceed / escalate (procedure or escalation node).</p>
+<p><em>No linked runbook content available.</em></p>
+<hr>
+<h2>Branch Graph</h2>
+<table>
+<tr><th>From Node</th><th>Outcome</th><th>Condition</th><th>Next Node</th></tr>
+<tr><td><code>node_1</code></td><td><code>unhealthy</code></td><td>Broad unavailability confirmed</td><td><code>node_2</code></td></tr>
+<tr><td><code>node_1</code></td><td><code>healthy</code></td><td>Hospital-only symptom</td><td><code></code></td></tr>
+<tr><td><code>node_1</code></td><td><code>inconclusive</code></td><td>Unclear / unreadable evidence</td><td><code>node_5</code></td></tr>
+<tr><td><code>node_2</code></td><td><code>unhealthy</code></td><td>Current service abnormality indicated</td><td><code>node_5</code></td></tr>
+<tr><td><code>node_2</code></td><td><code>inconclusive</code></td><td>No current abnormality / only historical notes</td><td><code>node_5</code></td></tr>
+<tr><td><code>node_3</code></td><td><code>healthy</code></td><td>Recovery completed and observable</td><td><code>node_4</code></td></tr>
+<tr><td><code>node_3</code></td><td><code>unhealthy</code></td><td>Recovery cannot be performed or remains abnormal</td><td><code>node_5</code></td></tr>
+<tr><td><code>node_4</code></td><td><code>healthy</code></td><td>Stable recovery confirmed</td><td><code></code></td></tr>
+<tr><td><code>node_4</code></td><td><code>unhealthy</code></td><td>Validation failure</td><td><code>node_5</code></td></tr>
+</table>
+</body>
+</html>

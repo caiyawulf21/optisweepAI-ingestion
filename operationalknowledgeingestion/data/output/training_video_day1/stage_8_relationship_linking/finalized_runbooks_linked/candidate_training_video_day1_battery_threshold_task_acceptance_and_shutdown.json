@@ -1,0 +1,327 @@
+{
+  "procedure_id": "proc_use_battery_thresholds_predict_task_acceptance_shutdown_v1",
+  "candidate_id": "candidate_training_video_day1_battery_threshold_task_acceptance_and_shutdown",
+  "title": "Use battery percentage thresholds to predict task acceptance and automatic shutdown behavior",
+  "procedure_type": "diagnostic",
+  "summary": "Use the robot’s current battery percentage to predict whether it will accept new tasks and whether it will turn off automatically. The guidance provided is: under 20% it will not accept new tasks; at 15% it turns off automatically and you cannot turn it on until it is taken to a charger.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_active_errors"
+  ],
+  "access_surface": [
+    "tipper_hmi"
+  ],
+  "audience_roles": [
+    "operator"
+  ],
+  "failure_pattern_tags": [
+    "shutdown_or_dwell_abnormal"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when you need to decide whether a robot with a given battery percentage is likely to accept new tasks and whether it may shut off automatically (and therefore be unavailable) based on the battery threshold behavior described in the source.",
+  "not_for": [
+    "Do not use this guidance as a substitute for troubleshooting when observed behavior does not match the documented thresholds; escalate instead."
+  ],
+  "roles_and_responsibilities": [
+    "Operator: Check the robot’s battery percentage on the system/HMI and apply the threshold expectations for task acceptance and shutdown behavior."
+  ],
+  "safety_notes": [
+    "Avoid operating the robot anywhere close to 15% battery, because at 15% it turns off automatically and cannot be turned on until moved to a charger."
+  ],
+  "access_or_tools_needed": [
+    "Access to the robot battery percentage display (HMI/system view)"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Ability to view the robot’s current battery percentage on the system/HMI"
+    ],
+    "system_preconditions": [],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_battery_task_acceptance_thresholds_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0050_and_i_think_under_20_it_primary_01_53_04_000",
+      "description": "Frame/transcript evidence for the battery threshold behavior: under 20% no new tasks; at 15% automatic turn-off and cannot be turned on until taken to a charger.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Check the robot’s current battery percentage (as shown in the system/HMI)",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Determine which battery threshold bucket the robot is in so you can predict task acceptance and shutdown behavior.",
+      "instruction": "On the system/HMI, locate the robot’s current battery percentage and note the value.",
+      "expected_result": "You have the robot’s current battery percentage value available to compare against the thresholds (20% and 15%).",
+      "healthy_condition": "Battery percentage is visible and readable for the specific robot you are evaluating.",
+      "failure_condition": "Battery percentage is not visible/readable for the robot, or you cannot determine the current percentage.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Read battery percentage",
+          "exact_action": "Check the robot’s current battery percentage (as shown in the system/HMI).",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 50,
+          "section_id": "training_video_day1_segment_0050",
+          "timestamp_start": "01:51:58.000",
+          "timestamp_end": "01:54:10.000",
+          "quote_or_summary": "Under 20% it will not accept any new task; at 15% it will turn off automatically and cannot be turned on until taken to a charger."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "If battery is under 20%, expect the robot will not accept any new task",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Prevent attempting to assign work to a robot that is expected to reject new tasks due to low battery.",
+      "instruction": "If the robot’s battery percentage is below 20%, treat it as not accepting new tasks.",
+      "expected_result": "Based on the threshold guidance, you predict the robot will not accept any new task when battery is under 20%.",
+      "healthy_condition": "Your operational decision aligns with the threshold: you do not rely on the robot to take new tasks when it is under 20%.",
+      "failure_condition": "The robot accepts new tasks despite being under 20% (behavior does not match the documented threshold guidance).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Compare battery to 20% threshold",
+          "exact_action": "If battery is under 20%, expect the robot will not accept any new task.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the observed behavior does not match the documented thresholds, stop relying on the threshold guidance and escalate to support."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 50,
+          "section_id": "training_video_day1_segment_0050",
+          "timestamp_start": "01:53:04.000",
+          "timestamp_end": "01:53:04.000",
+          "artifact_id": "artifact_training_video_training_video_day1_0050_and_i_think_under_20_it_primary_01_53_04_000",
+          "segment_id": "training_video_0050",
+          "quote_or_summary": "Transcript near this frame: 'And I think under 20% it... will not accept any new task.'"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "If battery is at/near 15%, expect automatic turn-off and inability to turn it back on",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Avoid operating near the shutdown threshold and plan for the robot to be unavailable until it is moved to a charger.",
+      "instruction": "If the robot’s battery percentage is at or near 15%, expect it to turn off automatically and that you cannot turn it on; plan to move it to a charger (e.g., using a dolly or carrying it to the charger and pushing down, per the source guidance).",
+      "expected_result": "You predict the robot will turn off automatically at 15% and you cannot turn it on until it is taken to a charger.",
+      "healthy_condition": "You avoid operating the robot anywhere close to 15% battery and instead route it toward charging when it approaches that threshold.",
+      "failure_condition": "The robot remains available/does not turn off automatically at ~15% battery, or you are able to turn it on without taking it to a charger (behavior does not match the documented threshold guidance).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Compare battery to 15% threshold",
+          "exact_action": "If battery is at/near 15%, expect the robot will turn off automatically and you may not be able to turn it on.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the observed behavior does not match the documented thresholds, stop relying on the threshold guidance and escalate to support."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 50,
+          "section_id": "training_video_day1_segment_0050",
+          "timestamp_start": "01:53:04.000",
+          "timestamp_end": "01:53:04.000",
+          "artifact_id": "artifact_training_video_training_video_day1_0050_and_i_think_under_20_it_primary_01_53_04_000",
+          "segment_id": "training_video_0050",
+          "quote_or_summary": "Transcript near this frame: '...at 15% it... will turn off automatically. So you can't even turn it on. You'll have to some, you have to use a Dolly or have to carry it to the charger and push down.'"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Avoid operating near 15% and monitor for charging instead of continuing to run",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Reduce the chance of unexpected shutdown and task rejection by keeping the robot away from the low-battery thresholds.",
+      "instruction": "When planning robot usage, avoid running the robot anywhere close to 15%. If you see low battery approaching the thresholds, prioritize conditions that allow it to charge rather than continuing to run.",
+      "expected_result": "Operational decisions reduce the likelihood of the robot turning off automatically (at 15%) or rejecting new tasks (under 20%).",
+      "healthy_condition": "Robots are not being operated near the 15% threshold; you plan charging when battery is low enough to risk shutdown.",
+      "failure_condition": "You continue operating a robot near 15% battery and it turns off automatically or becomes unavailable.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Plan away from 15%",
+          "exact_action": "Avoid operating the robot anywhere close to 15% and monitor for conditions where it can charge instead of continuing to run.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the observed behavior does not match the documented thresholds, stop relying on the threshold guidance and escalate to support."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "source_document_id": "training_video_day1_video",
+          "page": 50,
+          "section_id": "training_video_day1_segment_0050",
+          "timestamp_start": "01:53:04.000",
+          "timestamp_end": "01:53:04.000",
+          "artifact_id": "artifact_training_video_training_video_day1_0050_and_i_think_under_20_it_primary_01_53_04_000",
+          "segment_id": "training_video_0050",
+          "quote_or_summary": "Transcript near this frame: 'So we don't wanna be anywhere close to 15 percent.'"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You can correctly predict task acceptance and shutdown behavior from the battery thresholds: under 20% = no new tasks; at 15% = automatic turn-off and cannot be turned on until taken to a charger."
+  ],
+  "healthy_conditions": [
+    "Robot battery percentage is known and decisions are made using the 20% and 15% thresholds."
+  ],
+  "failure_conditions": [
+    "Observed robot behavior does not match the documented thresholds (under 20% task acceptance behavior; at 15% automatic turn-off and inability to turn on without charging)."
+  ],
+  "escalation_guidance": [
+    "If the observed behavior does not match the documented thresholds, stop relying on the threshold guidance and escalate to support."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0050_and_i_think_under_20_it_primary_01_53_04_000",
+      "what_to_look_at": "Transcript/frame evidence stating: under 20% it will not accept any new task; at 15% it turns off automatically and you can't even turn it on until taken to a charger."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "source_document_id": "training_video_day1_video",
+      "page": 50,
+      "section_id": "training_video_day1_segment_0050",
+      "timestamp_start": "01:51:58.000",
+      "timestamp_end": "01:54:10.000",
+      "quote_or_summary": "Under 20% it will not accept any new task; at 15% it will turn off automatically and cannot be turned on until taken to a charger."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0050_and_i_think_under_20_it_primary_01_53_04_000",
+      "what_to_look_at": "Transcript/frame evidence stating: under 20% it will not accept any new task; at 15% it turns off automatically and you can't even turn it on until taken to a charger."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0027_so_let_s_see_number_the_primary_01_04_37_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day1_battery_threshold_task_acceptance_and_shutdown"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The source does not specify the exact HMI label/location for the battery percentage display; the runbook assumes the operator can view it on the system/HMI."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day1_0010_all_right_so_life_cycle_this_primary_00_15_09_500",
+    "artifact_training_video_training_video_day1_0014_oh_so_parcel_was_sort_down_primary_00_23_58_000",
+    "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+    "artifact_training_video_training_video_day1_0017_oh_no_probably_more_accurate_ok_primary_00_32_57_500",
+    "artifact_training_video_training_video_day1_0019_for_our_sorter_we_have_our_primary_00_39_18_000",
+    "artifact_training_video_training_video_day1_0027_so_let_s_see_number_the_primary_01_04_37_000",
+    "artifact_training_video_training_video_day1_0047_so_hold_on_charger_selection_we_primary_01_48_23_000",
+    "artifact_training_video_training_video_day1_0050_and_i_think_under_20_it_primary_01_53_04_000"
+  ]
+}

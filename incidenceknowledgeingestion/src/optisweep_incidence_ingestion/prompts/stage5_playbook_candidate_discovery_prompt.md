@@ -19,6 +19,20 @@ outside OptiSweep knowledge unless the incident explicitly references it. Do
 not invent missing checks, commands, thresholds, screen names, system states,
 root cause, or escalation paths.
 
+Use `source_package.site_location` as authoritative ingestion metadata for which
+customer site this case belongs to. Carry that site into candidate lineage so
+future retrieval can distinguish incidents by site.
+
+## Site Location Rules
+
+- Populate `incident_context.site`, `incident_context.site_code`, and
+  `incident_context.site_location` from `source_package.site_location` when
+  present.
+- Preserve `site_code` and `site_label` on `source_refs` and
+  `evidence_source_refs` when they are present on packet source refs.
+- Do not silently replace ingestion site metadata with a different location seen
+  in evidence. If evidence conflicts, note the ambiguity in `extraction_notes`.
+
 ## What A Playbook Candidate Must Capture
 
 Every playbook candidate must capture:
@@ -28,9 +42,8 @@ Every playbook candidate must capture:
 - What ordered diagnostic decision, procedure reference, escalation,
   validation, branching, or recovery phase marker nodes are source-supported.
 - What a responder is trying to determine or accomplish at each node.
-- What approved runbook/procedure may be referenced at a procedure node, or
-  what runbook gap should be created when the incident lacks reusable
-  procedure detail.
+- What high-level procedure capability is needed at a procedure node, or what
+  procedure gap should be recorded when the incident lacks reusable detail.
 - What source evidence supports each node.
 - Where the incident is uncertain or incomplete.
 
@@ -58,7 +71,7 @@ Examples:
 - id: check_service_health
   type: procedure_reference
   intent: Check whether OptiSweep/Ignition service is healthy.
-  runbook_ref: check_optisweep_ignition_service_health_v1
+  runbook_placeholder: Procedure needed to check the source-named service health.
 
 - id: service_recovery_gate
   type: escalation_gate
@@ -71,7 +84,7 @@ Examples:
 - id: agv_state_correction
   type: procedure_reference
   intent: Correct affected AGVs using an approved RMS procedure.
-  runbook_ref: correct_affected_agv_state_in_rms_v1
+  runbook_placeholder: Procedure needed to correct the source-supported AGV state.
 
 - id: recovery_validation
   type: validation_gate
@@ -205,7 +218,7 @@ Examples that should not become detailed playbook nodes:
 - remove AGV from RMS
 - re-add AGV to RMS
 - send `GetAgvStatuses` request
-- run SQL query
+- run a specific SQL statement / SELECT against named tables
 - change database value
 - release E-stop
 - start tippers
@@ -216,13 +229,25 @@ Reason:
 A playbook may reference a procedure, but it should not contain the procedure
 details.
 
+Naming a tool surface is allowed only when the incident source names it or a
+readable source artifact visibly shows it. Prefer intent-level placeholders
+without embedding SQL:
+
+```text
+Procedure needed to confirm the source-supported active AGV error evidence.
+```
+
+Do **not** put query text, schemas, or mutating DB steps in the playbook node.
+Those belong in runbooks. Do not introduce a database surface merely because it
+could provide useful evidence; Stage 8 selects future support surfaces.
+
 Preferred playbook node format:
 
 ```yaml
 id: route_service_health_check
 type: procedure_reference
 intent: Check whether OptiSweep/Ignition service is healthy.
-runbook_ref: check_optisweep_ignition_service_health_v1
+runbook_placeholder: Procedure needed to check the source-named service health.
 ```
 
 Not:
@@ -274,8 +299,7 @@ playbook_node:
   id: perform_service_recovery
   type: procedure_reference
   intent: Perform approved OptiSweep/Ignition service recovery if authorized.
-  runbook_ref: restart_optisweep_ignition_service_v1
-  fallback_if_missing_runbook: create_runbook_gap
+  runbook_placeholder: Procedure needed for authorized recovery of the source-named service.
 ```
 
 Forbidden:
@@ -292,8 +316,8 @@ playbook_node:
 
 ## Runbook Gap Description Specificity
 
-When a node requires a `fallback_if_missing_runbook` gap description, that
-description must name the specific system, tool, component, service, or log
+When a node requires a runbook gap description, that description must name the
+specific system, tool, component, service, or log
 source that the incident evidence supports. Generic descriptions give no useful
 guidance to the team that will write the actual runbook.
 
@@ -401,10 +425,16 @@ Return JSON only:
           "node_type": "diagnostic_decision | procedure_reference | escalation_gate | validation_gate | branching_condition | recovery_phase_marker",
           "title": "",
           "intent": "",
-          "runbook_ref": "",
-          "fallback_if_missing_runbook": "",
           "source_supported_description": "",
           "expected_or_observed_result": "",
+          "observed_surfaces": [],
+          "source_used_surfaces": [],
+          "required_evidence_concepts": [],
+          "recommended_diagnostic_surfaces": [],
+          "stage8_candidate_surfaces": [],
+          "healthy_indicators": [],
+          "unhealthy_indicators": [],
+          "inconclusive_indicators": [],
           "stop_or_escalation_note": "",
           "related_artifact_ids": [],
           "related_event_ids": [],
@@ -421,6 +451,25 @@ Return JSON only:
       "source_version": "",
       "ingestion_batch_id": "",
       "extraction_notes": [],
+      "incident_context": {
+        "case_id": "",
+        "site": "",
+        "site_code": "",
+        "site_location": {
+          "site_code": "",
+          "site_label": "",
+          "customer": "",
+          "city": "",
+          "state": "",
+          "country": "",
+          "hub_code": "",
+          "region_label": ""
+        },
+        "incident_start_time": "",
+        "incident_resolved_time": "",
+        "time_to_resolve": "",
+        "resolution_confirmed": false
+      },
       "metadata": {
         "created_by": "incident_playbook_candidate_discovery_agent",
         "source_quality": "incident_case"
@@ -468,6 +517,28 @@ Allowed role values:
 - `L2_support`
 - `L3_support`
 
+## Role / Component Access Matrix
+
+When assigning `likely_roles` (or node role fields), follow this matrix. Do not assign a role that has **No access** to a component the node requires.
+
+**Role meanings:** `operator` = site/customer (not FORTNA). `L1_support` / `L2_support` / `L3_support` = FORTNA remote on Zscaler. **Access** = may interact.
+
+| Component | `operator` (site) | `L1_support` | `L2_support` / `L3_support` |
+| --- | --- | --- | --- |
+| RMS (fleet / AGV status web) | Access | Access | Access |
+| RMS soft stop (pause — **not** E-stop) | — | No access | Access |
+| E-stop (physical) | Access | No access | No access |
+| OptiSweep / WCS API | No access | Access | Access |
+| WCS / Helix DB (SSMS) | No access | Access | Access |
+| Event Viewer / Windows Services | No access | Access | Access |
+| Ignition gateway | No access | Access | Access |
+| Tipper HMI / WebVisu / VISU | Access | Access | Access |
+| Hospital HMI / lane UI | Access | Access | Access |
+| Building / ACB overview HMI | Access | Access | Access |
+| AVEVA HMI | Access | No access | No access |
+
+Hard rules: only `operator` may E-stop; RMS soft stop is L2/L3 only; AVEVA is site-only.
+
 Allowed confidence values:
 
 - `high`
@@ -503,10 +574,46 @@ IDs. `evidence_source_refs` should be equal to or narrower than `source_refs`.
 1. Do not infer root cause.
 2. Do not turn suspected conditions into confirmed conditions.
 3. Do not convert one incident into an approved canonical workflow.
-4. Do not copy exact how-to steps, commands, screen sequences, or technical
-   command sequences into playbook nodes.
+4. Do not copy exact how-to steps, commands, screen sequences, SQL statements,
+   table schemas, or technical command sequences into playbook nodes. Name a
+   diagnostic surface only when it is grounded in the incident source.
 5. Do not invent escalation paths beyond source-supported escalation or a
    conservative "stop before undocumented changes" note.
 6. Keep source lineage on every meaningful node.
 7. Keep intake, support routing, communication checklists, and case management
    outside the playbook.
+
+## Source-Grounded Surface and Evidence Contract
+
+For every node, keep these fields separate:
+
+- `observed_surfaces`: surfaces where the incident symptom was observed.
+- `source_used_surfaces`: surfaces used during historical troubleshooting or
+  recovery. Each item must be an object with `surface`, `provenance`, and
+  `source_evidence`. Allowed provenance values are `explicit_source`,
+  `strongly_implied_by_source`, and `source_artifact_visible`.
+- `required_evidence_concepts`: operational concepts that must be determined,
+  such as roster state, pairing state, location state, tote association,
+  service health, or workflow state. Do not turn these into SQL fields,
+  ontology table mappings, or generated queries.
+- `recommended_diagnostic_surfaces`: leave empty unless the source explicitly
+  dictates the required surface.
+- `stage8_candidate_surfaces`: optional future candidates only. They must not
+  influence Stage 5 actions, indicators, branches, or reasoning.
+
+Do not add RMS, HMI, AVEVA, SQL/SSMS, API, Event Viewer, Windows Services, or
+another technical surface merely because it is familiar, useful, present in
+the ontology, or named by a related runbook. AGV, fleet, pairing, location,
+mapping, and error language does not by itself authorize RMS. If the source
+does not name or visibly show a surface, leave it out of
+`observed_surfaces`, `source_used_surfaces`, and
+`recommended_diagnostic_surfaces`.
+
+Each diagnostic node must state the diagnostic question, source-supported
+reasoning, required evidence concepts, healthy indicators, unhealthy
+indicators, inconclusive indicators, and source-supported branches. Indicators
+must describe operational state, not a specific tool, unless the source makes
+the tool state itself relevant. Stage 8 is responsible for selecting the
+preferred current support diagnostic surface; it may later prefer SSMS/SQL
+when the evidence does not dictate another surface, with RMS as corroboration
+when appropriate.

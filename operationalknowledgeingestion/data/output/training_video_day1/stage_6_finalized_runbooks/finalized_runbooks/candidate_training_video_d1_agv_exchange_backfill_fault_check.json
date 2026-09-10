@@ -1,0 +1,340 @@
+{
+  "procedure_id": "proc_diagnose_agv_exchange_backfill_gap_v1",
+  "candidate_id": "candidate_training_video_d1_agv_exchange_backfill_fault_check",
+  "title": "Diagnose AGV exchange/backfill gap when an AGV moves out without a replacement",
+  "procedure_type": "diagnostic",
+  "summary": "Diagnose why a front AGV moved out without a replacement/backfill by checking (1) whether the trailing AGV had a fault (including the case where it was reported ready for a new task and faulted at the same time) and (2) whether chute closure/fullness and exchange timing targets indicate exchanges were not completed before chute closure.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_active_errors",
+    "fleet_system_status"
+  ],
+  "access_surface": [
+    "rms_ui",
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "agv_tracking_or_path_lost",
+    "zone_agv_mismatch"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when you observe or are told that an AGV moved out without another AGV backfilling/replacing it during an exchange, and you need live evidence to confirm whether the trailing AGV fault/ready+fault timing and/or chute fullness/closure and exchange timing targets contributed.",
+  "not_for": [
+    "Do not use this procedure as a substitute for physical safety actions (e.g., E-stop/LOTO)."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support: Perform RMS and WCS/Helix DB (SSMS) checks to confirm trailing AGV fault/backfill failure evidence and chute fullness/exchange timing evidence."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "RMS / fleet status UI (rms_ui)",
+    "WCS / Helix DB (SSMS) (wcs_sql)"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "rms_ui access",
+      "wcs_sql access"
+    ],
+    "system_preconditions": [
+      "You have an exchange event context to identify the AGV pair (front AGV that moved out and trailing AGV that should have backfilled) and the relevant time window."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_agv_exchange_pairing_v1",
+    "ctx_training_video_chute_closure_and_exchange_timing_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+      "description": "Training frame describing the mechanism: front AGV will not move until trailing AGV is present; software sends both commands together; gap can occur if trailing AGV faults (possibly while also being ready); chute gets closed when full; exchange timing targets (median ~8s, floor ~6.7s).",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0015_so_the_exchange_so_like_i_primary_00_27_50_500",
+      "description": "Training frame describing exchange thresholds and that exchanges are staged with strict quick KPI targets (context for exchange timing/threshold behavior).",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0066_so_kind_of_what_i_was_primary_02_18_32_000",
+      "description": "Training frame describing system-level API page concepts (context only; not specific to this diagnostic’s live checks).",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open RMS / fleet status UI and identify the AGV pair for the exchange event",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish which front AGV moved out and which trailing AGV should have backfilled so you can check the trailing AGV’s fault/ready+fault timing.",
+      "instruction": "Using the RMS / fleet status UI (rms_ui), locate the AGV pair involved in the exchange event: the AGV that moved out (front) and the AGV that should have backfilled (trailing).",
+      "expected_result": "You have identified the specific trailing AGV associated with the exchange event time window (so you can check whether it faulted when the front AGV moved out).",
+      "healthy_condition": "The RMS view clearly shows the relevant AGVs and their status/error context for the exchange event you are investigating.",
+      "failure_condition": "You cannot determine which trailing AGV corresponds to the exchange event, or RMS does not provide enough context to identify the correct AGV pair/time window.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate AGV pair in RMS",
+          "exact_action": "Open RMS / fleet status UI (rms_ui) and locate the AGV pair involved in the exchange event (the AGV that moved out and the AGV that should have backfilled).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot identify the correct AGV pair/time window in RMS, proceed to WCS/Helix DB (SSMS) (wcs_sql) to find the relevant AGV records for the time window."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0016",
+          "section_id": "training_video_day1_segment_0016",
+          "quote_or_summary": "Front AGV will not move until AGV behind it; software sends both commands at the same time; there has to be one behind it for the software to even send the command to leave."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Check trailing AGV status for fault at the time the front AGV moved out",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the causal mechanism: the only time the front AGV can move without replacement is when the trailing AGV has a fault (including the case where it was ready and faulted at the same time).",
+      "instruction": "In RMS / fleet status UI (rms_ui), check the trailing (behind) AGV’s status/error indicators around the time the front AGV moved out. Confirm whether the trailing AGV is faulted, or shows a fault coincident with being reported ready for a new task.",
+      "expected_result": "You find live evidence that the trailing AGV had an active fault at (or coincident with) the time the front AGV moved out, consistent with the described pairing/backfill failure mechanism.",
+      "healthy_condition": "Trailing AGV shows no fault at the relevant time (or fault timing does not coincide with the front AGV move-out), suggesting the gap may be explained by other factors (e.g., chute fullness/exchange timing).",
+      "failure_condition": "Trailing AGV fault evidence is unclear or absent in RMS for the relevant time window.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify trailing AGV fault/ready+fault timing",
+          "exact_action": "Check the trailing (behind) AGV status for a fault at the time the front AGV moved out; confirm whether the trailing AGV is faulted (or shows a fault coincident with being “ready for a new task”).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you confirm trailing AGV fault/ready+fault timing that would prevent proper backfill, stop further fault/backfill investigation and proceed to escalation guidance."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0016",
+          "section_id": "training_video_day1_segment_0016",
+          "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500",
+          "quote_or_summary": "Only time it can happen is if the AGV behind it has a fault because the front AGV will not move until AGV behind it. Software sends both commands at the same time. Sometimes the AGV behind it is ready for a new task and it might have completed and faulted at the same time."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "If RMS is inconclusive, query WCS / Helix DB (SSMS) for trailing AGV fault/backfill failure evidence",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Provide database-backed evidence when RMS does not show a clear fault/backfill failure for the trailing AGV at the relevant time.",
+      "instruction": "Using WCS / Helix DB (SSMS) (wcs_sql), query the OptiSweep DB for the same time window to find evidence of a fault/backfill failure for the trailing AGV (e.g., AGV state/error records).",
+      "expected_result": "You identify live database evidence that the trailing AGV faulted (or otherwise failed to support backfill) during the exchange window corresponding to the front AGV move-out.",
+      "healthy_condition": "Database records show no fault/backfill failure for the trailing AGV in the relevant time window, shifting focus to chute fullness/closure and exchange timing.",
+      "failure_condition": "Database records do not show any trailing AGV fault/backfill failure evidence for the relevant time window.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Query trailing AGV state/error records",
+          "exact_action": "If RMS shows no clear fault, use WCS / Helix DB (SSMS) (wcs_sql) to query the relevant OptiSweep DB tables/models for the same time window to find evidence of a fault/backfill failure for the trailing AGV (e.g., AGV state/error records).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you confirm trailing AGV fault/backfill failure evidence in the database, stop further chute/timing checks and proceed to escalation guidance.",
+        "If you do not find trailing AGV fault/backfill failure evidence, proceed to chute fullness/exchange timing checks."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0016",
+          "section_id": "training_video_day1_segment_0016",
+          "quote_or_summary": "Only time it can happen is if the AGV behind it has a fault... so sometimes it... completed and faulted at the same time. (Mechanism to corroborate with live data.)"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Check chute fullness/closure and exchange timing targets around the event",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Validate the alternative contributing mechanism: chute closure is fullness-driven, and exchanges should complete before reaching 80% (median ~8s, floor ~6.7s).",
+      "instruction": "Using WCS / Helix DB (SSMS) (wcs_sql), review live system data available for chute fullness and exchange timing metrics around the event time window. Look for conditions consistent with chute closure when the chute is full and exchange not completing before the 80% threshold (with exchange timing deviating from the median ~8 seconds and floor ~6.7 seconds).",
+      "expected_result": "You find live evidence that chute fullness/closure occurred (or was imminent) such that exchanges were not completed before the 80% threshold, and/or exchange timing deviated from the described targets (median ~8s, floor ~6.7s).",
+      "healthy_condition": "Chute fullness/closure did not occur before exchanges completed, and exchange timing aligns with the described targets (median ~8s, floor ~6.7s).",
+      "failure_condition": "Chute fullness/closure and exchange timing metrics do not align with the described mechanisms (i.e., no evidence of fullness-driven closure or timing deviation).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review chute fullness and exchange timing metrics",
+          "exact_action": "Check whether chute closure/fullness conditions could have occurred by reviewing live system data available via WCS/Helix DB (wcs_sql) for chute fullness / exchange timing metrics around the event; look for conditions consistent with “chute gets closed when the chute is full” and exchange not completing before the 80% threshold.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you confirm chute fullness/insufficient exchange rate consistent with chute closure before exchange completion, stop and escalate.",
+        "If chute fullness/exchange timing metrics do not align with the described mechanisms, escalate because the cause is not confirmed by the available evidence."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0016",
+          "section_id": "training_video_day1_segment_0016",
+          "quote_or_summary": "Chute gets closed when the chute is full... thresholds we stage for an exchange and before we hit that 80%, we've already done the exchange... goal is a median 8 second exchange time... floor is like 6.7 seconds... trying to do it before we close the chute."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Stop and escalate based on confirmed evidence (or lack of evidence)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure the diagnostic outcome is actionable: either confirm the described mechanism with evidence or escalate when evidence is missing.",
+      "instruction": "Based on your findings from RMS and WCS/Helix DB, decide whether to escalate. Escalate when you confirm the trailing AGV fault/ready+fault timing mechanism or confirm chute fullness/insufficient exchange timing mechanism, or when you cannot confirm either mechanism with live evidence.",
+      "expected_result": "A clear diagnostic conclusion is produced: (1) trailing AGV fault/ready+fault timing explains the missing backfill, and/or (2) chute fullness/closure and exchange timing targets indicate exchanges were not completed before 80%. If neither is supported by live evidence, escalation occurs due to unconfirmed cause.",
+      "healthy_condition": "Evidence supports one or both mechanisms described (trailing AGV fault timing and/or fullness-driven chute closure with exchange timing deviation).",
+      "failure_condition": "No live evidence supports trailing AGV fault/backfill failure and no live evidence supports chute fullness/closure or exchange timing deviation.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Escalate with evidence",
+          "exact_action": "Stop and escalate if you confirm the trailing AGV fault/ready+fault timing that would prevent proper backfill, or if you confirm chute fullness/insufficient tipping/exchange rate consistent with chute closure before exchange completion.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if RMS and WCS/Helix DB do not show a trailing AGV fault/backfill failure and chute fullness/exchange timing metrics do not align with the described mechanisms.",
+        "Do not assume the cause solely from the event description; require live fault/state evidence for the trailing AGV and/or live chute fullness/exchange timing evidence."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day1",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day1",
+          "segment_id": "segment_training_video_0016",
+          "section_id": "training_video_day1_segment_0016",
+          "quote_or_summary": "Mechanism statements: trailing AGV fault prevents proper backfill; chute closes when full; exchange staged before 80% with median ~8s and floor ~6.7s."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You confirm (with live RMS and/or WCS/Helix DB evidence) that the trailing AGV fault/ready+fault timing explains why the front AGV moved out without replacement/backfill.",
+    "OR you confirm (with live WCS/Helix DB evidence) that chute fullness/closure occurred such that exchanges were not completed before the 80% threshold, with exchange timing deviating from the described targets (median ~8s, floor ~6.7s).",
+    "If neither mechanism is supported by live evidence, you escalate rather than assuming the cause."
+  ],
+  "healthy_conditions": [
+    "Trailing AGV does not show a fault coincident with the front AGV move-out, and/or database records do not show trailing AGV fault/backfill failure in the relevant time window.",
+    "Chute fullness/closure does not occur before exchanges complete; exchange timing aligns with median ~8s and floor ~6.7s targets."
+  ],
+  "failure_conditions": [
+    "Trailing AGV fault/ready+fault timing is present at the time the front AGV moved out, consistent with missing backfill.",
+    "Chute fullness/closure occurs (or is imminent) such that exchanges were not completed before reaching 80%, with exchange timing deviating from median ~8s and floor ~6.7s.",
+    "RMS and WCS/Helix DB show no trailing AGV fault/backfill failure evidence and no chute fullness/exchange timing evidence consistent with the described mechanisms."
+  ],
+  "escalation_guidance": [
+    "Escalate if you confirm the trailing AGV fault/ready+fault timing mechanism or confirm chute fullness/insufficient exchange timing consistent with chute closure before exchange completion.",
+    "Escalate if RMS and WCS/Helix DB do not show trailing AGV fault/backfill failure and chute fullness/exchange timing metrics do not align with the described mechanisms (do not assume the cause from the event description alone)."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day1",
+      "timestamp_start": "00:28:37.000",
+      "timestamp_end": "00:32:10.000",
+      "segment_id": "segment_training_video_0016",
+      "section_id": "training_video_day1_segment_0016",
+      "quote_or_summary": "Has this ever happened that an AGV moves out without another one to replace it?... only time it can happen is if the AGV behind it has a fault... software sends both commands at the same time... chute gets closed when the chute is full... thresholds stage for an exchange and before we hit that 80%, we've already done the exchange... goal median 8 second exchange time... floor 6.7 seconds."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0016_has_this_ever_happened_that_an_primary_00_30_23_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0015_so_the_exchange_so_like_i_primary_00_27_50_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day1_0066_so_kind_of_what_i_was_primary_02_18_32_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_d1_agv_exchange_backfill_fault_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day1",
+      "source_type": "training_video",
+      "source_title": "UPSFORTNA OptiSweep Training Day 1",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day1"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide specific RMS page names/field labels or specific SSMS table/column names to query for AGV fault/backfill failure and chute fullness/exchange timing metrics. Steps therefore describe the required checks at a high level without exact UI navigation or SQL targets."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day1",
+    "source_type": "training_video",
+    "source_title": "UPSFORTNA OptiSweep Training Day 1",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day1",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

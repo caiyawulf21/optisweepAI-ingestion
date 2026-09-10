@@ -1,0 +1,411 @@
+{
+  "schema_version": "0.4",
+  "catalog_id": "ignition_gateway",
+  "access_surface": "ignition_gateway",
+  "title": "Ignition gateway / OPC server",
+  "aliases": [
+    "ignition",
+    "OPC server",
+    "OPC Connections",
+    "gateway",
+    "tag provider",
+    "Ignition gateway",
+    "ignition_gateway"
+  ],
+  "purpose": "Ignition as OPC server to tippers/hospital and tag provider (SYS1 metrics) feeding Aveva. L2/L3 use Gateway UI for OPC Connections and performance; L1 only identifies role/symptoms.",
+  "when_to_use": [
+    "OPC tipper/hospital connections Faulted",
+    "Gateway performance / memory issues",
+    "Unplanned restart host path (Ignition lag → OptiSweep restart)",
+    "Confirm tags readable (Designer / web view)"
+  ],
+  "not_for": [
+    "Tipper MCP/alarm screens (tipper_hmi WebVisu)",
+    "Aveva operator pages (aveva_hmi)",
+    "L1 admin recovery how-tos"
+  ],
+  "architecture_notes": [
+    "Day2: Config → OPC → OPC Connections; tippers powered off show Faulted.",
+    "Heartbeat flatline on tippers after Ignition comes up late → restart OptiSweep.",
+    "Same APIs Ignition calls also available in Apidog on primary.",
+    "OPC COM module ties robotics path; XLE COM / Stunnel for UPS chat."
+  ],
+  "audience_roles_typical": [
+    "L2_support",
+    "L3_support"
+  ],
+  "role_paths": {
+    "L1_support": "Identify Ignition role / symptoms only.",
+    "L2_support": "OPC Connections + gateway performance + host restart path.",
+    "L3_support": "Persistent OPC/gateway ownership; L4 if product defect.",
+    "operator": "No Ignition admin; report tipper HMI symptoms."
+  },
+  "screens_or_views": [
+    {
+      "id": "opc_connections",
+      "title": "Config → OPC → OPC Connections",
+      "purpose": "Live OPC connection state to tippers/hospital.",
+      "aliases": [
+        "OPC Connections"
+      ],
+      "key_points": [
+        "Connected vs Faulted",
+        "powered-off tipper example"
+      ]
+    },
+    {
+      "id": "gateway_performance",
+      "title": "Gateway performance / status",
+      "purpose": "Gateway health and memory/performance trends.",
+      "aliases": [
+        "Gateway status"
+      ],
+      "key_points": [
+        "unreachable gateway",
+        "performance degradation"
+      ]
+    },
+    {
+      "id": "designer_or_web_tags",
+      "title": "Designer / web view tags",
+      "purpose": "Read tipper/hospital tags (training: web view can read tags).",
+      "aliases": [
+        "web view",
+        "Designer"
+      ],
+      "key_points": [
+        "tags present",
+        "not a substitute for station VISU alarms"
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "opc_tipper_connection",
+      "label": "OPC connection to tipper",
+      "capability_hints": [
+        "opc_connection_or_tipper_heartbeat"
+      ]
+    },
+    {
+      "id": "sys1_tags",
+      "label": "SYS1 / tipper-hospital tags",
+      "capability_hints": [
+        "opc_connection_or_tipper_heartbeat"
+      ]
+    }
+  ],
+  "activities": [
+    {
+      "id": "opc_connections_view",
+      "label": "Config → OPC → OPC Connections",
+      "observables": [
+        "connection Connected",
+        "Faulted (e.g. tipper powered off)"
+      ],
+      "capability_hints": [
+        "opc_connection_or_tipper_heartbeat",
+        "gateway_health"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "gateway_performance",
+      "label": "Gateway performance / memory trend",
+      "observables": [
+        "memory spike to zero",
+        "gateway unreachable"
+      ],
+      "capability_hints": [
+        "gateway_health"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    },
+    {
+      "id": "tag_provider_sys1",
+      "label": "Tag provider / SYS1 metrics tags",
+      "observables": [
+        "tipper/hospital tags present",
+        "Aveva request/response tags"
+      ],
+      "capability_hints": [
+        "opc_connection_or_tipper_heartbeat",
+        "wcs_api_responsiveness"
+      ],
+      "audience_roles": [
+        "L2_support",
+        "L3_support"
+      ]
+    }
+  ],
+  "related_capabilities": [
+    "tipper_station_fault",
+    "gateway_health",
+    "wcs_service_health",
+    "wcs_api_responsiveness",
+    "opc_connection_or_tipper_heartbeat"
+  ],
+  "related_failure_patterns": [
+    "tipper_fault",
+    "gateway_unhealthy",
+    "unplanned_restart",
+    "service_crash_or_restart",
+    "api_unresponsive",
+    "opc_connection_faulted"
+  ],
+  "distinguish_from": {
+    "tipper_hmi": "On-station WebVisu controls/alarms — Ignition corroborates OPC/heartbeat.",
+    "aveva_hmi": "Consumes Ignition/API tags — not the gateway admin UI.",
+    "wcs_api": "Apidog hits same OptiSweep APIs Ignition may call."
+  },
+  "gaps": [
+    "Full tag path inventory not mined; expand from Designer exports if available."
+  ],
+  "evidence": [
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Oh, we'll start going through everything. We'll go through message flow, database API, Ignition and kind of the services. We'll probably provide Confluence pages so that broken out so you can better view if you'd like. Oops."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "So we kind of started this yesterday. This is kind of like the overview of the architecture. You've got, you know, UPSI don't know if that's kind of blurry. So you have, you know, the scanner. What? So yeah, I did too. So on the UPS side, of course you have the scanner, ASX, XLE printers, sort of PLCS. We kind of talke"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "So Sorter Sweeper module orchestrates the movement of totes tote tippers and the Sorter Robotics module manages the HV tasks based on Sorter sweeper directives. OPC COM module manages communication between the Robot Robotics module and Geek Plus RMS server, and then XLE COM module manages the communication between the "
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "The Items model, so items are parcels on the sorter packages. We listen to Scan Data 2, sort and sort confirm from UPS. We update the items as we receive messages and remove them when they divert to their final destination. Scan Data 2 provides us with the package unique ID, tracking number, length with height, weight "
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "APIs up DB suite provides APIs to get data and to make requests. We have API Dog installed on the primary servers. The same APIs feed ignition. So this all the stuff we reviewed and it. In Ababa yesterday or here just in a different way."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "So you mentioned a manual, but what that is now it's different from"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "a purge or close. So manual back out is basically we took too long to recover the system and they went through all the toads and manually bagged them and then printed labels at the hospital. And now that the system is back up and running, we can cancel all active unactive exchanges. So when you do a bag out, everything"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "the tippers ignition. We save it in the web browser as well, but here's a link to you can log in to the local host to see performances. You can see under configuration the active communications in this example to both Tipper 7-8 are powered off and show faulted."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep software environment overview: The source describes OptiSweep software as the software that 'integrates everything.' The slide and transcript identify AVEVA as the HMI and Ignition as the OPC server."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Ignition as the OPC server: The transcript states that Ignition is 'our OPC server.' The speaker also confirms that OPC is a protocol and refers to it as an industry standard protocol. The source further states that Ignition communicates through the tippers through OPC and feeds data to AVEVA because AVEVA can directly integrate with the OPC..."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep architecture overview: The architecture includes an XLe chat communication module, Sorter Sweeper module, Robotics module, Geek+ comm module, XLe chat OBC communication, sorter and tipper PLCs, Ignition OPC server, Aveva HMI, SQL Server, scanners, ASX, and printers."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "OPC COM module and tag communication: The transcript states that the OPC COM module manages communication between the Robotics module and the Geek Plus RMS server. It also uses Ignition's built-in tag provider to connect to the hospital and tippers and relay relevant tags."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Ignition Walkthrough: The available segment identifies an Ignition Walkthrough but does not provide enough source detail to establish its purpose, navigation, controls, metrics, or operating behavior."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Ignition system performance view: The OCR shows performance-related areas including CPU Trend, Memory Trend, Database, OPC Connection, Perspective Sessions, Clients, Garbage Collectors, System Response, Current Response Time, Recent Slow Response Events, and Running Scripts."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Tipper bits are represented in the database and mapped in Ignition: The source characterizes the relationship as a mapping between the database representation of tipper bits and their representation in Ignition. It does not provide tag names, database fields, screen locations, or mapping instructions."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "AVEVA, OPC, API, and Ignition tag mapping: The described data path uses tags in OPC for requests. A request generates a response, and resulting tags are made available for AVEVA to read. Ignition is used in the integration to provide tag mapping and communication between OptiSweep-related data and AVEVA."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Ignition tag application and real-time tag view: The speaker states that the tags are not in a Perspective project and that users go through the tag application to check real-time tags. The source contrasts this arrangement with an example in which an OPC server communicates with PLC tags to display information in Ignition; the current material describes a different..."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Ignition tag provider and OptiSweep communication: The source states that OptiSweep utilizes a tag provider for communication and that the relevant tags are mapped under Ignition. The material presents Ignition as the tag-mapping environment associated with this communication path."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Ignition memory trend: The trainer explains that the memory chart represents memory usage and describes a prior crash in which memory spiked and then dropped to 0. The memory chart is presented as a support observation rather than definitive evidence of a particular application symptom."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Ignition System Performance Screen: The captured screen is labeled with sections including Memory, Thread, Redundancy, CPU Trend, Memory Trend, Database, OPC Connection, Perspective Sessions, System Response, Garbage Collectors, Queuing Scripts, Current Response Time, and Recent Slow Response Events."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Ignition Gateway Monitoring Categories: The screen groups monitoring information around memory and threads, redundancy, CPU and memory trends, database and OPC connectivity, Perspective sessions, system response, garbage collectors, queued scripts, current response time, and recent slow response events."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Primary services required for OptiSweep system operation: Ignition is used for OPC connections, Stunnel provides secure encryption for communication to the UPS Xle chat, and OptiSweep is Fortna's service that coordinates all operations."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Heartbeat relationship to Ignition, OPC, and OptiSweep: The transcript says that flat-lined heartbeats relate back to Ignition and refers to OPC and the OptiSweep service. The explanation also states that Ignition may come up later than WCS in an unplanned-restart scenario."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep startup timing relationship: The transcript states that OptiSweep may be delayed during startup because Ignition sometimes takes longer to start. This is presented as an operational concept related to service availability and heartbeat observation, not as a general startup procedure."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Opti Suite, Ignition, and OPC connectivity: The speaker describes recent issues involving Ignition taking too long in a graph, retry behavior, and unusual OPC behavior. Ignition is described as a third-party tool from Inductive Automation that the team uses to build required functionality."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Ignition web UI logs: The speaker points to an Ignition log in the web UI. Ignition is described as a communication tool used by the software team, with logs and memory information relevant to technical investigation. No specific navigation path or screen fields are provided."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Ignition Lane Activity Data Table: The table view visibly includes fields such as date, SorterName, SortName, SortGuid, Zone, LaneName, PackageUid, TrackingNumber, Length, Width, Height, Weight, Cube, Toteld, Message, PackageClassification, and MissingDimension Data. The source does not define the fields or their business rules."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "IgnitionLaneActivityModel activity fields: The OCR identifies an IgnitionLaneActivityModel view marked WITH (SNAPSHOT). Visible fields include Last Update, SorterName, SortName, SortGuid, Zone, LaneName, PackageUid, Tracking Number, Length, Width, Height, Weight, Cube, TotalId, Message, PackageClassification, Missing DimensionData, MissingInduct, Tote Not..."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep System Overview: The system directs parcels from the sorter into totes. When a tote reaches a customer-specified weight, parcel count, or volume, the WCS signals the sorter PLC to stop diverting. An AGV retrieves the full tote and another AGV places an empty tote. The WCS then signals the sorter PLC to resume sorting."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep WCS and Sorter PLC Interaction: Once the sorter starts, parcels are directed into totes. When the tote reaches the customer-specified weight, number of parcels, or volume, the WCS sends a message to the sorter PLC to stop diverting packages. An AGV is triggered via the WCS controller to retrieve the tote."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep WCS Controller: The WCS controller manages the flow of totes by sending messages to the sorter PLC to stop or resume diverting packages based on tote weight, parcel count, or volume. It triggers AGVs to retrieve full totes and place empty ones. It directs AGVs to open tippers or the hospital station based on operational status."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep System Control: The ACB API Screen provides an interface for controlling the OptiSweep system. The specific controls available are not detailed in this section."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep System Operation Overview: The system's automated operation is managed by the WCS. Operators only need to interact manually with the system at the tipper and hospital stations. The provided procedures in the manual apply specifically to these two station types."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep software structure described as state machines and communication modules: In response to a question about whether charging is a separate module, the speaker says it is one software system under the Opti umbrella and not a separate model."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Sorter Sweeper module: The module tracks packages as they come in, updates associated information, and tracks the tote at the tipper. It makes requests to the Robotics module for actions such as picking up a tote, moving a tote out, and dropping off a tote."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Robotics and Geek+ communication integration: The Sorter Sweeper module sends requests such as pick up tote, move out tote, and drop off tote to the Robotics module. The Robotics module runs these requests through configured maps, including sorter and tipper queue and execution areas."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Sorter Sweeper module architecture and responsibilities: Sorter Sweeper receives data from sorter tippers, hospital stations, and the HMI; creates tote tasks for the Sorter Robotics module; processes data from the hospital; and notifies tippers about tote arrivals or robot faults."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Sorter Robotics module and AGV task interface: Sorter Robotics receives tote tasks from Sorter Sweeper and generates commands for Geek Plus. The transcript lists AGV-related commands including initialize AGV, empty, go to, pick up tote, move tote, drop off tote, cancel request, and go charge."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Database Walkthrough: The provided source identifies a training video slide labeled \"Database Walkthrough\" and does not provide further operational details about the database, its screens, or its use."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Geek+ Communication Module: The diagram shows the Geek+ Comm Module alongside the Robotics and SorterSweeper modules. The Robotics module generates commands for Geek+ to execute tote tasks, and the diagram includes robot notifications and command results among the related message concepts."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Database Tables: The transcript refers collectively to “all the tables.” The source does not identify individual tables or describe their contents, relationships, retention, or usage."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "OPC connection configuration and subscribed tags: The OPC configuration table stores connection parameters required for the software to bridge to OPC. The OPC tags table stores tags that are subscribed to at startup. The training describes these records as covering the information required to connect to OPC and the tags that are written to and read from."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Vendor-agnostic robot command model: The Robotics module sends generic commands such as moving a tote to a drop-off location. The Geek Plus COM module translates these internal commands into the vendor platform's REST API format and converts responses back into the format used by OptiSweep."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep robotics database landscape: The database view shows multiple Helix2x_1Prod databases, including Audit, DataContainers, EntityLogs, GeekAgv, OpcComms, PlcCommunication, and Robotics. The segment transcript also states that there is not just one system."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Tag variable types and value storage: The transcript states that tags can have different data types and are commonly represented as strings in the tag model. A variable type identifies which value representation or column applies to a particular tag."
+    }
+  ],
+  "source_refs": [
+    {
+      "source": "training_video_day2"
+    },
+    {
+      "source": "training_video_day1"
+    },
+    {
+      "source": "support_roles_components_and_adjacency.md"
+    },
+    {
+      "source": "docs/ontology/catalogs/capability_catalog.json"
+    }
+  ]
+}

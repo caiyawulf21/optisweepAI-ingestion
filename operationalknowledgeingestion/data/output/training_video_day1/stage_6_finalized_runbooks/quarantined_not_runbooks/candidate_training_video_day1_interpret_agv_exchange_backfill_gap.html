@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Explain why an AGV can move out without a replacement (exchange/backfill gap) during AGV exchange pairing</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Explain why an AGV can move out without a replacement (exchange/backfill gap) during AGV exchange pairing</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_explain_agv_exchange_backfill_gap_v1</td></tr>
+<tr><th>Title</th><td>Explain why an AGV can move out without a replacement (exchange/backfill gap) during AGV exchange pairing</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L1_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>agv_active_errors</td></tr>
+<tr><th>Access Surface</th><td>rms_ui</td></tr>
+<tr><th>Audience Roles</th><td>L1_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>agv_tracking_or_path_lost, api_unresponsive</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the OptiSweep exchange pairing rule to explain an observed “AGV moves out without another one to replace it.” The source-backed mechanism is that OptiSweep sends the exchange commands as a paired action; therefore, a visible gap typically indicates the trailing AGV behind the departing AGV had a fault / was not backfilled properly. The source also describes a timing edge case where the trailing AGV is reported ready for a new task and completes/faults at the same time, which can lead to improper backfill.</p>
+<h2>When To Use</h2>
+<p>When you need to interpret the source-backed reason an AGV appears to depart during an exchange pairing without a replacement AGV backfilling it.</p>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Apply the exchange pairing rule (front AGV movement depends on the trailing AGV)</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Use the source pairing rule: the front AGV will not move until the AGV behind it is available for the paired exchange command, because OptiSweep sends both exchange commands at the same time.</p>
+<p><strong>Expected result:</strong></p>
+<p>Your interpretation is consistent with the rule that the exchange command to leave is only sent when there is an AGV behind it (paired commands).</p>
+<hr>
+<h3>Step 2 — Check whether the trailing AGV fault/backfill issue explains the gap</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>When you observe an AGV moving out without a replacement, evaluate whether the trailing AGV behind it could have had a fault / was not backfilled properly, since the source states this is the only time this can happen.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can explain the gap using the source-backed mechanism: the trailing AGV behind the departing AGV had a fault or was not backfilled properly.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the observed behavior cannot be explained by the source-backed mechanism (paired commands + trailing AGV fault/backfill issue), escalate for deeper system evidence beyond this training segment.</li>
+</ul>
+<hr>
+<h3>Step 3 — Consider the timing edge case: trailing AGV ready for new task and completes/faults at the same time</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If you need a more specific explanation, consider the source’s timing edge case: the trailing AGV behind the departing AGV may be “ready for a new task” and also “completed and faulted at the same time,” which can lead to improper backfill.</p>
+<p><strong>Expected result:</strong></p>
+<p>Your explanation includes the edge case where the trailing AGV is reported ready for a new task while also completing/faulting simultaneously, resulting in improper backfill.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the observed behavior cannot be explained by the source-backed mechanism (paired commands + trailing AGV fault/backfill issue), escalate for deeper system evidence beyond this training segment.</li>
+</ul>
+<hr>
+<h3>Step 4 — Use chute-closure behavior as context for exchange timing effects</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>When interpreting related behavior around the exchange, remember the source’s chute-closure rule: chute gets closed when the chute is full, not when both AGVs are in the station (or “it’s both”).</p>
+<p><strong>Expected result:</strong></p>
+<p>Your explanation accounts for the possibility that exchange timing issues can contribute to later chute fullness/closure effects, consistent with the source’s closure rule.</p>
+<hr>
+</body>
+</html>

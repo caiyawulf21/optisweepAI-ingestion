@@ -1,0 +1,4151 @@
+{
+  "node_id": "node_5",
+  "node_order": 5,
+  "node_type": "diagnostic_decision",
+  "title": "Determine whether residual AGV synchronization issues remain",
+  "intent": "Identify whether individual AGVs remain out of sync after service responsiveness has returned.",
+  "goal": "Identify whether individual AGVs remain out of sync after service responsiveness has returned.",
+  "runbook_placeholder": "Procedure needed to inspect the RMS fleet or map view for out-of-sync AGVs and to corroborate relevant robot state through the read-only robotics database view in SQL Server Management Studio or the GetAgvStatuses response; the procedure must define how to distinguish residual synchronization problems from normal charging, queueing, or exchange states.",
+  "allowed_roles": [
+    "operator",
+    "L1_support",
+    "L2_support",
+    "L3_support"
+  ],
+  "preferred_audience": [
+    "operator",
+    "L2_support"
+  ],
+  "source_supported_description": "After the OptiSweep reset, RMS was used to locate and correct AGVs that remained out of sync; a separate artifact shows read-only SSMS inspection of AGV states.",
+  "needed_runbook_capability": "Procedure needed to inspect the RMS fleet or map view for out-of-sync AGVs and to corroborate relevant robot state through the read-only robotics database view in SQL Server Management Studio or the GetAgvStatuses response; the procedure must define how to distinguish residual synchronization problems from normal charging, queueing, or exchange states.",
+  "expected_or_observed_result": "The operator or support user reviews the RMS fleet or map view and, where available to authorized remote support, corroborates the AGV state through the incident-evidenced SSMS robotics view or API response. Unhealthy signals are AGVs still marked out of sync, inconsistent with the expected fleet state, or not participating normally after service recovery. Healthy signals are no residual out-of-sync AGVs and a coherent fleet view. Inconclusive signals are unreadable AGV state, ambiguous waiting or charging states, or an API response whose records cannot be interpreted.",
+  "required_evidence_concepts": [],
+  "observed_surfaces": [],
+  "source_used_surfaces": [
+    {
+      "surface": "rms_ui",
+      "provenance": "explicit_source",
+      "source_evidence": "Case comments state that RMS was used to locate and fix out-of-sync AGVs; page 26."
+    },
+    {
+      "surface": "wcs_sql",
+      "provenance": "source_artifact_visible",
+      "source_evidence": "A readable artifact visibly shows SQL Server Management Studio with robotics-related AGV state results; page 24."
+    },
+    {
+      "surface": "wcs_api",
+      "provenance": "explicit_source",
+      "source_evidence": "The packet includes GetAgvStatuses response records and status values; page 17."
+    }
+  ],
+  "stage8_candidate_surfaces": [
+    "rms_ui",
+    "wcs_sql",
+    "wcs_api"
+  ],
+  "recommended_diagnostic_surfaces": [],
+  "expects_capability": [],
+  "expects_surface": [],
+  "ontology_capabilities": [
+    {
+      "id": "capability:device_roster_state",
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "wcs_sql",
+          "wcs_api",
+          "rms_ui"
+        ],
+        "control_surfaces": [
+          "aveva_hmi",
+          "wcs_api",
+          "approved_system_hmi"
+        ],
+        "required_evidence": [
+          "device_roster_state",
+          "robot_location_state"
+        ],
+        "forbidden_capabilities": [
+          "optisweep_service_restart",
+          "ignition_restart"
+        ],
+        "backend_mappings": [
+          {
+            "operational_concept": "robot_location_state",
+            "site_ui_sources": [
+              "rms_ui",
+              "aveva_hmi",
+              "hospital_hmi"
+            ],
+            "support_read_sources": [
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "RobotDatabaseModel",
+                "fields": [
+                  "State",
+                  "CurrentLocationId",
+                  "DestinationLocationId"
+                ]
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "RobotLocationDatabaseModel",
+                "fields": [
+                  "StationNumber"
+                ]
+              }
+            ],
+            "correlation_keys": [
+              "robot_id",
+              "location_id"
+            ],
+            "freshness_field": "EntityLastUpdate",
+            "preferred_support_surface": "wcs_sql",
+            "approved_control_surfaces": [
+              "aveva_hmi",
+              "wcs_api",
+              "approved_system_hmi"
+            ]
+          }
+        ]
+      },
+      "relevant_evidence": "The source describes locating individual out-of-sync AGVs and includes backend AGV state evidence.",
+      "backend_mappings": [
+        {
+          "operational_concept": "robot_location_state",
+          "site_ui_sources": [
+            "rms_ui",
+            "aveva_hmi",
+            "hospital_hmi"
+          ],
+          "support_read_sources": [
+            {
+              "surface": "wcs_sql",
+              "database": "robotics",
+              "model": "RobotDatabaseModel",
+              "fields": [
+                "State",
+                "CurrentLocationId",
+                "DestinationLocationId"
+              ]
+            },
+            {
+              "surface": "wcs_sql",
+              "database": "robotics",
+              "model": "RobotLocationDatabaseModel",
+              "fields": [
+                "StationNumber"
+              ]
+            }
+          ],
+          "correlation_keys": [
+            "robot_id",
+            "location_id"
+          ],
+          "freshness_field": "EntityLastUpdate",
+          "preferred_support_surface": "wcs_sql",
+          "approved_control_surfaces": [
+            "aveva_hmi",
+            "wcs_api",
+            "approved_system_hmi"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "capability:agv_active_errors",
+      "support_contract": {
+        "diagnostic_surfaces": [
+          "wcs_sql",
+          "wcs_api",
+          "rms_ui"
+        ],
+        "control_surfaces": [
+          "wcs_api"
+        ],
+        "required_evidence": [
+          "agv_active_errors"
+        ],
+        "forbidden_capabilities": [
+          "optisweep_service_restart",
+          "ignition_restart"
+        ],
+        "backend_mappings": [
+          {
+            "operational_concept": "agv_active_errors",
+            "site_ui_sources": [
+              "rms_ui"
+            ],
+            "support_read_sources": [
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "AgvActiveErrorDatabaseModel",
+                "fields": [
+                  "Name",
+                  "ErrorCode",
+                  "Description",
+                  "SortGuid"
+                ]
+              },
+              {
+                "surface": "wcs_sql",
+                "database": "robotics",
+                "model": "SystemActiveErrorModel",
+                "fields": [
+                  "Id",
+                  "EntityInserted",
+                  "EntityLastUpdate",
+                  "Name",
+                  "Area",
+                  "Error",
+                  "LastSeen",
+                  "SystemErrorDescription"
+                ]
+              }
+            ],
+            "preferred_support_surface": "wcs_sql"
+          }
+        ]
+      },
+      "relevant_evidence": "The RMS interface includes AGV error sections and the incident evidence includes AGV status and error-related records.",
+      "backend_mappings": [
+        {
+          "operational_concept": "agv_active_errors",
+          "preferred_support_surface": "wcs_sql",
+          "support_read_sources": [
+            {
+              "surface": "wcs_sql",
+              "database": "robotics",
+              "model": "AgvActiveErrorDatabaseModel",
+              "fields": [
+                "Name",
+                "Error code",
+                "Description",
+                "SortGuid"
+              ]
+            }
+          ]
+        },
+        {
+          "operational_concept": "agv_active_errors",
+          "preferred_support_surface": "wcs_sql",
+          "support_read_sources": [
+            {
+              "surface": "wcs_sql",
+              "database": "robotics",
+              "model": "SystemActiveErrorModel",
+              "fields": [
+                "Id",
+                "EntityInserted",
+                "EntityLastUpdate",
+                "Name",
+                "Area",
+                "Error",
+                "LastSeen",
+                "SystemErrorDescription"
+              ]
+            }
+          ]
+        },
+        {
+          "operational_concept": "agv_active_errors",
+          "preferred_support_surface": "wcs_sql",
+          "support_read_sources": [
+            {
+              "surface": "wcs_sql",
+              "database": "robotics",
+              "model": "AGVErrorActivityDatabaseModel",
+              "fields": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "backend_observability": [
+    {
+      "operational_concept": "robot_location_state",
+      "site_ui_sources": [
+        "rms_ui",
+        "aveva_hmi",
+        "hospital_hmi"
+      ],
+      "support_read_sources": [
+        {
+          "surface": "wcs_sql",
+          "database": "robotics",
+          "model": "RobotDatabaseModel",
+          "fields": [
+            "State",
+            "CurrentLocationId",
+            "DestinationLocationId"
+          ]
+        },
+        {
+          "surface": "wcs_sql",
+          "database": "robotics",
+          "model": "RobotLocationDatabaseModel",
+          "fields": [
+            "StationNumber"
+          ]
+        }
+      ],
+      "correlation_keys": [
+        "robot_id",
+        "location_id"
+      ],
+      "freshness_field": "EntityLastUpdate",
+      "preferred_support_surface": "wcs_sql",
+      "approved_control_surfaces": [
+        "aveva_hmi",
+        "wcs_api",
+        "approved_system_hmi"
+      ]
+    },
+    {
+      "operational_concept": "agv_active_errors",
+      "preferred_support_surface": "wcs_sql",
+      "support_read_sources": [
+        {
+          "surface": "wcs_sql",
+          "database": "robotics",
+          "model": "AgvActiveErrorDatabaseModel",
+          "fields": [
+            "Name",
+            "Error code",
+            "Description",
+            "SortGuid"
+          ]
+        }
+      ]
+    },
+    {
+      "operational_concept": "agv_active_errors",
+      "preferred_support_surface": "wcs_sql",
+      "support_read_sources": [
+        {
+          "surface": "wcs_sql",
+          "database": "robotics",
+          "model": "SystemActiveErrorModel",
+          "fields": [
+            "Id",
+            "EntityInserted",
+            "EntityLastUpdate",
+            "Name",
+            "Area",
+            "Error",
+            "LastSeen",
+            "SystemErrorDescription"
+          ]
+        }
+      ]
+    },
+    {
+      "operational_concept": "agv_active_errors",
+      "preferred_support_surface": "wcs_sql",
+      "support_read_sources": [
+        {
+          "surface": "wcs_sql",
+          "database": "robotics",
+          "model": "AGVErrorActivityDatabaseModel",
+          "fields": []
+        }
+      ]
+    }
+  ],
+  "ontology_gaps": [
+    "The packet does not define the authoritative state value that means out of sync.",
+    "The SQL artifact does not provide a validated interpretation for each displayed queue, charging, exchange, or waiting state."
+  ],
+  "ontology_contract_status": "complete",
+  "healthy_indicators": [
+    "RMS shows the expected fleet without residual out-of-sync indicators.",
+    "Read-only state evidence is coherent with the expected operational state.",
+    "No residual AGV errors or mismatched roster states are identified."
+  ],
+  "unhealthy_indicators": [
+    "One or more AGVs remain reported as out of sync.",
+    "RMS and the corroborating status evidence disagree about AGV membership or state.",
+    "AGV error or abnormal-state indicators remain after service recovery."
+  ],
+  "inconclusive_indicators": [
+    "The RMS map or AGV error sections are unreadable.",
+    "The API returns records but their state meaning is unclear.",
+    "The SSMS results show waiting, charging, staging, or exchange states without a validated interpretation."
+  ],
+  "stop_or_escalation_note": "",
+  "related_artifact_ids": [
+    "artifact_incident_228086_page_014_embedded_image_01",
+    "artifact_incident_228086_page_017_embedded_image_01",
+    "artifact_incident_228086_page_024_embedded_image_01"
+  ],
+  "related_event_ids": [
+    "incident_228086_event_021",
+    "incident_228086_event_025",
+    "incident_228086_event_033",
+    "incident_228086_event_034",
+    "incident_228086_event_039"
+  ],
+  "source_refs": [
+    {
+      "page_ref": "case_228086:page_26",
+      "artifact_id": "artifact_incident_228086_page_026_full_page_01",
+      "chunk_id": "stage4_artifact_chunk_003",
+      "support_type": "case_comment",
+      "quote_or_summary": "RMS was used to locate AGVs that were out of sync and fix them individually."
+    },
+    {
+      "page_ref": "case_228086:page_24",
+      "artifact_id": "artifact_incident_228086_page_024_embedded_image_01",
+      "chunk_id": "stage4_artifact_chunk_002",
+      "support_type": "artifact_visual",
+      "quote_or_summary": "SQL Server Management Studio visibly showed robotics-related AGV state results."
+    }
+  ],
+  "primary_action": "Determine whether residual AGVs remain out of sync after control-service responsiveness has returned by reviewing RMS fleet/map state and corroborating AGV robot/state via backend read-only evidence.",
+  "performed_by": "L2_support",
+  "primary_surface": "rms_ui + wcs_sql (read-only) + optional wcs_api",
+  "evidence_to_collect": [
+    "RMS fleet/map view for out-of-sync indicators and which AGVs are affected.",
+    "Backend corroboration of robot state and/or location/destination states for the indicated AGVs (read-only).",
+    "Whether residual active errors exist (only if needed to explain out-of-sync).",
+    "If AI/SQL state meaning is unclear, record as inconclusive rather than guessing state semantics."
+  ],
+  "healthy_interpretation": "No residual out-of-sync AGVs; coherent fleet view; corroborating read-only backend state matches the expected operational condition.",
+  "unhealthy_interpretation": "One or more AGVs remain out of sync after service recovery; RMS and corroborating backend state disagree about membership/state; residual abnormal error/roster state persists.",
+  "inconclusive_interpretation": "RMS map/AGV state unreadable; backend results exist but state meaning cannot be interpreted; API records cannot be reliably mapped to out-of-sync definition.",
+  "optional_corroboration": [
+    {
+      "note": "If out-of-sync is suspected but interpretation is uncertain, corroborate using active error evidence (agv_active_errors) before attempting correction."
+    }
+  ],
+  "linked_primary_procedure": {
+    "procedure_id": "proc_wcs_helix_db_ssms_agv_state_inspection_v1",
+    "title": "WCS / Helix DB (SSMS) AGV state inspection",
+    "purpose": "Inspect AGV/robot state from the WCS/Helix Robotics database (read-only) to corroborate RMS out-of-sync claims.",
+    "required_role": "L2_support",
+    "link_confidence": "high",
+    "rationale": "Directly aligned to node_5 requirement to corroborate RMS with read-only robotics/AGV state from SSMS; also incident_case preferred source available in node_5 candidates.",
+    "match_gaps": [
+      "Node also requires a clear definition of what value means 'out of sync'; the ontology snippet provided does not specify the exact enumeration/flag semantics for 'out of sync' in this playbook step."
+    ]
+  },
+  "generated_guidance": "Use RMS to identify candidates (affected AGVs), then confirm via SSMS read-only robotics state. Do not attempt correction until the out-of-sync issue is actually evidenced and interpretable as residual synchronization problems (vs normal charging/queue/exchange states).",
+  "ontology_evidence": [
+    {
+      "id": "model:RobotDatabaseModel",
+      "title": "WCS model \u2014 RobotDatabaseModel",
+      "score": 13.0,
+      "source_refs": [
+        {
+          "source": "training_video_day2",
+          "artifact_set": "stage_2_source_artifacts / stage_1 slide segments"
+        },
+        {
+          "source": "optisweep_training_slides",
+          "note": "PascalCase model inventory; live query screenshot on p.77 supplied the full column list and example values"
+        }
+      ],
+      "text": "Model RobotDatabaseModel (robotics): Robot/AGV live state: contains the data for every robot in the system including its state, tote name, assigned sorter side, current/destination location, and state.. Fields: Name: Robot code / AGV identifier (e.g. 1555058).; State: Robot state enum (Tipper/Hospital/Charger/Sorter/GLD/ShutDown family). Observed live values include SWaitingInzone, Removed, SWaitingForExchange, GoCharge, MovingToChargerEntranceQueue, MovingToTipperQueue.; ToteId: Tote currently "
+    },
+    {
+      "id": "model:SystemActiveErrorModel",
+      "title": "WCS model \u2014 SystemActiveErrorModel",
+      "score": 11.0,
+      "source_refs": [
+        {
+          "source": "training_video_day2",
+          "artifact_set": "stage_2_source_artifacts / stage_1 slide segments"
+        },
+        {
+          "source": "optisweep_training_slides",
+          "note": "PascalCase model inventory"
+        },
+        {
+          "source": "active_agv_error_query_1",
+          "note": "column list from documented SELECT"
+        }
+      ],
+      "text": "Model SystemActiveErrorModel (robotics): Currently active system errors (also used by Active AGV error SQL guide query).. Fields: Id: Row id.; EntityInserted: Insert timestamp.; EntityLastUpdate: Last update timestamp.; Name: Error name.; Area: Error area (e.g. AGV, Communication).; Error: Error code.; LastSeen: Last seen timestamp.; SystemErrorDescription: Description of the system error.; SystemErrorResolution: Suggested resolution text. Select template (active_agv_error_query_1): SELECT TOP ("
+    }
+  ],
+  "confidence": "medium",
+  "requires_sme_review": true,
+  "query_mode": "ontology_generated_read_only",
+  "evidence_retrieval_success": "unknown",
+  "diagnostic_interpretation": "Decide whether residual out-of-sync AGVs remain; only then proceed to authorized RMS correction of the identified AGVs.",
+  "resolved_runbook_ids": [
+    "proc_query_active_agv_errors_from_the_wcs_database_v1",
+    "proc_check_overall_system_faults_and_active_agv_faults_overall_system_rms_v1"
+  ],
+  "runbook_links": [
+    {
+      "procedure_id": "proc_query_active_agv_errors_from_the_wcs_database_v1",
+      "link_confidence": "low",
+      "link_rationale": "Retrieval realigned to fleet/status-check runbook; prior link penalized for intent mismatch.",
+      "match_gaps": [
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Limited domain-term overlap between placeholder and runbook.",
+        "Placeholder wording differs materially from matched runbook title."
+      ],
+      "preferred_incident_source": true,
+      "retrieval_combined_score": 0.8436,
+      "boosted_score": 1.0,
+      "link_rank": 1,
+      "link_role": "primary"
+    },
+    {
+      "procedure_id": "proc_check_overall_system_faults_and_active_agv_faults_overall_system_rms_v1",
+      "link_confidence": "low",
+      "link_rationale": "Exclusive `rms_ui` companion (0.6447, boosted 0.7747).",
+      "match_gaps": [
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Limited domain-term overlap between placeholder and runbook.",
+        "Placeholder wording differs materially from matched runbook title.",
+        "exact-fit gap"
+      ],
+      "retrieval_combined_score": 0.6447,
+      "boosted_score": 0.7746999999999999,
+      "link_rank": 2,
+      "link_role": "optional_corroboration"
+    }
+  ],
+  "retrieval_eligibility_trace": [
+    {
+      "procedure_id": "proc_wcs_helix_db_ssms_agv_state_inspection_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.7459,
+        "jaccard": 0.2048,
+        "combined": 0.8735
+      },
+      "capabilities": [
+        "agv_active_errors",
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "rms_ui",
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": 0.0
+    },
+    {
+      "procedure_id": "proc_query_active_agv_errors_from_the_wcs_database_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6151,
+        "jaccard": 0.1435,
+        "combined": 0.8436
+      },
+      "capabilities": [
+        "agv_active_errors",
+        "wcs_service_health"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": 0.0
+    },
+    {
+      "procedure_id": "proc_diagnose_active_agv_errors_in_the_robotics_database_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.7188,
+        "jaccard": 0.1782,
+        "combined": 0.7866
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook trigger or incident condition is not established by the node.",
+        "Wrong catalog family: pre-grid-entry AGV recovery prep cannot corroborate this check-only node (need RMS/fleet or remote DB status views, not grid-entry prep).",
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_diagnose_agv_robot_command_state_in_robotics_database_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.7041,
+        "jaccard": 0.1624,
+        "combined": 0.7716
+      },
+      "capabilities": [
+        "robot_command_or_task_state"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Wrong catalog family: pre-grid-entry AGV recovery prep cannot corroborate this check-only node (need RMS/fleet or remote DB status views, not grid-entry prep).",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_look_up_agv_error_code_and_severity_classification_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.7001,
+        "jaccard": 0.1576,
+        "combined": 0.7674
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook trigger or incident condition is not established by the node.",
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_diagnose_agv_exchange_backfill_gap_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6834,
+        "jaccard": 0.1581,
+        "combined": 0.7558
+      },
+      "capabilities": [
+        "agv_active_errors",
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "rms_ui",
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": 0.0
+    },
+    {
+      "procedure_id": "proc_check_active_errors_robotics_systemactiveerrormodel_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6757,
+        "jaccard": 0.1651,
+        "combined": 0.7525
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": 0.0
+    },
+    {
+      "procedure_id": "proc_diagnose_agv_location_dwell_in_the_robotics_database_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6719,
+        "jaccard": 0.1659,
+        "combined": 0.7501
+      },
+      "capabilities": [
+        "robot_dwell_or_shutdown_staging"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_inspect_robot_location_attributes_in_the_robotics_database_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6642,
+        "jaccard": 0.1589,
+        "combined": 0.7426
+      },
+      "capabilities": [
+        "fleet_system_status",
+        "zone_config_state"
+      ],
+      "surfaces": [
+        "rms_ui",
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Wrong catalog family: pre-grid-entry AGV recovery prep cannot corroborate this check-only node (need RMS/fleet or remote DB status views, not grid-entry prep).",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_verify_robot_location_model_fields_and_rms_orange_location_types_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6638,
+        "jaccard": 0.1312,
+        "combined": 0.7341
+      },
+      "capabilities": [
+        "zone_config_state"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_corroborate_agv_active_errors_using_agv_active_error_db_model_error_code_dictionary_sort_guid_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6519,
+        "jaccard": 0.1493,
+        "combined": 0.7311
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": 0.0
+    },
+    {
+      "procedure_id": "proc_check_active_and_archived_location_dwell_records_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6353,
+        "jaccard": 0.1768,
+        "combined": 0.7277
+      },
+      "capabilities": [
+        "robot_dwell_or_shutdown_staging"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_robot_command_database_model_table_active_status_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6349,
+        "jaccard": 0.1548,
+        "combined": 0.7208
+      },
+      "capabilities": [
+        "robot_command_or_task_state"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_inspect_charging_threshold_values_in_ssms_helix_db_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6256,
+        "jaccard": 0.1596,
+        "combined": 0.7158
+      },
+      "capabilities": [
+        "agv_charging_state"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_verify_robotics_module_agv_state_machine_generates_geek_plus_commands_from_tote_tasks_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.636,
+        "jaccard": 0.1165,
+        "combined": 0.7102
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "wcs_api",
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": 0.0
+    },
+    {
+      "procedure_id": "proc_look_up_system_error_definitions_in_the_robotics_database_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6113,
+        "jaccard": 0.1478,
+        "combined": 0.7023
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": 0.0
+    },
+    {
+      "procedure_id": "proc_verify_resolved_errors_robotics_systemerroractivitymodel_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6033,
+        "jaccard": 0.139,
+        "combined": 0.694
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": 0.0
+    },
+    {
+      "procedure_id": "proc_diagnose_sorter_location_queue_mapping_in_robotics_database_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5896,
+        "jaccard": 0.1402,
+        "combined": 0.6848
+      },
+      "capabilities": [
+        "zone_config_state"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_diagnose_tipper_issues_ssms_tipper_departure_tag_logs_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.593,
+        "jaccard": 0.1295,
+        "combined": 0.684
+      },
+      "capabilities": [
+        "tipper_station_fault"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_agv_state_command_vitals_and_errors_in_the_optisweep_wcs_api_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.7248,
+        "jaccard": 0.1481,
+        "combined": 0.6818
+      },
+      "capabilities": [
+        "agv_active_errors",
+        "robot_command_or_task_state"
+      ],
+      "surfaces": [
+        "apidog",
+        "wcs_api"
+      ],
+      "roles": [
+        "L1_support",
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Wrong catalog family: pre-grid-entry AGV recovery prep cannot corroborate this check-only node (need RMS/fleet or remote DB status views, not grid-entry prep).",
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_sorterside_fields_in_ssms_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5909,
+        "jaccard": 0.1244,
+        "combined": 0.6809
+      },
+      "capabilities": [
+        "zone_config_state"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_optisweep_system_state_and_sort_guid_in_ssms_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5774,
+        "jaccard": 0.1523,
+        "combined": 0.6799
+      },
+      "capabilities": [
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Wrong catalog family: pre-grid-entry AGV recovery prep cannot corroborate this check-only node (need RMS/fleet or remote DB status views, not grid-entry prep).",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_active_dwell_time_sort_locations_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5665,
+        "jaccard": 0.1733,
+        "combined": 0.6785
+      },
+      "capabilities": [
+        "robot_dwell_or_shutdown_staging"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_verify_shutdown_staging_mapping_shutdowndstaging_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5865,
+        "jaccard": 0.1176,
+        "combined": 0.6758
+      },
+      "capabilities": [
+        "robot_dwell_or_shutdown_staging"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_charging_area_configuration_in_ssms_helix_db_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5663,
+        "jaccard": 0.1608,
+        "combined": 0.6746
+      },
+      "capabilities": [
+        "agv_charging_state"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_rms_fleet_status_agvs_exchange_waiting_startup_delay_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.7658,
+        "jaccard": 0.125,
+        "combined": 0.6735
+      },
+      "capabilities": [
+        "agv_active_errors",
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_validate_sorter_location_records_and_lane_status_in_ssms_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5705,
+        "jaccard": 0.1422,
+        "combined": 0.6721
+      },
+      "capabilities": [
+        "lane_or_chute_state",
+        "zone_config_state"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_current_and_archived_robot_task_records_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5613,
+        "jaccard": 0.1514,
+        "combined": 0.6683
+      },
+      "capabilities": [
+        "robot_command_or_task_state"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_robotics_systemdatabasemodel_state_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5621,
+        "jaccard": 0.1415,
+        "combined": 0.6659
+      },
+      "capabilities": [
+        "wcs_system_faults"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_rms_fleet_status_shutdown_queues_zone_cycling_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.7385,
+        "jaccard": 0.161,
+        "combined": 0.6653
+      },
+      "capabilities": [
+        "device_roster_state"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Optional corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_sorter_side_charger_assignment_check_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5598,
+        "jaccard": 0.1333,
+        "combined": 0.6618
+      },
+      "capabilities": [
+        "agv_charging_state",
+        "device_roster_state"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Optional corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": 0.0
+    },
+    {
+      "procedure_id": "proc_check_geek_rms_overall_system_faults_vs_agv_faults_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.7022,
+        "jaccard": 0.119,
+        "combined": 0.6572
+      },
+      "capabilities": [
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support",
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_opc_com_tag_subscription_updates_to_sorter_sweeper_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5455,
+        "jaccard": 0.1316,
+        "combined": 0.6513
+      },
+      "capabilities": [
+        "gateway_health",
+        "wcs_api_responsiveness"
+      ],
+      "surfaces": [
+        "ignition_gateway",
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_charger_and_tote_stand_mapping_in_ssms_helix_db_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5463,
+        "jaccard": 0.1218,
+        "combined": 0.6489
+      },
+      "capabilities": [
+        "agv_charging_state"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_fleet_level_agv_status_overall_system_agv_status_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.7368,
+        "jaccard": 0.099,
+        "combined": 0.6454
+      },
+      "capabilities": [
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_inspect_sort_confirmation_dimension_data_helix_lane_activity_model_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5348,
+        "jaccard": 0.1355,
+        "combined": 0.645
+      },
+      "capabilities": [
+        "sorter_item_or_scan_state"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_overall_system_faults_and_active_agv_faults_overall_system_rms_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.7224,
+        "jaccard": 0.13,
+        "combined": 0.6447
+      },
+      "capabilities": [
+        "agv_active_errors",
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_overall_system_agv_status_popup_agv_destination_errors_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.7139,
+        "jaccard": 0.1422,
+        "combined": 0.6424
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_use_rms_map_monitor_message_panel_agv_faults_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.7108,
+        "jaccard": 0.135,
+        "combined": 0.6381
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_sql_server_agent_status_in_sql_server_configuration_manager_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6433,
+        "jaccard": 0.1799,
+        "combined": 0.6343
+      },
+      "capabilities": [
+        "wcs_service_health"
+      ],
+      "surfaces": [
+        "event_viewer",
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support",
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_rms_disconnected_agv_count_cause_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.704,
+        "jaccard": 0.1269,
+        "combined": 0.6309
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_agv_state_command_vitals_active_errors_get_agv_status_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6936,
+        "jaccard": 0.1495,
+        "combined": 0.6303
+      },
+      "capabilities": [
+        "agv_active_errors",
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_systemdatabasemodel_lifecycle_staging_status_ssms_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5108,
+        "jaccard": 0.1366,
+        "combined": 0.6285
+      },
+      "capabilities": [
+        "sort_lifecycle_state"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_ignition_lane_activity_model_missing_dimension_data_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5013,
+        "jaccard": 0.1423,
+        "combined": 0.6236
+      },
+      "capabilities": [
+        "sorter_item_or_scan_state"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_rms_overall_system_agv_status_remote_availability_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.7085,
+        "jaccard": 0.0852,
+        "combined": 0.6215
+      },
+      "capabilities": [
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_verify_hospital_pickup_and_drop_off_location_id_mapping_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4956,
+        "jaccard": 0.1456,
+        "combined": 0.6206
+      },
+      "capabilities": [
+        "hospital_diversion"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_inspect_ignition_lane_activity_records_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4953,
+        "jaccard": 0.133,
+        "combined": 0.6166
+      },
+      "capabilities": [
+        "sorter_item_or_scan_state"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_auv_agv_overall_fleet_status_overall_system_agv_status_popup_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.7001,
+        "jaccard": 0.0842,
+        "combined": 0.6153
+      },
+      "capabilities": [
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_retrieve_current_agv_fault_statistics_from_wcs_api_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.631,
+        "jaccard": 0.1359,
+        "combined": 0.6124
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "apidog",
+        "wcs_api"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": 0.0
+    },
+    {
+      "procedure_id": "proc_check_systemdatabasemodel_state_and_sortguid_helix2x_1prod_robotics_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4963,
+        "jaccard": 0.1144,
+        "combined": 0.6117
+      },
+      "capabilities": [
+        "sort_lifecycle_state"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_interpret_hospital_station_stacklight_states_solid_flashing_colors_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5675,
+        "jaccard": 0.1231,
+        "combined": 0.6041
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "hospital_hmi"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_hospital_tag_variable_types_and_stored_values_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4746,
+        "jaccard": 0.1355,
+        "combined": 0.6029
+      },
+      "capabilities": [
+        "wcs_system_faults"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_rms_map_monitor_system_emergency_stop_status_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6305,
+        "jaccard": 0.0917,
+        "combined": 0.5989
+      },
+      "capabilities": [
+        "e_stop_or_safety_stop",
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_optisweep_api_status_and_fault_responses_in_apidog_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.605,
+        "jaccard": 0.1397,
+        "combined": 0.5954
+      },
+      "capabilities": [
+        "agv_active_errors",
+        "wcs_api_responsiveness"
+      ],
+      "surfaces": [
+        "apidog",
+        "wcs_api"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": 0.0
+    },
+    {
+      "procedure_id": "proc_open_rms_agv_fault_dropdown_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6399,
+        "jaccard": 0.1551,
+        "combined": 0.5945
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_smalls_system_health_smalls_overview_hmi_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5354,
+        "jaccard": 0.1623,
+        "combined": 0.5935
+      },
+      "capabilities": [
+        "device_roster_state"
+      ],
+      "surfaces": [
+        "tipper_hmi"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Optional corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_confirm_geek_rms_robotcontrol_before_estop_clear_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6197,
+        "jaccard": 0.0938,
+        "combined": 0.5919
+      },
+      "capabilities": [
+        "e_stop_or_safety_stop"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L2_support",
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_tipper_model_station_printer_and_tipper_status_fields_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4576,
+        "jaccard": 0.1354,
+        "combined": 0.5909
+      },
+      "capabilities": [
+        "tipper_station_fault"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_filter_wcs_database_logs_for_errors_and_fatals_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.463,
+        "jaccard": 0.1111,
+        "combined": 0.5874
+      },
+      "capabilities": [
+        "wcs_system_faults"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_rms_fleet_status_ui_confirm_rms_up_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6448,
+        "jaccard": 0.116,
+        "combined": 0.5861
+      },
+      "capabilities": [
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_display_all_agv_active_paths_map_monitor_quick_select_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6349,
+        "jaccard": 0.1202,
+        "combined": 0.5805
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_rms_active_robot_and_charging_counts_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6331,
+        "jaccard": 0.1186,
+        "combined": 0.5787
+      },
+      "capabilities": [
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_acb_system_statistics_screen_check_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5317,
+        "jaccard": 0.1,
+        "combined": 0.5722
+      },
+      "capabilities": [
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "tipper_hmi"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_hospital_hmi_operations_menu_induct_extract_status_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5323,
+        "jaccard": 0.0979,
+        "combined": 0.572
+      },
+      "capabilities": [
+        "hospital_diversion"
+      ],
+      "surfaces": [
+        "hospital_hmi"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_current_sort_and_sortguid_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4194,
+        "jaccard": 0.1407,
+        "combined": 0.5658
+      },
+      "capabilities": [
+        "sort_lifecycle_state"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_rms_screen_for_system_faults_first_step_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6203,
+        "jaccard": 0.1033,
+        "combined": 0.5652
+      },
+      "capabilities": [
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_confirm_rms_robotcontrol_load_during_services_unplanned_restart_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6154,
+        "jaccard": 0.1111,
+        "combined": 0.5641
+      },
+      "capabilities": [
+        "gateway_health",
+        "wcs_service_health"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_determine_robot_status_from_robot_led_colors_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.6077,
+        "jaccard": 0.1275,
+        "combined": 0.5636
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_determine_tipper_station_status_from_operator_station_stacklights_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5199,
+        "jaccard": 0.0896,
+        "combined": 0.5608
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "tipper_hmi"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_verify_ssms_connectivity_after_unplanned_restart_fortna_wcs_primary_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.436,
+        "jaccard": 0.0833,
+        "combined": 0.5602
+      },
+      "capabilities": [
+        "wcs_service_health"
+      ],
+      "surfaces": [
+        "wcs_sql"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_review_rms_open_message_panel_alarm_history_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.589,
+        "jaccard": 0.1523,
+        "combined": 0.558
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_verify_tipper_axis_referencing_and_motion_indicators_visu_mcp_dual_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4989,
+        "jaccard": 0.0922,
+        "combined": 0.5469
+      },
+      "capabilities": [
+        "tipper_station_fault"
+      ],
+      "surfaces": [
+        "tipper_hmi"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_current_optisweep_system_state_in_the_wcs_api_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5276,
+        "jaccard": 0.1475,
+        "combined": 0.5436
+      },
+      "capabilities": [
+        "sort_lifecycle_state"
+      ],
+      "surfaces": [
+        "apidog",
+        "wcs_api"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_optisweep_system_state_api_in_apidog_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5245,
+        "jaccard": 0.1505,
+        "combined": 0.5423
+      },
+      "capabilities": [
+        "wcs_api_responsiveness"
+      ],
+      "surfaces": [
+        "apidog",
+        "wcs_api"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_rms_map_monitor_emergency_stop_trigger_button_state_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.584,
+        "jaccard": 0.1036,
+        "combined": 0.5399
+      },
+      "capabilities": [
+        "e_stop_or_safety_stop"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_verify_visu_mds_machine_data_axis_match_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5019,
+        "jaccard": 0.0553,
+        "combined": 0.5379
+      },
+      "capabilities": [
+        "device_roster_state"
+      ],
+      "surfaces": [
+        "tipper_hmi"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Optional corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5582,
+        "jaccard": 0.1629,
+        "combined": 0.5296
+      },
+      "capabilities": [
+        "wcs_service_health",
+        "windows_service_or_event_log"
+      ],
+      "surfaces": [
+        "event_viewer"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_open_hmi_calculations_tilt_tray_overview_check_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.48,
+        "jaccard": 0.0769,
+        "combined": 0.5291
+      },
+      "capabilities": [
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "tipper_hmi"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_selected_robot_details_robot_id_location_node_code_tote_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5552,
+        "jaccard": 0.1333,
+        "combined": 0.5286
+      },
+      "capabilities": [
+        "device_roster_state"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Optional corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_verify_sorter_queue_routing_entrance_to_shutdown_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5155,
+        "jaccard": 0.1235,
+        "combined": 0.5279
+      },
+      "capabilities": [
+        "robot_dwell_or_shutdown_staging"
+      ],
+      "surfaces": [
+        "rms_ui",
+        "site_interview"
+      ],
+      "roles": [
+        "L1_support",
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_open_wcommand_screen_check_command_word_values_left_right_tipper_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4714,
+        "jaccard": 0.0825,
+        "combined": 0.5247
+      },
+      "capabilities": [
+        "device_roster_state"
+      ],
+      "surfaces": [
+        "tipper_hmi"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Optional corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_review_tipper_alarm_history_visu_alarm_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4584,
+        "jaccard": 0.0812,
+        "combined": 0.5153
+      },
+      "capabilities": [
+        "tipper_station_fault"
+      ],
+      "surfaces": [
+        "tipper_hmi"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_hospital_hmi_alarms_list_timestamp_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4457,
+        "jaccard": 0.105,
+        "combined": 0.5135
+      },
+      "capabilities": [
+        "tipper_station_fault"
+      ],
+      "surfaces": [
+        "hospital_hmi"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_operator_station_hmi_io_diagnostics_visu_io_diag_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4759,
+        "jaccard": 0.1245,
+        "combined": 0.5105
+      },
+      "capabilities": [
+        "device_roster_state"
+      ],
+      "surfaces": [
+        "tipper_hmi"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Optional corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_use_hospital_hmi_io_diagnostics_check_inputs_temps_voltages_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4395,
+        "jaccard": 0.0929,
+        "combined": 0.5055
+      },
+      "capabilities": [
+        "gateway_health"
+      ],
+      "surfaces": [
+        "hospital_hmi"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_z_axis_motor_positioning_within_the_frame_tipper_commissioning_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4438,
+        "jaccard": 0.064,
+        "combined": 0.4999
+      },
+      "capabilities": [
+        "tipper_station_fault"
+      ],
+      "surfaces": [
+        "tipper_hmi"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_hospital_hmi_default_screen_version_ip_loginlogout_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4334,
+        "jaccard": 0.0872,
+        "combined": 0.4996
+      },
+      "capabilities": [
+        "gateway_health"
+      ],
+      "surfaces": [
+        "hospital_hmi"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_identify_tote_presence_sorter_rack_color_rms_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5134,
+        "jaccard": 0.1333,
+        "combined": 0.4994
+      },
+      "capabilities": [
+        "agv_active_errors"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Optional corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_open_cellio_status_from_visu_mancontrol_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4332,
+        "jaccard": 0.0838,
+        "combined": 0.4984
+      },
+      "capabilities": [
+        "tipper_station_fault"
+      ],
+      "surfaces": [
+        "tipper_hmi"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_verify_ups_chat_message_flow_sorter_sweeper_induction_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.472,
+        "jaccard": 0.112,
+        "combined": 0.494
+      },
+      "capabilities": [
+        "tote_exchange_sequence",
+        "wcs_api_responsiveness"
+      ],
+      "surfaces": [
+        "apidog",
+        "ignition_gateway",
+        "wcs_api"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_click_dark_blue_rack_in_rms_view_associated_tote_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5137,
+        "jaccard": 0.1068,
+        "combined": 0.4916
+      },
+      "capabilities": [
+        "device_roster_state"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Optional corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_access_rms_web_ui_via_site_argus_ip_and_verify_overview_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.523,
+        "jaccard": 0.0821,
+        "combined": 0.4907
+      },
+      "capabilities": [
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_run_lamp_test_from_visu_mancontrol_verify_red_flash_audible_alarm_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4272,
+        "jaccard": 0.0571,
+        "combined": 0.4862
+      },
+      "capabilities": [
+        "tipper_station_fault"
+      ],
+      "surfaces": [
+        "tipper_hmi"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_verify_optsweep_wcs_windows_service_health_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5698,
+        "jaccard": 0.1553,
+        "combined": 0.4754
+      },
+      "capabilities": [
+        "wcs_service_health"
+      ],
+      "surfaces": [
+        "event_viewer"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_view_current_zone_configuration_wcs_api_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4418,
+        "jaccard": 0.117,
+        "combined": 0.4744
+      },
+      "capabilities": [
+        "zone_config_state"
+      ],
+      "surfaces": [
+        "apidog",
+        "wcs_api"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_windows_service_state_and_logs_gateway_unavailable_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.567,
+        "jaccard": 0.1315,
+        "combined": 0.4663
+      },
+      "capabilities": [
+        "wcs_service_health"
+      ],
+      "surfaces": [
+        "event_viewer"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_current_zone_configuration_get_zone_configuration_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4374,
+        "jaccard": 0.1,
+        "combined": 0.4662
+      },
+      "capabilities": [
+        "zone_config_state"
+      ],
+      "surfaces": [
+        "aveva_hmi",
+        "wcs_api"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_display_charger_ids_on_map_monitor_quick_select_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4857,
+        "jaccard": 0.0843,
+        "combined": 0.4653
+      },
+      "capabilities": [
+        "agv_charging_state"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_inspect_active_tote_state_with_gett\u10dd\u10e2etask_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.417,
+        "jaccard": 0.1183,
+        "combined": 0.4574
+      },
+      "capabilities": [
+        "tote_lifecycle_state"
+      ],
+      "surfaces": [
+        "apidog",
+        "wcs_api"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_realtime_tipper_and_hospital_tags_in_ignition_tag_application_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5581,
+        "jaccard": 0.1091,
+        "combined": 0.4534
+      },
+      "capabilities": [
+        "opc_connection_or_tipper_heartbeat",
+        "tipper_station_fault"
+      ],
+      "surfaces": [
+        "ignition_gateway"
+      ],
+      "roles": [
+        "L1_support",
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_display_station_ids_on_map_monitor_quick_select_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4586,
+        "jaccard": 0.1044,
+        "combined": 0.4523
+      },
+      "capabilities": [
+        "device_roster_state"
+      ],
+      "surfaces": [
+        "rms_ui"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Optional corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2)."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_overall_system_state_on_aveva_api_page_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.576,
+        "jaccard": 0.1294,
+        "combined": 0.442
+      },
+      "capabilities": [
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "aveva_hmi"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_ignition_gateway_opc_connection_status_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.5065,
+        "jaccard": 0.1269,
+        "combined": 0.4226
+      },
+      "capabilities": [
+        "gateway_health",
+        "opc_connection_or_tipper_heartbeat"
+      ],
+      "surfaces": [
+        "ignition_gateway"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_view_current_tote_exchange_settings_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.366,
+        "jaccard": 0.1207,
+        "combined": 0.4224
+      },
+      "capabilities": [
+        "tote_exchange_sequence"
+      ],
+      "surfaces": [
+        "apidog",
+        "wcs_api"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_ignition_gateway_system_performance_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4985,
+        "jaccard": 0.1429,
+        "combined": 0.4218
+      },
+      "capabilities": [
+        "gateway_health"
+      ],
+      "surfaces": [
+        "ignition_gateway"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook trigger or incident condition is not established by the node.",
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_diagnose_ignition_gateway_performance_using_the_performance_page_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.485,
+        "jaccard": 0.1553,
+        "combined": 0.4161
+      },
+      "capabilities": [
+        "gateway_health"
+      ],
+      "surfaces": [
+        "ignition_gateway"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook trigger or incident condition is not established by the node.",
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_ignition_gateway_performance_metrics_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4919,
+        "jaccard": 0.1381,
+        "combined": 0.4158
+      },
+      "capabilities": [
+        "gateway_health",
+        "opc_connection_or_tipper_heartbeat"
+      ],
+      "surfaces": [
+        "ignition_gateway"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Wrong catalog family: pre-grid-entry AGV recovery prep cannot corroborate this check-only node (need RMS/fleet or remote DB status views, not grid-entry prep).",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_tipper_active_communications_in_ignition_gateway_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4841,
+        "jaccard": 0.1164,
+        "combined": 0.4038
+      },
+      "capabilities": [
+        "gateway_health",
+        "opc_connection_or_tipper_heartbeat"
+      ],
+      "surfaces": [
+        "ignition_gateway"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_tipper_opc_connection_status_in_ignition_gateway_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4746,
+        "jaccard": 0.1282,
+        "combined": 0.4007
+      },
+      "capabilities": [
+        "gateway_health",
+        "opc_connection_or_tipper_heartbeat"
+      ],
+      "surfaces": [
+        "ignition_gateway",
+        "site_interview"
+      ],
+      "roles": [
+        "L1_support",
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_verify_system_bag_out_behavior_close_destinations_exchange_totes_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4724,
+        "jaccard": 0.1313,
+        "combined": 0.4001
+      },
+      "capabilities": [
+        "bag_out_or_closeout_state"
+      ],
+      "surfaces": [
+        "aveva_hmi"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_diagnose_missing_package_dimensions_ignition_lane_activity_model_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4777,
+        "jaccard": 0.1023,
+        "combined": 0.3951
+      },
+      "capabilities": [
+        "sorter_item_or_scan_state"
+      ],
+      "surfaces": [
+        "ignition_gateway"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_tote_task_exchange_type_priority_original_destination_ready_for_exchange_aveva_hmi_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4543,
+        "jaccard": 0.1284,
+        "combined": 0.3866
+      },
+      "capabilities": [
+        "sorter_item_or_scan_state"
+      ],
+      "surfaces": [
+        "aveva_hmi"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_open_current_errors_popup_from_overall_system_aveva_api_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4437,
+        "jaccard": 0.1205,
+        "combined": 0.3767
+      },
+      "capabilities": [
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "aveva_hmi"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_ignition_gateway_opc_connections_tipper_endpoints_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4904,
+        "jaccard": 0.105,
+        "combined": 0.3747
+      },
+      "capabilities": [
+        "opc_connection_or_tipper_heartbeat"
+      ],
+      "surfaces": [
+        "ignition_gateway"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_ignition_gateway_sys_perf_localhost_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4276,
+        "jaccard": 0.1148,
+        "combined": 0.3638
+      },
+      "capabilities": [
+        "gateway_health"
+      ],
+      "surfaces": [
+        "ignition_gateway"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_current_tote_task_and_resend_tote_task_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.419,
+        "jaccard": 0.1015,
+        "combined": 0.3537
+      },
+      "capabilities": [
+        "wcs_api_responsiveness"
+      ],
+      "surfaces": [
+        "aveva_hmi"
+      ],
+      "roles": [
+        "L2_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_verify_tote_exchange_settings_thresholds_and_method_on_aveva_hmi_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4282,
+        "jaccard": 0.0619,
+        "combined": 0.3483
+      },
+      "capabilities": [
+        "tote_exchange_sequence"
+      ],
+      "surfaces": [
+        "aveva_hmi"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_open_system_metrics_popup_from_overall_system_aveva_api_page_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4063,
+        "jaccard": 0.0774,
+        "combined": 0.3376
+      },
+      "capabilities": [
+        "fleet_system_status"
+      ],
+      "surfaces": [
+        "aveva_hmi"
+      ],
+      "roles": [
+        "operator"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_s_tunnel_active_connections_and_tls_status_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.3901,
+        "jaccard": 0.1063,
+        "combined": 0.335
+      },
+      "capabilities": [
+        "ups_chat_or_stunnel_health"
+      ],
+      "surfaces": [
+        "stunnel"
+      ],
+      "roles": [
+        "L2_support",
+        "L3_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_lane_zone_configuration_using_zone_config_aveva_api_page_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4349,
+        "jaccard": 0.0928,
+        "combined": 0.3323
+      },
+      "capabilities": [],
+      "surfaces": [
+        "aveva_hmi"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    },
+    {
+      "procedure_id": "proc_check_ignition_gateway_sys_perf_v1",
+      "procedure_type": "diagnostic",
+      "raw_scores": {
+        "cosine": 0.4248,
+        "jaccard": 0.0833,
+        "combined": 0.3224
+      },
+      "capabilities": [
+        "gateway_health"
+      ],
+      "surfaces": [
+        "ignition_gateway"
+      ],
+      "roles": [
+        "L1_support"
+      ],
+      "procedure_type_match": true,
+      "exact_fit_gaps": [
+        "Runbook surface does not match the selected support surface.",
+        "Executing role is not authorized by the node/runbook role contract.",
+        "Missing corroboration for `agv_active_errors`: AGV active errors \u2014 check RMS active AGV faults and/or WCS/SSMS SystemActiveErrorModel (L2).",
+        "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2).",
+        "Runbook does not match the ontology capability contract.",
+        "Runbook surface is outside the ontology contract."
+      ],
+      "structurally_compatible": true,
+      "exact_fit_gap_penalty": -0.35
+    }
+  ],
+  "decision_outcomes": [
+    {
+      "outcome_label": "unhealthy",
+      "descriptor": "Residual out-of-sync AGVs or abnormal roster/state evidence remains.",
+      "observable_signal": "Residual out-of-sync AGVs or abnormal roster/state evidence remains.",
+      "observer": "remote",
+      "tool_or_view": "RMS fleet/map + WCS/Helix DB SSMS read-only",
+      "source": "playbook_expected_result",
+      "linked_runbook_id": "proc_wcs_helix_db_ssms_agv_state_inspection_v1",
+      "linked_step_number": null,
+      "next_node_id": "node_6",
+      "terminal_result": ""
+    },
+    {
+      "outcome_label": "healthy",
+      "descriptor": "No residual out-of-sync issue indicated.",
+      "observable_signal": "No residual out-of-sync issue indicated.",
+      "observer": "remote",
+      "tool_or_view": "RMS fleet/map + WCS/Helix DB SSMS read-only",
+      "source": "playbook_expected_result",
+      "linked_runbook_id": null,
+      "linked_step_number": null,
+      "next_node_id": "node_7",
+      "terminal_result": ""
+    },
+    {
+      "outcome_label": "inconclusive",
+      "descriptor": "AGV state cannot be reliably interpreted.",
+      "observable_signal": "AGV state cannot be reliably interpreted.",
+      "observer": "remote",
+      "tool_or_view": "RMS + SSMS read-only and/or API records",
+      "source": "playbook_expected_result",
+      "linked_runbook_id": null,
+      "linked_step_number": null,
+      "next_node_id": "node_8",
+      "terminal_result": ""
+    }
+  ],
+  "branches": [
+    {
+      "branch_id": "b1",
+      "condition_label": "Residual out-of-sync AGVs or abnormal roster/state evidence is indicated",
+      "condition_descriptor": "Backend corroboration supports residual synchronization problem(s).",
+      "outcome": "unhealthy",
+      "next_node_id": "node_6",
+      "source_branch_hint_ids": [
+        "from_node_id:node_5 condition_or_signal:Residual out-of-sync AGVs or abnormal roster/state evidence is indicated"
+      ],
+      "linked_runbook_step_ref": "",
+      "source_refs": [
+        {
+          "page_ref": "case_228086:page_26",
+          "support_type": "case_comment",
+          "quote_or_summary": "RMS was used to locate AGVs that were out of sync and fix them individually."
+        }
+      ],
+      "terminal_result": ""
+    },
+    {
+      "branch_id": "b2",
+      "condition_label": "No residual synchronization problem is indicated",
+      "condition_descriptor": "RMS/cohorted backend state shows normal/resolved synchronization.",
+      "outcome": "healthy",
+      "next_node_id": "node_7",
+      "source_branch_hint_ids": [
+        "from_node_id:node_5 condition_or_signal:No residual synchronization problem is indicated"
+      ],
+      "linked_runbook_step_ref": "",
+      "source_refs": [
+        {
+          "page_ref": "case_228086:page_17",
+          "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+          "support_type": "validation_evidence",
+          "quote_or_summary": "Returned AGV records included visible NORMAL status values, although interpretation remained limited."
+        }
+      ],
+      "terminal_result": ""
+    }
+  ],
+  "purpose": "Identify whether individual AGVs remain out of sync after service responsiveness has returned.",
+  "diagnostic_reasoning": "After the OptiSweep reset, RMS was used to locate and correct AGVs that remained out of sync; a separate artifact shows read-only SSMS inspection of AGV states.",
+  "evidence_required": [],
+  "evidence_collection_procedures": [
+    {
+      "procedure_id": "proc_query_active_agv_errors_from_the_wcs_database_v1",
+      "title": "Query Active AGV Errors From the WCS Database",
+      "purpose": "Retrieve current active AGV error records from the WCS database by logging into the WCS primary server, opening the WCS database, creating a new query tab, entering the documented SQL query against [Helix2x_1Prod_Robotics].[dbo].[SystemActiveErrorModel], executing it, and reviewing the returned results.",
+      "role_required": "L2_support",
+      "audience_roles": [
+        "L2_support"
+      ]
+    },
+    {
+      "procedure_id": "proc_check_overall_system_faults_and_active_agv_faults_overall_system_rms_v1",
+      "title": "Check Overall System Faults and Active AGV Faults on the Overall System RMS Page",
+      "purpose": "Perform a first-pass live check on the RMS / fleet status UI (Geek+ RMS web page) to determine whether the system has any system faults (left side) and whether any AGVs have active faults (right side).",
+      "role_required": "L1_support",
+      "audience_roles": [
+        "L1_support"
+      ]
+    }
+  ],
+  "catalog_gaps": [
+    "Missing corroboration for `device_roster_state`: roster/mapping abnormality \u2014 check RMS map monitor / robot roster (optionally WCS robot-location models for L2)."
+  ],
+  "next_branches": [
+    {
+      "branch_id": "b1",
+      "condition_label": "Residual out-of-sync AGVs or abnormal roster/state evidence is indicated",
+      "condition_descriptor": "Backend corroboration supports residual synchronization problem(s).",
+      "outcome": "unhealthy",
+      "next_node_id": "node_6",
+      "source_branch_hint_ids": [
+        "from_node_id:node_5 condition_or_signal:Residual out-of-sync AGVs or abnormal roster/state evidence is indicated"
+      ],
+      "linked_runbook_step_ref": "",
+      "source_refs": [
+        {
+          "page_ref": "case_228086:page_26",
+          "support_type": "case_comment",
+          "quote_or_summary": "RMS was used to locate AGVs that were out of sync and fix them individually."
+        }
+      ],
+      "terminal_result": ""
+    },
+    {
+      "branch_id": "b2",
+      "condition_label": "No residual synchronization problem is indicated",
+      "condition_descriptor": "RMS/cohorted backend state shows normal/resolved synchronization.",
+      "outcome": "healthy",
+      "next_node_id": "node_7",
+      "source_branch_hint_ids": [
+        "from_node_id:node_5 condition_or_signal:No residual synchronization problem is indicated"
+      ],
+      "linked_runbook_step_ref": "",
+      "source_refs": [
+        {
+          "page_ref": "case_228086:page_17",
+          "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+          "support_type": "validation_evidence",
+          "quote_or_summary": "Returned AGV records included visible NORMAL status values, although interpretation remained limited."
+        }
+      ],
+      "terminal_result": ""
+    }
+  ],
+  "source_evidence": [
+    {
+      "page_ref": "case_228086:page_26",
+      "artifact_id": "artifact_incident_228086_page_026_full_page_01",
+      "chunk_id": "stage4_artifact_chunk_003",
+      "support_type": "case_comment",
+      "quote_or_summary": "RMS was used to locate AGVs that were out of sync and fix them individually."
+    },
+    {
+      "page_ref": "case_228086:page_24",
+      "artifact_id": "artifact_incident_228086_page_024_embedded_image_01",
+      "chunk_id": "stage4_artifact_chunk_002",
+      "support_type": "artifact_visual",
+      "quote_or_summary": "SQL Server Management Studio visibly showed robotics-related AGV state results."
+    }
+  ],
+  "inherited_image_refs": [
+    "artifact_manual_active_agv_error_query_1_page_1_image_1",
+    "artifact_manual_active_agv_error_query_1_page_1_image_2",
+    "artifact_manual_active_agv_error_query_1_page_2_image_1",
+    "artifact_manual_active_agv_error_query_1_page_2_image_2",
+    "artifact_manual_active_agv_error_query_1_page_4_image_1",
+    "artifact_manual_active_agv_error_query_1_page_4_image_2",
+    "artifact_training_video_training_video_day1_0063_do_you_have_any_system_faults_primary_02_15_57_000",
+    "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000"
+  ],
+  "image_refs": [
+    "artifact_manual_active_agv_error_query_1_page_1_image_1",
+    "artifact_manual_active_agv_error_query_1_page_1_image_2",
+    "artifact_manual_active_agv_error_query_1_page_2_image_1",
+    "artifact_manual_active_agv_error_query_1_page_2_image_2",
+    "artifact_manual_active_agv_error_query_1_page_4_image_1",
+    "artifact_manual_active_agv_error_query_1_page_4_image_2",
+    "artifact_training_video_training_video_day1_0063_do_you_have_any_system_faults_primary_02_15_57_000",
+    "artifact_training_video_training_video_day1_0061_this_page_should_show_rms_but_primary_02_13_06_000"
+  ],
+  "linked_runbooks": [
+    {
+      "procedure_id": "proc_query_active_agv_errors_from_the_wcs_database_v1",
+      "title": "Query Active AGV Errors From the WCS Database",
+      "procedure_type": "diagnostic",
+      "purpose": "Retrieve current active AGV error records from the WCS database by logging into the WCS primary server, opening the WCS database, creating a new query tab, entering the documented SQL query against [Helix2x_1Prod_Robotics].[dbo].[SystemActiveErrorModel], executing it, and reviewing the returned results.",
+      "role_required": "L2_support",
+      "audience_roles": [
+        "L2_support"
+      ]
+    },
+    {
+      "procedure_id": "proc_check_overall_system_faults_and_active_agv_faults_overall_system_rms_v1",
+      "title": "Check Overall System Faults and Active AGV Faults on the Overall System RMS Page",
+      "procedure_type": "diagnostic",
+      "purpose": "Perform a first-pass live check on the RMS / fleet status UI (Geek+ RMS web page) to determine whether the system has any system faults (left side) and whether any AGVs have active faults (right side).",
+      "role_required": "L1_support",
+      "audience_roles": [
+        "L1_support"
+      ]
+    }
+  ],
+  "technical_field_mapping": {
+    "primary_surface": "wcs_sql",
+    "entities": [
+      {
+        "entity": "RobotDatabaseModel",
+        "database": "robotics",
+        "fields": [
+          {
+            "name": "IsToteEmpty",
+            "meaning": "Whether the tote currently on the robot is empty (1) or not (0)"
+          },
+          {
+            "name": "LastCommandGuid",
+            "meaning": "GUID of the last command sent to this robot (cross-references RobotCommandDatabaseModel)"
+          },
+          {
+            "name": "ToteId",
+            "meaning": "Tote currently associated with robot (labeled ToteId in the live query results"
+          },
+          {
+            "name": "CellCode",
+            "meaning": "Current cell/lattice code the robot is reporting (cross-references CellCodeDatabaseModel.CellCode)"
+          },
+          {
+            "name": "ChargeKick",
+            "meaning": "Whether the robot was kicked off the charger (relates to ChargingThresholdsDatabaseModel kick-off threshold)"
+          },
+          {
+            "name": "ChargesSinceLastCharged",
+            "meaning": "Count of charge cycles since the robot was last fully charged"
+          },
+          {
+            "name": "CommandId",
+            "meaning": "FK to the robot's current RobotCommandDatabaseModel row"
+          }
+        ],
+        "source_refs": [
+          {
+            "source": "training_video_day2",
+            "artifact_set": "stage_2_source_artifacts / stage_1 slide segments"
+          },
+          {
+            "source": "optisweep_training_slides",
+            "note": "PascalCase model inventory; live query screenshot on p.77 supplied the full column list and example values"
+          }
+        ]
+      },
+      {
+        "entity": "SystemActiveErrorModel",
+        "database": "robotics",
+        "fields": [
+          {
+            "name": "SystemErrorDescription",
+            "meaning": "Description of the system error"
+          }
+        ],
+        "source_refs": [
+          {
+            "source": "training_video_day2",
+            "artifact_set": "stage_2_source_artifacts / stage_1 slide segments"
+          },
+          {
+            "source": "optisweep_training_slides",
+            "note": "PascalCase model inventory"
+          },
+          {
+            "source": "active_agv_error_query_1",
+            "note": "column list from documented SELECT"
+          }
+        ]
+      }
+    ],
+    "suggested_database_checks": [
+      {
+        "entity": "RobotDatabaseModel",
+        "database": "robotics",
+        "fields": [
+          {
+            "name": "State",
+            "meaning": ""
+          },
+          {
+            "name": "CurrentLocationId",
+            "meaning": ""
+          }
+        ],
+        "correlation_keys": [
+          "robot_id",
+          "location_id"
+        ],
+        "freshness_field": "EntityLastUpdate",
+        "source_refs": [
+          "ontology.backend_mappings"
+        ]
+      },
+      {
+        "entity": "RobotLocationDatabaseModel",
+        "database": "robotics",
+        "fields": [
+          {
+            "name": "StationNumber",
+            "meaning": ""
+          }
+        ],
+        "correlation_keys": [
+          "robot_id",
+          "location_id"
+        ],
+        "freshness_field": "EntityLastUpdate",
+        "source_refs": [
+          "ontology.backend_mappings"
+        ]
+      },
+      {
+        "entity": "AgvActiveErrorDatabaseModel",
+        "database": "robotics",
+        "fields": [
+          {
+            "name": "Name",
+            "meaning": ""
+          },
+          {
+            "name": "Error code",
+            "meaning": ""
+          },
+          {
+            "name": "Description",
+            "meaning": ""
+          },
+          {
+            "name": "SortGuid",
+            "meaning": ""
+          }
+        ],
+        "correlation_keys": [],
+        "freshness_field": "",
+        "source_refs": [
+          "ontology.backend_mappings"
+        ]
+      }
+    ],
+    "field_count": 8,
+    "availability": "Validated against the WCS SQL model catalog."
+  },
+  "diagnostic_classification": "technical_diagnosis",
+  "question": "Identify whether individual AGVs remain out of sync after service responsiveness has returned.",
+  "optional_corroboration_surface": "rms_ui",
+  "runbook_execution_result": {
+    "success": "The WCS primary server is accessed successfully.",
+    "failure": "Access to the WCS primary server is not available."
+  },
+  "node_interpretation_mapping": {
+    "success": "No residual out-of-sync issue indicated.",
+    "failure": "Residual out-of-sync AGVs or abnormal roster/state evidence remains.",
+    "inconclusive": "AGV state cannot be reliably interpreted."
+  }
+}

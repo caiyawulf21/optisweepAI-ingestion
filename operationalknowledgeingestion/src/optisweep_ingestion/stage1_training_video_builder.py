@@ -4,15 +4,25 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import hashlib
+import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import tempfile
+import threading
+import time
 from typing import Any
+import urllib.error
+import urllib.request
+
+from dotenv import load_dotenv
 
 from optisweep_ingestion.services.id_generator import slugify
 from optisweep_ingestion.utils.json_utils import write_json
+
+DEFAULT_AZURE_COMPUTER_VISION_API_VERSION = "2023-10-01"
 
 
 @dataclass(frozen=True)
@@ -136,9 +146,30 @@ class FrameSample:
     ocr_provenance: dict[str, Any] | None = None
 
 
+def resolve_tesseract_command(command: str | None = None) -> str:
+    if command:
+        return command
+    env_command = os.getenv("TESSERACT_CMD")
+    if env_command:
+        return env_command
+    which = shutil.which("tesseract")
+    if which:
+        return which
+    local_app_data = os.getenv("LOCALAPPDATA") or ""
+    candidates = [
+        Path(local_app_data) / "Programs" / "Tesseract-OCR" / "tesseract.exe",
+        Path(r"C:\Program Files\Tesseract-OCR\tesseract.exe"),
+        Path(r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"),
+    ]
+    for candidate in candidates:
+        if candidate.is_file():
+            return str(candidate)
+    return "tesseract"
+
+
 class TesseractOCRClient:
     def __init__(self, command: str | None = None) -> None:
-        self.command = command or os.getenv("TESSERACT_CMD") or "tesseract"
+        self.command = resolve_tesseract_command(command)
 
     def extract(self, image_path: str | Path) -> OCRResult:
         image = Path(image_path)
@@ -188,6 +219,157 @@ class TesseractOCRClient:
                 "confidence": confidence_value,
             },
         )
+
+
+def _clean_env_value(value: str | None) -> str:
+    return (value or "").strip()
+
+
+DEFAULT_AZURE_COMPUTER_VISION_MIN_INTERVAL_SEC = 3.5
+_azure_cv_rate_lock = threading.Lock()
+_azure_cv_last_call_at = 0.0
+
+
+def _azure_cv_min_interval_sec() -> float:
+    raw = _clean_env_value(os.getenv("AZURE_COMPUTER_VISION_MIN_INTERVAL_SEC"))
+    if not raw:
+        return DEFAULT_AZURE_COMPUTER_VISION_MIN_INTERVAL_SEC
+    try:
+        return max(0.0, float(raw))
+    except ValueError:
+        return DEFAULT_AZURE_COMPUTER_VISION_MIN_INTERVAL_SEC
+
+
+def _wait_for_azure_cv_slot() -> None:
+    """Proactively pace calls to stay under the configured requests-per-minute
+    quota (default assumes the free tier's 20 calls/minute) instead of relying
+    solely on reactive 429 backoff."""
+    interval = _azure_cv_min_interval_sec()
+    if interval <= 0:
+        return
+    global _azure_cv_last_call_at
+    with _azure_cv_rate_lock:
+        now = time.monotonic()
+        wait = interval - (now - _azure_cv_last_call_at)
+        if wait > 0:
+            time.sleep(wait)
+        _azure_cv_last_call_at = time.monotonic()
+
+
+class AzureComputerVisionOCRClient:
+    """OCR via Azure AI Vision Image Analysis 4.0 'Read' feature (synchronous).
+
+    Reads full lines of text from a slide screenshot more reliably than
+    Tesseract on small/dense on-screen content (e.g. SSMS query-result grids,
+    column headers), since the underlying model is not limited to Tesseract's
+    single-page-segmentation-mode heuristics.
+
+    Proactively paced to stay under a requests-per-minute quota (default 3.5s
+    between calls, i.e. ~17/min, under the Azure free tier's 20/min limit) via
+    _wait_for_azure_cv_slot(), in addition to reactive 429 backoff. Override
+    the pacing with AZURE_COMPUTER_VISION_MIN_INTERVAL_SEC if your tier allows
+    a faster rate.
+    """
+
+    def __init__(
+        self,
+        endpoint: str | None = None,
+        api_key: str | None = None,
+        api_version: str | None = None,
+        timeout: float = 30.0,
+        max_attempts: int = 4,
+    ) -> None:
+        load_dotenv()
+        self.endpoint = _clean_env_value(endpoint or os.getenv("AZURE_COMPUTER_VISION_ENDPOINT")).rstrip("/")
+        self.api_key = _clean_env_value(api_key or os.getenv("AZURE_COMPUTER_VISION_KEY"))
+        self.api_version = (
+            _clean_env_value(api_version or os.getenv("AZURE_COMPUTER_VISION_API_VERSION"))
+            or DEFAULT_AZURE_COMPUTER_VISION_API_VERSION
+        )
+        self.timeout = timeout
+        self.max_attempts = max_attempts
+        missing = [
+            name
+            for name, value in [
+                ("AZURE_COMPUTER_VISION_ENDPOINT", self.endpoint),
+                ("AZURE_COMPUTER_VISION_KEY", self.api_key),
+            ]
+            if not value
+        ]
+        if missing:
+            raise RuntimeError(
+                "Azure Computer Vision is not configured. Set these environment "
+                "variables: " + ", ".join(missing)
+            )
+
+    def extract(self, image_path: str | Path) -> OCRResult:
+        image = Path(image_path)
+        image_bytes = image.read_bytes()
+        url = (
+            f"{self.endpoint}/computervision/imageanalysis:analyze"
+            f"?api-version={self.api_version}&features=read"
+        )
+        headers = {
+            "Content-Type": "application/octet-stream",
+            "Ocp-Apim-Subscription-Key": self.api_key,
+        }
+        payload = self._request_with_retry(url, headers, image_bytes)
+        lines: list[str] = []
+        confidences: list[float] = []
+        read_result = (payload.get("readResult") or {}) if isinstance(payload, dict) else {}
+        for block in read_result.get("blocks") or []:
+            for line in block.get("lines") or []:
+                line_text = str(line.get("text") or "").strip()
+                if not line_text:
+                    continue
+                lines.append(line_text)
+                for word in line.get("words") or []:
+                    confidence = word.get("confidence")
+                    if isinstance(confidence, (int, float)):
+                        confidences.append(float(confidence) * 100.0)
+        confidence_value = round(sum(confidences) / len(confidences), 2) if confidences else None
+        return OCRResult(
+            text="\n".join(lines).strip(),
+            confidence=confidence_value,
+            backend="azure_cv",
+            provenance={
+                "backend": "azure_cv",
+                "endpoint": self.endpoint,
+                "api_version": self.api_version,
+                "source_image_path": str(image),
+                "confidence": confidence_value,
+            },
+        )
+
+    def _request_with_retry(
+        self, url: str, headers: dict[str, str], image_bytes: bytes
+    ) -> dict[str, Any]:
+        attempt = 0
+        while True:
+            attempt += 1
+            _wait_for_azure_cv_slot()
+            request = urllib.request.Request(url, data=image_bytes, headers=headers, method="POST")
+            try:
+                with urllib.request.urlopen(request, timeout=self.timeout) as response:
+                    return json.loads(response.read().decode("utf-8"))
+            except urllib.error.HTTPError as exc:
+                details = exc.read().decode("utf-8", errors="replace")
+                if exc.code == 429 and attempt < self.max_attempts:
+                    retry_after_header = exc.headers.get("Retry-After")
+                    try:
+                        retry_after = float(retry_after_header) if retry_after_header else 0.0
+                    except ValueError:
+                        retry_after = 0.0
+                    print(
+                        f"Azure Computer Vision rate-limited (attempt {attempt}); "
+                        f"sleeping {max(retry_after, min(5.0 * attempt, 30.0)):.0f}s",
+                        flush=True,
+                    )
+                    time.sleep(max(retry_after, min(5.0 * attempt, 30.0)))
+                    continue
+                raise RuntimeError(f"Azure Computer Vision OCR failed: HTTP {exc.code}: {details}") from exc
+            except urllib.error.URLError as exc:
+                raise RuntimeError(f"Azure Computer Vision OCR request failed: {exc.reason}") from exc
 
 
 def normalize_ocr_text(text: str) -> str:
@@ -342,7 +524,7 @@ def build_training_video_bundle(
     buffer_after_seconds: float = 3.0,
     extra_frame_threshold: float = 8.0,
     max_extra_frames_per_segment: int = 0,
-    ocr_backend: str = "none",
+    ocr_backend: str = "azure_cv",
     tesseract_command: str | None = None,
     sample_ocr_interval_seconds: float = 3.0,
     max_segment_seconds: float = 120.0,
@@ -609,7 +791,7 @@ def collect_frame_samples(
     crop_box: CropBox,
     sampling_interval_seconds: float,
     slide_change_threshold: float,
-    ocr_client: TesseractOCRClient | None,
+    ocr_client: TesseractOCRClient | AzureComputerVisionOCRClient | None,
     ocr_backend: str,
     sample_ocr_interval_seconds: float,
     samples_dir: Path,
@@ -894,13 +1076,17 @@ def _load_cv2() -> Any:
     return cv2
 
 
-def _build_ocr_client(ocr_backend: str, tesseract_command: str | None) -> TesseractOCRClient | None:
+def _build_ocr_client(
+    ocr_backend: str, tesseract_command: str | None
+) -> TesseractOCRClient | AzureComputerVisionOCRClient | None:
     backend = (ocr_backend or "none").strip().lower()
     if backend == "none":
         return None
     if backend == "tesseract":
         return TesseractOCRClient(command=tesseract_command)
-    raise ValueError("Unsupported OCR backend. Use 'none' or 'tesseract'.")
+    if backend in {"azure_cv", "azure-cv", "azure_computer_vision"}:
+        return AzureComputerVisionOCRClient()
+    raise ValueError("Unsupported OCR backend. Use 'none', 'tesseract', or 'azure_cv'.")
 
 
 def _validate_crop_box(crop_box: CropBox, width: int, height: int) -> None:

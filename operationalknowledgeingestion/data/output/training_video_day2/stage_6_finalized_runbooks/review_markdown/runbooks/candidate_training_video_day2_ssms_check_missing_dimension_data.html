@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check IgnitionLaneActivityModel for Missing Dimension Data in SSMS</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check IgnitionLaneActivityModel for Missing Dimension Data in SSMS</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_ignition_lane_activity_model_missing_dimension_data_v1</td></tr>
+<tr><th>Title</th><td>Check IgnitionLaneActivityModel for Missing Dimension Data in SSMS</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>sorter_item_or_scan_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>miss_scan_or_dimension_fallback</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the WCS / Helix DB (SSMS) to inspect the read-only dbo.IgnitionLaneActivityModel view and determine whether recent lane activity records contain dimension data expected from the dimensioners. Correlate dimension fields with package identifiers, Message, PackageClassification, Missing DimensionData, MissingInduct, Tote Not Found, and Diverted indicators. This procedure does not modify or reboot dimensioners.</p>
+<h2>When To Use</h2>
+<p>Use this WCS / Helix DB (SSMS) diagnostic when support needs to verify whether recent lane activity records contain expected dimension data, especially when Missing DimensionData is suspected or affected records show blank or absent dimension values.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/d3061ef3fe825a42.jpg" alt="artifact_training_video_training_video_day2_0060_they_they_had_a_power_flicker_primary_03_28_33_000" /><figcaption>SSMS database view containing dbo.IgnitionLaneActivityModel with Last Update, sorter and lane identifiers, package identifiers, dimension fields, and status fields.</figcaption></figure>
+<figure><img src="assets/a359db66d5e12322.jpg" alt="artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000" /><figcaption>Lane activity table view showing dimension fields and filtering or inspection of SortConf records with missing dimension data.</figcaption></figure>
+<figure><img src="assets/44d937dbe3eba2e0.jpg" alt="artifact_training_video_training_video_day2_0024_the_items_model_so_items_are_primary_02_10_19_000" /><figcaption>IgnitionLaneActivityModel field view showing package identifiers, Length, Width, Height, Weight, Cube, Message, PackageClassification, and MissingDimensionData-related fields.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the applicable WCS / Helix database in SSMS</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In SSMS, select the applicable WCS / Helix database containing the dbo.IgnitionLaneActivityModel view or model. Use the database for inspection only.</p>
+<p><strong>Expected result:</strong></p>
+<p>The applicable WCS / Helix database is selected and dbo.IgnitionLaneActivityModel is available to open.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L3 support if the applicable WCS / Helix database or dbo.IgnitionLaneActivityModel cannot be accessed.</li>
+</ul>
+<hr>
+<h3>Step 2 — Open dbo.IgnitionLaneActivityModel in read-only view</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open dbo.IgnitionLaneActivityModel in the read-only WCS / Helix DB (SSMS) view. Confirm that the lane activity table displays the record and field set used for this check.</p>
+<p><strong>Expected result:</strong></p>
+<p>The live view displays dbo.IgnitionLaneActivityModel records with lane, package, dimension, and status-related columns.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L3 support if the model cannot be opened or the required fields are not available.</li>
+</ul>
+<hr>
+<h3>Step 3 — Identify recent lane activity records</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Review recent values in Last Update, SorterName, SortName, Zone, LaneName, PackageUid, and Tracking Number in the WCS / Helix DB (SSMS) lane activity view. Use these fields to identify the records relevant to the reported lane or sorter condition.</p>
+<p><strong>Expected result:</strong></p>
+<p>Relevant recent lane activity records are identified with their update time, sorter and lane location, PackageUid, and Tracking Number.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L2/L3 support if recent lane activity records are absent for the affected area or investigation period.</li>
+</ul>
+<hr>
+<h3>Step 4 — Inspect dimension and weight fields</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS) records identified in the previous step, inspect Length, Width, Height, Weight, and Cube. Compare whether these fields contain values or are blank or missing for the affected records.</p>
+<p><strong>Expected result:</strong></p>
+<p>Each relevant record shows the observable state of Length, Width, Height, Weight, and Cube.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L2/L3 support if dimension fields remain blank or missing for affected records.</li>
+</ul>
+<hr>
+<h3>Step 5 — Review lane activity status indicators</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>For the same records in the WCS / Helix DB (SSMS), review Message, PackageClassification, Missing DimensionData, MissingInduct, Tote Not Found, and Diverted. Record the observed values without assigning undocumented meanings to binary-like or value-like indicators.</p>
+<p><strong>Expected result:</strong></p>
+<p>The affected records show their Message and PackageClassification values together with the observed Missing DimensionData, MissingInduct, Tote Not Found, and Diverted values.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate to L2/L3 support if Missing DimensionData is present for affected records.</li>
+<li>Escalate to L2/L3 support if the status fields and dimension fields do not provide a clear observable result.</li>
+</ul>
+<hr>
+</body>
+</html>

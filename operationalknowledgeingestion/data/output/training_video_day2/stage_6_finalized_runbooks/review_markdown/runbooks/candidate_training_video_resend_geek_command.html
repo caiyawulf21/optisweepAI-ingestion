@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Resend an AGV Command to Geek+ Using the OptiSweep WCS API</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Resend an AGV Command to Geek+ Using the OptiSweep WCS API</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_resend_an_agv_command_to_geek_using_the_optisweep_wcs_api_v1</td></tr>
+<tr><th>Title</th><td>Resend an AGV Command to Geek+ Using the OptiSweep WCS API</td></tr>
+<tr><th>Procedure Type</th><td>recovery</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>robot_command_or_task_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_api, apidog, wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>unplanned_restart</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the OptiSweep / WCS API through Apidog to resubmit a Geek+ AGV request when the command GUID is available, then review GET command status for the associated main GUID. This is useful after an unplanned restart when Geek+ may have missed the request.</p>
+<h2>When To Use</h2>
+<p>Use when an AGV command request may have been missed by Geek+ after an unplanned restart and a command GUID is available from the command database model or command status data.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/adfdc59640e17900.jpg" alt="artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500" /><figcaption>Apidog / WCS API overview showing AGV API requests, including GET Get Agv Statuses and POST Resend Geek Command.</figcaption></figure>
+<figure><img src="assets/30f5c770747ce298.jpg" alt="artifact_training_video_training_video_day2_0030_get_agv_status_shows_the_current_primary_02_43_04_500" /><figcaption>AGV API view showing Get AGV Statuses fields and the Resend Geek Command request requiring a command GUID.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the Resend Geek Command request in Apidog</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the primary server, open Apidog / WCS API client and select the AGV request labeled &quot;Resend Geek Command&quot;. Confirm that the related GET Get Agv Statuses request is available for status review.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Apidog AGV request list displays POST Resend Geek Command and GET Get Agv Statuses.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if Apidog or the OptiSweep / WCS API cannot be accessed.</li>
+<li>Escalate if the Resend Geek Command request is not available.</li>
+</ul>
+<hr>
+<h3>Step 2 — Obtain and verify the command GUID</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Review the command database model or AGV command status data in the WCS / Helix DB (SSMS) or the OptiSweep / WCS API. Locate the command GUID associated with the command. Confirm that the command GUID is present before continuing.</p>
+<p><strong>Expected result:</strong></p>
+<p>A command GUID is present for the AGV command selected for resend.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if the required command GUID is unavailable.</li>
+<li>Escalate if the command data cannot identify the command GUID.</li>
+</ul>
+<hr>
+<h3>Step 3 — Submit Resend Geek Command</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the OptiSweep / WCS API client, enter the verified command GUID into the &quot;Resend Geek Command&quot; request and execute the request. Do not submit the request if the command GUID is missing.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Resend Geek Command request executes with the required command GUID and resends the request to Geek+.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Do not proceed if the command GUID is missing.</li>
+<li>Escalate if the resend request cannot be executed.</li>
+</ul>
+<hr>
+<h3>Step 4 — Review GET command status and main GUID</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open or review GET command status in the OptiSweep / WCS API client and inspect the returned command status information for the associated main GUID.</p>
+<p><strong>Expected result:</strong></p>
+<p>GET command status exposes the associated main GUID for the command.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if GET command status does not expose the expected main GUID.</li>
+<li>Escalate if command status cannot be retrieved after the resend request.</li>
+</ul>
+<hr>
+</body>
+</html>

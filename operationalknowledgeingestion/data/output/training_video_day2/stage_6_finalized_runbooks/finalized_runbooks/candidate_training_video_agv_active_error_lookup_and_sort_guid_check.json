@@ -1,0 +1,313 @@
+{
+  "procedure_id": "proc_corroborate_agv_active_errors_using_agv_active_error_db_model_error_code_dictionary_sort_guid_v1",
+  "candidate_id": "candidate_training_video_agv_active_error_lookup_and_sort_guid_check",
+  "title": "Corroborate AGV Active Errors Using AGV Active Error Database Model + Error Code Dictionary + Sort GUID",
+  "procedure_type": "diagnostic",
+  "summary": "Use WCS / Helix DB (SSMS) to corroborate which AGVs currently have active errors by cross-checking the active-error model (robot code/name, error code, description, SortGuid) against the AGV error dictionary model (error code → description and critical vs non-critical classification). Use SortGuid to identify which sort occurrence the active error is associated with.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L2_support"
+  ],
+  "capability_tags": [
+    "agv_active_errors"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to confirm which AGVs currently have active errors and map each active error code to its description/classification, including which sort occurrence (SortGuid) the error is tied to.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the WCS / Helix DB (SSMS) checks and perform cross-table corroboration between the active-error model and the error-code dictionary model."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "wcs_sql"
+    ],
+    "system_preconditions": [
+      "OptiSweep WCS/Robotics database models are available in the connected OptiSweep database."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_agv_active_error_table_v1",
+    "ctx_training_video_agv_error_dictionary_v1",
+    "ctx_training_video_sort_guid_reference_v1",
+    "ctx_training_video_robot_task_table_archival_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0015_right_moving_on_excuse_me_the_primary_01_28_41_500",
+      "description": "Training frame showing the AGV Active Error Database model fields: robot code (Name), error code, description, and SortGuid; also states that active errors are logged and archived when resolved/removed.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open WCS / Helix DB (SSMS) and connect to the OptiSweep database containing the Robotics / AGV error models",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish access to the OptiSweep database where the AGV error models are stored.",
+      "instruction": "Using WCS / Helix DB (SSMS), connect to the OptiSweep database that contains the Robotics / AGV error models.",
+      "expected_result": "SSMS is connected to the OptiSweep database that contains the Robotics/AGV error model tables.",
+      "healthy_condition": "You can browse/select the Robotics/AGV model tables needed for the active-error model and the error-code dictionary model.",
+      "failure_condition": "You cannot access the Robotics/AGV model tables (connection/database not available or tables not present).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Connect to OptiSweep DB in SSMS",
+          "exact_action": "Open WCS / Helix DB (SSMS) and connect to the OptiSweep database that contains the Robotics / AGV error models.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 15,
+          "section_id": "training_video_day2_segment_0015",
+          "quote_or_summary": "The AGV Active Error Database model table logs any AGV ACTIVE errors that are currently in the system... provides the sort GUID..."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Open the AGV Active Error Database model table (AgvActiveErrorDatabaseModel)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Retrieve the currently active AGV errors and their associated fields (robot code/name, error code, description, SortGuid).",
+      "instruction": "In SSMS, open the “AGV Active Error Database model table” (AgvActiveErrorDatabaseModel).",
+      "expected_result": "The AgvActiveErrorDatabaseModel table view/query results show active error rows with fields including robot code (Name), error code, description, and SortGuid.",
+      "healthy_condition": "Active error rows are visible and include: Name (robot code), Error code, Description, and SortGuid.",
+      "failure_condition": "No active error rows are returned, or required fields (Name/Error code/Description/SortGuid) are not present in the results.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open active error model table",
+          "exact_action": "Open the “AGV Active Error Database model table” (AgvActiveErrorDatabaseModel).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 15,
+          "section_id": "training_video_day2_segment_0015",
+          "quote_or_summary": "The AgvActiveErrorDatabaseModel table logs any AGV ACTIVE errors that are currently in the system. The table includes the name (robot code), error code, and a description of the error. Lastly it also provides the sort guid which is used to identify during what sort the error occurred."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Verify active error rows include Name, Error code, Description, and SortGuid; record error code and SortGuid for one or more rows",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Capture the specific active error instances and their sort occurrence identifiers for later corroboration against the error dictionary model.",
+      "instruction": "Verify the table shows active error rows that include robot code (Name), error code (Error code), description (Description), and SortGuid (Sort id). For one or more active error rows, note the error code and SortGuid values.",
+      "expected_result": "You have at least one active error instance recorded with its Error code and SortGuid (and can see the corresponding Description and robot Name in the same row).",
+      "healthy_condition": "For each recorded row, the Error code and SortGuid values are populated and the row also shows the Description and robot code (Name).",
+      "failure_condition": "Rows are missing SortGuid or Error code, or Description does not correspond to the error code shown in the same row.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Record active error row fields",
+          "exact_action": "Verify the table shows active error rows that include: robot code (Name), error code (Error code), description (Description), and SortGuid (Sort id). For one or more active error rows, note the error code and SortGuid values.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 15,
+          "section_id": "training_video_day2_segment_0015",
+          "quote_or_summary": "The table includes the name (robot code), error code, and a description of the error. Lastly it also provides the sort guid which is used to identify during what sort the error occurred."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Open the AGV error model table (error code dictionary) and locate matching error code",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm that the active error’s error code maps to the correct description and critical vs non-critical classification in the error dictionary model.",
+      "instruction": "Open the “AGV error model table” (AgvErrorModel / error dictionary) and locate the matching error code to confirm the error description and critical vs non-critical classification.",
+      "expected_result": "The matching error code is found in the AgvErrorModel dictionary and provides the description and critical vs non-critical classification for that error code.",
+      "healthy_condition": "The dictionary entry for the active error’s Error code shows a description consistent with the active-error row’s Description, and includes critical vs non-critical classification.",
+      "failure_condition": "The active error’s Error code cannot be found in the AgvErrorModel dictionary, or the dictionary description/classification does not align with the active-error row.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Lookup error code in dictionary",
+          "exact_action": "Open the “AGV error model table” (AgvErrorModel / error dictionary) and locate the matching error code to confirm the error description and critical vs non-critical classification.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If an active error row’s error code cannot be found in the AGV error dictionary table, escalate for data integrity/mapping issues."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 15,
+          "section_id": "training_video_day2_segment_0015",
+          "quote_or_summary": "The AGV error model table stores the list of errors, their codes as well as provides a description of the error... for metric purposes errors are classified as critical or non critical. So this is just a look up table again."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Use SortGuid to identify which sort the error occurred during",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Tie each active error instance to the specific sort occurrence using SortGuid.",
+      "instruction": "Use the SortGuid value from the active-error row to identify which sort the error occurred during (SortGuid is the identifier for the sort occurrence).",
+      "expected_result": "For each recorded active error row, you can associate the error instance with the corresponding sort occurrence using its SortGuid value.",
+      "healthy_condition": "SortGuid values are present in the active-error rows and are used as the sort-occurrence identifier for those errors.",
+      "failure_condition": "SortGuid is missing/blank in active-error rows, preventing association to a sort occurrence.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Associate error to sort occurrence via SortGuid",
+          "exact_action": "Use the SortGuid value to identify which sort the error occurred during (SortGuid is the identifier for the sort occurrence).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 15,
+          "section_id": "training_video_day2_segment_0015",
+          "quote_or_summary": "Lastly it also provides the sort guid which is used to identify during what sort the error occurred."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "AgvActiveErrorDatabaseModel shows active error rows with Name (robot code), Error code, Description, and SortGuid.",
+    "For each sampled active error row, the Error code exists in AgvErrorModel and provides a description and critical vs non-critical classification.",
+    "Each active error instance can be associated to a sort occurrence using SortGuid."
+  ],
+  "healthy_conditions": [
+    "Active-error rows are present and include Name, Error code, Description, and SortGuid.",
+    "Error codes in active-error rows are found in the error dictionary model and provide description plus critical/non-critical classification.",
+    "SortGuid values are populated and used to identify the sort occurrence for the active error."
+  ],
+  "failure_conditions": [
+    "AgvActiveErrorDatabaseModel returns no active error rows.",
+    "An active-error row contains an Error code that cannot be found in AgvErrorModel.",
+    "SortGuid is missing/blank for an active-error row."
+  ],
+  "escalation_guidance": [
+    "If AGV Active Error Database shows no active errors while RMS indicates errors, escalate for reconciliation between RMS and WCS/DB truth.",
+    "If an active error row’s error code cannot be found in the AGV error dictionary table, escalate for data integrity/mapping issues."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0015_right_moving_on_excuse_me_the_primary_01_28_41_500",
+      "what_to_look_at": "The frame describing AgvActiveErrorDatabaseModel fields: robot code (Name), error code, description, and SortGuid; and the statement that SortGuid identifies which sort the error occurred during."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 15,
+      "section_id": "training_video_day2_segment_0015",
+      "quote_or_summary": "The AGV error model table stores the list of errors, their codes as well as provides a description of the error... errors are classified as critical or non critical... The AGV Active Error Database model table logs any AGV ACTIVE errors... includes the name (robot code), error code, and a description of the error... provides the sort guid which is used to identify during which sort the error occurred."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0015_right_moving_on_excuse_me_the_primary_01_28_41_500",
+      "what_to_look_at": "The frame describing AgvActiveErrorDatabaseModel fields: robot code (Name), error code, description, and SortGuid; and the statement that SortGuid identifies which sort the error occurred during."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_agv_active_error_lookup_and_sort_guid_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide exact SSMS navigation steps (e.g., database name, schema, or specific query/view names) beyond the model/table names (AgvActiveErrorDatabaseModel and AgvErrorModel).",
+    "The packet does not provide the exact method to translate SortGuid into a human-readable sort occurrence (e.g., which table/field to query for sort details). It only states that SortGuid is the sort-occurrence identifier."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

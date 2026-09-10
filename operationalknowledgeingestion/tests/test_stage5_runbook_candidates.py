@@ -4,9 +4,6 @@ from operationalknowledgeingestion.src.optisweep_ingestion.schemas.source_lineag
 from optisweep_ingestion.stage5_runbook_candidates import (
     build_backfill_candidate,
     build_extraction_report,
-    build_priority_evidence_text,
-    build_missing_priority_candidates,
-    build_priority_candidate_check,
     dedupe_candidates,
     find_missing_candidate_sections,
     identify_procedural_sections,
@@ -101,17 +98,6 @@ def test_dedupe_keeps_distinct_candidates_with_different_ids() -> None:
     assert len(deduped) == 2
 
 
-def test_priority_candidate_report_logic() -> None:
-    checks = build_priority_candidate_check([_valid_candidate()])
-
-    heartbeat = checks["check_tipper_heartbeat_stats"]
-    assert heartbeat["found"] is True
-    assert heartbeat["has_artifact_ref"] is True
-    assert heartbeat["has_context_ref"] is True
-    assert heartbeat["mentions_last_max_min"] is True
-    assert heartbeat["mentions_10_seconds"] is True
-
-
 def test_identify_procedural_sections_detects_starting_and_stopping() -> None:
     bundle = _fake_bundle()
 
@@ -170,7 +156,7 @@ def test_backfill_candidate_is_conservative_and_validator_compatible() -> None:
     assert candidate["metadata"]["created_by"] == "stage_5_candidate_coverage_backfill"
 
 
-def test_report_includes_missing_candidate_sections_and_priority_candidates() -> None:
+def test_report_includes_missing_candidate_sections() -> None:
     missing_sections = [{"section_id": "sec_stopping_system", "title": "5.2: Stopping the System", "page_start": 82}]
 
     report = build_extraction_report(
@@ -186,57 +172,8 @@ def test_report_includes_missing_candidate_sections_and_priority_candidates() ->
     )
 
     assert report["missing_candidate_sections"] == missing_sections
-    assert "Stop OptiSweep System" in report["missing_priority_candidates"]
-
-
-def test_missing_priority_candidates_lists_required_gaps() -> None:
-    missing = build_missing_priority_candidates([_valid_candidate()])
-
-    assert "Check Tipper Heartbeat Stats" not in missing
-    assert "Start OptiSweep System" in missing
-
-
-def test_missing_priority_candidates_are_evidence_gated() -> None:
-    missing = build_missing_priority_candidates(
-        [_valid_candidate()],
-        priority_evidence_text="This training video mentions heartbeat and add tote only.",
-    )
-
-    assert "Check Tipper Heartbeat Stats" not in missing
-    assert "Use Hospital Add Tote Screen" in missing
-    assert "Start OptiSweep System" not in missing
-    assert "Recover AGV Bump Fault" not in missing
-
-
-def test_extraction_report_priority_checks_include_applicability() -> None:
-    report = build_extraction_report(
-        source_bundle_path="source_bundle.json",
-        source_artifacts_path="source_artifacts.json",
-        operational_context_path="operational_context.json",
-        candidates=[_valid_candidate()],
-        lineage=_lineage(),
-        llm_used=True,
-        failed_packets=[],
-        warnings=[],
-        priority_evidence_text="heartbeat add tote",
-    )
-
-    assert report["priority_candidate_check"]["check_tipper_heartbeat_stats"]["applicable"] is True
-    assert report["priority_candidate_check"]["use_hospital_add_tote"]["applicable"] is True
-    assert report["priority_candidate_check"]["start_optisweep_system"]["applicable"] is False
-    assert report["missing_priority_candidates"] == ["Use Hospital Add Tote Screen"]
-
-
-def test_priority_evidence_text_uses_source_artifact_and_context_text() -> None:
-    evidence = build_priority_evidence_text(
-        {"pages": [{"text": "Sorter scanner tote"}], "sections": [{"title": "AGV fault", "text_preview": ""}]},
-        [{"ocr_text": "Heartbeat", "retrieval_text": "Add tote", "tags": ["hospital"]}],
-        [{"summary": "Faulted AGV with tote", "key_terms": ["remove tote"]}],
-    )
-
-    assert "heartbeat" in evidence
-    assert "sorter scanner tote" in evidence
-    assert "faulted agv with tote" in evidence
+    assert "priority_candidate_check" not in report
+    assert "missing_priority_candidates" not in report
 
 
 def _valid_candidate() -> dict:

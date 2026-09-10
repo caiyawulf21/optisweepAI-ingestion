@@ -1,0 +1,79 @@
+"""Coverage for the in-tandem Brain hook wired into
+extract_runbook_candidates. Same gate pattern as every other stage hook."""
+
+from __future__ import annotations
+
+import pytest
+
+from optisweep_ingestion.stage5_runbook_candidates import (
+    _ingest_runbook_candidates_into_brain,
+)
+
+
+@pytest.fixture(autouse=True)
+def _clean_gate_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("BRAIN_INGESTION_ENABLED", raising=False)
+
+
+def test_hook_is_a_noop_when_gate_is_explicitly_off(monkeypatch: pytest.MonkeyPatch) -> None:
+    # 2026-09-09: the gate now defaults ON, so testing the off-path
+    # requires explicitly disabling it.
+    monkeypatch.setenv("BRAIN_INGESTION_ENABLED", "0")
+    _ingest_runbook_candidates_into_brain(
+        selected=[{"candidate_id": "c1", "candidate_goal": "x"}],
+        source_id="manual_optisweep_om_v3",
+    )
+
+
+def test_hook_calls_ingest_stage_output_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("providers.azure_openai_llm.AzureOpenAILLMProvider", lambda: object())
+    monkeypatch.setattr("providers.local_storage.LocalStorageProvider", lambda: object())
+    calls = []
+    monkeypatch.setattr(
+        "brain_service.pipeline_hook.ingest_stage_output",
+        lambda **kwargs: calls.append(kwargs),
+    )
+
+    _ingest_runbook_candidates_into_brain(
+        selected=[{"candidate_id": "c1", "candidate_goal": "x"}],
+        source_id="manual_optisweep_om_v3",
+    )
+
+    assert len(calls) == 1
+
+
+def test_hook_is_a_noop_with_no_source_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BRAIN_INGESTION_ENABLED", "1")
+    calls = []
+    monkeypatch.setattr(
+        "brain_service.pipeline_hook.ingest_stage_output",
+        lambda **kwargs: calls.append(kwargs),
+    )
+
+    _ingest_runbook_candidates_into_brain(selected=[{"candidate_id": "c1"}], source_id="")
+
+    assert calls == []
+
+
+def test_hook_calls_ingest_stage_output_with_expected_shape(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BRAIN_INGESTION_ENABLED", "1")
+    monkeypatch.setattr("providers.azure_openai_llm.AzureOpenAILLMProvider", lambda: object())
+    monkeypatch.setattr("providers.local_storage.LocalStorageProvider", lambda: object())
+
+    calls = []
+    monkeypatch.setattr(
+        "brain_service.pipeline_hook.ingest_stage_output",
+        lambda **kwargs: calls.append(kwargs),
+    )
+
+    _ingest_runbook_candidates_into_brain(
+        selected=[{"candidate_id": "c1", "candidate_goal": "x"}],
+        source_id="manual_optisweep_om_v3",
+    )
+
+    assert len(calls) == 1
+    call = calls[0]
+    assert call["stage_name"] == "stage5_runbook_candidates"
+    assert call["source_id"] == "manual_optisweep_om_v3"
+    assert call["record_kind"] == "runbook_candidate"
+    assert call["records"][0]["candidate_id"] == "c1"

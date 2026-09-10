@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Verify OptiSweep parcel data message flow from Chat (tracking ID, dimensions, package type) into sorter induction</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Verify OptiSweep parcel data message flow from Chat (tracking ID, dimensions, package type) into sorter induction</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_verify_optsweep_parcel_chat_message_flow_into_sorter_induction_v1</td></tr>
+<tr><th>Title</th><td>Verify OptiSweep parcel data message flow from Chat (tracking ID, dimensions, package type) into sorter induction</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L1_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>wcs_api_responsiveness</td></tr>
+<tr><th>Access Surface</th><td>wcs_api</td></tr>
+<tr><th>Audience Roles</th><td>L1_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>api_unresponsive, mapping_abnormal</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use this lightweight diagnostic to confirm the source-described parcel messaging sequence: parcels move from trailer-unloading belts to sorter induction, then Chat sends a first message containing tracking ID, dimensions, and package type; if that first message fails for an unknown inducted parcel, OptiSweep assigns default dimensions; then a second Chat message provides tracking ID, barcode data, dimensional data, and potential destination data. When the parcel is on the sorter, dimensional data and destination indication should be present.</p>
+<h2>When To Use</h2>
+<p>Use when you need to interpret whether the parcel’s data association into sorter induction matches the source-described Chat message flow (first message fields, default-dimensions behavior on failure, then second message fields) and to map what data should exist when a parcel is on the sorter.</p>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Identify the parcel lifecycle stage described by the source (belts leading to sorter induction)</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Confirm you are working with the parcel stage where parcels are unloaded from trailers in bulk onto a series of belts that lead to sorter inductions (the stage that triggers the first Chat message).</p>
+<p><strong>Expected result:</strong></p>
+<p>You can associate the current parcel situation to the source-described stage: parcels are on belts leading to sorter induction (i.e., the stage that triggers Chat messaging).</p>
+<hr>
+<h3>Step 2 — Confirm the first Chat message fields (tracking ID, dimensions, package type)</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Check the Chat message payload for the first message triggered by the pre-sort induction stage and confirm it includes: tracking ID, dimensions, and package type.</p>
+<p><strong>Expected result:</strong></p>
+<p>The first Chat message includes tracking ID, dimensions, and package type for the parcel.</p>
+<hr>
+<h3>Step 3 — If the first Chat message fails, confirm unknown inducted parcels use OptiSweep default dimensions</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the first Chat message fails and the parcel is treated as unknown inducted, confirm that OptiSweep assigns default dimensions to that parcel.</p>
+<p><strong>Expected result:</strong></p>
+<p>For an unknown inducted parcel with a failed first message, the parcel is associated with default dimensions by OptiSweep.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you observe a first-message failure but the parcel is not associated to default dimensions for an unknown inducted parcel, treat it as a messaging/data-association issue and escalate for deeper investigation.</li>
+</ul>
+<hr>
+<h3>Step 4 — Confirm the second Chat message fields (tracking ID, barcode data, dimensional data, potential destination data)</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Check the Chat message payload for the second message triggered after the first-message stage and confirm it includes: tracking ID, barcode data, dimensional data, and potential destination data.</p>
+<p><strong>Expected result:</strong></p>
+<p>The second Chat message includes tracking ID + barcode data + dimensional data + potential destination data.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If observed parcel data does not match the source-described fields for the first or second Chat messages, treat it as a messaging/data-association issue and escalate for deeper investigation.</li>
+</ul>
+<hr>
+<h3>Step 5 — At sorter induction: verify dimensional data and destination indication are present</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>When the parcel is on the sorter, verify that dimensional data exists and there is an indication of where it could be going (destination indication).</p>
+<p><strong>Expected result:</strong></p>
+<p>For a parcel on the sorter, dimensional data is present and destination indication is present.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If on-sorter dimensional data and destination indication are not present as expected, treat it as a messaging/data-association issue and escalate for deeper investigation.</li>
+</ul>
+<hr>
+</body>
+</html>

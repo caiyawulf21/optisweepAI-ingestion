@@ -1,0 +1,605 @@
+{
+  "procedure_id": "proc_ignition_gateway_restart_and_optisweep_response_validation_v1",
+  "candidate_id": "candidate_incident_228086_ignition_gateway_and_optisweep_validation",
+  "title": "Ignition gateway restart and OptiSweep / WCS API response validation",
+  "procedure_type": "recovery",
+  "summary": "Use the Ignition gateway, Windows Event Viewer / services, and Apidog / WCS API surfaces to restart the Ignition gateway, verify the GetAgvStatuses response, and restart OptiSweep only if the API does not respond. The site operator must place and release the physical E-stop; support must not release it until the API response is confirmed.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "operator"
+  ],
+  "capability_tags": [
+    "gateway_health",
+    "wcs_api_responsiveness",
+    "e_stop_or_safety_stop"
+  ],
+  "access_surface": [
+    "ignition_gateway",
+    "apidog",
+    "wcs_api",
+    "event_viewer",
+    "physical_floor"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "operator"
+  ],
+  "failure_pattern_tags": [
+    "gateway_unhealthy",
+    "api_unresponsive",
+    "service_crash_or_restart"
+  ],
+  "support_safe": true,
+  "requires_production_stop": true,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when the Ignition gateway or OptiSweep / WCS API is not responding and the site is held in the physical E-stop state pending recovery validation. Perform the Ignition gateway restart, verify the Ignition gateway, then validate OptiSweep through the GetAgvStatuses request before returning the system to operation.",
+  "not_for": [
+    "Do not use to perform or release a physical E-stop remotely; only the site operator may perform those physical actions.",
+    "Do not release the physical E-stop before GetAgvStatuses returns a response after the documented validation and any required OptiSweep service restart.",
+    "Do not treat an HTTP 200 response as eliminating the recorded response-schema warning; the warning must be retained for review."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support performs the Ignition gateway restart and the OptiSweep / WCS API validation using the Ignition gateway, Windows Event Viewer / services, and Apidog / WCS API surfaces.",
+    "The site operator places and releases the physical E-stop and confirms that auto bag-out can resume.",
+    "L2_support stops and escalates if the gateway, API, or OptiSweep service does not recover."
+  ],
+  "safety_notes": [
+    "The site operator must place the system in the physical E-stop state before the restart sequence.",
+    "Keep the physical E-stop active during recovery.",
+    "Do not release the physical E-stop until the OptiSweep / WCS API response is confirmed.",
+    "Support must not perform or remotely release the physical E-stop."
+  ],
+  "access_or_tools_needed": [
+    "Ignition gateway",
+    "Windows Event Viewer / services, including a Windows Administrator Command Prompt",
+    "Apidog / WCS API client",
+    "OptiSweep / WCS API GetAgvStatuses request",
+    "Physical floor / grid for the site operator's E-stop and release"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2 support access to the Ignition gateway, Windows Event Viewer / services, and Apidog / WCS API.",
+      "A site operator available at the physical floor / grid to place and release the physical E-stop."
+    ],
+    "system_preconditions": [
+      "The site is in the physical E-stop state before the restart sequence begins.",
+      "The physical E-stop remains active until API responsiveness is confirmed."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [],
+  "related_event_ids": [
+    "incident_228086_event_018",
+    "incident_228086_event_019",
+    "incident_228086_event_022",
+    "incident_228086_event_023",
+    "incident_228086_event_024",
+    "incident_228086_event_025",
+    "incident_228086_event_026",
+    "incident_228086_event_027",
+    "incident_228086_event_028",
+    "incident_228086_event_029"
+  ],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_incident_228086_page_015_embedded_image_01",
+      "description": "Windows Administrator Command Prompt showing the Ignition directory, `gwcmd -r`, and `Waiting for Gateway restart...`.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_016_embedded_image_01",
+      "description": "Ignition gateway Status > Systems > Overview showing Current Response Time and Recent Slow Response Events.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+      "description": "Apidog / WCS API GetAgvStatuses response showing HTTP 200, AGV records, visible NORMAL values, and the response-schema warning.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+      "description": "Windows Event Viewer / services surface showing OptiSweep selected with status Running and the Restart the service control visible.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Place the system in the physical E-stop state",
+      "responsible_role": "operator",
+      "supporting_role": "L2_support",
+      "purpose": "Hold the site in a safe stopped state while the Ignition gateway and OptiSweep / WCS API recovery checks are performed.",
+      "instruction": "On the physical floor / grid, have the site operator place the system in the physical E-stop state and keep it active throughout recovery.",
+      "expected_result": "The physical E-stop is active and remains active while the Ignition gateway and OptiSweep / WCS API are restarted or checked.",
+      "healthy_condition": "The site confirms that the physical E-stop is engaged before L2 support begins the restart sequence.",
+      "failure_condition": "The site cannot confirm that the physical E-stop is active or the E-stop state changes during recovery.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Engage physical E-stop",
+          "exact_action": "Have the site operator place the system in the physical E-stop state.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop if the site cannot confirm the physical E-stop state.",
+        "Escalate any safety uncertainty; do not continue toward E-stop release."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_18",
+          "chunk_id": "stage4_page_chunk_003",
+          "event_id": "incident_228086_event_028",
+          "quote_or_summary": "The E-stop is to remain in place during the Ignition and OptiSweep verification sequence and is released only after confirmation.",
+          "site": "UPS Fort Worth, TX (Haslet)",
+          "site_code": ""
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_028"
+      ]
+    },
+    {
+      "step_number": 2,
+      "title": "Restart the Ignition gateway",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Initiate the source-supported Ignition gateway restart before checking gateway and OptiSweep / WCS API responsiveness.",
+      "instruction": "On the Windows Event Viewer / services surface, open a Windows Administrator Command Prompt, navigate to the Inductive Automation Ignition installation directory, run `gwcmd -r`, and wait for the console to show `Waiting for Gateway restart...`.",
+      "expected_result": "The Windows Administrator Command Prompt shows `gwcmd -r` executed from the Ignition directory and displays `Waiting for Gateway restart...`.",
+      "healthy_condition": "The restart command is accepted and the console enters the gateway-restart waiting state.",
+      "failure_condition": "The command cannot be run from the Ignition directory or the console does not show the gateway-restart waiting message.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Run Ignition gateway restart",
+          "exact_action": "From `C:\\Program Files\\Inductive Automation\\Ignition`, run `gwcmd -r`.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the Ignition gateway restart command cannot be executed or the gateway does not return for later verification."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_15",
+          "artifact_id": "artifact_incident_228086_page_015_embedded_image_01",
+          "chunk_id": "stage4_artifact_chunk_002",
+          "event_id": "incident_228086_event_022",
+          "quote_or_summary": "The command prompt shows navigation to the Ignition directory, execution of `gwcmd -r`, and `Waiting for Gateway restart...`.",
+          "site": "UPS Fort Worth, TX (Haslet)",
+          "site_code": ""
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_018",
+        "incident_228086_event_022"
+      ]
+    },
+    {
+      "step_number": 3,
+      "title": "Verify the Ignition gateway Systems Overview",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm that the Ignition gateway is responding after the restart.",
+      "instruction": "On the Ignition gateway, open Status > Systems > Overview and check that the page responds, including Current Response Time and Recent Slow Response Events.",
+      "expected_result": "The Ignition gateway Systems Overview responds and displays a Current Response Time; the incident evidence showed 11 ms and `No events to display` under Recent Slow Response Events.",
+      "healthy_condition": "The Systems Overview page loads with a current response-time value and no recent slow response events displayed.",
+      "failure_condition": "The Systems Overview page does not load or does not provide a responding gateway status.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Inspect Ignition Systems Overview",
+          "exact_action": "Open Status > Systems > Overview and check Current Response Time and Recent Slow Response Events.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the Ignition gateway does not return to the Systems Overview page."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_16",
+          "artifact_id": "artifact_incident_228086_page_016_embedded_image_01",
+          "chunk_id": "stage4_artifact_chunk_002",
+          "event_id": "incident_228086_event_024",
+          "quote_or_summary": "Ignition Status > Systems > Overview showed Current Response Time of 11 ms and Recent Slow Response Events: No events to display.",
+          "site": "UPS Fort Worth, TX (Haslet)",
+          "site_code": ""
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_023",
+        "incident_228086_event_024"
+      ]
+    },
+    {
+      "step_number": 4,
+      "title": "Validate OptiSweep / WCS API responsiveness",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Verify that OptiSweep is responding to an AGV status request before the physical E-stop is released.",
+      "instruction": "On the Apidog / WCS API surface, send the `GetAgvStatuses` request and inspect the response for HTTP Success / Status 200 and returned AGV records, including visible status values such as `NORMAL`.",
+      "expected_result": "The GetAgvStatuses request returns HTTP 200 with AGV records; the incident response showed visible `NORMAL` status values.",
+      "healthy_condition": "The API client displays a successful 200 response containing AGV status records.",
+      "failure_condition": "The request does not respond or does not return AGV records.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Send GetAgvStatuses request",
+          "exact_action": "In Apidog, send the `GetAgvStatuses` request and check the returned status and AGV records.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop before releasing the physical E-stop if GetAgvStatuses does not return a response.",
+        "Record the response-schema warning `Response data differs from endpoint spec` and `$ should be object` for review even when HTTP 200 and AGV records are returned."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_17",
+          "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+          "chunk_id": "stage4_artifact_chunk_002",
+          "event_id": "incident_228086_event_025",
+          "quote_or_summary": "GetAgvStatuses returned Success / Status 200 with AGV records and visible NORMAL values.",
+          "site": "UPS Fort Worth, TX (Haslet)",
+          "site_code": ""
+        },
+        {
+          "page_ref": "case_228086:page_17",
+          "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+          "chunk_id": "stage4_artifact_chunk_002",
+          "event_id": "incident_228086_event_026",
+          "quote_or_summary": "The response returned HTTP 200 but showed `Response data differs from endpoint spec` and `$ should be object`.",
+          "site": "UPS Fort Worth, TX (Haslet)",
+          "site_code": ""
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_019",
+        "incident_228086_event_025",
+        "incident_228086_event_026",
+        "incident_228086_event_027"
+      ]
+    },
+    {
+      "step_number": 5,
+      "title": "Restart OptiSweep only if GetAgvStatuses does not respond",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Restore OptiSweep service responsiveness when the post-Ignition-restart API check receives no response.",
+      "instruction": "If GetAgvStatuses does not respond, open Windows Event Viewer / services, select OptiSweep, use the visible `Restart the service` control, then return to Apidog / WCS API and send GetAgvStatuses again.",
+      "expected_result": "After the documented OptiSweep service restart, GetAgvStatuses returns a response with AGV records; Windows Event Viewer / services shows OptiSweep in a Running state when inspected.",
+      "healthy_condition": "The API responds after the conditional service restart and OptiSweep is shown as Running in Windows Event Viewer / services.",
+      "failure_condition": "The API remains nonresponsive or OptiSweep is not shown as Running after the restart attempt.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Restart OptiSweep service",
+          "exact_action": "In Windows Event Viewer / services, select OptiSweep and use the visible `Restart the service` control.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Repeat API validation",
+          "exact_action": "Send `GetAgvStatuses` again in Apidog / WCS API after the service restart.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop before releasing the physical E-stop if GetAgvStatuses remains nonresponsive after the documented OptiSweep restart and repeat check.",
+        "Escalate if OptiSweep does not show Running."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_18",
+          "chunk_id": "stage4_page_chunk_003",
+          "event_id": "incident_228086_event_028",
+          "quote_or_summary": "If the Get Statuses request gives no response, restart OptiSweep and confirm with another request before releasing the E-stop.",
+          "site": "UPS Fort Worth, TX (Haslet)",
+          "site_code": ""
+        },
+        {
+          "page_ref": "case_228086:page_19",
+          "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+          "chunk_id": "stage4_artifact_chunk_002",
+          "event_id": "incident_228086_event_029",
+          "quote_or_summary": "Windows Event Viewer / services shows OptiSweep selected with status Running and the Restart the service control visible; the screenshot does not prove that a restart was performed.",
+          "site": "UPS Fort Worth, TX (Haslet)",
+          "site_code": ""
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_028",
+        "incident_228086_event_029"
+      ]
+    },
+    {
+      "step_number": 6,
+      "title": "Release the physical E-stop and confirm auto bag-out",
+      "responsible_role": "operator",
+      "supporting_role": "L2_support",
+      "purpose": "Return the site to operation only after Ignition and OptiSweep / WCS API responsiveness has been confirmed.",
+      "instruction": "After the GetAgvStatuses response is confirmed, have the site operator release the physical E-stop on the physical floor / grid and confirm that the site can resume the auto bag-out operation.",
+      "expected_result": "The site operator releases the physical E-stop and confirms that auto bag-out can resume.",
+      "healthy_condition": "The physical E-stop is released by the site operator after API confirmation and the site resumes auto bag-out.",
+      "failure_condition": "The API response has not been confirmed, the E-stop cannot be safely released, or auto bag-out cannot resume.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Release physical E-stop",
+          "exact_action": "Have the site operator release the physical E-stop after the API response is confirmed.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "site_confirm",
+          "label": "Confirm auto bag-out",
+          "exact_action": "Confirm that the site can resume the auto bag-out operation.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Do not release the physical E-stop until GetAgvStatuses responsiveness is confirmed.",
+        "Escalate if the site cannot resume auto bag-out after the operator releases the E-stop."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_18",
+          "chunk_id": "stage4_page_chunk_003",
+          "event_id": "incident_228086_event_028",
+          "quote_or_summary": "Once the OptiSweep response is confirmed, release the E-stop.",
+          "site": "UPS Fort Worth, TX (Haslet)",
+          "site_code": ""
+        },
+        {
+          "page_ref": "case_228086:page_7",
+          "chunk_id": "stage4_page_chunk_002",
+          "quote_or_summary": "The site was finishing the bag-out process before the system could be un-E-stopped.",
+          "site": "UPS Fort Worth, TX (Haslet)",
+          "site_code": ""
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_028"
+      ]
+    }
+  ],
+  "success_criteria": [
+    "The Ignition gateway Systems Overview responds after the restart.",
+    "The Systems Overview displays a current response-time value; the incident evidence showed 11 ms and no recent slow response events.",
+    "GetAgvStatuses returns HTTP 200 with AGV records and visible status values such as NORMAL.",
+    "If the initial API check is nonresponsive, OptiSweep is restarted through Windows Event Viewer / services and the repeated GetAgvStatuses request responds.",
+    "The site operator releases the physical E-stop only after API confirmation and confirms that auto bag-out can resume."
+  ],
+  "healthy_conditions": [
+    "Ignition gateway Status > Systems > Overview loads and displays a current response-time value.",
+    "Recent Slow Response Events shows no events to display, as observed in the incident evidence.",
+    "Apidog / WCS API returns HTTP 200 with AGV status records.",
+    "OptiSweep is shown as Running in Windows Event Viewer / services when the service state is checked.",
+    "The site resumes auto bag-out after the site operator releases the physical E-stop."
+  ],
+  "failure_conditions": [
+    "Ignition gateway Systems Overview does not respond after the restart.",
+    "GetAgvStatuses does not return a response.",
+    "OptiSweep does not show Running after the documented restart attempt.",
+    "The API returns a response-schema warning: `Response data differs from endpoint spec` and `$ should be object`.",
+    "The physical E-stop cannot be safely released or the site cannot resume auto bag-out."
+  ],
+  "escalation_guidance": [
+    "Escalate if the Ignition gateway does not return to the Systems Overview page.",
+    "Escalate if GetAgvStatuses remains nonresponsive after the documented OptiSweep restart and repeat check.",
+    "Escalate if OptiSweep does not show Running in Windows Event Viewer / services.",
+    "Keep the physical E-stop active when API responsiveness is not confirmed.",
+    "Record the API response-schema warning for review even when the HTTP response is 200."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_incident_228086_page_015_embedded_image_01",
+      "what_to_look_at": "Ignition directory, `gwcmd -r`, and `Waiting for Gateway restart...` in the Windows Administrator Command Prompt."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_016_embedded_image_01",
+      "what_to_look_at": "Ignition Status > Systems > Overview, including Current Response Time and Recent Slow Response Events."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+      "what_to_look_at": "GetAgvStatuses response showing HTTP 200, returned AGV records, visible NORMAL values, and the schema validation warning."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+      "what_to_look_at": "OptiSweep selected in Windows Event Viewer / services, with Running status and the Restart the service control."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "source_case_228086",
+      "source_type": "incident_case",
+      "source_title": "Case 228086 Data",
+      "source_case_id": "228086",
+      "ingestion_batch_id": "batch_20260629T175753Z",
+      "page_ref": "case_228086:page_12",
+      "artifact_id": "artifact_incident_228086_page_012_nested_image_02",
+      "event_id": "incident_228086_event_018",
+      "chunk_id": "stage4_page_chunk_002",
+      "support_type": "artifact_visual",
+      "quote_or_summary": "Ignition restart instructions and command prompt evidence show gateway restart activity followed by waiting for the gateway to return.",
+      "site": "UPS Fort Worth, TX (Haslet)",
+      "site_code": ""
+    },
+    {
+      "source_id": "source_case_228086",
+      "source_type": "incident_case",
+      "source_title": "Case 228086 Data",
+      "source_case_id": "228086",
+      "ingestion_batch_id": "batch_20260629T175753Z",
+      "page_ref": "case_228086:page_15",
+      "artifact_id": "artifact_incident_228086_page_015_embedded_image_01",
+      "event_id": "incident_228086_event_022",
+      "chunk_id": "stage4_page_chunk_003",
+      "support_type": "artifact_visual",
+      "quote_or_summary": "Windows Command Prompt shows the Ignition directory, `gwcmd -r`, and `Waiting for Gateway restart...`.",
+      "site": "UPS Fort Worth, TX (Haslet)",
+      "site_code": ""
+    },
+    {
+      "source_id": "source_case_228086",
+      "source_type": "incident_case",
+      "source_title": "Case 228086 Data",
+      "source_case_id": "228086",
+      "ingestion_batch_id": "batch_20260629T175753Z",
+      "page_ref": "case_228086:page_16",
+      "artifact_id": "artifact_incident_228086_page_016_embedded_image_01",
+      "event_id": "incident_228086_event_024",
+      "chunk_id": "stage4_page_chunk_003",
+      "support_type": "artifact_visual",
+      "quote_or_summary": "Ignition Systems Overview shows Current Response Time of 11 ms and Recent Slow Response Events: No events to display.",
+      "site": "UPS Fort Worth, TX (Haslet)",
+      "site_code": ""
+    },
+    {
+      "source_id": "source_case_228086",
+      "source_type": "incident_case",
+      "source_title": "Case 228086 Data",
+      "source_case_id": "228086",
+      "ingestion_batch_id": "batch_20260629T175753Z",
+      "page_ref": "case_228086:page_17",
+      "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+      "event_id": "incident_228086_event_025",
+      "chunk_id": "stage4_page_chunk_003",
+      "support_type": "artifact_visual",
+      "quote_or_summary": "GetAgvStatuses returned Success / Status 200 with AGV records and visible NORMAL values.",
+      "site": "UPS Fort Worth, TX (Haslet)",
+      "site_code": ""
+    },
+    {
+      "source_id": "source_case_228086",
+      "source_type": "incident_case",
+      "source_title": "Case 228086 Data",
+      "source_case_id": "228086",
+      "ingestion_batch_id": "batch_20260629T175753Z",
+      "page_ref": "case_228086:page_18",
+      "event_id": "incident_228086_event_028",
+      "chunk_id": "stage4_page_chunk_003",
+      "support_type": "page_ocr",
+      "quote_or_summary": "Verify OptiSweep with a Get Statuses request, restart OptiSweep if there is no response, confirm again, and release the E-stop only after confirmation.",
+      "site": "UPS Fort Worth, TX (Haslet)",
+      "site_code": ""
+    },
+    {
+      "source_id": "source_case_228086",
+      "source_type": "incident_case",
+      "source_title": "Case 228086 Data",
+      "source_case_id": "228086",
+      "ingestion_batch_id": "batch_20260629T175753Z",
+      "page_ref": "case_228086:page_19",
+      "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+      "event_id": "incident_228086_event_029",
+      "chunk_id": "stage4_page_chunk_003",
+      "support_type": "artifact_visual",
+      "quote_or_summary": "Windows Event Viewer / services shows OptiSweep selected with status Running and Restart the service visible.",
+      "site": "UPS Fort Worth, TX (Haslet)",
+      "site_code": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_incident_228086_page_015_embedded_image_01",
+      "what_to_look_at": "Ignition directory, `gwcmd -r`, and `Waiting for Gateway restart...` in the Windows Administrator Command Prompt."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_016_embedded_image_01",
+      "what_to_look_at": "Ignition Status > Systems > Overview, including Current Response Time and Recent Slow Response Events."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_017_embedded_image_01",
+      "what_to_look_at": "GetAgvStatuses response showing HTTP 200, returned AGV records, visible NORMAL values, and the schema validation warning."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_019_embedded_image_01",
+      "what_to_look_at": "OptiSweep selected in Windows Event Viewer / services, with Running status and the Restart the service control."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_012_nested_image_02",
+      "what_to_look_at": "Ignition restart instructions and command prompt evidence show gateway restart activity followed by waiting for the gateway to return."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_incident_228086_ignition_gateway_and_optisweep_validation"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "source_case_228086",
+      "source_case_id": "228086",
+      "source_type": "incident_case",
+      "source_title": "Case 228086 Data",
+      "ingestion_batch_id": "batch_20260629T175753Z",
+      "site": "UPS Fort Worth, TX (Haslet)",
+      "site_code": "",
+      "site_location": {}
+    }
+  ],
+  "missing_details": [
+    "The command evidence shows the Ignition restart was initiated and waiting, but does not show restart completion.",
+    "The Windows Event Viewer / services evidence shows OptiSweep Running and the restart control, but does not prove that a service restart was performed.",
+    "No source-supported timeout or wait duration is provided for gateway recovery or the repeated API check.",
+    "The API response-schema warning remains unresolved and requires review.",
+    "The source package site_location is empty; no ingestion site_code or structured site-location fields were supplied."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_incident_runbook_finalization",
+    "source_id": "source_case_228086",
+    "source_type": "incident_case",
+    "source_title": "Case 228086 Data",
+    "source_version": "",
+    "ingestion_batch_id": "batch_20260629T175753Z",
+    "source_quality": "incident_case",
+    "incident_context": {
+      "case_id": "228086",
+      "site": "UPS Fort Worth, TX (Haslet)",
+      "site_code": "",
+      "site_location": {},
+      "incident_start_time": "2026-02-20T07:19:00",
+      "incident_resolved_time": "2026-02-20T14:58:00",
+      "time_to_resolve": "7h 39m",
+      "resolution_confirmed": true
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_incident_228086_page_012_nested_image_02",
+    "artifact_incident_228086_page_015_embedded_image_01",
+    "artifact_incident_228086_page_016_embedded_image_01",
+    "artifact_incident_228086_page_017_embedded_image_01",
+    "artifact_incident_228086_page_019_embedded_image_01"
+  ],
+  "linked_event_ids": [
+    "incident_228086_event_018",
+    "incident_228086_event_019",
+    "incident_228086_event_022",
+    "incident_228086_event_023",
+    "incident_228086_event_024",
+    "incident_228086_event_025",
+    "incident_228086_event_026",
+    "incident_228086_event_027",
+    "incident_228086_event_028",
+    "incident_228086_event_029"
+  ]
+}

@@ -1,0 +1,341 @@
+{
+  "procedure_id": "proc_check_rms_up_and_sql_server_agent_running_post_unplanned_restart_sanity_check_v1",
+  "candidate_id": "candidate_training_video_d2_check_rms_and_sql_server_agent_running",
+  "title": "Check RMS is up and running and verify SQL Server Agent is running (post-unplanned restart sanity check)",
+  "procedure_type": "diagnostic",
+  "summary": "Perform a post-unplanned restart sanity check by confirming RMS is up and running and verifying that the SQL Server Agent service is running in SQL Server Configuration Manager on the WCS backup server. This check is motivated by a prior issue where jobs were not cleaning up after an unplanned restart.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "fleet_system_status",
+    "windows_service_or_event_log"
+  ],
+  "access_surface": [
+    "rms_ui",
+    "wcs_sql",
+    "event_viewer"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "service_crash_or_restart",
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use after an unplanned restart as a final sanity check to ensure RMS is up/running and SQL Server Agent is running (to reduce risk of follow-on issues such as jobs not cleaning up).",
+  "not_for": [
+    "Do not proceed with further RMS/job health assumptions if RMS is not up/running or if SQL Server Agent is not running; stop and escalate per source guidance."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the RMS up/running check and verify SQL Server Agent service state in SQL Server Configuration Manager on the WCS backup server."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "RMS access (to view up/running status)",
+    "RDP access to fortna-wcs-backup.txrth.otnet.ups.com",
+    "SQL Server Configuration Manager",
+    "SQL Server Agent service status visibility"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "RMS access",
+      "RDP access to fortna-wcs-backup.txrth.otnet.ups.com",
+      "Access to SQL Server Configuration Manager on the server"
+    ],
+    "system_preconditions": [
+      "An unplanned restart has occurred and a final sanity check is required"
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_rms_up_and_running_check_v1",
+    "ctx_training_video_sql_server_agent_running_status_v1",
+    "ctx_training_video_unplanned_restart_job_cleanup_issue_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0054_and_then_check_rms_to_make_primary_03_14_29_500",
+      "description": "Training video frame showing the post-unplanned restart check: check RMS up/running and verify SQL Server Configuration Manager shows SQL Server Agent running; includes the RDP target host name.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Check RMS to make sure everything's up and running",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the RMS environment is operational as part of the post-unplanned restart sanity check.",
+      "instruction": "Using RMS access, check the RMS system status/dashboard to confirm RMS is up and running.",
+      "expected_result": "RMS indicates the system is up and running.",
+      "healthy_condition": "RMS status reflects an up/running state (no indication that RMS is down/not running).",
+      "failure_condition": "RMS does not appear up/running.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify RMS up/running",
+          "exact_action": "Check RMS to make sure everything's up and running.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if RMS does not appear up/running."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0054",
+          "page": 54,
+          "quote_or_summary": "And then check RMS to make sure everything's up and running."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "RDP into the WCS backup server mentioned in the source",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Access the server where SQL Server Configuration Manager is used to verify SQL Server Agent service state.",
+      "instruction": "Use RDP to connect to fortna-wcs-backup.txrth.otnet.ups.com.",
+      "expected_result": "You are connected to fortna-wcs-backup.txrth.otnet.ups.com and can open SQL Server Configuration Manager.",
+      "healthy_condition": "RDP session is established and SQL Server Configuration Manager can be opened.",
+      "failure_condition": "Unable to establish RDP session or access SQL Server Configuration Manager.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "RDP to WCS backup server",
+          "exact_action": "Rdp into fortna-wcs-backup.txrth.otnet.ups.com",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if you cannot reach the server via RDP or cannot access SQL Server Configuration Manager."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0054",
+          "page": 54,
+          "quote_or_summary": "Rdp into fortna-wcs- backup.txrth.otnet.ups.com"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Open SQL Server Configuration Manager on the server",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Provide the interface needed to check SQL Server Agent service state.",
+      "instruction": "On the connected server, open SQL Server Configuration Manager.",
+      "expected_result": "SQL Server Configuration Manager is open and ready to view service states.",
+      "healthy_condition": "SQL Server Configuration Manager window is accessible.",
+      "failure_condition": "SQL Server Configuration Manager cannot be opened.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open Configuration Manager",
+          "exact_action": "Open sql server configuration manager",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if SQL Server Configuration Manager cannot be opened."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0054",
+          "page": 54,
+          "quote_or_summary": "Open sql server configuration manager"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify that the SQL Server Agent service is running",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure SQL Server Agent is running as part of the post-unplanned restart sanity check.",
+      "instruction": "In SQL Server Configuration Manager, verify the SQL Server Agent service state is Running.",
+      "expected_result": "SQL Server Configuration Manager shows SQL Server Agent is running.",
+      "healthy_condition": "SQL Server Agent service state is Running in SQL Server Configuration Manager.",
+      "failure_condition": "SQL Server Agent service is not running.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check SQL Server Agent state",
+          "exact_action": "make sure SLQ server agent is running",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if SQL Server Agent is not running."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0054",
+          "page": 54,
+          "quote_or_summary": "I make sure the SQL Server Configuration manager that the server agent is running."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0054",
+          "page": 54,
+          "quote_or_summary": "Open sql server configuration manager and make sure SLQ server agent is running"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "If SQL Server Agent is not running, stop and escalate",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Prevent proceeding under incorrect assumptions about RMS/job health when SQL Server Agent is unhealthy.",
+      "instruction": "If SQL Server Agent is not running, do not continue with further assumptions about RMS/job health; stop and escalate.",
+      "expected_result": "Escalation is initiated when SQL Server Agent is not running.",
+      "healthy_condition": "SQL Server Agent is running (so escalation is not required for this specific check).",
+      "failure_condition": "SQL Server Agent is not running and escalation is not initiated.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Stop and escalate",
+          "exact_action": "If the SQL Server Agent is not running, stop and escalate rather than proceeding with further assumptions about RMS/job health.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "SQL Server Agent is not running."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0054",
+          "page": 54,
+          "quote_or_summary": "We had an issue where after unplanned restart the jobs weren't cleaning up stuff."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "RMS indicates the system is up and running.",
+    "SQL Server Configuration Manager shows SQL Server Agent is running."
+  ],
+  "healthy_conditions": [
+    "RMS status indicates up/running.",
+    "SQL Server Agent service state is Running in SQL Server Configuration Manager."
+  ],
+  "failure_conditions": [
+    "RMS does not appear up/running.",
+    "SQL Server Agent service is not running."
+  ],
+  "escalation_guidance": [
+    "Escalate if RMS does not appear up/running or if SQL Server Agent is not running, since the source notes an issue after unplanned restart where jobs were not cleaning up."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0054_and_then_check_rms_to_make_primary_03_14_29_500",
+      "what_to_look_at": "The frame that references checking RMS up/running and verifying SQL Server Configuration Manager shows SQL Server Agent running; includes the RDP target host name."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 54,
+      "section_id": "training_video_day2_segment_0054",
+      "quote_or_summary": "And then check RMS to make sure everything's up and running... I make sure the SQL Server Configuration manager that the server agent is running... We had an issue where after unplanned restart the jobs weren't cleaning up stuff."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0054_and_then_check_rms_to_make_primary_03_14_29_500",
+      "what_to_look_at": "Training video frame showing the post-unplanned restart check: check RMS up/running and verify SQL Server Configuration Manager shows SQL Server Agent running; includes the RDP target host name."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_d2_check_rms_and_sql_server_agent_running"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide specific RMS UI field names/labels or exact indicators for 'up and running' beyond the instruction to check RMS.",
+    "The packet does not provide the exact SQL Server Configuration Manager navigation path or the exact UI label for the SQL Server Agent state; only that it should be running."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

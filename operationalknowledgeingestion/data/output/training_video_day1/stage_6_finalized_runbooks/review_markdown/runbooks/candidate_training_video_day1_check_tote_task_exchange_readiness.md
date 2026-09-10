@@ -1,0 +1,161 @@
+# Check Tote Task Exchange Type, Priority, Original Destination, and Ready-for-Exchange Status in AVEVA HMI Tote Tasks
+
+## Runbook Header
+
+| Field | Value |
+| --- | --- |
+| Procedure ID | `proc_check_tote_task_exchange_type_priority_original_destination_ready_for_exchange_aveva_hmi_v1` |
+| Title | Check Tote Task Exchange Type, Priority, Original Destination, and Ready-for-Exchange Status in AVEVA HMI Tote Tasks |
+| Procedure Type | `diagnostic` |
+| Primary Role | `operator` |
+| Supporting Roles | None |
+| Support Safe | Yes |
+| Capability Tags | `sorter_item_or_scan_state` |
+| Access Surface | `aveva_hmi` |
+| Audience Roles | `operator` |
+| Failure Pattern Tags | None |
+| Validation Status | `needs_sme_review` |
+| Merge Status | `source_finalized` |
+
+## Summary
+
+Use the AVEVA HMI Tote Tasks / Tote Task interface to identify the current tote task’s exchange type, priority, original destination, and whether it is marked “ready for exchange,” along with key identifiers (Tote Id, AGV Id, Station, Task id, Task Name) and any Tote Error value.
+
+## When To Use
+
+When you need to verify what exchange type a tote task is performing and whether it is ready for exchange, including the tote/task identifiers and any tote error state, using the live AVEVA HMI Tote Tasks interface.
+
+## Access Or Tools Needed
+
+* AVEVA HMI (site/customer HMI) access to the “Tote Tasks” / “Tote Task” interface
+
+## Related Operational Context
+
+* ctx_training_video_tote_task_interface_overview_v1
+* ctx_training_video_tote_task_data_fields_v1
+* ctx_training_video_exchange_type_status_reference_v1
+* ctx_training_video_tote_error_field_reference_v1
+
+## Visual References
+
+![artifact_training_video_training_video_day1_0075_current_task_and_you_know_you_primary_02_26_49_500](assets/e9be849441aecf97.jpg)
+
+*AVEVA HMI Tote Tasks / Tote Task interface frame showing Tote Task fields (Tote Id, AGV Id, Original Destination, Station, Task id, Task Name, Tote Error) and exchange-related status (exchange type, priority, ready-for-exchange), plus mention of AUV behind it ready to go, stations, and sorter task UID.*
+
+## Procedure Steps
+
+### Step 1 — Open the AVEVA HMI Tote Tasks / Tote Task interface
+
+**Responsible role:** operator
+
+**Instruction:**
+Open the AVEVA HMI screen that shows the “Tote Tasks” / “Tote Task” interface.
+
+**Expected result:**
+The AVEVA HMI Tote Task interface is visible and ready for reading the tote/task fields and exchange-related status.
+
+**Stop or Escalate If:**
+
+* If the Tote Tasks screen does not show the required fields (Tote Id, AGV Id, Original Destination, Station, Task id, Task Name, Tote Error), stop and escalate because the required live evidence is not visible.
+
+---
+
+### Step 2 — Read tote task identifiers and Tote Error from the Tote Task interface
+
+**Responsible role:** operator
+
+**Instruction:**
+On the Tote Task interface, locate and read the tote task identifiers/fields: Tote Id, AGV Id, Original Destination, Station, Task id, Task Name, and Tote Error.
+
+**Expected result:**
+You have recorded the current values shown for Tote Id, AGV Id, Original Destination, Station, Task id, Task Name, and Tote Error (empty/normal or populated with an error value).
+
+**Stop or Escalate If:**
+
+* If Tote Error indicates an error for the tote task you are investigating, escalate to FORTNA support.
+
+---
+
+### Step 3 — Check exchange-related fields: exchange type, priority, and ready-for-exchange status
+
+**Responsible role:** operator
+
+**Instruction:**
+On the same Tote Task interface, check the exchange-related fields: exchange type, whether the exchange is marked as priority, and whether it is “ready for exchange.”
+
+**Expected result:**
+You have recorded the current exchange type, the priority indicator (priority vs not), and the ready-for-exchange status shown on the Tote Task interface.
+
+**Stop or Escalate If:**
+
+* Escalate to FORTNA support if the exchange readiness status does not align with the expected operational behavior on the floor.
+
+---
+
+### Step 4 — If an AUV behind is ready, confirm stations and sorter task UID association
+
+**Responsible role:** operator
+
+**Instruction:**
+If the interface indicates an AUV behind it is ready to go, confirm which station(s) are listed for that tote task and whether it is associated with the “sorter task UID.”
+
+**Expected result:**
+You have recorded the station(s) listed for the tote task and the value (if shown) of the “sorter task UID” association.
+
+---
+
+### Step 5 — Escalate with the exact tote/task identifiers if Tote Error is populated
+
+**Responsible role:** operator
+
+**Instruction:**
+If Tote Error is populated (non-empty / not “no error”), note the error value and the associated Tote Id / Task Name so support can reference the exact tote task.
+
+**Expected result:**
+You have captured Tote Error value along with Tote Id and Task Name for the tote task showing the error.
+
+**Stop or Escalate If:**
+
+* Escalate to FORTNA support if the Tote Error field indicates an error for the tote task you are investigating.
+
+---
+
+### Step 6 — Stop after recording the required exchange readiness evidence
+
+**Responsible role:** operator
+
+**Instruction:**
+Stop when you have recorded the current Tote Id, Task Name, exchange type, priority flag, ready-for-exchange status, Original Destination, Station, and Tote Error (if present).
+
+**Expected result:**
+All required items are recorded for the current tote task: Tote Id, Task Name, exchange type, priority flag, ready-for-exchange status, Original Destination, Station, and Tote Error (if present).
+
+---
+
+## Success Criteria
+
+* You can state the current tote task’s exchange type and whether it is marked “ready for exchange.”
+* You can provide the tote/task identifiers: Tote Id, AGV Id, Original Destination, Station, Task id, and Task Name.
+* You can report Tote Error as empty/normal or provide the exact error value when populated.
+
+## Failure Conditions
+
+* Tote Error is populated with a non-empty error value for the tote task being investigated.
+* Ready-for-exchange status does not align with expected operational behavior on the floor.
+* The Tote Tasks screen does not show required fields (Tote Id, AGV Id, Original Destination, Station, Task id, Task Name, Tote Error).
+
+## Escalation Guidance
+
+* Escalate to FORTNA support if the Tote Error field indicates an error for the tote task you are investigating.
+* Escalate to FORTNA support if the exchange readiness status does not align with expected operational behavior on the floor.
+* If the Tote Tasks screen does not show the expected fields (Tote Id, AGV Id, Original Destination, Station, Task id, Task Name, Tote Error), stop and escalate because the required live evidence is not visible.
+
+## Missing Details / Known Gaps
+
+* The source does not enumerate the exact AVEVA HMI UI labels/values for “exchange type,” “priority,” and “ready for exchange” beyond transcript wording; operators should rely on the visible indicators/fields in the live AVEVA HMI Tote Task interface.
+
+## Source Lineage
+
+- Candidate IDs: candidate_training_video_day1_check_tote_task_exchange_readiness
+- Source ID: `training_video_day1`
+- Source Type: `training_video`

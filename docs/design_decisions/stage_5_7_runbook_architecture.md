@@ -230,7 +230,9 @@ Shared finalization subgraph
   Stage 6.5  [Deterministic]  pool + similarity + merge clusters + pass-through
   Stage 7    [LLM Assisted]   merge clusters only (not every runbook)
   Stage 8    [LLM Assisted]   link runbooks to playbooks + finalize playbooks
-  Stage 9+   [mixed]          links, validation, publish
+  Stage 9    [Deterministic]  corpus validation
+  Stage 10   [Deterministic]  vector embedding generation
+  Stage 11   [Deterministic]  Cosmos DB publishing and manifest
 ```
 
 ## Cost And Responsibility Summary

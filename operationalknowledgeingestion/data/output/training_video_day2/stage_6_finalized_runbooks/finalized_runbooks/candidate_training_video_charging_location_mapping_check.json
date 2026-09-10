@@ -1,0 +1,282 @@
+{
+  "procedure_id": "proc_check_charger_and_tote_stand_mapping_in_ssms_helix_db_v1",
+  "candidate_id": "candidate_training_video_charging_location_mapping_check",
+  "title": "Check Charger and Tote-Stand Mapping in SSMS / Helix DB",
+  "procedure_type": "diagnostic",
+  "summary": "Use the WCS / Helix DB (SSMS) to inspect a charging-location record and verify that the individual charger is mapped to the expected station, tote stand, and charging area, with the disabled status appropriate for operation.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_charging_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "mapping_abnormal"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this WCS / Helix DB (SSMS) diagnostic when investigating whether a charger is correctly configured for its station, tote stand, and charging area, or whether its disabled status explains an observed charging or mapping issue.",
+  "not_for": [
+    "Do not use this read-only diagnostic to edit charger mappings or change the disabled status.",
+    "Do not use this procedure to reassign a charger or perform charger recovery actions."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support inspects the charging-location record in the WCS / Helix DB (SSMS).",
+    "Escalate mapping defects or unexpected disabled status to engineering when the record is missing, incomplete, or incorrect."
+  ],
+  "safety_notes": [
+    "This procedure is a read-only inspection in the WCS / Helix DB (SSMS). Do not edit charger mappings or disabled status as part of this procedure."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "Charging location database model table"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2_support access to the WCS / Helix DB (SSMS)"
+    ],
+    "system_preconditions": [
+      "The charger being investigated is identified well enough to locate its charging-location record."
+    ],
+    "external_references": [
+      "Charging database model context: separate charging areas, charging locations, and charging thresholds.",
+      "Charging location mapping context: individual chargers, stations, tote stands, charging-area associations, and disabled status."
+    ]
+  },
+  "related_context_ids": [
+    "ctx_training_video_charging_database_models_v1",
+    "ctx_training_video_charging_location_mapping_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0013_let_s_see_and_the_last_primary_00_53_44_500",
+      "description": "Charging database model reference showing charging areas, individual chargers, stations, tote stands, and disabled status.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the charging-location model in WCS / Helix DB (SSMS)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Locate the live database model that contains charger-to-station, tote-stand, charging-area, and disabled-status information.",
+      "instruction": "Open the WCS / Helix DB (SSMS) and locate the charging location database model table. Use the charging-location model rather than the separate charging-area or charging-threshold model when inspecting an individual charger.",
+      "expected_result": "The charging-location database model is available for inspection and provides the record set used to identify individual chargers and their associated station, tote stand, charging area, and disabled status.",
+      "healthy_condition": "The charging-location model can be opened and its records can be inspected without making changes.",
+      "failure_condition": "The charging-location model cannot be located or opened, or the available model does not expose the charger mapping information needed for the investigation.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open charging-location model",
+          "exact_action": "Open the WCS / Helix DB in SSMS and locate the charging location database model table.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the charging-location database model cannot be located or accessed."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0013",
+          "timestamp_start": "00:35:50.000",
+          "timestamp_end": "01:11:39.000",
+          "quote_or_summary": "The charging location database model table stores the individual chargers and the stations they're located at, and the tote stands associated with the chargers."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Inspect the charger mapping record in WCS / Helix DB (SSMS)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Compare the live charger record with the expected station, tote-stand, and charging-area associations.",
+      "instruction": "In the WCS / Helix DB (SSMS) charging-location model, find the record for the charger being investigated. Inspect the charger or station identifier, associated tote stand, charging-area association, and disabled field.",
+      "expected_result": "The investigated charger has a present record with an identifiable charger or station value, an associated tote stand, a charging-area association, and a visible disabled status.",
+      "healthy_condition": "The charger record contains the expected station identifier, tote-stand association, charging-area association, and disabled status needed to interpret the live mapping.",
+      "failure_condition": "The charger row is missing, or the station, tote stand, charging-area association, or disabled field is absent, incorrect, or inconsistent with the charger being investigated.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Find charger record",
+          "exact_action": "Find the record for the charger being investigated.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect mapping fields",
+          "exact_action": "Inspect its charger or station identifier, associated tote stand, charging-area association, and disabled field.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the charger row is missing.",
+        "Escalate if a station, tote stand, or charging-area association is absent or incorrect.",
+        "Escalate if the disabled field is unexpectedly set."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0013",
+          "timestamp_start": "00:35:50.000",
+          "timestamp_end": "01:11:39.000",
+          "quote_or_summary": "The charging location database model table stores the individual chargers and the stations they're located at, and the tote stands associated with the chargers; the table also identifies whether an individual charger is disabled and what charging area it is associated with."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Confirm the charger mapping is complete and enabled in WCS / Helix DB (SSMS)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the live charger configuration is consistent with the expected charging layout.",
+      "instruction": "In the WCS / Helix DB (SSMS) record, confirm that the charger has a station and tote-stand mapping, belongs to a charging area, and is not unexpectedly disabled.",
+      "expected_result": "The relevant charging-location row is present with an individual charger, station, tote-stand association, charging-area association, and disabled status. The charger expected to serve the area is mapped completely and is enabled.",
+      "healthy_condition": "The charger has a station mapping, tote-stand mapping, charging-area association, and an enabled disabled-status value appropriate for the investigated charger.",
+      "failure_condition": "The charger lacks one of the required mappings or is unexpectedly disabled in the WCS / Helix DB (SSMS).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Validate complete mapping",
+          "exact_action": "Confirm that the charger has a station and tote-stand mapping, belongs to a charging area, and is not unexpectedly disabled.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop the diagnostic and escalate to engineering if the mapping is incomplete or incorrect.",
+        "Stop the diagnostic and escalate if the charger is unexpectedly disabled.",
+        "Do not edit the mapping or disabled status from this procedure."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0013",
+          "timestamp_start": "00:35:50.000",
+          "timestamp_end": "01:11:39.000",
+          "quote_or_summary": "Charging location records map individual chargers to their stations, associated tote stands, charging areas, and disabled status."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The investigated charger has a present charging-location record in the WCS / Helix DB (SSMS).",
+    "The record identifies the expected station, associated tote stand, and charging area.",
+    "The charger is not unexpectedly disabled.",
+    "No database mapping or disabled-status changes are made during the diagnostic."
+  ],
+  "healthy_conditions": [
+    "A charging-location row is present for the investigated individual charger.",
+    "Station and tote-stand mappings are present.",
+    "A charging-area association is present.",
+    "The disabled status is appropriate and the charger expected to serve the area is enabled."
+  ],
+  "failure_conditions": [
+    "The charger row is missing.",
+    "The station mapping is absent or incorrect.",
+    "The tote-stand association is absent or incorrect.",
+    "The charging-area association is absent or incorrect.",
+    "The charger is unexpectedly disabled.",
+    "The charging-location model cannot be located or accessed in the WCS / Helix DB (SSMS)."
+  ],
+  "escalation_guidance": [
+    "Escalate to engineering when the charger row is missing or when the station, tote stand, or charging-area association is absent or incorrect.",
+    "Escalate when the charger is unexpectedly disabled.",
+    "Do not change charger mappings or disabled status as part of this read-only diagnostic."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0013",
+      "timestamp_start": "00:35:50.000",
+      "timestamp_end": "01:11:39.000",
+      "quote_or_summary": "The charging location database model stores individual chargers, their stations, associated tote stands, charging-area associations, and disabled status."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "section_id": "training_video_day2_segment_0013",
+      "timestamp_start": "00:35:50.000",
+      "timestamp_end": "01:11:39.000"
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0013_let_s_see_and_the_last_primary_00_53_44_500"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_charging_location_mapping_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide the exact database schema, database name, table name, or column names for the charging-location model.",
+    "The source does not provide a site-specific expected station, tote stand, charging area, or disabled-status value for a particular charger.",
+    "The source does not define the exact SSMS navigation or query used to locate a charger record.",
+    "The source describes charging-area and charging-location relationships but does not provide a recovery or correction procedure for incorrect mappings."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

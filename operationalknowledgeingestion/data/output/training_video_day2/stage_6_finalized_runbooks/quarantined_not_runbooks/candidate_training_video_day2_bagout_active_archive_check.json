@@ -1,0 +1,286 @@
+{
+  "procedure_id": "proc_check_bag_out_activity_tracking_sorter_sweeper_db_active_vs_archive_v1",
+  "candidate_id": "candidate_training_video_day2_bagout_active_archive_check",
+  "title": "Check Bag Out Activity Tracking in Sorter Sweeper Database (Active Bag Out vs Bag Out Archive)",
+  "procedure_type": "diagnostic",
+  "summary": "Verify that bag out lifecycle events are represented correctly in the Sorter Sweeper Database: when a bag out closes out as requested, open shoots are closed and totes with items are marked for exchange with an entry created in the active bag out model; after the tote is tipped, the record is archived to the bag out archive.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "bag_out_or_closeout_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "bag_out_stuck",
+    "sort_lifecycle_stuck",
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when you need to confirm that bag out closeout and tote tipping are reflected in the Sorter Sweeper Database as active bag out entries first, then archived bag out records after tipping.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Open the Sorter Sweeper Database in SSMS and validate active vs archived bag out tracking behavior for a bag out lifecycle."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "SSMS",
+    "Sorter Sweeper Database (active bag out and bag out archive tables/models as named in the source)"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "SSMS access to the Sorter Sweeper Database"
+    ],
+    "system_preconditions": [
+      "Sorter Sweeper Database contains bag out lifecycle tracking models with separate active and archive records"
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_exchange_and_bagout_models_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+      "description": "Transcript frame describing bag out lifecycle tracking: active bag out entry created when bag out closes out as requested; once tote is tipped, record is archived to bag out.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Sorter Sweeper Database view for active bag out and bag out archive tracking models",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Get visibility into the two separate bag out tracking surfaces (active vs archive) so you can validate lifecycle movement of records.",
+      "instruction": "In SSMS, open the Sorter Sweeper Database views/tables/models for the bag out tracking surfaces referenced in the segment: the active bag out model and the bag out archive model.",
+      "expected_result": "You can view both the active bag out tracking entries and the bag out archive tracking records in the Sorter Sweeper Database.",
+      "healthy_condition": "Both active and archive bag out tracking surfaces are accessible and show data rows/records.",
+      "failure_condition": "You cannot access either the active bag out tracking surface or the bag out archive tracking surface, or one of them returns no records when bag out activity is expected.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open active and archive bag out tracking models in SSMS",
+          "exact_action": "Open the Sorter Sweeper Database view for the bag out tracking models described in the segment (active bag out and bag out archive).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 25,
+          "section_id": "training_video_day2_segment_0025",
+          "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+          "quote_or_summary": "“When a bag out closes out as requested, all the open shoots are closed… an entry is made in active bag out. … Once the tote has been tipped, the record is archived to bag out.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Validate active bag out entries created at bag out closeout (open shoots closed; totes with items marked for exchange)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm that bag out closeout as requested produces the expected active bag out record behavior for totes with items.",
+      "instruction": "Locate active bag out entries and confirm that when a bag out closes out as requested: (1) open shoots are closed, and (2) any tote with an item is marked for an exchange, with an entry created in the active bag out model.",
+      "expected_result": "For the bag out closeout you are validating, there are corresponding entries in the active bag out model indicating totes with items are marked for exchange (active bag out contains current bag-out-related tote exchange entries until the tote is tipped).",
+      "healthy_condition": "Active bag out contains current bag-out-related tote exchange entries for the bag out lifecycle under review (i.e., entries exist before tipping).",
+      "failure_condition": "No active bag out entries are created for the bag out closeout you are validating, or active entries do not reflect totes with items being marked for exchange.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check active bag out entries for the closeout lifecycle",
+          "exact_action": "Locate active bag out entries and confirm that when a bag out closes out as requested… any tote with an item is marked for an exchange and an entry is made in active bag out.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If bag out closeout does not create active bag out entries, escalate for investigation of the bag out lifecycle data flow described by the source."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 25,
+          "section_id": "training_video_day2_segment_0025",
+          "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+          "quote_or_summary": "“When a bag out closes out as requested, all the open shoots are closed. Any tote with an item in it is marked for an exchange and … an entry is made in active bag out.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Validate archiving after tote is tipped (active -> bag out archive)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm that once the tote is tipped, the active bag out record is archived to the bag out archive model.",
+      "instruction": "Identify a tote that has been tipped and confirm that the corresponding record is archived to the bag out archive (i.e., moved from active bag out tracking to the archived bag out record).",
+      "expected_result": "For the tipped tote under review, the record appears in the bag out archive model after tipping, consistent with the behavior that active bag out retains entries until the tote is tipped and then archives them.",
+      "healthy_condition": "The bag out archive contains the record for the tipped tote, and the lifecycle shows movement from active tracking to archived tracking.",
+      "failure_condition": "Tipped totes do not result in archiving (the record remains only in active bag out or does not appear in the bag out archive).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check bag out archive for tipped tote record",
+          "exact_action": "Identify a tote that has been tipped and confirm that the corresponding record is archived to the bag out archive (i.e., moved from active bag out tracking to the archived bag out record).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If tipped totes do not result in archiving, escalate for investigation of the bag out lifecycle data flow described by the source."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 25,
+          "section_id": "training_video_day2_segment_0025",
+          "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+          "quote_or_summary": "“Once the tote has been tipped, the record is archived to bag out.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Confirm active vs archived tracking difference matches expected bag out lifecycle behavior",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure the overall behavior aligns with the described lifecycle: active bag out holds current entries until tipping; after tipping, records are archived.",
+      "instruction": "Confirm that the difference between active tracking and archived tracking matches the source’s described behavior for the bag out lifecycle you validated.",
+      "expected_result": "Active bag out shows current bag-out-related tote exchange entries prior to tipping, and the bag out archive shows the corresponding records after tipping.",
+      "healthy_condition": "The active vs archive split is consistent with the lifecycle: active contains pre-tipping entries; archive contains post-tipping entries.",
+      "failure_condition": "Active and archive do not reflect the expected split (e.g., records appear in the wrong surface or do not transition).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Cross-check active vs archive split",
+          "exact_action": "Confirm the difference between active tracking and archived tracking matches the source’s described behavior.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 25,
+          "section_id": "training_video_day2_segment_0025",
+          "quote_or_summary": "“When a bag out closes out as requested… an entry is made in active bag out… Once the tote has been tipped, the record is archived to bag out.”"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "A bag out closeout as requested results in an entry in the active bag out model for totes with items marked for exchange.",
+    "After the tote is tipped, the corresponding record appears in the bag out archive model (archived from active bag out tracking)."
+  ],
+  "healthy_conditions": [
+    "Active bag out contains current bag-out-related tote exchange entries until the tote is tipped.",
+    "Bag out archive contains the record after the tote is tipped."
+  ],
+  "failure_conditions": [
+    "Bag out closeout does not create active bag out entries.",
+    "Tipped totes do not result in archiving to the bag out archive."
+  ],
+  "escalation_guidance": [
+    "If active bag out entries are missing at bag out closeout, or if tipped totes do not archive, escalate for investigation of the bag out lifecycle data flow described by the source."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+      "what_to_look_at": "Transcript frame describing the expected bag out lifecycle tracking behavior: active bag out entry created at bag out closeout; record archived to bag out after tote is tipped."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 25,
+      "section_id": "training_video_day2_segment_0025",
+      "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+      "quote_or_summary": "“When a bag out closes out as requested… Any tote with an item in it is marked for an exchange… an entry is made in active bag out… Once the tote has been tipped, the record is archived to bag out.”",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0025_yeah_you_know_it_s_it_primary_02_21_32_000",
+      "what_to_look_at": "Transcript frame describing bag out lifecycle tracking: active bag out entry created when bag out closes out as requested; once tote is tipped, record is archived to bag out."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_bagout_active_archive_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not name the exact SSMS table/view names for the active bag out model and bag out archive model; it only references them generically as “active bag out” and “bag out archive.”"
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

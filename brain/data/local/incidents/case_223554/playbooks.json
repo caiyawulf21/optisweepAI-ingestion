@@ -1,0 +1,743 @@
+[
+  {
+    "id": "playbook:one_per_incident:223554:hospital_induct_flow",
+    "type": "playbook",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_223554:event_013",
+      "evidence:case_223554:event_014",
+      "evidence:case_223554:event_019",
+      "evidence:case_223554:event_020",
+      "evidence:case_223554:event_021",
+      "evidence:case_223554:event_023",
+      "evidence:case_223554:event_024",
+      "evidence:case_223554:event_029",
+      "evidence:case_223554:event_030",
+      "evidence:case_223554:event_031",
+      "evidence:case_223554:event_032",
+      "evidence:case_223554:event_037",
+      "evidence:case_223554:event_038",
+      "evidence:case_223554:event_039",
+      "evidence:case_223554:event_040",
+      "evidence:case_223554:event_042",
+      "evidence:case_223554:event_043",
+      "evidence:case_223554:stage8_playbook_one_per_incident_playbook_incident_223554_hospital_induct_flow"
+    ],
+    "constraints": {
+      "sites": [
+        "ups_haslet"
+      ],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T17:02:12.818303Z",
+    "updated_at": "2026-09-08T17:02:12.818303Z",
+    "title": "[one_per_incident] Hospital tote-induct or site-flow disruption with AGV state anomalies",
+    "playbook_goal": "Restore safe hospital tote flow and broader site operation by distinguishing a localized hospital workflow problem from an AGV/tote-state or service-related disruption, applying only authorized high-level recovery actions, and validating stable operation.",
+    "entry_symptom_entity_ids": [
+      "entity:symptom:tote_error_noread_or_mismatch",
+      "entity:symptom:shutdown_or_dwell_abnormal",
+      "entity:symptom:sort_lifecycle_stuck"
+    ],
+    "affected_entity_ids": [],
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm the observable hospital and site-flow impact",
+        "capability_id": "capability:confirm_zone_pairing_state",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:symptom:tote_error_noread_or_mismatch",
+        "intent": "Determine whether the current report is an active hospital tote-induct problem, a broader sort disruption, or a localized condition that does not match this response path.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Totes cannot be added/inducted and/or sort cannot start or sustain operation (including report of shut down state).",
+            "next_node_id": "node_2",
+            "source_refs": [
+              "evidence:case_223554:event_020",
+              "evidence:case_223554:event_019",
+              "evidence:case_223554:event_042"
+            ]
+          },
+          {
+            "outcome": "healthy",
+            "condition": "Entry pattern is not matched; recovery already restored functionality.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_223554:event_020",
+              "evidence:case_223554:event_019",
+              "evidence:case_223554:event_042"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "Only second-hand info or unreadable screenshot; cannot determine if the symptoms are currently active.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_223554:event_020",
+              "evidence:case_223554:event_019",
+              "evidence:case_223554:event_042"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:event_020",
+          "evidence:case_223554:event_019",
+          "evidence:case_223554:event_042"
+        ]
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "diagnostic_decision",
+        "title": "Check for AGV location, roster, and tote-association anomalies",
+        "capability_id": "capability:confirm_zone_pairing_state",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:state:device_roster_mapping_and_fleet_membership_state",
+        "intent": "Determine whether the reported hospital-flow problem coincides with an AGV in an unexpected location, duplicate occupancy, disconnected tote, or residual tote association.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Confirmed state anomalies align with source patterns.",
+            "next_node_id": "node_4",
+            "source_refs": [
+              "evidence:case_223554:event_021",
+              "evidence:case_223554:event_023",
+              "evidence:case_223554:event_024",
+              "evidence:case_223554:event_031",
+              "evidence:case_223554:event_032"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "Normal/inconclusive state-anomaly check shifts to service/hospital-station contribution assessment.",
+            "next_node_id": "node_3",
+            "source_refs": [
+              "evidence:case_223554:event_021",
+              "evidence:case_223554:event_023",
+              "evidence:case_223554:event_024",
+              "evidence:case_223554:event_031",
+              "evidence:case_223554:event_032"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:event_021",
+          "evidence:case_223554:event_023",
+          "evidence:case_223554:event_024",
+          "evidence:case_223554:event_031",
+          "evidence:case_223554:event_032"
+        ]
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "diagnostic_decision",
+        "title": "Determine whether the hospital-station service condition is contributing",
+        "capability_id": null,
+        "procedure_id": null,
+        "symptom_entity_id": "entity:symptom:shutdown_or_dwell_abnormal",
+        "intent": "Determine whether the reported AGV hospital-station server or OptiSweep service condition is present and sufficiently correlated with the hospital or site-flow symptoms.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Evidence indicates an OptiSweep/WCS service abnormality correlated with Hospital Lane/HMI disruption.",
+            "next_node_id": "node_4",
+            "source_refs": [
+              "evidence:case_223554:event_014",
+              "evidence:case_223554:event_037",
+              "evidence:case_223554:event_038",
+              "evidence:case_223554:event_043"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "Do not loop into recovery without current service abnormality; continue AGV/tote-state investigation.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_223554:event_014",
+              "evidence:case_223554:event_037",
+              "evidence:case_223554:event_038",
+              "evidence:case_223554:event_043"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:event_014",
+          "evidence:case_223554:event_037",
+          "evidence:case_223554:event_038",
+          "evidence:case_223554:event_043"
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "procedure_reference",
+        "title": "Apply authorized high-level recovery for the identified condition",
+        "capability_id": null,
+        "procedure_id": "procedure:recover_agv_physically:case_223554_proc_recover_hospital_tote_flow_apidog_wcs_api_v1",
+        "symptom_entity_id": null,
+        "intent": "Use the approved recovery procedure appropriate to the confirmed condition: service or lane recovery, correction of supported AGV/tote state, or controlled physical AGV handling.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Do not perform a service reset, API/Aveva state mutation, or physical AGV handling unless the responsible role has an approved procedure and the required safety and authorization conditions are met.",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "Recovery is executed using an approved procedure and completion is recorded.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_223554:event_031",
+              "evidence:case_223554:event_032",
+              "evidence:case_223554:event_043"
+            ]
+          },
+          {
+            "outcome": "escalate",
+            "condition": "Missing exact services/API operations/authorization or safe physical conditions; recovery cannot proceed under SOP limits.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_223554:event_031",
+              "evidence:case_223554:event_032",
+              "evidence:case_223554:event_043"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:event_031",
+          "evidence:case_223554:event_032",
+          "evidence:case_223554:event_043"
+        ]
+      },
+      {
+        "node_id": "node_5",
+        "node_order": 5,
+        "node_type": "validation_gate",
+        "title": "Validate hospital flow, AGV state, and sustained sort recovery",
+        "capability_id": "capability:confirm_zone_pairing_state",
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Confirm that recovery restored the affected workflow without leaving residual AGV, tote, or station-state anomalies.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "If supported recovery does not restore hospital tote flow, AGV/tote consistency, or stable sort operation, stop the playbook path and hand off with the observed states and recovery evidence.",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "All validation criteria match healthy recovery signals.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_223554:event_013",
+              "evidence:case_223554:event_029",
+              "evidence:case_223554:event_030",
+              "evidence:case_223554:event_039",
+              "evidence:case_223554:event_040"
+            ]
+          },
+          {
+            "outcome": "escalate",
+            "condition": "Stop and escalate; do not loop into recovery without new supported diagnosis evidence.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_223554:event_013",
+              "evidence:case_223554:event_029",
+              "evidence:case_223554:event_030",
+              "evidence:case_223554:event_039",
+              "evidence:case_223554:event_040"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:event_013",
+          "evidence:case_223554:event_029",
+          "evidence:case_223554:event_030",
+          "evidence:case_223554:event_039",
+          "evidence:case_223554:event_040"
+        ]
+      }
+    ],
+    "entry_node_id": "node_1",
+    "confidence": "medium"
+  },
+  {
+    "id": "playbook:multi_flow:223554:hospital_tote_induction",
+    "type": "playbook",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_223554:event_012",
+      "evidence:case_223554:event_013",
+      "evidence:case_223554:event_020",
+      "evidence:case_223554:event_021",
+      "evidence:case_223554:event_023",
+      "evidence:case_223554:event_024",
+      "evidence:case_223554:event_028",
+      "evidence:case_223554:event_031",
+      "evidence:case_223554:event_032",
+      "evidence:case_223554:event_039",
+      "evidence:case_223554:event_040",
+      "evidence:case_223554:stage8_playbook_multi_flow_playbook_incident_223554_hospital_tote_induction"
+    ],
+    "constraints": {
+      "sites": [
+        "ups_haslet"
+      ],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T17:02:12.874307Z",
+    "updated_at": "2026-09-08T17:02:12.874307Z",
+    "title": "[multi_flow] Hospital station cannot add or induct totes",
+    "playbook_goal": "Determine whether the hospital induction failure is associated with an abnormal AGV location, roster state, or tote association, then guide authorized recovery and validate that hospital tote add and remove operations work again.",
+    "entry_symptom_entity_ids": [
+      "entity:symptom:tote_error_noread_or_mismatch",
+      "entity:symptom:shutdown_or_dwell_abnormal"
+    ],
+    "affected_entity_ids": [],
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm the hospital induction symptom and current AGV/tote context",
+        "capability_id": "capability:confirm_zone_pairing_state",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:symptom:tote_error_noread_or_mismatch",
+        "intent": "Confirm whether the reported failure is specifically inability to add or induct totes at the hospital station and whether an affected AGV, rack position, or associated tote appears abnormal.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Hospital tote addition/induction fails (removal may still work) and an affected AGV/rack/zone context looks abnormal (unexpected location and/or duplicate occupancy) in the hospital HMI/layout.",
+            "next_node_id": "node_2",
+            "source_refs": [
+              "evidence:case_223554:event_020",
+              "evidence:case_223554:event_021",
+              "evidence:case_223554:event_023",
+              "evidence:case_223554:event_024"
+            ]
+          },
+          {
+            "outcome": "healthy",
+            "condition": "Hospital add/induct and remove both work and no relevant AGV/tote anomaly is observable.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_223554:event_020",
+              "evidence:case_223554:event_021",
+              "evidence:case_223554:event_023",
+              "evidence:case_223554:event_024"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "The symptom cannot be reproduced or hospital evidence is unreadable/in conflict.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_223554:event_020",
+              "evidence:case_223554:event_021",
+              "evidence:case_223554:event_023",
+              "evidence:case_223554:event_024"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:event_020",
+          "evidence:case_223554:event_021",
+          "evidence:case_223554:event_023",
+          "evidence:case_223554:event_024"
+        ]
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "diagnostic_decision",
+        "title": "Determine whether AGV and tote state is inconsistent",
+        "capability_id": null,
+        "procedure_id": null,
+        "symptom_entity_id": "entity:state:device_roster_mapping_and_fleet_membership_state",
+        "intent": "Determine whether an AGV removal, unexpected location, duplicate rack occupancy, or disconnected tote association is present and plausibly connected to the hospital induction symptom.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Unexpected AGV placement, duplicate rack/zone occupancy, or disconnected/orphaned tote association is supported by evidence.",
+            "next_node_id": "node_3",
+            "source_refs": [
+              "evidence:case_223554:event_023",
+              "evidence:case_223554:event_028",
+              "evidence:case_223554:event_031",
+              "evidence:case_223554:event_032"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "Evidence is consistent or cannot be confirmed; do not perform state-changing recovery without a supported target mismatch.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_223554:event_023",
+              "evidence:case_223554:event_028",
+              "evidence:case_223554:event_031",
+              "evidence:case_223554:event_032"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:event_023",
+          "evidence:case_223554:event_028",
+          "evidence:case_223554:event_031",
+          "evidence:case_223554:event_032"
+        ]
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "procedure_reference",
+        "title": "Apply authorized correction for supported AGV or tote-state mismatch",
+        "capability_id": null,
+        "procedure_id": "procedure:confirm_tote_lifecycle_state:case_223554_proc_recover_hospital_tote_flow_apidog_wcs_api_v1",
+        "symptom_entity_id": null,
+        "intent": "Use an authorized, source-supported recovery procedure to correct the affected AGV or tote state when the diagnostic evidence identifies a supported mismatch.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Do not continue with state-changing actions if the authorized interface, target association, or safety preconditions cannot be confirmed.",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "AGV/tote mismatch is corrected successfully in the approved interface and hospital validation can proceed.",
+            "next_node_id": "node_4",
+            "source_refs": [
+              "evidence:case_223554:event_031",
+              "evidence:case_223554:event_032"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "Correction cannot be completed safely or leaves state ambiguous; stop and hand off.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_223554:event_031",
+              "evidence:case_223554:event_032"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:event_031",
+          "evidence:case_223554:event_032"
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "validation_gate",
+        "title": "Validate hospital tote flow and AGV recovery",
+        "capability_id": null,
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Confirm that the hospital station accepts totes again and that the affected AGV and tote state no longer prevents normal flow.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "If hospital tote flow fails after the supported correction or the AGV/tote state remains ambiguous, stop this path and use the escalation gate.",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "Hospital can add and remove totes again; affected AGVs are back up/re-added and operating normally; backlog does not persist.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_223554:event_012",
+              "evidence:case_223554:event_013",
+              "evidence:case_223554:event_039",
+              "evidence:case_223554:event_040"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "Hospital still cannot add/induct totes or inconsistency persists; stop and hand off.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_223554:event_012",
+              "evidence:case_223554:event_013",
+              "evidence:case_223554:event_039",
+              "evidence:case_223554:event_040"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:event_012",
+          "evidence:case_223554:event_013",
+          "evidence:case_223554:event_039",
+          "evidence:case_223554:event_040"
+        ]
+      },
+      {
+        "node_id": "node_5",
+        "node_order": 5,
+        "node_type": "escalation_gate",
+        "title": "Stop if hospital-state correction is unsupported or validation fails",
+        "capability_id": null,
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Hand off when the hospital tote or AGV state cannot be safely identified or the approved correction does not restore hospital tote flow.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Do not treat the source's suspected removed-AGV explanation as confirmed diagnosis.",
+        "branches": [
+          {
+            "outcome": "escalate",
+            "condition": "Unique identification is not possible or validation failed after the supported path; further unapproved state changes are required.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_223554:event_031",
+              "evidence:case_223554:event_032",
+              "evidence:case_223554:event_039"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:event_031",
+          "evidence:case_223554:event_032",
+          "evidence:case_223554:event_039"
+        ]
+      }
+    ],
+    "entry_node_id": "node_1",
+    "confidence": "high"
+  },
+  {
+    "id": "playbook:multi_flow:223554:site_sort_unavailable",
+    "type": "playbook",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_223554:event_014",
+      "evidence:case_223554:event_016",
+      "evidence:case_223554:event_017",
+      "evidence:case_223554:event_019",
+      "evidence:case_223554:event_029",
+      "evidence:case_223554:event_030",
+      "evidence:case_223554:event_031",
+      "evidence:case_223554:event_037",
+      "evidence:case_223554:event_038",
+      "evidence:case_223554:event_043",
+      "evidence:case_223554:stage8_playbook_multi_flow_playbook_incident_223554_site_sort_unavailable"
+    ],
+    "constraints": {
+      "sites": [
+        "ups_haslet"
+      ],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T17:02:12.876304Z",
+    "updated_at": "2026-09-08T17:02:12.876304Z",
+    "title": "[multi_flow] Site cannot start or sustain sort",
+    "playbook_goal": "Determine whether the report represents a site-wide sort availability problem, assess the source-supported service or server recovery direction, and validate stable operation without treating the historical service hypothesis as confirmed cause.",
+    "entry_symptom_entity_ids": [
+      "entity:symptom:site_stoppage",
+      "entity:symptom:sort_lifecycle_stuck",
+      "entity:symptom:service_crash_or_restart"
+    ],
+    "affected_entity_ids": [],
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm site-wide sort unavailability",
+        "capability_id": null,
+        "procedure_id": null,
+        "symptom_entity_id": "entity:symptom:site_stoppage",
+        "intent": "Determine whether the report is a broad inability to start or sustain sort rather than only a localized hospital-station symptom.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Operator confirms sort cannot start or stops during operation and that movement is broadly affected (site-wide outage).",
+            "next_node_id": "node_2",
+            "source_refs": [
+              "evidence:case_223554:event_016",
+              "evidence:case_223554:event_017",
+              "evidence:case_223554:event_019"
+            ]
+          },
+          {
+            "outcome": "healthy",
+            "condition": "Operator confirms sort runs and movement is active, but only hospital induction/tote actions fail.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_223554:event_016",
+              "evidence:case_223554:event_017",
+              "evidence:case_223554:event_019"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "Operator cannot reproduce or screenshot is unreadable; cannot confirm broad movement/sort state.",
+            "next_node_id": "node_2",
+            "source_refs": [
+              "evidence:case_223554:event_016",
+              "evidence:case_223554:event_017",
+              "evidence:case_223554:event_019"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:event_016",
+          "evidence:case_223554:event_017",
+          "evidence:case_223554:event_019"
+        ]
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "diagnostic_decision",
+        "title": "Check for source-supported service or server abnormality",
+        "capability_id": null,
+        "procedure_id": null,
+        "symptom_entity_id": "entity:symptom:shutdown_or_dwell_abnormal",
+        "intent": "Determine whether the broad outage correlates with the documented AGV hospital-station server or service abnormality.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Event Viewer/Services evidence supports continued OptiSweep and/or related server abnormality relevant to the outage window.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_223554:event_014",
+              "evidence:case_223554:event_037",
+              "evidence:case_223554:event_038",
+              "evidence:case_223554:event_043"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "Evidence does not confirm a live fault; do not rely on 'reset needed' notes-only context as causal basis for recovery.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_223554:event_014",
+              "evidence:case_223554:event_037",
+              "evidence:case_223554:event_038",
+              "evidence:case_223554:event_043"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:event_014",
+          "evidence:case_223554:event_037",
+          "evidence:case_223554:event_038",
+          "evidence:case_223554:event_043"
+        ]
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "procedure_reference",
+        "title": "Perform authorized service or lane recovery",
+        "capability_id": null,
+        "procedure_id": "procedure:confirm_fleet_system_status:case_223554_proc_recover_hospital_tote_flow_apidog_wcs_api_v1",
+        "symptom_entity_id": null,
+        "intent": "Use the approved procedure for the documented service or Hospital Lane recovery path when the responsible role confirms that it is authorized and supported.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Do not infer that resetting services is safe or sufficient without the approved procedure and role authorization.",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "Performing role observes successful recovery completion with lane responsiveness/movement restoration evidence.",
+            "next_node_id": "node_4",
+            "source_refs": [
+              "evidence:case_223554:event_043"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "Recovery rejected, unsafe/unknown operational state, or lane/service does not recover.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_223554:event_043"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:event_043"
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "validation_gate",
+        "title": "Validate stable sort and movement recovery",
+        "capability_id": null,
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Confirm that the site can start or sustain sort and that movement remains active after service or lane recovery.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "If broad sort availability is not restored or stability cannot be demonstrated, use the escalation gate rather than declaring recovery.",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "Operator confirms sustained sort and movement after recovery.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_223554:event_029",
+              "evidence:case_223554:event_030",
+              "evidence:case_223554:event_031"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "Operator reports recurrence or lack of sustained movement.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_223554:event_029",
+              "evidence:case_223554:event_030",
+              "evidence:case_223554:event_031"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:event_029",
+          "evidence:case_223554:event_030",
+          "evidence:case_223554:event_031"
+        ]
+      },
+      {
+        "node_id": "node_5",
+        "node_order": 5,
+        "node_type": "escalation_gate",
+        "title": "Stop if service recovery or sort validation fails",
+        "capability_id": null,
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Hand off when the service or server condition cannot be confirmed, authorized recovery does not restore operation, or the site remains unable to start or sustain sort.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Historical unfamiliarity, support participation, and communication delays are not themselves escalation conditions; escalation is based on unsafe, unsupported, or unresolved technical state.",
+        "branches": [
+          {
+            "outcome": "escalate",
+            "condition": "Service recovery cannot be confirmed or sort validation fails; evidence package prepared.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_223554:event_016",
+              "evidence:case_223554:event_019",
+              "evidence:case_223554:event_043"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_223554:event_016",
+          "evidence:case_223554:event_019",
+          "evidence:case_223554:event_043"
+        ]
+      }
+    ],
+    "entry_node_id": "node_1",
+    "confidence": "medium"
+  }
+]

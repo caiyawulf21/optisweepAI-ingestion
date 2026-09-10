@@ -43,6 +43,16 @@ Return one JSON object with this shape:
     "customer": "",
     "site": {
       "primary_label": "",
+      "ingestion_site": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      },
       "observed_location_text": [],
       "location_confidence": "high | medium | low | unknown",
       "notes": ""
@@ -100,12 +110,20 @@ Return one JSON object with this shape:
    creation, CBRE/work-order entry, first customer report, or first failure
    event, and a source-supported end time from RCA/case comments such as "site
    is running", "site resumed", "case closed", "resolved", or equivalent.
+   If timeline evidence shows system failure before the tracking start, do not
+   move KPI start earlier unless the source explicitly supports that earlier
+   moment as the tracking start. Record such earlier signals in symptoms or
+   incident_description and preserve the distinction in warnings/notes.
 3. If exact downtime cannot be calculated, use a source-grounded fallback such
    as `"same_day"` for `resolution_time`, set `kpi_confidence` to `"low"`, and
    add a warning. Do not leave KPI fields unexplained.
 4. Preserve site/location ambiguity instead of silently choosing one value.
-   For example, if case metadata says Haslet but screenshots show Alliance, TX,
-   record both and explain the ambiguity.
+   Use `source_package.site_location` as authoritative ingestion metadata for
+   this case. Populate `site.ingestion_site` from that metadata and treat it as
+   the default `primary_label` unless evidence clearly supports a different site.
+   Record any conflicting evidence locations in `observed_location_text` and
+   explain the ambiguity in `notes`. For example, if ingestion metadata says
+   Haslet but screenshots show Alliance, TX, record both and explain the ambiguity.
 5. Do not include detailed step-by-step recovery instructions. Those belong in
    timeline events and later runbook candidates.
 6. Do not infer root cause. If the source reports a suspected cause, attribute
@@ -120,10 +138,15 @@ Return one JSON object with this shape:
   "page_ref": "case_228086:page_26",
   "artifact_id": "artifact_incident_228086_page_029_embedded_image_01",
   "chunk_id": "stage4_page_chunk_004",
+  "site_code": "ups_haslet_tx",
+  "site_label": "UPS Haslet TX (TXRTH)",
   "support_type": "page_ocr | artifact_visual | artifact_ocr | case_comment | teams_message | system_log",
   "quote_or_summary": ""
 }
 ```
+
+Preserve `site_code` and `site_label` on source refs when they are present on
+the packet source refs or `source_package.site_location`.
 
 9. Keep the record concise and searchable. Put messy ordering and detailed
    evidence sequence in `timeline_events.json`, not here.
@@ -132,3 +155,10 @@ Return one JSON object with this shape:
    record fact.
 11. Never include `people_involved` or personal names in canonical fields,
     source refs, evidence summaries, or retrieval text.
+12. Preserve terminology conflicts when the source mixes names for the same
+    system family, such as ACB vs ECB. Do not silently normalize them.
+13. Keep symptoms concise and non-overlapping. Prefer distinct operational
+    symptoms over repeated paraphrases of the same outage state.
+14. Include site citation lineage in `retrieval_text` by mentioning the
+    ingestion site label or site code when `source_package.site_location` is
+    present, so downstream retrieval can filter incidents by site.

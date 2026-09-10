@@ -1,0 +1,373 @@
+{
+  "procedure_id": "proc_cancel_active_closeout_requests_after_manual_bag_out_v1",
+  "candidate_id": "candidate_training_video_day2_cancel_manual_bagout_closeout_requests",
+  "title": "Cancel Active Closeout Requests After Manual Bag Out Using the OptiSweep API",
+  "procedure_type": "recovery",
+  "summary": "Use Apidog on a primary server to submit the configured OptiSweep CancelCloseout request after a manual bag out, once the system is running again. Verify the returned response and confirm that the associated active exchange or closeout requests are no longer active.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "bag_out_or_closeout_state"
+  ],
+  "access_surface": [
+    "apidog",
+    "wcs_api"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "bag_out_stuck"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use the Apidog / WCS API client on a primary server after a manual bag out has occurred and the OptiSweep system is running again. The manual bag out marks items for exchange; CancelCloseout is used to cancel the resulting active exchange or closeout requests.",
+  "not_for": [
+    "Do not use this procedure to submit undocumented API requests or to invent or modify undocumented request parameters.",
+    "Do not use this procedure to establish module-to-module transaction tracing; the source states that this level of tracing is not provided.",
+    "Do not use this procedure before the system is running again after the manual bag out."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Execute the configured CancelCloseout request in Apidog on a primary server and review the returned response."
+    },
+    {
+      "role": "L3_support",
+      "responsibility": "Review or assist when the request errors, does not return, does not confirm completion, or cancellation is required repeatedly."
+    }
+  ],
+  "safety_notes": [
+    "This is a recovery action for active exchange or closeout requests associated with a completed manual bag out.",
+    "Confirm that the system is running again before submitting CancelCloseout.",
+    "Use only the locally installed, shared OptiSweep API project and its configured request parameters."
+  ],
+  "access_or_tools_needed": [
+    "L2 or L3 access to a primary server.",
+    "Apidog / WCS API client installed on the primary server.",
+    "OptiSweep / WCS API access.",
+    "The shared, configured CancelCloseout request and its existing request parameters."
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2 or L3 access to the primary server hosting the locally installed API project.",
+      "Access to Apidog and the shared OptiSweep / WCS API project."
+    ],
+    "system_preconditions": [
+      "A manual bag out has been completed.",
+      "The OptiSweep system is running again.",
+      "Active exchange or closeout requests associated with the manual bag out may still be present."
+    ],
+    "external_references": [
+      "Configured API request parameters for CancelCloseout.",
+      "API guide for the installed OptiSweep API project, where available on the primary server."
+    ]
+  },
+  "related_context_ids": [
+    "ctx_training_video_manual_bag_out_v1",
+    "ctx_training_video_primary_server_api_hosting_v1",
+    "ctx_training_video_ignition_aveva_api_integration_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+      "description": "Apidog / OptiSweep API list showing the CancelCloseout request in the System API section.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the shared CancelCloseout API project on a primary server",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Access the locally hosted OptiSweep API request used to cancel active exchanges or closeout requests after a manual bag out.",
+      "instruction": "On a primary server, open the Apidog / WCS API client and open the shared OptiSweep API project. Locate the CancelCloseout request in the available System API requests.",
+      "expected_result": "The shared OptiSweep API project is open in Apidog and the CancelCloseout request is visible.",
+      "healthy_condition": "Apidog displays the locally installed OptiSweep API project and its CancelCloseout request.",
+      "failure_condition": "The primary server does not have the project, Apidog cannot access the project, or CancelCloseout is not present.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open the API project",
+          "exact_action": "Open the shared OptiSweep API project in Apidog on the primary server.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Locate CancelCloseout",
+          "exact_action": "Locate the CancelCloseout request in the OptiSweep API list.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "CancelCloseout is not available in the shared OptiSweep API project.",
+        "The API project is unavailable on the primary server."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:50:45.500",
+          "timestamp_end": "02:50:45.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+          "segment_id": "segment_training_video_0033",
+          "page": 33,
+          "quote_or_summary": "The API list includes CancelCloseout. Apidog is installed on the primary servers and the APIs are locally hosted there."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Review the configured CancelCloseout request parameters",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Ensure that the documented request is used without introducing unsupported parameters or changes.",
+      "instruction": "In the Apidog / WCS API client, open the configured CancelCloseout request and review the existing request parameters. Use the configured parameters as provided; do not add, remove, or modify undocumented parameters.",
+      "expected_result": "The configured CancelCloseout request is ready to submit without undocumented parameter changes.",
+      "healthy_condition": "The request uses the existing shared configuration and contains no operator-invented parameters.",
+      "failure_condition": "Required configuration is missing, the request is not configured, or completing the request would require inventing or changing undocumented parameters.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review request configuration",
+          "exact_action": "Review the configured request parameters for CancelCloseout in Apidog.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The configured request parameters are missing or unclear.",
+        "The request cannot be completed without adding or changing undocumented parameters."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:44:50.000",
+          "timestamp_end": "02:56:41.000",
+          "segment_id": "segment_training_video_0033",
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "The APIs are installed on every primary server with the request parameters already set up; users should not build the API project on their own system."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Submit CancelCloseout in the OptiSweep API client",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Cancel the active exchange or closeout requests associated with the completed manual bag out.",
+      "instruction": "In the Apidog / WCS API client, submit the configured CancelCloseout request after confirming that the OptiSweep system is running again.",
+      "expected_result": "Apidog returns a response to the submitted CancelCloseout request.",
+      "healthy_condition": "The request completes and Apidog returns a response indicating that the cancellation was accepted or completed.",
+      "failure_condition": "The request returns an error, produces no response, or does not provide confirmation that cancellation completed.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Submit CancelCloseout",
+          "exact_action": "Submit the configured CancelCloseout request in Apidog.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "CancelCloseout returns an error.",
+        "CancelCloseout produces no response.",
+        "The response does not confirm completion."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:44:50.000",
+          "timestamp_end": "02:56:41.000",
+          "segment_id": "segment_training_video_0033",
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "Once the system is back up and running, active exchanges associated with a manual bag out can be canceled."
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:50:45.500",
+          "timestamp_end": "02:50:45.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+          "segment_id": "segment_training_video_0033",
+          "page": 33,
+          "quote_or_summary": "The API list includes CancelCloseout."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify the cancellation response and closeout state",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Confirm that the manual bag-out exchange or closeout requests are no longer active.",
+      "instruction": "Review the returned response in the Apidog / WCS API client. Confirm that it indicates successful completion, then verify that the active exchange or closeout requests associated with the manual bag out are no longer active using the available live OptiSweep state.",
+      "expected_result": "The response indicates successful cancellation and the manual bag-out-associated exchange or closeout requests are no longer active.",
+      "healthy_condition": "Apidog shows a completion response and no associated active exchange or closeout requests remain.",
+      "failure_condition": "The response does not confirm completion, or the associated exchange or closeout requests remain active.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review the response",
+          "exact_action": "Review the CancelCloseout response returned in Apidog.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm inactive requests",
+          "exact_action": "Verify that the active exchange or closeout requests associated with the manual bag out are no longer active.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The response does not confirm successful completion.",
+        "The associated exchange or closeout requests remain active after the request.",
+        "Repeated cancellation attempts are required."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "02:44:50.000",
+          "timestamp_end": "02:56:41.000",
+          "segment_id": "segment_training_video_0033",
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "After manual bag out and system recovery, canceling the active exchanges removes the bag-out exchange requests."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The configured CancelCloseout request is available in Apidog on a primary server.",
+    "The request is submitted without undocumented parameters.",
+    "Apidog returns a response indicating successful cancellation.",
+    "The active exchange or closeout requests associated with the completed manual bag out are no longer active."
+  ],
+  "healthy_conditions": [
+    "The OptiSweep system is running again after the manual bag out.",
+    "CancelCloseout is available in the shared Apidog project on the primary server.",
+    "The returned response confirms completion.",
+    "No associated active exchange or closeout requests remain."
+  ],
+  "failure_conditions": [
+    "CancelCloseout is unavailable or not configured on the primary server.",
+    "The request requires undocumented parameters.",
+    "The request returns an error or no response.",
+    "The response does not confirm completion.",
+    "Active exchange or closeout requests remain after cancellation."
+  ],
+  "escalation_guidance": [
+    "Escalate to L3 support if CancelCloseout returns an error, produces no response, or does not confirm completion.",
+    "Escalate if the associated exchange or closeout requests remain active after a completed request.",
+    "Do not attempt undocumented API requests or use module-to-module tracing as a substitute for the returned response."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+      "what_to_look_at": "The Apidog / OptiSweep API list, specifically the CancelCloseout entry in the System API section."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "timestamp_start": "02:44:50.000",
+      "timestamp_end": "02:56:41.000",
+      "segment_id": "segment_training_video_0033",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0033",
+      "quote_or_summary": "After a manual bag out, once the system is running again, active exchange requests can be canceled."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "timestamp_start": "02:50:45.500",
+      "timestamp_end": "02:50:45.500",
+      "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+      "segment_id": "segment_training_video_0033",
+      "page": 33,
+      "quote_or_summary": "The API list includes CancelCloseout."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+      "what_to_look_at": "The Apidog / OptiSweep API list, specifically the CancelCloseout entry in the System API section."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_cancel_manual_bagout_closeout_requests"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The exact CancelCloseout request parameters are not included in the packet; use only the configured parameters already present in the shared Apidog project.",
+    "The exact response success field, status value, or response schema is not provided.",
+    "The packet does not identify a specific live query, field, or screen for independently verifying that the associated exchange or closeout requests are no longer active.",
+    "No Apidog request/response artifact showing a successful CancelCloseout response is provided.",
+    "No production-site identifier or primary-server identifier is provided."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

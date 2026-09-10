@@ -1,0 +1,278 @@
+{
+  "procedure_id": "proc_configure_barcode_interface_scanner_settings_http_opc_prefixes_v1",
+  "candidate_id": "candidate_manual_scanner_setup_configure_settings_http_opc_prefixes",
+  "title": "Configure Barcode Interface scanner settings (password, prefixes, HTTP/OPC URLs) for AGV and Hospital control IPs",
+  "procedure_type": "operation",
+  "summary": "On the Windows laptop used for scanner setup, update the replacement Zebra DS3608-SR scanner’s Barcode Interface settings so tote/location label prefixes match and the HTTP/OPC URLs point to the correct AGV control and Hospital control IP addresses, then save the settings.",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "gateway_health"
+  ],
+  "access_surface": [
+    "apidog"
+  ],
+  "audience_roles": [
+    "L1_support"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when a scanner is replaced and the new scanner must be set up so Barcode Interface settings use the correct tote/location prefixes and the correct AGV/Hospital control IP addresses in the HTTP and OPC URL fields.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L1_support: Perform the Barcode Interface settings update (enter password, verify prefixes, update HTTP/OPC URLs, save settings)."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Windows 10/11 laptop",
+    "Barcode Interface.exe application",
+    "FORTNA account login",
+    "AGV control IP address",
+    "Hospital control IP address"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "FORTNA account login on the Windows laptop"
+    ],
+    "system_preconditions": [
+      "Network connectivity from the laptop to both the AGV control and Hospital control (validated by ping per scanner setup requirements).",
+      "Barcode Interface application is installed on the Windows laptop (found on the desktop with a FORTNA logo)."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_manual_scanner_replacement_setup_v1",
+    "ctx_manual_barcode_interface_app_v1",
+    "ctx_manual_scanner_setup_connectivity_v1",
+    "ctx_manual_scanner_settings_password_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_page_211_image_3",
+      "description": "Scanner Setup screen showing the settings button/password prompt, prefix fields, HTTP URL field (AGV control IP), OPC URL field (Hospital control IP), and Save Settings button.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Launch Barcode Interface on the scanner setup laptop",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Open the application used to configure the replacement scanner settings.",
+      "instruction": "On the Windows laptop used for scanner setup, launch the Barcode Interface application (Barcode Interface.exe).",
+      "expected_result": "Barcode Interface is open and ready for interaction (scanner setup workflow visible).",
+      "healthy_condition": "The application is running and you can proceed to the settings area.",
+      "failure_condition": "Barcode Interface does not launch or is not accessible on the desktop.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Open Barcode Interface",
+          "exact_action": "Launch the Barcode Interface application. This should be on the desktop.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Open Settings and enter the default password",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Access the protected settings panel to edit prefixes and HTTP/OPC URLs.",
+      "instruction": "In Barcode Interface, click the \"settings\" button and supply the default password \"Opti\".",
+      "expected_result": "The settings panel accepts the password and the settings fields are available for editing.",
+      "healthy_condition": "You can view/edit the prefix configuration fields and the HTTP/OPC URL fields.",
+      "failure_condition": "Password is rejected or settings fields do not become available.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Open settings",
+          "exact_action": "Check the settings by clicking the settings button, supply the password. By default, the pass- word is “Opti”.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Verify tote/location label prefixes match",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Ensure the scanner will interpret labels correctly for totes and locations.",
+      "instruction": "Verify the configured prefixes match the labels on the totes and locations.",
+      "expected_result": "Prefix values shown in the settings match the tote/location label prefixes you physically verify.",
+      "healthy_condition": "Prefixes match the tote/location labels (no mismatch observed).",
+      "failure_condition": "Prefixes do not match the tote/location labels.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Compare prefixes",
+          "exact_action": "Verify prefixes match the labels on the totes and locations.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the prefixes do not match the tote/location labels."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Update HTTP and OPC URLs to correct AGV/Hospital control IPs",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Point the scanner interface to the correct AGV control and Hospital control endpoints.",
+      "instruction": "Change the URL for both the HTTP and OPC settings so the HTTP URL contains the AGV control IP address and the OPC URL contains the Hospital control IP address.",
+      "expected_result": "HTTP URL field includes the AGV control IP address; OPC URL field includes the Hospital control IP address.",
+      "healthy_condition": "Both URL fields contain the correct IP addresses in the expected HTTP vs OPC fields.",
+      "failure_condition": "HTTP/OPC URLs cannot be updated to include the correct AGV control and Hospital control IP addresses.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Edit HTTP/OPC URLs",
+          "exact_action": "Change the URL for both the HTTP and OPC setting to contain the AGV control and Hospital control IP addresses respectively.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the HTTP/OPC URLs cannot be updated to include the correct AGV control and Hospital control IP addresses."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Save the scanner settings",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Commit the updated prefixes and URLs so the scanner uses them.",
+      "instruction": "Save the settings using the \"Save Settings\" button.",
+      "expected_result": "Settings are saved (the updated prefix/URL values are committed after clicking \"Save Settings\").",
+      "healthy_condition": "After saving, the settings reflect the updated prefixes and the HTTP/OPC URLs with the correct IP addresses.",
+      "failure_condition": "Settings do not save or the displayed values revert/are not updated after saving.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Save settings",
+          "exact_action": "Save the settings with the \"Save Settings\" button.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "After saving, the Barcode Interface settings reflect prefixes matching tote/location labels.",
+    "After saving, the HTTP URL contains the AGV control IP address and the OPC URL contains the Hospital control IP address."
+  ],
+  "healthy_conditions": [
+    "Prefix fields match tote/location labels.",
+    "HTTP URL field contains AGV control IP address.",
+    "OPC URL field contains Hospital control IP address.",
+    "Settings are saved via the \"Save Settings\" button."
+  ],
+  "failure_conditions": [
+    "Prefixes do not match tote/location labels.",
+    "HTTP/OPC URLs cannot be updated to include the correct AGV control and Hospital control IP addresses.",
+    "Settings do not persist after clicking \"Save Settings\"."
+  ],
+  "escalation_guidance": [
+    "If prefixes do not match tote/location labels, stop and escalate.",
+    "If HTTP/OPC URLs cannot be updated to include the correct AGV control and Hospital control IP addresses, stop and escalate."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_page_211_image_3",
+      "what_to_look_at": "Settings button/password prompt, prefix fields, HTTP URL field (AGV control IP), OPC URL field (Hospital control IP), and Save Settings button."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+      "source_document_id": "optisweep_operation_and_maintenance_manual_final_1",
+      "page": 211,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_7_3_24_scanner_setup",
+      "quote_or_summary": "Scanner setup steps 5-7: click settings button, enter password (default \"Opti\"); verify prefixes match tote/location labels; change URL for both the HTTP and OPC settings to contain the AGV control and Hospital control IP addresses respectively; save with \"Save Settings\"."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_page_211_image_3",
+      "what_to_look_at": "Settings button/password prompt, prefix fields, HTTP URL field (AGV control IP), OPC URL field (Hospital control IP), and Save Settings button."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_manual_scanner_setup_configure_settings_http_opc_prefixes"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide the exact field labels/names for the prefix fields, HTTP URL field, and OPC URL field as they appear in the Barcode Interface UI; only the actions and their intent are specified."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_page_211_image_3"
+  ]
+}

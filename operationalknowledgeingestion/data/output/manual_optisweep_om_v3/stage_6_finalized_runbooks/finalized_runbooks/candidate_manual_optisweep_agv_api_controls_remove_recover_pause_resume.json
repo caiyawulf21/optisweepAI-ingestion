@@ -1,0 +1,306 @@
+{
+  "procedure_id": "proc_use_agv_api_controls_remove_recover_pause_resume_v1",
+  "candidate_id": "candidate_manual_optisweep_agv_api_controls_remove_recover_pause_resume",
+  "title": "Use AGV API Controls to Remove/Recover an AGV and Pause/Resume All AGVs",
+  "procedure_type": "operation",
+  "summary": "Use the System HMI API screen’s AGVs section to remove a problematic AGV by ID, recover (add back) the AGV by ID after physical recovery, and pause/resume all AGV movement fleet-wide.",
+  "role_required": "operator",
+  "responsible_role": "operator",
+  "supporting_roles": [],
+  "capability_tags": [
+    "agv_physical_recovery",
+    "agv_active_errors"
+  ],
+  "access_surface": [
+    "tipper_hmi"
+  ],
+  "audience_roles": [
+    "operator"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When an AGV needs to be removed from the system (e.g., it has an issue) and later recovered after physical removal/recovery, and you need to pause/resume all AGV movement using the AGV API Controls.",
+  "not_for": [
+    "Do not use this procedure as a substitute for required physical removal/recovery steps after using Remove AGV (the AGV must be physically removed; if it has a tote, the tote must be taken to the hospital where the tote is removed)."
+  ],
+  "roles_and_responsibilities": [
+    "Operator: Execute the AGV API Controls actions (Remove AGV, Recover AGV, Pause All AGVs, Resume All AGVs) and perform the required physical AGV/tote removal and recovery steps."
+  ],
+  "safety_notes": [
+    "If the AGV has a tote, take the tote to the hospital where the tote is removed; the tote is recovered when it is put back in the system."
+  ],
+  "access_or_tools_needed": [
+    "Hospital/onsite physical access to remove/recover the AGV and tote",
+    "System HMI API screen (AGVs section) with AGV API Controls"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the System HMI API screen with the AGVs section (AGV API Controls)"
+    ],
+    "system_preconditions": [
+      "You have the target AGV ID to enter into the Remove AGV and Recover AGV fields."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_manual_agv_api_controls_screen_v1",
+    "ctx_manual_agv_remove_recover_procedure_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "description": "AGV API Controls screen showing Remove AGV, Recover AGV, Pause All AGVs, Resume All AGVs (and related controls).",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_4_13_get_agv_status_pop_up_screen",
+      "description": "Get AGV Status pop-up used to view AGV details (battery status, command status, error codes, and AGV state).",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+      "description": "Example HMI state for a faulted AGV with a tote; recovery guidance references removing the AGV via API controls and taking the tote to the hospital.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the System HMI API screen and navigate to the AGVs section",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Access the AGV API Controls needed to remove/recover an AGV and pause/resume all AGV movement.",
+      "instruction": "Open the System HMI API screen and navigate to the AGVs section (AGV API Controls).",
+      "expected_result": "The AGVs section is visible with controls including Remove AGV, Recover AGV, Pause All AGVs, and Resume All AGVs.",
+      "healthy_condition": "AGV API Controls are visible and ready for input (Remove AGV / Recover AGV fields and Pause/Resume buttons are present).",
+      "failure_condition": "The AGVs section or required controls are not accessible/visible, preventing entry of an AGV ID or clicking Pause/Resume.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify AGVs section controls are present",
+          "exact_action": "Navigate to the AGVs section of the API screen.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Remove an AGV from the system by AGV ID",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Remove a problematic AGV from the system so it can be physically recovered.",
+      "instruction": "In the AGVs section, enter the target AGV ID in the Remove AGV input field, then click the Remove AGV control/button.",
+      "expected_result": "The Remove AGV action is accepted for the entered AGV ID, and the AGV is removed from the system after the required physical removal step.",
+      "healthy_condition": "After clicking Remove AGV, you can proceed with physical removal of the AGV from the system (and tote handling if applicable).",
+      "failure_condition": "You cannot physically remove the AGV/tote as required after issuing Remove AGV, or the system behavior does not match the expected fleet behavior after subsequent steps.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Enter AGV ID and click Remove AGV",
+          "exact_action": "Enter the target AGV ID in the Remove AGV input field, then click the Remove AGV control/button.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "physical_action",
+          "label": "Physically remove AGV (and tote to hospital if present)",
+          "exact_action": "Physically remove the AGV from the system. If the AGV has a tote, take the tote to the hospital where the tote is removed.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if you cannot physically remove/recover the AGV/tote as required after using Remove AGV."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Recover (add back) the AGV by AGV ID after physical recovery",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Add the physically recovered AGV back into the system.",
+      "instruction": "After the physical recovery/add-back step, enter the same (or correct) AGV ID in the Recover AGV input field, then click the Recover AGV control/button.",
+      "expected_result": "The Recover AGV action is accepted for the entered AGV ID, and the AGV is added back into the system after physical recovery.",
+      "healthy_condition": "The AGV is successfully re-added to the system and you can proceed to fleet pause/resume actions as needed.",
+      "failure_condition": "The AGV is not added back as expected after clicking Recover AGV (or you cannot complete the physical recovery/add-back step).",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Enter AGV ID and click Recover AGV",
+          "exact_action": "Enter the same (or correct) AGV ID in the Recover AGV input field, then click the Recover AGV control/button.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Pause all AGV movement",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Stop fleet-wide AGV movement when needed during recovery/removal operations.",
+      "instruction": "Click Pause All AGVs in the AGVs section of the API screen.",
+      "expected_result": "Fleet-wide AGV movement is paused after clicking Pause All AGVs.",
+      "healthy_condition": "AGV movement is stopped fleet-wide (pause state is in effect).",
+      "failure_condition": "System does not reflect the expected fleet behavior after Pause All AGVs.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Click Pause All AGVs",
+          "exact_action": "Click Pause All AGVs.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the system does not reflect the expected fleet behavior after Pause All AGVs (use the Get AGV Status pop-up to verify AGV state)."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Resume all AGV movement",
+      "responsible_role": "operator",
+      "supporting_role": "",
+      "purpose": "Restart fleet-wide AGV movement after recovery/removal operations are complete.",
+      "instruction": "Click Resume All AGVs in the AGVs section of the API screen.",
+      "expected_result": "Fleet-wide AGV movement resumes after clicking Resume All AGVs.",
+      "healthy_condition": "AGV movement is running fleet-wide (resume state is in effect).",
+      "failure_condition": "System does not reflect the expected fleet behavior after Resume All AGVs.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Click Resume All AGVs",
+          "exact_action": "Click Resume All AGVs.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Remove AGV is followed by physical removal of the AGV from the system; if a tote is present, the tote is taken to the hospital where the tote is removed.",
+    "Recover AGV is performed after physical recovery/add-back, resulting in the AGV being added back into the system.",
+    "Pause All AGVs stops fleet-wide AGV movement, and Resume All AGVs resumes fleet-wide AGV movement."
+  ],
+  "healthy_conditions": [
+    "AGV API Controls actions complete and you can proceed with physical removal/recovery steps as required.",
+    "Fleet-wide AGV movement is paused after Pause All AGVs and resumes after Resume All AGVs."
+  ],
+  "failure_conditions": [
+    "Cannot physically remove/recover the AGV/tote as required after using Remove AGV.",
+    "System does not reflect expected fleet behavior after Pause All AGVs (verify AGV state using Get AGV Status pop-up)."
+  ],
+  "escalation_guidance": [
+    "Stop and escalate if you cannot physically remove/recover the AGV/tote as required after using Remove AGV.",
+    "Stop and escalate if the system does not reflect expected fleet behavior after Pause All AGVs; verify AGV state using the Get AGV Status pop-up."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls",
+      "description": "AGV API Controls screen (AGVs section) with Remove AGV, Recover AGV, Pause All AGVs, Resume All AGVs.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_fig_4_13_get_agv_status_pop_up_screen",
+      "description": "Get AGV Status pop-up for verifying AGV state (battery status, command status, error codes, and AGV state).",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen",
+      "description": "Example faulted AGV with tote screen that aligns with the recovery flow referencing Remove AGV and tote-to-hospital handling.",
+      "required_level": "optional"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+      "page": 40,
+      "section_id": "optisweep_operation_and_maintenance_manual_final_1_4_1_1_5_2_agv_api_controls",
+      "figure_id": "fig_4_12",
+      "figure_number": "Figure 4-12",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_fig_4_12_agv_api_controls"
+    },
+    {
+      "artifact_id": "artifact_fig_4_13_get_agv_status_pop_up_screen"
+    },
+    {
+      "artifact_id": "artifact_fig_5_4_faulted_agv_with_tote_screen"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_manual_optisweep_agv_api_controls_remove_recover_pause_resume"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "manual_optisweep_om_v3",
+      "source_type": "manual",
+      "source_title": "OptiSweep Operation and Maintenance Manual",
+      "source_version": "3",
+      "ingestion_batch_id": "batch_migrated_20260617T144850Z"
+    }
+  ],
+  "missing_details": [
+    "The packet does not specify exact on-screen confirmation fields or status messages after clicking Remove AGV / Recover AGV / Pause All AGVs / Resume All AGVs; expected results are therefore framed as acceptance of the control action and required physical follow-through."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "manual_optisweep_om_v3",
+    "source_type": "manual",
+    "source_title": "OptiSweep Operation and Maintenance Manual",
+    "source_version": "3",
+    "ingestion_batch_id": "batch_migrated_20260617T144850Z",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

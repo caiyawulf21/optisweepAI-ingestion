@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check OptiSweep API Status and Fault Responses in Apidog</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check OptiSweep API Status and Fault Responses in Apidog</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_check_optisweep_api_status_and_fault_responses_in_apidog_v1</td></tr>
+<tr><th>Title</th><td>Check OptiSweep API Status and Fault Responses in Apidog</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>wcs_api_responsiveness, agv_active_errors</td></tr>
+<tr><th>Access Surface</th><td>apidog, wcs_api</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>api_unresponsive</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use Apidog on a primary server to call documented read-oriented OptiSweep / WCS API requests and verify that the API returns an observable response. Use the returned system-state or AGV fault-summary fields to support troubleshooting. Apidog calls the same API functionality that feeds Ignition and AVEVA.</p>
+<h2>When To Use</h2>
+<p>Use this diagnostic when support needs to verify that the locally hosted OptiSweep / WCS API on a primary server returns system-state or AGV fault data, or when an API response needs to be compared with the live operating condition.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/adfdc59640e17900.jpg" alt="artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500" /><figcaption>Apidog API overview on a primary server showing system, AGV, and tote request categories, including GetAgvFaultStats, System State, and Get Agv Statuses.</figcaption></figure>
+<figure><img src="assets/a47b2c64a103b938.jpg" alt="artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500" /><figcaption>Apidog API list showing Statuses, FaultStats, Response, and the named AGV fault-summary fields.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the Apidog project on the primary server</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On a primary server, open Apidog / WCS API client and open the shared OptiSweep / WCS API project. Use the project and request parameters already installed on the primary server.</p>
+<p><strong>Expected result:</strong></p>
+<p>The shared project opens and displays documented OptiSweep / WCS API request categories and requests.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if the Apidog project or configured API requests are not available on the primary server.</li>
+</ul>
+<hr>
+<h3>Step 2 — Select a documented read-oriented API request</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In Apidog / WCS API client, select a documented read-oriented request such as Statuses, FaultStats, GetAgvFaultStats, Get Agv Statuses, or System State. Use the configured request parameters already present in the project; do not create new request parameters.</p>
+<p><strong>Expected result:</strong></p>
+<p>A documented read-oriented OptiSweep / WCS API request is selected with its configured parameters available for submission.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if the required documented request or its configured parameters are unavailable.</li>
+</ul>
+<hr>
+<h3>Step 3 — Submit the request and inspect the API response</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Submit the selected request in Apidog / WCS API client and inspect the returned response. Record whether the response contains system-state data, fault-summary data, or an API or system error.</p>
+<p><strong>Expected result:</strong></p>
+<p>Apidog returns a response for the selected OptiSweep / WCS API request.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if Apidog cannot reach the API.</li>
+<li>Stop and escalate if no response is returned.</li>
+<li>Stop and escalate if the response indicates an API or system error.</li>
+</ul>
+<hr>
+<h3>Step 4 — Inspect AGV fault-summary fields</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>When the selected request returns a FaultStats or GetAgvFaultStats response, inspect the response for totalAgvFaultDurationInSeconds, totalAgvFaults, totalCriticalFaults, totalNonCriticalFaults, and totalNotDefinedFaults.</p>
+<p><strong>Expected result:</strong></p>
+<p>The fault response exposes the named AGV fault-summary fields or clearly indicates that the requested fault data is unavailable.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if the FaultStats response is unavailable or indicates an API or system error.</li>
+<li>Escalate if the named fault-summary fields are absent from a response expected to provide fault statistics.</li>
+</ul>
+<hr>
+<h3>Step 5 — Interpret the returned system state</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>For a System State or status response, inspect and record the returned system state, then compare it with the live operating condition. If a startup request is encountered while the system is already running, interpret the returned response stating that the system is not in the running state as the API&#x27;s state response rather than as module-to-module trace information.</p>
+<p><strong>Expected result:</strong></p>
+<p>The returned system state is observable in Apidog and can be compared with the live operating condition.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if the system-state response indicates an API or system error.</li>
+<li>Escalate if the returned system state cannot be reconciled with the live operating condition.</li>
+<li>Do not attempt to diagnose internal module flow from this response; detailed request tracing is not available.</li>
+</ul>
+<hr>
+</body>
+</html>

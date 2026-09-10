@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Interpret Sorter Sweeper Database Location Model: location types and lane status (active/bypass/not tracking)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Interpret Sorter Sweeper Database Location Model: location types and lane status (active/bypass/not tracking)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_interpret_sorter_sweeper_location_model_lane_status_v1</td></tr>
+<tr><th>Title</th><td>Interpret Sorter Sweeper Database Location Model: location types and lane status (active/bypass/not tracking)</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>zone_config_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>mapping_abnormal</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the Sorter Sweeper database Location Model fields to identify what a location represents (Sorter, Tipper, Hospital, Induction) and interpret the lane status for a destination as active/open, bypass/closed, or not tracking/not yet used.</p>
+<h2>When To Use</h2>
+<p>When you need to interpret how a sorter-side destination is represented in the Sorter Sweeper database Location Model—specifically the location type and whether the destination is active/open, bypass/closed, or not tracking/not yet used.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/b5edd9932a6a736d.jpg" alt="artifact_training_video_training_video_day2_0021_all_right_finish_with_brother_send_primary_01_42_21_000" /><figcaption>Frame showing Sorter Sweeper Database Location Model: locations represent stations in the map; LocationType values (Sorter, Tipper, Hospital, Induction) and lane status meanings (active/open, bypass/closed, not tracking/not yet used).</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the Sorter Sweeper database Location Model view/table for sorter-side stations</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the Sorter Sweeper database view/table that contains the Location Model for sorter-side stations (the source indicates there is an actual database, but access may be limited and may require CS/support team access via VM).</p>
+<p><strong>Expected result:</strong></p>
+<p>You can view location records in the Sorter Sweeper database that include (at minimum) a LocationType field and a lane status field for each location/destination record.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you cannot find the LocationType or lane status fields in the database view you opened, stop and request the correct database/table/view name from the CS/support team mentioned as having access.</li>
+</ul>
+<hr>
+<h3>Step 2 — Identify the station type using LocationType (Sorter, Tipper, Hospital, Induction)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Location Model records, locate the LocationType field and confirm the value is one of: Sorter, Tipper, Hospital, or Induction.</p>
+<p><strong>Expected result:</strong></p>
+<p>For the destination/location record you are analyzing, LocationType is one of the four supported types: Sorter, Tipper, Hospital, Induction.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If LocationType is not present or does not match the source-listed values, stop and escalate to the team that owns the database schema/definitions for that site.</li>
+</ul>
+<hr>
+<h3>Step 3 — Interpret Induction and Hospital LocationType meanings</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If LocationType is Induction, confirm it is described as the specified tote induction location at the hospital. If LocationType is Hospital, confirm it is described as the specified tote drop-off location at the hospital.</p>
+<p><strong>Expected result:</strong></p>
+<p>For the record(s) where LocationType is Induction or Hospital, you can state which hospital tote function the location represents (induction vs drop-off) using the source-backed definitions.</p>
+<hr>
+<h3>Step 4 — Read lane status for the destination/location record</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Find the lane status field for the location/destination record and identify whether it is one of: active, bypass, or not tracking.</p>
+<p><strong>Expected result:</strong></p>
+<p>The lane status value for the record is one of the source-listed values: active, bypass, or not tracking.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the lane status value is not one of the source-listed values (active, bypass, not tracking), stop and escalate to the team that owns the database schema/definitions for that site.</li>
+</ul>
+<hr>
+<h3>Step 5 — Map lane status to operational meaning (active=open, bypass=closed, not tracking=not yet used)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Map the observed lane status to the source meanings: active = open; bypass = closed; not tracking = destinations that have not been used yet.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can state the destination’s operational state as open/active, closed/bypassed, or not yet used based on the lane status value in the record.</p>
+<hr>
+<h3>Step 6 — Optionally verify additional location attributes to ensure you are looking at the correct location record</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Optionally verify additional location attributes mentioned by the source (e.g., sort name, sort side, zone, sequence from sort entrance, lane/chute number, lane delay, keep-closed, tipper select) to ensure you are looking at the correct location record for the destination you care about.</p>
+<p><strong>Expected result:</strong></p>
+<p>The record’s additional attributes align with the destination context you are investigating (sort/zone/sequence/lane/chute and related flags).</p>
+<hr>
+</body>
+</html>

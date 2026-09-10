@@ -1,0 +1,1150 @@
+[
+  {
+    "id": "procedure:confirm_ignition_gateway_health:case_228086_proc_ignition_gateway_restart_and_optisweep_response_validation_v1",
+    "type": "procedure",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+    ],
+    "constraints": {
+      "sites": [],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T16:59:38.918230Z",
+    "updated_at": "2026-09-08T16:59:38.918230Z",
+    "capability_id": "capability:confirm_ignition_gateway_health",
+    "procedure_type": "verification",
+    "title": "Ignition gateway restart and OptiSweep / WCS API response validation",
+    "summary": "Use the Ignition gateway, Windows Event Viewer / services, and Apidog / WCS API surfaces to restart the Ignition gateway, verify the GetAgvStatuses response, and restart OptiSweep only if the API does not respond. The site operator must place and release the physical E-stop; support must not release it until the API response is confirmed.",
+    "when_to_use": [
+      "Use when the Ignition gateway or OptiSweep / WCS API is not responding and the site is held in the physical E-stop state pending recovery validation. Perform the Ignition gateway restart, verify the Ignition gateway, then validate OptiSweep through the GetAgvStatuses request before returning the system to operation."
+    ],
+    "not_for": [
+      "Do not use to perform or release a physical E-stop remotely; only the site operator may perform those physical actions.",
+      "Do not release the physical E-stop before GetAgvStatuses returns a response after the documented validation and any required OptiSweep service restart.",
+      "Do not treat an HTTP 200 response as eliminating the recorded response-schema warning; the warning must be retained for review."
+    ],
+    "allowed_role_entity_ids": [
+      "entity:role:l2_support",
+      "entity:role:operator"
+    ],
+    "steps": [
+      {
+        "step_number": 1,
+        "title": "Place the system in the physical E-stop state",
+        "instruction": "On the physical floor / grid, have the site operator place the system in the physical E-stop state and keep it active throughout recovery.",
+        "responsible_role_entity_id": "entity:role:operator",
+        "supporting_role_entity_id": "entity:role:l2_support",
+        "purpose": "Hold the site in a safe stopped state while the Ignition gateway and OptiSweep / WCS API recovery checks are performed.",
+        "expected_result": "The physical E-stop is active and remains active while the Ignition gateway and OptiSweep / WCS API are restarted or checked.",
+        "healthy_condition": "The site confirms that the physical E-stop is engaged before L2 support begins the restart sequence.",
+        "failure_condition": "The site cannot confirm that the physical E-stop is active or the E-stop state changes during recovery.",
+        "stop_or_escalate_if": [
+          "Stop if the site cannot confirm the physical E-stop state.",
+          "Escalate any safety uncertainty; do not continue toward E-stop release."
+        ],
+        "actions": [
+          {
+            "label": "Engage physical E-stop",
+            "exact_action": "Have the site operator place the system in the physical E-stop state.",
+            "role_entity_id": "entity:role:operator"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      },
+      {
+        "step_number": 2,
+        "title": "Restart the Ignition gateway",
+        "instruction": "On the Windows Event Viewer / services surface, open a Windows Administrator Command Prompt, navigate to the Inductive Automation Ignition installation directory, run `gwcmd -r`, and wait for the console to show `Waiting for Gateway restart...`.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Initiate the source-supported Ignition gateway restart before checking gateway and OptiSweep / WCS API responsiveness.",
+        "expected_result": "The Windows Administrator Command Prompt shows `gwcmd -r` executed from the Ignition directory and displays `Waiting for Gateway restart...`.",
+        "healthy_condition": "The restart command is accepted and the console enters the gateway-restart waiting state.",
+        "failure_condition": "The command cannot be run from the Ignition directory or the console does not show the gateway-restart waiting message.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if the Ignition gateway restart command cannot be executed or the gateway does not return for later verification."
+        ],
+        "actions": [
+          {
+            "label": "Run Ignition gateway restart",
+            "exact_action": "From `C:\\Program Files\\Inductive Automation\\Ignition`, run `gwcmd -r`.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      },
+      {
+        "step_number": 3,
+        "title": "Verify the Ignition gateway Systems Overview",
+        "instruction": "On the Ignition gateway, open Status > Systems > Overview and check that the page responds, including Current Response Time and Recent Slow Response Events.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Confirm that the Ignition gateway is responding after the restart.",
+        "expected_result": "The Ignition gateway Systems Overview responds and displays a Current Response Time; the incident evidence showed 11 ms and `No events to display` under Recent Slow Response Events.",
+        "healthy_condition": "The Systems Overview page loads with a current response-time value and no recent slow response events displayed.",
+        "failure_condition": "The Systems Overview page does not load or does not provide a responding gateway status.",
+        "stop_or_escalate_if": [
+          "Escalate if the Ignition gateway does not return to the Systems Overview page."
+        ],
+        "actions": [
+          {
+            "label": "Inspect Ignition Systems Overview",
+            "exact_action": "Open Status > Systems > Overview and check Current Response Time and Recent Slow Response Events.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      },
+      {
+        "step_number": 4,
+        "title": "Validate OptiSweep / WCS API responsiveness",
+        "instruction": "On the Apidog / WCS API surface, send the `GetAgvStatuses` request and inspect the response for HTTP Success / Status 200 and returned AGV records, including visible status values such as `NORMAL`.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Verify that OptiSweep is responding to an AGV status request before the physical E-stop is released.",
+        "expected_result": "The GetAgvStatuses request returns HTTP 200 with AGV records; the incident response showed visible `NORMAL` status values.",
+        "healthy_condition": "The API client displays a successful 200 response containing AGV status records.",
+        "failure_condition": "The request does not respond or does not return AGV records.",
+        "stop_or_escalate_if": [
+          "Stop before releasing the physical E-stop if GetAgvStatuses does not return a response.",
+          "Record the response-schema warning `Response data differs from endpoint spec` and `$ should be object` for review even when HTTP 200 and AGV records are returned."
+        ],
+        "actions": [
+          {
+            "label": "Send GetAgvStatuses request",
+            "exact_action": "In Apidog, send the `GetAgvStatuses` request and check the returned status and AGV records.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      },
+      {
+        "step_number": 5,
+        "title": "Restart OptiSweep only if GetAgvStatuses does not respond",
+        "instruction": "If GetAgvStatuses does not respond, open Windows Event Viewer / services, select OptiSweep, use the visible `Restart the service` control, then return to Apidog / WCS API and send GetAgvStatuses again.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Restore OptiSweep service responsiveness when the post-Ignition-restart API check receives no response.",
+        "expected_result": "After the documented OptiSweep service restart, GetAgvStatuses returns a response with AGV records; Windows Event Viewer / services shows OptiSweep in a Running state when inspected.",
+        "healthy_condition": "The API responds after the conditional service restart and OptiSweep is shown as Running in Windows Event Viewer / services.",
+        "failure_condition": "The API remains nonresponsive or OptiSweep is not shown as Running after the restart attempt.",
+        "stop_or_escalate_if": [
+          "Stop before releasing the physical E-stop if GetAgvStatuses remains nonresponsive after the documented OptiSweep restart and repeat check.",
+          "Escalate if OptiSweep does not show Running."
+        ],
+        "actions": [
+          {
+            "label": "Restart OptiSweep service",
+            "exact_action": "In Windows Event Viewer / services, select OptiSweep and use the visible `Restart the service` control.",
+            "role_entity_id": "entity:role:l2_support"
+          },
+          {
+            "label": "Repeat API validation",
+            "exact_action": "Send `GetAgvStatuses` again in Apidog / WCS API after the service restart.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      },
+      {
+        "step_number": 6,
+        "title": "Release the physical E-stop and confirm auto bag-out",
+        "instruction": "After the GetAgvStatuses response is confirmed, have the site operator release the physical E-stop on the physical floor / grid and confirm that the site can resume the auto bag-out operation.",
+        "responsible_role_entity_id": "entity:role:operator",
+        "supporting_role_entity_id": "entity:role:l2_support",
+        "purpose": "Return the site to operation only after Ignition and OptiSweep / WCS API responsiveness has been confirmed.",
+        "expected_result": "The site operator releases the physical E-stop and confirms that auto bag-out can resume.",
+        "healthy_condition": "The physical E-stop is released by the site operator after API confirmation and the site resumes auto bag-out.",
+        "failure_condition": "The API response has not been confirmed, the E-stop cannot be safely released, or auto bag-out cannot resume.",
+        "stop_or_escalate_if": [
+          "Do not release the physical E-stop until GetAgvStatuses responsiveness is confirmed.",
+          "Escalate if the site cannot resume auto bag-out after the operator releases the E-stop."
+        ],
+        "actions": [
+          {
+            "label": "Release physical E-stop",
+            "exact_action": "Have the site operator release the physical E-stop after the API response is confirmed.",
+            "role_entity_id": "entity:role:operator"
+          },
+          {
+            "label": "Confirm auto bag-out",
+            "exact_action": "Confirm that the site can resume the auto bag-out operation.",
+            "role_entity_id": "entity:role:operator"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "procedure:confirm_wcs_api_responsiveness:case_228086_proc_ignition_gateway_restart_and_optisweep_response_validation_v1",
+    "type": "procedure",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+    ],
+    "constraints": {
+      "sites": [],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T16:59:38.919255Z",
+    "updated_at": "2026-09-08T16:59:38.919255Z",
+    "capability_id": "capability:confirm_wcs_api_responsiveness",
+    "procedure_type": "verification",
+    "title": "Ignition gateway restart and OptiSweep / WCS API response validation",
+    "summary": "Use the Ignition gateway, Windows Event Viewer / services, and Apidog / WCS API surfaces to restart the Ignition gateway, verify the GetAgvStatuses response, and restart OptiSweep only if the API does not respond. The site operator must place and release the physical E-stop; support must not release it until the API response is confirmed.",
+    "when_to_use": [
+      "Use when the Ignition gateway or OptiSweep / WCS API is not responding and the site is held in the physical E-stop state pending recovery validation. Perform the Ignition gateway restart, verify the Ignition gateway, then validate OptiSweep through the GetAgvStatuses request before returning the system to operation."
+    ],
+    "not_for": [
+      "Do not use to perform or release a physical E-stop remotely; only the site operator may perform those physical actions.",
+      "Do not release the physical E-stop before GetAgvStatuses returns a response after the documented validation and any required OptiSweep service restart.",
+      "Do not treat an HTTP 200 response as eliminating the recorded response-schema warning; the warning must be retained for review."
+    ],
+    "allowed_role_entity_ids": [
+      "entity:role:l2_support",
+      "entity:role:operator"
+    ],
+    "steps": [
+      {
+        "step_number": 1,
+        "title": "Place the system in the physical E-stop state",
+        "instruction": "On the physical floor / grid, have the site operator place the system in the physical E-stop state and keep it active throughout recovery.",
+        "responsible_role_entity_id": "entity:role:operator",
+        "supporting_role_entity_id": "entity:role:l2_support",
+        "purpose": "Hold the site in a safe stopped state while the Ignition gateway and OptiSweep / WCS API recovery checks are performed.",
+        "expected_result": "The physical E-stop is active and remains active while the Ignition gateway and OptiSweep / WCS API are restarted or checked.",
+        "healthy_condition": "The site confirms that the physical E-stop is engaged before L2 support begins the restart sequence.",
+        "failure_condition": "The site cannot confirm that the physical E-stop is active or the E-stop state changes during recovery.",
+        "stop_or_escalate_if": [
+          "Stop if the site cannot confirm the physical E-stop state.",
+          "Escalate any safety uncertainty; do not continue toward E-stop release."
+        ],
+        "actions": [
+          {
+            "label": "Engage physical E-stop",
+            "exact_action": "Have the site operator place the system in the physical E-stop state.",
+            "role_entity_id": "entity:role:operator"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      },
+      {
+        "step_number": 2,
+        "title": "Restart the Ignition gateway",
+        "instruction": "On the Windows Event Viewer / services surface, open a Windows Administrator Command Prompt, navigate to the Inductive Automation Ignition installation directory, run `gwcmd -r`, and wait for the console to show `Waiting for Gateway restart...`.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Initiate the source-supported Ignition gateway restart before checking gateway and OptiSweep / WCS API responsiveness.",
+        "expected_result": "The Windows Administrator Command Prompt shows `gwcmd -r` executed from the Ignition directory and displays `Waiting for Gateway restart...`.",
+        "healthy_condition": "The restart command is accepted and the console enters the gateway-restart waiting state.",
+        "failure_condition": "The command cannot be run from the Ignition directory or the console does not show the gateway-restart waiting message.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if the Ignition gateway restart command cannot be executed or the gateway does not return for later verification."
+        ],
+        "actions": [
+          {
+            "label": "Run Ignition gateway restart",
+            "exact_action": "From `C:\\Program Files\\Inductive Automation\\Ignition`, run `gwcmd -r`.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      },
+      {
+        "step_number": 3,
+        "title": "Verify the Ignition gateway Systems Overview",
+        "instruction": "On the Ignition gateway, open Status > Systems > Overview and check that the page responds, including Current Response Time and Recent Slow Response Events.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Confirm that the Ignition gateway is responding after the restart.",
+        "expected_result": "The Ignition gateway Systems Overview responds and displays a Current Response Time; the incident evidence showed 11 ms and `No events to display` under Recent Slow Response Events.",
+        "healthy_condition": "The Systems Overview page loads with a current response-time value and no recent slow response events displayed.",
+        "failure_condition": "The Systems Overview page does not load or does not provide a responding gateway status.",
+        "stop_or_escalate_if": [
+          "Escalate if the Ignition gateway does not return to the Systems Overview page."
+        ],
+        "actions": [
+          {
+            "label": "Inspect Ignition Systems Overview",
+            "exact_action": "Open Status > Systems > Overview and check Current Response Time and Recent Slow Response Events.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      },
+      {
+        "step_number": 4,
+        "title": "Validate OptiSweep / WCS API responsiveness",
+        "instruction": "On the Apidog / WCS API surface, send the `GetAgvStatuses` request and inspect the response for HTTP Success / Status 200 and returned AGV records, including visible status values such as `NORMAL`.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Verify that OptiSweep is responding to an AGV status request before the physical E-stop is released.",
+        "expected_result": "The GetAgvStatuses request returns HTTP 200 with AGV records; the incident response showed visible `NORMAL` status values.",
+        "healthy_condition": "The API client displays a successful 200 response containing AGV status records.",
+        "failure_condition": "The request does not respond or does not return AGV records.",
+        "stop_or_escalate_if": [
+          "Stop before releasing the physical E-stop if GetAgvStatuses does not return a response.",
+          "Record the response-schema warning `Response data differs from endpoint spec` and `$ should be object` for review even when HTTP 200 and AGV records are returned."
+        ],
+        "actions": [
+          {
+            "label": "Send GetAgvStatuses request",
+            "exact_action": "In Apidog, send the `GetAgvStatuses` request and check the returned status and AGV records.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      },
+      {
+        "step_number": 5,
+        "title": "Restart OptiSweep only if GetAgvStatuses does not respond",
+        "instruction": "If GetAgvStatuses does not respond, open Windows Event Viewer / services, select OptiSweep, use the visible `Restart the service` control, then return to Apidog / WCS API and send GetAgvStatuses again.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Restore OptiSweep service responsiveness when the post-Ignition-restart API check receives no response.",
+        "expected_result": "After the documented OptiSweep service restart, GetAgvStatuses returns a response with AGV records; Windows Event Viewer / services shows OptiSweep in a Running state when inspected.",
+        "healthy_condition": "The API responds after the conditional service restart and OptiSweep is shown as Running in Windows Event Viewer / services.",
+        "failure_condition": "The API remains nonresponsive or OptiSweep is not shown as Running after the restart attempt.",
+        "stop_or_escalate_if": [
+          "Stop before releasing the physical E-stop if GetAgvStatuses remains nonresponsive after the documented OptiSweep restart and repeat check.",
+          "Escalate if OptiSweep does not show Running."
+        ],
+        "actions": [
+          {
+            "label": "Restart OptiSweep service",
+            "exact_action": "In Windows Event Viewer / services, select OptiSweep and use the visible `Restart the service` control.",
+            "role_entity_id": "entity:role:l2_support"
+          },
+          {
+            "label": "Repeat API validation",
+            "exact_action": "Send `GetAgvStatuses` again in Apidog / WCS API after the service restart.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      },
+      {
+        "step_number": 6,
+        "title": "Release the physical E-stop and confirm auto bag-out",
+        "instruction": "After the GetAgvStatuses response is confirmed, have the site operator release the physical E-stop on the physical floor / grid and confirm that the site can resume the auto bag-out operation.",
+        "responsible_role_entity_id": "entity:role:operator",
+        "supporting_role_entity_id": "entity:role:l2_support",
+        "purpose": "Return the site to operation only after Ignition and OptiSweep / WCS API responsiveness has been confirmed.",
+        "expected_result": "The site operator releases the physical E-stop and confirms that auto bag-out can resume.",
+        "healthy_condition": "The physical E-stop is released by the site operator after API confirmation and the site resumes auto bag-out.",
+        "failure_condition": "The API response has not been confirmed, the E-stop cannot be safely released, or auto bag-out cannot resume.",
+        "stop_or_escalate_if": [
+          "Do not release the physical E-stop until GetAgvStatuses responsiveness is confirmed.",
+          "Escalate if the site cannot resume auto bag-out after the operator releases the E-stop."
+        ],
+        "actions": [
+          {
+            "label": "Release physical E-stop",
+            "exact_action": "Have the site operator release the physical E-stop after the API response is confirmed.",
+            "role_entity_id": "entity:role:operator"
+          },
+          {
+            "label": "Confirm auto bag-out",
+            "exact_action": "Confirm that the site can resume the auto bag-out operation.",
+            "role_entity_id": "entity:role:operator"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "procedure:confirm_e_stop_or_safety_stop_state:case_228086_proc_ignition_gateway_restart_and_optisweep_response_validation_v1",
+    "type": "procedure",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+    ],
+    "constraints": {
+      "sites": [],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T16:59:38.919255Z",
+    "updated_at": "2026-09-08T16:59:38.919255Z",
+    "capability_id": "capability:confirm_e_stop_or_safety_stop_state",
+    "procedure_type": "verification",
+    "title": "Ignition gateway restart and OptiSweep / WCS API response validation",
+    "summary": "Use the Ignition gateway, Windows Event Viewer / services, and Apidog / WCS API surfaces to restart the Ignition gateway, verify the GetAgvStatuses response, and restart OptiSweep only if the API does not respond. The site operator must place and release the physical E-stop; support must not release it until the API response is confirmed.",
+    "when_to_use": [
+      "Use when the Ignition gateway or OptiSweep / WCS API is not responding and the site is held in the physical E-stop state pending recovery validation. Perform the Ignition gateway restart, verify the Ignition gateway, then validate OptiSweep through the GetAgvStatuses request before returning the system to operation."
+    ],
+    "not_for": [
+      "Do not use to perform or release a physical E-stop remotely; only the site operator may perform those physical actions.",
+      "Do not release the physical E-stop before GetAgvStatuses returns a response after the documented validation and any required OptiSweep service restart.",
+      "Do not treat an HTTP 200 response as eliminating the recorded response-schema warning; the warning must be retained for review."
+    ],
+    "allowed_role_entity_ids": [
+      "entity:role:l2_support",
+      "entity:role:operator"
+    ],
+    "steps": [
+      {
+        "step_number": 1,
+        "title": "Place the system in the physical E-stop state",
+        "instruction": "On the physical floor / grid, have the site operator place the system in the physical E-stop state and keep it active throughout recovery.",
+        "responsible_role_entity_id": "entity:role:operator",
+        "supporting_role_entity_id": "entity:role:l2_support",
+        "purpose": "Hold the site in a safe stopped state while the Ignition gateway and OptiSweep / WCS API recovery checks are performed.",
+        "expected_result": "The physical E-stop is active and remains active while the Ignition gateway and OptiSweep / WCS API are restarted or checked.",
+        "healthy_condition": "The site confirms that the physical E-stop is engaged before L2 support begins the restart sequence.",
+        "failure_condition": "The site cannot confirm that the physical E-stop is active or the E-stop state changes during recovery.",
+        "stop_or_escalate_if": [
+          "Stop if the site cannot confirm the physical E-stop state.",
+          "Escalate any safety uncertainty; do not continue toward E-stop release."
+        ],
+        "actions": [
+          {
+            "label": "Engage physical E-stop",
+            "exact_action": "Have the site operator place the system in the physical E-stop state.",
+            "role_entity_id": "entity:role:operator"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      },
+      {
+        "step_number": 2,
+        "title": "Restart the Ignition gateway",
+        "instruction": "On the Windows Event Viewer / services surface, open a Windows Administrator Command Prompt, navigate to the Inductive Automation Ignition installation directory, run `gwcmd -r`, and wait for the console to show `Waiting for Gateway restart...`.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Initiate the source-supported Ignition gateway restart before checking gateway and OptiSweep / WCS API responsiveness.",
+        "expected_result": "The Windows Administrator Command Prompt shows `gwcmd -r` executed from the Ignition directory and displays `Waiting for Gateway restart...`.",
+        "healthy_condition": "The restart command is accepted and the console enters the gateway-restart waiting state.",
+        "failure_condition": "The command cannot be run from the Ignition directory or the console does not show the gateway-restart waiting message.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if the Ignition gateway restart command cannot be executed or the gateway does not return for later verification."
+        ],
+        "actions": [
+          {
+            "label": "Run Ignition gateway restart",
+            "exact_action": "From `C:\\Program Files\\Inductive Automation\\Ignition`, run `gwcmd -r`.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      },
+      {
+        "step_number": 3,
+        "title": "Verify the Ignition gateway Systems Overview",
+        "instruction": "On the Ignition gateway, open Status > Systems > Overview and check that the page responds, including Current Response Time and Recent Slow Response Events.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Confirm that the Ignition gateway is responding after the restart.",
+        "expected_result": "The Ignition gateway Systems Overview responds and displays a Current Response Time; the incident evidence showed 11 ms and `No events to display` under Recent Slow Response Events.",
+        "healthy_condition": "The Systems Overview page loads with a current response-time value and no recent slow response events displayed.",
+        "failure_condition": "The Systems Overview page does not load or does not provide a responding gateway status.",
+        "stop_or_escalate_if": [
+          "Escalate if the Ignition gateway does not return to the Systems Overview page."
+        ],
+        "actions": [
+          {
+            "label": "Inspect Ignition Systems Overview",
+            "exact_action": "Open Status > Systems > Overview and check Current Response Time and Recent Slow Response Events.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      },
+      {
+        "step_number": 4,
+        "title": "Validate OptiSweep / WCS API responsiveness",
+        "instruction": "On the Apidog / WCS API surface, send the `GetAgvStatuses` request and inspect the response for HTTP Success / Status 200 and returned AGV records, including visible status values such as `NORMAL`.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Verify that OptiSweep is responding to an AGV status request before the physical E-stop is released.",
+        "expected_result": "The GetAgvStatuses request returns HTTP 200 with AGV records; the incident response showed visible `NORMAL` status values.",
+        "healthy_condition": "The API client displays a successful 200 response containing AGV status records.",
+        "failure_condition": "The request does not respond or does not return AGV records.",
+        "stop_or_escalate_if": [
+          "Stop before releasing the physical E-stop if GetAgvStatuses does not return a response.",
+          "Record the response-schema warning `Response data differs from endpoint spec` and `$ should be object` for review even when HTTP 200 and AGV records are returned."
+        ],
+        "actions": [
+          {
+            "label": "Send GetAgvStatuses request",
+            "exact_action": "In Apidog, send the `GetAgvStatuses` request and check the returned status and AGV records.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      },
+      {
+        "step_number": 5,
+        "title": "Restart OptiSweep only if GetAgvStatuses does not respond",
+        "instruction": "If GetAgvStatuses does not respond, open Windows Event Viewer / services, select OptiSweep, use the visible `Restart the service` control, then return to Apidog / WCS API and send GetAgvStatuses again.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Restore OptiSweep service responsiveness when the post-Ignition-restart API check receives no response.",
+        "expected_result": "After the documented OptiSweep service restart, GetAgvStatuses returns a response with AGV records; Windows Event Viewer / services shows OptiSweep in a Running state when inspected.",
+        "healthy_condition": "The API responds after the conditional service restart and OptiSweep is shown as Running in Windows Event Viewer / services.",
+        "failure_condition": "The API remains nonresponsive or OptiSweep is not shown as Running after the restart attempt.",
+        "stop_or_escalate_if": [
+          "Stop before releasing the physical E-stop if GetAgvStatuses remains nonresponsive after the documented OptiSweep restart and repeat check.",
+          "Escalate if OptiSweep does not show Running."
+        ],
+        "actions": [
+          {
+            "label": "Restart OptiSweep service",
+            "exact_action": "In Windows Event Viewer / services, select OptiSweep and use the visible `Restart the service` control.",
+            "role_entity_id": "entity:role:l2_support"
+          },
+          {
+            "label": "Repeat API validation",
+            "exact_action": "Send `GetAgvStatuses` again in Apidog / WCS API after the service restart.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      },
+      {
+        "step_number": 6,
+        "title": "Release the physical E-stop and confirm auto bag-out",
+        "instruction": "After the GetAgvStatuses response is confirmed, have the site operator release the physical E-stop on the physical floor / grid and confirm that the site can resume the auto bag-out operation.",
+        "responsible_role_entity_id": "entity:role:operator",
+        "supporting_role_entity_id": "entity:role:l2_support",
+        "purpose": "Return the site to operation only after Ignition and OptiSweep / WCS API responsiveness has been confirmed.",
+        "expected_result": "The site operator releases the physical E-stop and confirms that auto bag-out can resume.",
+        "healthy_condition": "The physical E-stop is released by the site operator after API confirmation and the site resumes auto bag-out.",
+        "failure_condition": "The API response has not been confirmed, the E-stop cannot be safely released, or auto bag-out cannot resume.",
+        "stop_or_escalate_if": [
+          "Do not release the physical E-stop until GetAgvStatuses responsiveness is confirmed.",
+          "Escalate if the site cannot resume auto bag-out after the operator releases the E-stop."
+        ],
+        "actions": [
+          {
+            "label": "Release physical E-stop",
+            "exact_action": "Have the site operator release the physical E-stop after the API response is confirmed.",
+            "role_entity_id": "entity:role:operator"
+          },
+          {
+            "label": "Confirm auto bag-out",
+            "exact_action": "Confirm that the site can resume the auto bag-out operation.",
+            "role_entity_id": "entity:role:operator"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_ignition_gateway_restart_and_optisweep_response_validation_v1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "procedure:confirm_fleet_system_status:case_228086_proc_wcs_helix_db_ssms_agv_state_inspection_v1",
+    "type": "procedure",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_228086:runbook_proc_wcs_helix_db_ssms_agv_state_inspection_v1"
+    ],
+    "constraints": {
+      "sites": [],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T16:59:38.919255Z",
+    "updated_at": "2026-09-08T16:59:38.919255Z",
+    "capability_id": "capability:confirm_fleet_system_status",
+    "procedure_type": "verification",
+    "title": "WCS / Helix DB (SSMS) AGV state inspection",
+    "summary": "Use the WCS / Helix DB (SSMS) live read-only database surface to inspect robotics-related AGV state records when the RMS / fleet status UI reports AGVs out of sync or the robotic system is stopped. Compare the populated SSMS State results with the live RMS / fleet status UI; the listed state values do not independently establish a fault.",
+    "when_to_use": [
+      "Use the live WCS / Helix DB (SSMS) surface to inspect AGV state records when the RMS / fleet status UI reports AGVs out of sync or the robotic system is stopped."
+    ],
+    "not_for": [
+      "Do not use this diagnostic to infer that a listed AGV State value is abnormal without corresponding live RMS / fleet status UI context or SME interpretation.",
+      "Do not use it to modify database records or perform recovery actions.",
+      "Do not use it as a substitute for physical E-stop or other site safety actions."
+    ],
+    "allowed_role_entity_ids": [
+      "entity:role:l2_support"
+    ],
+    "steps": [
+      {
+        "step_number": 1,
+        "title": "Open WCS / Helix DB (SSMS) and connect to the robotics-related database context",
+        "instruction": "Open WCS / Helix DB (SSMS) and connect to the robotics-related database context shown in the incident evidence. Do not substitute an undocumented database name or context.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Establish the live WCS / Helix DB (SSMS) context needed to inspect AGV state records.",
+        "expected_result": "WCS / Helix DB (SSMS) shows an active connection to the robotics-related database context and is ready to execute the source-provided AGV state check.",
+        "healthy_condition": "The WCS / Helix DB (SSMS) connection is active and the robotics-related database context is available for the diagnostic query.",
+        "failure_condition": "WCS / Helix DB (SSMS) cannot connect or the robotics-related database context is unavailable.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if WCS / Helix DB (SSMS) cannot connect.",
+          "Stop and escalate if the robotics-related database context is not available."
+        ],
+        "actions": [
+          {
+            "label": "Connect in SSMS",
+            "exact_action": "Open WCS / Helix DB (SSMS) and connect to the robotics-related database context shown in the incident evidence.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_wcs_helix_db_ssms_agv_state_inspection_v1"
+        ]
+      },
+      {
+        "step_number": 2,
+        "title": "Run the source-provided AGV state check in WCS / Helix DB (SSMS)",
+        "instruction": "In WCS / Helix DB (SSMS), run the source-provided robotics AGV state check without adding undocumented query text. Wait for the SSMS status bar to show that the query executed successfully.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Obtain the live AGV state result set without introducing undocumented query text.",
+        "expected_result": "WCS / Helix DB (SSMS) shows a populated query results grid and a successful execution indication in the SSMS status bar.",
+        "healthy_condition": "The source-provided check completes successfully and the SSMS results grid contains AGV records.",
+        "failure_condition": "The query does not execute successfully, the results grid is not populated, or the SSMS status bar does not indicate successful execution.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if the query does not execute successfully.",
+          "Stop and escalate if the expected AGV state results are unavailable."
+        ],
+        "actions": [
+          {
+            "label": "Execute AGV state check",
+            "exact_action": "Run the source-provided robotics AGV state check without adding undocumented query text, and wait for the SSMS status bar to show that the query executed successfully.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_wcs_helix_db_ssms_agv_state_inspection_v1"
+        ]
+      },
+      {
+        "step_number": 3,
+        "title": "Inspect the AGV State column in WCS / Helix DB (SSMS)",
+        "instruction": "Inspect the returned State column in the WCS / Helix DB (SSMS) results grid and record the visible values. Incident examples include LeavingCharger, MovingToChargerExitQueue, MovingToSorterExitQueue, MovingToTipperQueue, SQExchanging, SQStagingExchange, SWaitingForExchange, and SWaitingInzone. Do not assign fault meaning to a value without live context.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Capture the live AGV state values returned by the WCS / Helix DB (SSMS) check for comparison with the RMS / fleet status UI.",
+        "expected_result": "The WCS / Helix DB (SSMS) results grid visibly contains AGV records with State values that can be recorded for comparison.",
+        "healthy_condition": "AGV records and their State values are visible in the WCS / Helix DB (SSMS) results grid.",
+        "failure_condition": "The State column is absent, empty, unreadable, or the expected AGV records are unavailable.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if the expected AGV state results are unavailable.",
+          "Do not infer that a listed state is abnormal without corresponding live RMS / fleet status UI context or SME interpretation."
+        ],
+        "actions": [
+          {
+            "label": "Inspect State column",
+            "exact_action": "Inspect the returned State column and record the visible values, including examples shown in the incident such as LeavingCharger, MovingToChargerExitQueue, MovingToSorterExitQueue, MovingToTipperQueue, SQExchanging, SQStagingExchange, SWaitingForExchange, and SWaitingInzone.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_wcs_helix_db_ssms_agv_state_inspection_v1"
+        ]
+      },
+      {
+        "step_number": 4,
+        "title": "Compare WCS / Helix DB (SSMS) states with the RMS / fleet status UI",
+        "instruction": "Compare the recorded AGV State values from WCS / Helix DB (SSMS) with the corresponding live AGV information in the RMS / fleet status UI. Keep this diagnostic read-only and do not change database values.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Correlate backend AGV state records with the live RMS / fleet status UI to identify records requiring further interpretation.",
+        "expected_result": "The WCS / Helix DB (SSMS) AGV records and the corresponding RMS / fleet status UI information are available for side-by-side diagnostic comparison.",
+        "healthy_condition": "The returned WCS / Helix DB (SSMS) records can be correlated with visible AGV information in the RMS / fleet status UI.",
+        "failure_condition": "AGV records cannot be correlated between WCS / Helix DB (SSMS) and the RMS / fleet status UI, or a database modification is required to proceed.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if the SSMS records cannot be compared with the live RMS / fleet status UI.",
+          "Stop if any action would modify database values.",
+          "Escalate for SME interpretation when a State value appears inconsistent with the live RMS / fleet status UI."
+        ],
+        "actions": [
+          {
+            "label": "Compare live AGV status",
+            "exact_action": "Compare the returned AGV state records with the live RMS / fleet status UI; do not change database values from this read-only diagnostic.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_wcs_helix_db_ssms_agv_state_inspection_v1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "procedure:confirm_agv_active_error_state:case_228086_proc_wcs_helix_db_ssms_agv_state_inspection_v1",
+    "type": "procedure",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_228086:runbook_proc_wcs_helix_db_ssms_agv_state_inspection_v1"
+    ],
+    "constraints": {
+      "sites": [],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T16:59:38.920253Z",
+    "updated_at": "2026-09-08T16:59:38.920253Z",
+    "capability_id": "capability:confirm_agv_active_error_state",
+    "procedure_type": "verification",
+    "title": "WCS / Helix DB (SSMS) AGV state inspection",
+    "summary": "Use the WCS / Helix DB (SSMS) live read-only database surface to inspect robotics-related AGV state records when the RMS / fleet status UI reports AGVs out of sync or the robotic system is stopped. Compare the populated SSMS State results with the live RMS / fleet status UI; the listed state values do not independently establish a fault.",
+    "when_to_use": [
+      "Use the live WCS / Helix DB (SSMS) surface to inspect AGV state records when the RMS / fleet status UI reports AGVs out of sync or the robotic system is stopped."
+    ],
+    "not_for": [
+      "Do not use this diagnostic to infer that a listed AGV State value is abnormal without corresponding live RMS / fleet status UI context or SME interpretation.",
+      "Do not use it to modify database records or perform recovery actions.",
+      "Do not use it as a substitute for physical E-stop or other site safety actions."
+    ],
+    "allowed_role_entity_ids": [
+      "entity:role:l2_support"
+    ],
+    "steps": [
+      {
+        "step_number": 1,
+        "title": "Open WCS / Helix DB (SSMS) and connect to the robotics-related database context",
+        "instruction": "Open WCS / Helix DB (SSMS) and connect to the robotics-related database context shown in the incident evidence. Do not substitute an undocumented database name or context.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Establish the live WCS / Helix DB (SSMS) context needed to inspect AGV state records.",
+        "expected_result": "WCS / Helix DB (SSMS) shows an active connection to the robotics-related database context and is ready to execute the source-provided AGV state check.",
+        "healthy_condition": "The WCS / Helix DB (SSMS) connection is active and the robotics-related database context is available for the diagnostic query.",
+        "failure_condition": "WCS / Helix DB (SSMS) cannot connect or the robotics-related database context is unavailable.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if WCS / Helix DB (SSMS) cannot connect.",
+          "Stop and escalate if the robotics-related database context is not available."
+        ],
+        "actions": [
+          {
+            "label": "Connect in SSMS",
+            "exact_action": "Open WCS / Helix DB (SSMS) and connect to the robotics-related database context shown in the incident evidence.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_wcs_helix_db_ssms_agv_state_inspection_v1"
+        ]
+      },
+      {
+        "step_number": 2,
+        "title": "Run the source-provided AGV state check in WCS / Helix DB (SSMS)",
+        "instruction": "In WCS / Helix DB (SSMS), run the source-provided robotics AGV state check without adding undocumented query text. Wait for the SSMS status bar to show that the query executed successfully.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Obtain the live AGV state result set without introducing undocumented query text.",
+        "expected_result": "WCS / Helix DB (SSMS) shows a populated query results grid and a successful execution indication in the SSMS status bar.",
+        "healthy_condition": "The source-provided check completes successfully and the SSMS results grid contains AGV records.",
+        "failure_condition": "The query does not execute successfully, the results grid is not populated, or the SSMS status bar does not indicate successful execution.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if the query does not execute successfully.",
+          "Stop and escalate if the expected AGV state results are unavailable."
+        ],
+        "actions": [
+          {
+            "label": "Execute AGV state check",
+            "exact_action": "Run the source-provided robotics AGV state check without adding undocumented query text, and wait for the SSMS status bar to show that the query executed successfully.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_wcs_helix_db_ssms_agv_state_inspection_v1"
+        ]
+      },
+      {
+        "step_number": 3,
+        "title": "Inspect the AGV State column in WCS / Helix DB (SSMS)",
+        "instruction": "Inspect the returned State column in the WCS / Helix DB (SSMS) results grid and record the visible values. Incident examples include LeavingCharger, MovingToChargerExitQueue, MovingToSorterExitQueue, MovingToTipperQueue, SQExchanging, SQStagingExchange, SWaitingForExchange, and SWaitingInzone. Do not assign fault meaning to a value without live context.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Capture the live AGV state values returned by the WCS / Helix DB (SSMS) check for comparison with the RMS / fleet status UI.",
+        "expected_result": "The WCS / Helix DB (SSMS) results grid visibly contains AGV records with State values that can be recorded for comparison.",
+        "healthy_condition": "AGV records and their State values are visible in the WCS / Helix DB (SSMS) results grid.",
+        "failure_condition": "The State column is absent, empty, unreadable, or the expected AGV records are unavailable.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if the expected AGV state results are unavailable.",
+          "Do not infer that a listed state is abnormal without corresponding live RMS / fleet status UI context or SME interpretation."
+        ],
+        "actions": [
+          {
+            "label": "Inspect State column",
+            "exact_action": "Inspect the returned State column and record the visible values, including examples shown in the incident such as LeavingCharger, MovingToChargerExitQueue, MovingToSorterExitQueue, MovingToTipperQueue, SQExchanging, SQStagingExchange, SWaitingForExchange, and SWaitingInzone.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_wcs_helix_db_ssms_agv_state_inspection_v1"
+        ]
+      },
+      {
+        "step_number": 4,
+        "title": "Compare WCS / Helix DB (SSMS) states with the RMS / fleet status UI",
+        "instruction": "Compare the recorded AGV State values from WCS / Helix DB (SSMS) with the corresponding live AGV information in the RMS / fleet status UI. Keep this diagnostic read-only and do not change database values.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Correlate backend AGV state records with the live RMS / fleet status UI to identify records requiring further interpretation.",
+        "expected_result": "The WCS / Helix DB (SSMS) AGV records and the corresponding RMS / fleet status UI information are available for side-by-side diagnostic comparison.",
+        "healthy_condition": "The returned WCS / Helix DB (SSMS) records can be correlated with visible AGV information in the RMS / fleet status UI.",
+        "failure_condition": "AGV records cannot be correlated between WCS / Helix DB (SSMS) and the RMS / fleet status UI, or a database modification is required to proceed.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if the SSMS records cannot be compared with the live RMS / fleet status UI.",
+          "Stop if any action would modify database values.",
+          "Escalate for SME interpretation when a State value appears inconsistent with the live RMS / fleet status UI."
+        ],
+        "actions": [
+          {
+            "label": "Compare live AGV status",
+            "exact_action": "Compare the returned AGV state records with the live RMS / fleet status UI; do not change database values from this read-only diagnostic.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_wcs_helix_db_ssms_agv_state_inspection_v1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "procedure:confirm_windows_service_and_event_log_evidence:case_228086_proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1",
+    "type": "procedure",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_228086:runbook_proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1"
+    ],
+    "constraints": {
+      "sites": [],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T16:59:38.920253Z",
+    "updated_at": "2026-09-08T16:59:38.920253Z",
+    "capability_id": "capability:confirm_windows_service_and_event_log_evidence",
+    "procedure_type": "verification",
+    "title": "Windows Event Viewer and Services diagnostic for OptiSweep and WCSWebApplication failures",
+    "summary": "Use Windows Event Viewer / services to inspect the live Windows Application and System logs, then verify the current OptiSweep service state. Correlate WCSWebApplication database-command errors around 6:35-6:36 AM with OptiSweep Service Control Manager Event 7031 and the current Windows Services status before further recovery.",
+    "when_to_use": [
+      "Use Windows Event Viewer / services when the live OptiSweep or WCS-backed system is unresponsive, when clustered WCSWebApplication errors are suspected, or when a service crash or restart must be correlated with the incident. Inspect the live Windows Application and System logs and current Windows Services state before performing further recovery."
+    ],
+    "not_for": [
+      "Do not use this diagnostic alone to establish root cause.",
+      "Do not treat a configured automatic restart after 60000 milliseconds as proof that OptiSweep recovery completed.",
+      "Do not use this procedure as a substitute for RMS AGV status when the OptiSweep service is healthy."
+    ],
+    "allowed_role_entity_ids": [
+      "entity:role:l2_support"
+    ],
+    "steps": [
+      {
+        "step_number": 1,
+        "title": "Inspect the Windows Event Viewer Application log",
+        "instruction": "In Windows Event Viewer / services, open Windows Logs > Application and inspect entries around 2/20/2026 6:35:24-6:36:07 AM. Open the WCSWebApplication error details, including Event ID 20102, and check nearby Application Error or Windows Error Reporting entries.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Identify live WCSWebApplication and related application errors in the incident time window.",
+        "expected_result": "The Application log shows whether WCSWebApplication Event ID 20102 with 'Failed executing DbCommand (1,840ms)' and nearby clustered application errors are present in the inspected time window.",
+        "healthy_condition": "No new or repeated WCSWebApplication or related application errors appear in the current inspection window.",
+        "failure_condition": "WCSWebApplication Event ID 20102, clustered WCSWebApplication errors, Application Error entries, or Windows Error Reporting entries are present or repeating in the current inspection window.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if new or repeated WCSWebApplication errors are present."
+        ],
+        "actions": [
+          {
+            "label": "Open Application log",
+            "exact_action": "Select Windows Logs > Application in Windows Event Viewer.",
+            "role_entity_id": "entity:role:l2_support"
+          },
+          {
+            "label": "Inspect WCSWebApplication errors",
+            "exact_action": "Check entries around 2/20/2026 6:35:24-6:36:07 AM, including Event ID 20102 with 'Failed executing DbCommand (1,840ms)', and nearby Application Error or Windows Error Reporting entries.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1"
+        ]
+      },
+      {
+        "step_number": 2,
+        "title": "Inspect the OptiSweep termination event",
+        "instruction": "In Windows Event Viewer / services, select Windows Logs > System and open the Service Control Manager event for OptiSweep. Check for Event ID 7031, Level Error, and inspect whether the message states that OptiSweep terminated unexpectedly and Windows planned to restart it after 60000 milliseconds.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Determine whether the Windows System log contains the source-observed OptiSweep service termination and configured restart action.",
+        "expected_result": "The System log identifies whether an OptiSweep Event ID 7031 termination is present and whether the event contains the 60000-millisecond restart message.",
+        "healthy_condition": "No new or repeated OptiSweep Event ID 7031 termination is present in the current System log inspection.",
+        "failure_condition": "An OptiSweep Event ID 7031 Error entry states that the service terminated unexpectedly or that a restart was planned.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if Event 7031 repeats or indicates that OptiSweep is terminating unexpectedly."
+        ],
+        "actions": [
+          {
+            "label": "Open System log",
+            "exact_action": "Select Windows Logs > System in Windows Event Viewer.",
+            "role_entity_id": "entity:role:l2_support"
+          },
+          {
+            "label": "Inspect Event 7031",
+            "exact_action": "Open the Service Control Manager event for OptiSweep and check for Event ID 7031, Level Error, unexpected termination, and the planned 60000-millisecond restart.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1"
+        ]
+      },
+      {
+        "step_number": 3,
+        "title": "Verify the current OptiSweep service state",
+        "instruction": "In Windows Event Viewer / services, open Windows Services, select OptiSweep, and inspect the current Status and Startup Type.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Check the live Windows Services state independently of the historical termination event and configured restart action.",
+        "expected_result": "Windows Services displays the current OptiSweep Status and Startup Type, allowing the live service state to be compared with the Event Viewer evidence.",
+        "healthy_condition": "OptiSweep is currently shown as Running and its Startup Type is shown as Automatic.",
+        "failure_condition": "OptiSweep is not currently shown as Running, or the current service state cannot be verified.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if OptiSweep is not Running."
+        ],
+        "actions": [
+          {
+            "label": "Select OptiSweep",
+            "exact_action": "Open Windows Services and select OptiSweep.",
+            "role_entity_id": "entity:role:l2_support"
+          },
+          {
+            "label": "Inspect service state",
+            "exact_action": "Record whether Status is Running and Startup Type is Automatic.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1"
+        ]
+      },
+      {
+        "step_number": 4,
+        "title": "Correlate Windows Event Viewer / services evidence with the live incident state",
+        "instruction": "Compare the timestamps and live entries in Windows Event Viewer / services with the current incident state and the current OptiSweep status in Windows Services. Do not treat the configured automatic restart as proof that recovery completed.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Distinguish historical failure evidence and configured restart behavior from confirmed current recovery.",
+        "expected_result": "The diagnostic conclusion separately identifies the observed WCSWebApplication errors, any OptiSweep Event 7031 termination, and the current OptiSweep service state.",
+        "healthy_condition": "The current Windows Services state is Running and the current Event Viewer inspection shows no new or repeated relevant errors.",
+        "failure_condition": "The live Windows Event Viewer / services inspection shows new or repeated relevant errors, OptiSweep is not Running, or the available evidence does not establish current recovery.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if new or repeated WCSWebApplication errors are present.",
+          "Stop and escalate if Event 7031 repeats.",
+          "Stop and escalate if OptiSweep is not Running.",
+          "Escalate when the evidence supports correlation but not a definitive root cause."
+        ],
+        "actions": [
+          {
+            "label": "Compare live evidence",
+            "exact_action": "Compare the Event Viewer timestamps and service state with the live incident state.",
+            "role_entity_id": "entity:role:l2_support"
+          },
+          {
+            "label": "Avoid unsupported recovery conclusion",
+            "exact_action": "Do not treat the configured automatic restart as proof that recovery completed.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "procedure:confirm_wcs_service_health:case_228086_proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1",
+    "type": "procedure",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_228086:runbook_proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1"
+    ],
+    "constraints": {
+      "sites": [],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T16:59:38.920253Z",
+    "updated_at": "2026-09-08T16:59:38.920253Z",
+    "capability_id": "capability:confirm_wcs_service_health",
+    "procedure_type": "verification",
+    "title": "Windows Event Viewer and Services diagnostic for OptiSweep and WCSWebApplication failures",
+    "summary": "Use Windows Event Viewer / services to inspect the live Windows Application and System logs, then verify the current OptiSweep service state. Correlate WCSWebApplication database-command errors around 6:35-6:36 AM with OptiSweep Service Control Manager Event 7031 and the current Windows Services status before further recovery.",
+    "when_to_use": [
+      "Use Windows Event Viewer / services when the live OptiSweep or WCS-backed system is unresponsive, when clustered WCSWebApplication errors are suspected, or when a service crash or restart must be correlated with the incident. Inspect the live Windows Application and System logs and current Windows Services state before performing further recovery."
+    ],
+    "not_for": [
+      "Do not use this diagnostic alone to establish root cause.",
+      "Do not treat a configured automatic restart after 60000 milliseconds as proof that OptiSweep recovery completed.",
+      "Do not use this procedure as a substitute for RMS AGV status when the OptiSweep service is healthy."
+    ],
+    "allowed_role_entity_ids": [
+      "entity:role:l2_support"
+    ],
+    "steps": [
+      {
+        "step_number": 1,
+        "title": "Inspect the Windows Event Viewer Application log",
+        "instruction": "In Windows Event Viewer / services, open Windows Logs > Application and inspect entries around 2/20/2026 6:35:24-6:36:07 AM. Open the WCSWebApplication error details, including Event ID 20102, and check nearby Application Error or Windows Error Reporting entries.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Identify live WCSWebApplication and related application errors in the incident time window.",
+        "expected_result": "The Application log shows whether WCSWebApplication Event ID 20102 with 'Failed executing DbCommand (1,840ms)' and nearby clustered application errors are present in the inspected time window.",
+        "healthy_condition": "No new or repeated WCSWebApplication or related application errors appear in the current inspection window.",
+        "failure_condition": "WCSWebApplication Event ID 20102, clustered WCSWebApplication errors, Application Error entries, or Windows Error Reporting entries are present or repeating in the current inspection window.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if new or repeated WCSWebApplication errors are present."
+        ],
+        "actions": [
+          {
+            "label": "Open Application log",
+            "exact_action": "Select Windows Logs > Application in Windows Event Viewer.",
+            "role_entity_id": "entity:role:l2_support"
+          },
+          {
+            "label": "Inspect WCSWebApplication errors",
+            "exact_action": "Check entries around 2/20/2026 6:35:24-6:36:07 AM, including Event ID 20102 with 'Failed executing DbCommand (1,840ms)', and nearby Application Error or Windows Error Reporting entries.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1"
+        ]
+      },
+      {
+        "step_number": 2,
+        "title": "Inspect the OptiSweep termination event",
+        "instruction": "In Windows Event Viewer / services, select Windows Logs > System and open the Service Control Manager event for OptiSweep. Check for Event ID 7031, Level Error, and inspect whether the message states that OptiSweep terminated unexpectedly and Windows planned to restart it after 60000 milliseconds.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Determine whether the Windows System log contains the source-observed OptiSweep service termination and configured restart action.",
+        "expected_result": "The System log identifies whether an OptiSweep Event ID 7031 termination is present and whether the event contains the 60000-millisecond restart message.",
+        "healthy_condition": "No new or repeated OptiSweep Event ID 7031 termination is present in the current System log inspection.",
+        "failure_condition": "An OptiSweep Event ID 7031 Error entry states that the service terminated unexpectedly or that a restart was planned.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if Event 7031 repeats or indicates that OptiSweep is terminating unexpectedly."
+        ],
+        "actions": [
+          {
+            "label": "Open System log",
+            "exact_action": "Select Windows Logs > System in Windows Event Viewer.",
+            "role_entity_id": "entity:role:l2_support"
+          },
+          {
+            "label": "Inspect Event 7031",
+            "exact_action": "Open the Service Control Manager event for OptiSweep and check for Event ID 7031, Level Error, unexpected termination, and the planned 60000-millisecond restart.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1"
+        ]
+      },
+      {
+        "step_number": 3,
+        "title": "Verify the current OptiSweep service state",
+        "instruction": "In Windows Event Viewer / services, open Windows Services, select OptiSweep, and inspect the current Status and Startup Type.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Check the live Windows Services state independently of the historical termination event and configured restart action.",
+        "expected_result": "Windows Services displays the current OptiSweep Status and Startup Type, allowing the live service state to be compared with the Event Viewer evidence.",
+        "healthy_condition": "OptiSweep is currently shown as Running and its Startup Type is shown as Automatic.",
+        "failure_condition": "OptiSweep is not currently shown as Running, or the current service state cannot be verified.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if OptiSweep is not Running."
+        ],
+        "actions": [
+          {
+            "label": "Select OptiSweep",
+            "exact_action": "Open Windows Services and select OptiSweep.",
+            "role_entity_id": "entity:role:l2_support"
+          },
+          {
+            "label": "Inspect service state",
+            "exact_action": "Record whether Status is Running and Startup Type is Automatic.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1"
+        ]
+      },
+      {
+        "step_number": 4,
+        "title": "Correlate Windows Event Viewer / services evidence with the live incident state",
+        "instruction": "Compare the timestamps and live entries in Windows Event Viewer / services with the current incident state and the current OptiSweep status in Windows Services. Do not treat the configured automatic restart as proof that recovery completed.",
+        "responsible_role_entity_id": "entity:role:l2_support",
+        "supporting_role_entity_id": null,
+        "purpose": "Distinguish historical failure evidence and configured restart behavior from confirmed current recovery.",
+        "expected_result": "The diagnostic conclusion separately identifies the observed WCSWebApplication errors, any OptiSweep Event 7031 termination, and the current OptiSweep service state.",
+        "healthy_condition": "The current Windows Services state is Running and the current Event Viewer inspection shows no new or repeated relevant errors.",
+        "failure_condition": "The live Windows Event Viewer / services inspection shows new or repeated relevant errors, OptiSweep is not Running, or the available evidence does not establish current recovery.",
+        "stop_or_escalate_if": [
+          "Stop and escalate if new or repeated WCSWebApplication errors are present.",
+          "Stop and escalate if Event 7031 repeats.",
+          "Stop and escalate if OptiSweep is not Running.",
+          "Escalate when the evidence supports correlation but not a definitive root cause."
+        ],
+        "actions": [
+          {
+            "label": "Compare live evidence",
+            "exact_action": "Compare the Event Viewer timestamps and service state with the live incident state.",
+            "role_entity_id": "entity:role:l2_support"
+          },
+          {
+            "label": "Avoid unsupported recovery conclusion",
+            "exact_action": "Do not treat the configured automatic restart as proof that recovery completed.",
+            "role_entity_id": "entity:role:l2_support"
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:runbook_proc_windows_event_viewer_services_optisweep_wcswebapplication_diagnostic_v1"
+        ]
+      }
+    ]
+  }
+]

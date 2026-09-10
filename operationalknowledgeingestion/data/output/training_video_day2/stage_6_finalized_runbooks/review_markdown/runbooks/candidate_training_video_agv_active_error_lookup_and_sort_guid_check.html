@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Corroborate AGV Active Errors Using AGV Active Error Database Model + Error Code Dictionary + Sort GUID</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Corroborate AGV Active Errors Using AGV Active Error Database Model + Error Code Dictionary + Sort GUID</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_corroborate_agv_active_errors_using_agv_active_error_db_model_error_code_dictionary_sort_guid_v1</td></tr>
+<tr><th>Title</th><td>Corroborate AGV Active Errors Using AGV Active Error Database Model + Error Code Dictionary + Sort GUID</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>agv_active_errors</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>None</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use WCS / Helix DB (SSMS) to corroborate which AGVs currently have active errors by cross-checking the active-error model (robot code/name, error code, description, SortGuid) against the AGV error dictionary model (error code → description and critical vs non-critical classification). Use SortGuid to identify which sort occurrence the active error is associated with.</p>
+<h2>When To Use</h2>
+<p>When you need to confirm which AGVs currently have active errors and map each active error code to its description/classification, including which sort occurrence (SortGuid) the error is tied to.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/0060f6132e5274b9.jpg" alt="artifact_training_video_training_video_day2_0015_right_moving_on_excuse_me_the_primary_01_28_41_500" /><figcaption>Training frame showing the AGV Active Error Database model fields: robot code (Name), error code, description, and SortGuid; also states that active errors are logged and archived when resolved/removed.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open WCS / Helix DB (SSMS) and connect to the OptiSweep database containing the Robotics / AGV error models</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using WCS / Helix DB (SSMS), connect to the OptiSweep database that contains the Robotics / AGV error models.</p>
+<p><strong>Expected result:</strong></p>
+<p>SSMS is connected to the OptiSweep database that contains the Robotics/AGV error model tables.</p>
+<hr>
+<h3>Step 2 — Open the AGV Active Error Database model table (AgvActiveErrorDatabaseModel)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In SSMS, open the “AGV Active Error Database model table” (AgvActiveErrorDatabaseModel).</p>
+<p><strong>Expected result:</strong></p>
+<p>The AgvActiveErrorDatabaseModel table view/query results show active error rows with fields including robot code (Name), error code, description, and SortGuid.</p>
+<hr>
+<h3>Step 3 — Verify active error rows include Name, Error code, Description, and SortGuid; record error code and SortGuid for one or more rows</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Verify the table shows active error rows that include robot code (Name), error code (Error code), description (Description), and SortGuid (Sort id). For one or more active error rows, note the error code and SortGuid values.</p>
+<p><strong>Expected result:</strong></p>
+<p>You have at least one active error instance recorded with its Error code and SortGuid (and can see the corresponding Description and robot Name in the same row).</p>
+<hr>
+<h3>Step 4 — Open the AGV error model table (error code dictionary) and locate matching error code</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the “AGV error model table” (AgvErrorModel / error dictionary) and locate the matching error code to confirm the error description and critical vs non-critical classification.</p>
+<p><strong>Expected result:</strong></p>
+<p>The matching error code is found in the AgvErrorModel dictionary and provides the description and critical vs non-critical classification for that error code.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If an active error row’s error code cannot be found in the AGV error dictionary table, escalate for data integrity/mapping issues.</li>
+</ul>
+<hr>
+<h3>Step 5 — Use SortGuid to identify which sort the error occurred during</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Use the SortGuid value from the active-error row to identify which sort the error occurred during (SortGuid is the identifier for the sort occurrence).</p>
+<p><strong>Expected result:</strong></p>
+<p>For each recorded active error row, you can associate the error instance with the corresponding sort occurrence using its SortGuid value.</p>
+<hr>
+</body>
+</html>

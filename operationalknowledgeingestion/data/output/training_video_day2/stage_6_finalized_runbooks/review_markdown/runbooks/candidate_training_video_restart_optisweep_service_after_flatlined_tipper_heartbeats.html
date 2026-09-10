@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Restart the OptiSweep Windows Service in Windows Services After Flatlined Tipper Heartbeats in the Ignition Gateway</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Restart the OptiSweep Windows Service in Windows Services After Flatlined Tipper Heartbeats in the Ignition Gateway</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_restart_optisweep_service_flatlined_tipper_heartbeats_v1</td></tr>
+<tr><th>Title</th><td>Restart the OptiSweep Windows Service in Windows Services After Flatlined Tipper Heartbeats in the Ignition Gateway</td></tr>
+<tr><th>Procedure Type</th><td>recovery</td></tr>
+<tr><th>Primary Role</th><td>L1_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>opc_connection_or_tipper_heartbeat, wcs_service_health</td></tr>
+<tr><th>Access Surface</th><td>ignition_gateway, event_viewer</td></tr>
+<tr><th>Audience Roles</th><td>L1_support, L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>opc_connection_faulted, gateway_unhealthy, service_crash_or_restart</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the Ignition gateway to verify that a tipper heartbeat is flat-lined, then use Windows Services to locate and restart the OptiSweep service. Confirm that the service returns to Running and that the Ignition gateway heartbeat is no longer flat-lined.</p>
+<h2>When To Use</h2>
+<p>Use this Ignition gateway and Windows Services procedure when a live tipper heartbeat is flat-lined or missing, including after an unplanned restart where Ignition may have started later than WCS and the OptiSweep service did not reestablish OPC-related heartbeat communication.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/4fbe27ac029a845c.jpg" alt="artifact_training_video_training_video_day2_0049_check_to_make_sure_that_tippers_primary_03_13_10_000" /><figcaption>Windows Services view showing the OptiSweep entry, its status, and the Restart the service control in the context of a flat-lined tipper heartbeat.</figcaption></figure>
+<figure><img src="assets/594db6d378d1227e.jpg" alt="artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500" /><figcaption>Windows Services view supporting the OptiSweep restart after checking a tipper heartbeat in the Ignition gateway.</figcaption></figure>
+<figure><img src="assets/11a866629db2eb85.jpg" alt="artifact_training_video_training_video_day2_0034_the_tippers_ignition_we_save_it_primary_02_56_53_000" /><figcaption>Ignition gateway view showing tipper-related communications and faulted communication status.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Check the tipper heartbeat in the Ignition gateway</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Ignition gateway, inspect the live heartbeat indication for the affected tipper and determine whether heartbeat communication is being received or is flat-lined.</p>
+<p><strong>Expected result:</strong></p>
+<p>The affected tipper&#x27;s live heartbeat indication is identified as either active or flat-lined, providing the basis for the service-restart decision.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the heartbeat is not flat-lined, do not perform this service-restart procedure.</li>
+<li>If the affected tipper or heartbeat indication cannot be identified in the Ignition gateway, escalate for L2 support.</li>
+</ul>
+<hr>
+<h3>Step 2 — Locate OptiSweep in Windows Services</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open Windows Services MMC, locate the service named &quot;OptiSweep,&quot; and review its Status.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Windows Services console displays the OptiSweep service entry and its current Status.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the OptiSweep service cannot be located, escalate to L2 support.</li>
+<li>If Windows Services cannot be opened or the service status cannot be read, escalate to L2 support.</li>
+</ul>
+<hr>
+<h3>Step 3 — Restart the OptiSweep service in Windows Services</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In Windows Services, use the OptiSweep service&#x27;s &quot;Restart the service&quot; control.</p>
+<p><strong>Expected result:</strong></p>
+<p>Windows Services accepts the restart request for the OptiSweep service.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the OptiSweep service cannot be restarted.</li>
+<li>Escalate if the restart request reports an error.</li>
+</ul>
+<hr>
+<h3>Step 4 — Confirm service state and tipper heartbeat recovery</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In Windows Services, verify that the OptiSweep service returns to a Running state. Then return to the Ignition gateway and recheck the affected tipper&#x27;s live heartbeat indication.</p>
+<p><strong>Expected result:</strong></p>
+<p>The OptiSweep service shows Running and the affected tipper heartbeat is no longer flat-lined.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Escalate if the OptiSweep service does not return to Running.</li>
+<li>Escalate if the tipper heartbeat remains flat-lined after the service restart.</li>
+</ul>
+<hr>
+</body>
+</html>

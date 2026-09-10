@@ -44,8 +44,16 @@ class AzureOpenAIEmbedder:
         batch_size: int = DEFAULT_BATCH_SIZE,
     ) -> None:
         load_dotenv()
-        self.endpoint = _clean_env_value(endpoint or os.getenv("AZURE_OPENAI_ENDPOINT")).rstrip("/")
-        self.api_key = _clean_env_value(api_key or os.getenv("AZURE_OPENAI_API_KEY"))
+        self.endpoint = _clean_env_value(
+            endpoint
+            or os.getenv("AZURE_EMBEDDINGS_ENDPOINT")
+            or os.getenv("AZURE_OPENAI_ENDPOINT")
+        ).rstrip("/")
+        self.api_key = _clean_env_value(
+            api_key
+            or os.getenv("AZURE_EMBEDDINGS_API_KEY")
+            or os.getenv("AZURE_OPENAI_API_KEY")
+        )
         self.deployment = _clean_env_value(
             deployment
             or os.getenv("AZURE_EMBEDDINGS_DEPLOYMENT")
@@ -56,8 +64,8 @@ class AzureOpenAIEmbedder:
         missing = [
             name
             for name, value in [
-                ("AZURE_OPENAI_ENDPOINT", self.endpoint),
-                ("AZURE_OPENAI_API_KEY", self.api_key),
+                ("AZURE_EMBEDDINGS_ENDPOINT or AZURE_OPENAI_ENDPOINT", self.endpoint),
+                ("AZURE_EMBEDDINGS_API_KEY or AZURE_OPENAI_API_KEY", self.api_key),
                 ("AZURE_EMBEDDINGS_DEPLOYMENT", self.deployment),
             ]
             if not value

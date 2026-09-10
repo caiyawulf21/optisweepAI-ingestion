@@ -1,11 +1,19 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
 from shared_pipeline_stages.stage_6_5.json_utils import read_json
 
 STAGE6_GLOB = "**/stage_6_finalized_runbooks/finalized_runbooks/*.json"
+
+
+def _list_finalized_json_files(directory: Path) -> list[Path]:
+    if not directory.is_dir():
+        return []
+    names = sorted(name for name in os.listdir(directory) if name.lower().endswith(".json"))
+    return [directory / name for name in names]
 
 
 def discover_finalized_runbook_paths(source_roots: list[str | Path]) -> list[Path]:
@@ -15,18 +23,24 @@ def discover_finalized_runbook_paths(source_roots: list[str | Path]) -> list[Pat
         if not base.exists():
             raise FileNotFoundError(f"Source root not found: {base}")
         if base.is_file() and base.suffix.lower() == ".json":
-            discovered.add(base.resolve())
+            discovered.add(base)
             continue
         if base.name == "finalized_runbooks" and base.is_dir():
-            discovered.update(path.resolve() for path in base.glob("*.json"))
+            discovered.update(_list_finalized_json_files(base))
             continue
         if base.name == "stage_6_finalized_runbooks" and base.is_dir():
             finalized_dir = base / "finalized_runbooks"
             if finalized_dir.is_dir():
-                discovered.update(path.resolve() for path in finalized_dir.glob("*.json"))
+                discovered.update(_list_finalized_json_files(finalized_dir))
                 continue
-        discovered.update(path.resolve() for path in base.glob(STAGE6_GLOB))
-    paths = sorted(discovered)
+        if (base / "stage_6_finalized_runbooks" / "finalized_runbooks").is_dir():
+            discovered.update(
+                _list_finalized_json_files(base / "stage_6_finalized_runbooks" / "finalized_runbooks")
+            )
+            continue
+        for stage6 in base.glob("**/stage_6_finalized_runbooks"):
+            discovered.update(_list_finalized_json_files(stage6 / "finalized_runbooks"))
+    paths = sorted(discovered, key=lambda p: str(p).lower())
     if not paths:
         raise FileNotFoundError(
             "No Stage 6 finalized runbooks found. Expected "
@@ -70,6 +84,6 @@ def validate_finalized_runbook(runbook: dict[str, Any]) -> list[str]:
     if not isinstance(steps, list) or not steps:
         errors.append("steps must be a non-empty list")
     metadata = runbook.get("metadata") or {}
-    if str(metadata.get("merge_status") or "") != "source_finalized":
-        errors.append('metadata.merge_status must be "source_finalized"')
+    if not isinstance(metadata, dict):
+        errors.append("metadata must be an object when present")
     return errors

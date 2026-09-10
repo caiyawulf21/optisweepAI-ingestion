@@ -16,6 +16,10 @@ from operationalknowledgeingestion.src.optisweep_ingestion.services.id_generator
     make_artifact_id_from_page_image,
 )
 from operationalknowledgeingestion.src.optisweep_ingestion.services.source_ref_service import build_source_ref, lineage_from_bundle
+from operationalknowledgeingestion.src.optisweep_ingestion.stage1_training_video_builder import (
+    AzureComputerVisionOCRClient,
+    TesseractOCRClient,
+)
 from operationalknowledgeingestion.src.optisweep_ingestion.tools.source_bundle_loader import load_source_bundle
 from operationalknowledgeingestion.src.optisweep_ingestion.utils.json_utils import write_json
 
@@ -39,6 +43,8 @@ def extract_source_artifacts(
     min_height: int = 100,
     min_file_size: int = 1024,
     duplicate_page_threshold: int = 12,
+    ocr_backend: str = "none",
+    tesseract_command: str | None = None,
 ) -> tuple[list[SourceArtifact], dict[str, Any]]:
     bundle = load_source_bundle(source_bundle_path)
     output_path = Path(output_dir)
@@ -46,6 +52,7 @@ def extract_source_artifacts(
     fallback_pages_dir = images_dir / "fallback_pages"
     images_dir.mkdir(parents=True, exist_ok=True)
     fallback_pages_dir.mkdir(parents=True, exist_ok=True)
+    ocr_client = _build_ocr_client(ocr_backend, tesseract_command)
 
     extracted, pdf_warnings, total_pages = extract_pdf_images(source_pdf)
     useful_images, skipped_images = filter_useful_images(
@@ -117,6 +124,8 @@ def extract_source_artifacts(
                             "needs_visual_review": True,
                         }
                     )
+                    if ocr_client is not None:
+                        metadata.update(_ocr_fallback_page(ocr_client, storage_path))
                 else:
                     storage_path = None
                     file_name = None
@@ -565,6 +574,31 @@ def build_skipped_image_summary(skipped_images: list[dict[str, Any]]) -> dict[st
         else:
             summary[reason] += 1
     return dict(sorted(summary.items()))
+
+
+def _build_ocr_client(
+    ocr_backend: str, tesseract_command: str | None
+) -> TesseractOCRClient | AzureComputerVisionOCRClient | None:
+    backend = (ocr_backend or "none").strip().lower()
+    if backend == "none":
+        return None
+    if backend == "tesseract":
+        return TesseractOCRClient(command=tesseract_command)
+    if backend == "azure_cv":
+        return AzureComputerVisionOCRClient()
+    raise ValueError("Unsupported OCR backend. Use 'none', 'tesseract', or 'azure_cv'.")
+
+
+def _ocr_fallback_page(
+    ocr_client: TesseractOCRClient | AzureComputerVisionOCRClient, image_path: str
+) -> dict[str, Any]:
+    result = ocr_client.extract(image_path)
+    return {
+        "ocr_text": result.text,
+        "ocr_confidence": result.confidence,
+        "ocr_backend": result.backend,
+        "ocr_provenance": result.provenance,
+    }
 
 
 def _figure_refs_by_page(bundle: SourceBundle) -> dict[int, list[SourceFigureRef]]:

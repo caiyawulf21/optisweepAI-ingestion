@@ -1,0 +1,340 @@
+{
+  "procedure_id": "proc_trace_optsweep_architecture_data_command_flow_modules_v1",
+  "candidate_id": "candidate_training_video_d2_architecture_trace_dataflow_modules",
+  "title": "Trace OptiSweep architecture data/command flow across modules (Scanner/PLC → XLE chat/OBC com → Ignition tags → Sorter sweeper → Robotics maps → Geek Plus COM → Geek Plus API)",
+  "procedure_type": "reference",
+  "summary": "Use the documented OptiSweep architecture path to explain which OptiSweep module owns each part of the UPS-side data/command path: UPS-side scanner/ASX/XLE printers/sorter PLCs communicate via XLE chat over S tunnel to the XLE chat module; the XLE chat OBC com module subscribes to tags and Ignition for read/write with tippers; sorter sweeper acts as a tote state machine; sorter sweeper requests robotics actions (pick up/move out/drop off); robotics routes those actions through named maps; Geek Plus COM translates robotics commands into Geek Plus API requests; Ignition is the HMI base used to collect data and send to Aviva for UPS, running on the OPC server (Windows).",
+  "role_required": "L1_support",
+  "responsible_role": "L1_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "fleet_system_status",
+    "wcs_api_responsiveness"
+  ],
+  "access_surface": [
+    "wcs_api",
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L1_support"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to map a symptom to the most likely owning OptiSweep module by following the documented architecture path (UPS-side equipment → XLE chat/S tunnel → XLE chat OBC com + Ignition tags → sorter sweeper tote state machine → robotics maps → Geek Plus COM → Geek Plus API).",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L1_support: Use the source-backed module-by-module architecture terms to explain ownership of the data/command path for a reported symptom.",
+    "Escalation (if mapping fails): Route to deeper troubleshooting documentation for the specific module that appears to own the symptom (XLE chat OBC com, sorter sweeper, robotics maps, or Geek Plus COM)."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Ability to reference the architecture terms and module responsibilities as described in the source segment (XLE chat, S tunnel, XLE chat OBC com module, Ignition tags, sorter sweeper tote state machine, robotics module maps, Geek Plus COM, Geek Plus API requests, Aviva for UPS)."
+  ],
+  "prerequisites": {
+    "access_required": [],
+    "system_preconditions": [],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_optisweep_architecture_overview_v1",
+    "ctx_training_video_xle_chat_and_obc_com_reference_v1",
+    "ctx_training_video_sorter_sweeper_module_reference_v1",
+    "ctx_training_video_robotics_module_and_maps_reference_v1",
+    "ctx_training_video_geekplus_com_translation_reference_v1",
+    "ctx_training_video_ignition_platform_reference_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0003_so_we_kind_of_started_this_primary_00_02_12_500",
+      "description": "Architecture overview showing UPS-side equipment (scanner/ASX/XLE printers/sorter PLCs) and OptiSweep modules (XLE chat, XLE chat OBC com, sorter sweeper, robotics module, Geek Plus COM, Ignition/Windows service, OPC server).",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Identify the UPS-side equipment that interfaces into OptiSweep",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Establish the starting point of the documented data/command path (what UPS-side systems generate the inputs that OptiSweep consumes).",
+      "instruction": "Using the architecture overview, name the UPS-side equipment that interfaces into OptiSweep: scanner, ASX, XLE printers, and sorter PLCs.",
+      "expected_result": "You can correctly state the UPS-side starting equipment list (scanner, ASX, XLE printers, sorter PLCs) as the source of the path that flows into OptiSweep.",
+      "healthy_condition": "The starting point you describe matches the source architecture overview labels for UPS-side equipment.",
+      "failure_condition": "You cannot identify the UPS-side equipment list or you name equipment not included in the source architecture overview.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review UPS-side equipment labels",
+          "exact_action": "Use the architecture overview to identify the UPS side: scanner, ASX, XLE printers, sorter PLCs.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Locate the secure UPS-to-OptiSweep communication path via XLE chat and S tunnel",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Determine the communication transport and the first OptiSweep module that receives UPS-side messages.",
+      "instruction": "From the architecture overview, describe that UPS-side systems communicate through XLE chat, and that OptiSweep uses S tunnel to securely communicate through XLE chat.",
+      "expected_result": "You can state that XLE chat is the communication path and that S tunnel is used for secure communication.",
+      "healthy_condition": "Your description includes both XLE chat and S tunnel exactly as the source architecture overview states them.",
+      "failure_condition": "You omit S tunnel or you describe a different transport than XLE chat/S tunnel.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review XLE chat + S tunnel relationship",
+          "exact_action": "Identify that XLE chat is used with S tunnel to securely communicate through.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Follow the handoff from XLE chat module to XLE chat OBC com module (Ignition tags subscription/read-write)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Identify the OptiSweep component that bridges XLE chat messages to Ignition tag-based interactions with tippers.",
+      "instruction": "Using the architecture overview, explain that the XLE chat module talks to the XLE chat OBC com module, and that the OBC com module subscribes to tags and Ignition to enable reading and writing from tippers.",
+      "expected_result": "You can describe the module handoff: XLE chat module → XLE chat OBC com module, and that OBC com subscribes to tags and Ignition for read/write from tippers.",
+      "healthy_condition": "Your explanation includes the exact ownership terms: “XLE chat module,” “XLE chat OBC com module,” “subscribes to tags and ignition,” and “read and write from Todd's tippers.”",
+      "failure_condition": "You cannot connect XLE chat to OBC com, or you cannot state that OBC com subscribes to tags and Ignition for read/write with tippers.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review OBC com subscription role",
+          "exact_action": "State that XLE chat OBC com module subscribes to tags and Ignition and enables reading and writing from tippers.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Trace the next responsibility to the sorter sweeper module (tote state machine)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Identify the module that tracks packages/totes and maintains tote state through sorter and tipper areas.",
+      "instruction": "Using the architecture overview and sorter sweeper module frame, explain that sorter sweeper is basically a tote state machine that tracks packages as they come in, updates information, and tracks it at the tipper.",
+      "expected_result": "You can state that sorter sweeper is the tote state machine responsible for tracking packages/totes and tracking at the tipper.",
+      "healthy_condition": "Your explanation matches the source phrasing: “tote state machine,” “tracks packages come in,” “updates the information,” and “tracks it at the tipper.”",
+      "failure_condition": "You attribute tote tracking to a different module (e.g., robotics module) or you cannot describe sorter sweeper as a tote state machine.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review sorter sweeper tote state machine role",
+          "exact_action": "Identify sorter sweeper as “basically a tote state machine” that tracks packages and tracks it at the tipper.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Trace sorter sweeper requests to the robotics module (pick up/move out/drop off tote)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Identify the module-to-module command flow for movement-related actions.",
+      "instruction": "Using the architecture overview, describe that sorter sweeper makes requests to the robotics module such as pick up tote, move out tote, and drop off tote.",
+      "expected_result": "You can list the movement-related requests from sorter sweeper to robotics module: pick up tote, move out tote, drop off tote.",
+      "healthy_condition": "Your list matches the source examples of requests.",
+      "failure_condition": "You cannot name the movement request types or you attribute them to Geek Plus COM directly.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review movement request examples",
+          "exact_action": "State that sorter sweeper makes requests to the robotics module like pick up tote, move out tote, drop off tote.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "Trace robotics module routing through named maps (entrance/queue/execute for sorter and tipper)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Explain how robotics module turns tote movement requests into map-based routing responsibilities.",
+      "instruction": "Using the architecture overview, describe that robotics module runs the requests through the maps: shorter entrance sorter queue, sorter sorter execute tipper entrance queue, and tipper tipper execute sorter entrance queue.",
+      "expected_result": "You can name the map/queue routing responsibilities exactly as listed in the source architecture overview.",
+      "healthy_condition": "Your map list includes the three named map/queue phrases from the source.",
+      "failure_condition": "You cannot provide the named map/queue routing responsibilities or you replace them with generic “robotics routing” language.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review named robotics maps",
+          "exact_action": "State that robotics module runs requests through maps: shorter entrance sorter queue, sorter sorter execute tipper entrance queue, tipper tipper execute sorter entrance queue.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Trace vendor translation to Geek Plus COM (robotics commands → Geek Plus API requests)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Identify the module that translates robotics commands into vendor-specific API requests.",
+      "instruction": "Using the architecture overview, explain that Geek Plus COM translates commands from the robotics module into what Geek Plus requires and sends them as API requests to Geek Plus.",
+      "expected_result": "You can describe Geek Plus COM as the translation layer that sends Geek Plus API requests based on robotics module commands.",
+      "healthy_condition": "Your explanation includes “Geek Plus COM module,” “translates commands,” and “sends those as API requests to Geek Plus.”",
+      "failure_condition": "You attribute translation to robotics module or to sorter sweeper, or you cannot describe the API request relationship.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review Geek Plus COM translation role",
+          "exact_action": "State that Geek Plus COM translates robotics module commands into what Geek Plus requires and sends them as API requests to Geek Plus.",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 8,
+      "title": "Use Ignition as the HMI base and note Ignition/OPC server placement (Windows)",
+      "responsible_role": "L1_support",
+      "supporting_role": "",
+      "purpose": "Explain where the HMI/data collection layer sits in the architecture and how it relates to OPC server runtime.",
+      "instruction": "Using the architecture overview, describe that Ignition is the HMI base used to collect data and send to Aviva for UPS, and that Ignition/OPC runs on the OPC server (Windows-based).",
+      "expected_result": "You can state that Ignition is the HMI base for data collection and sending to Aviva for UPS, and that Ignition/OPC runs on the OPC server in a Windows environment.",
+      "healthy_condition": "Your explanation includes both the Aviva data-sending role and the Windows/OPC server placement.",
+      "failure_condition": "You cannot connect Ignition to Aviva for UPS or you cannot state that Ignition/OPC runs on the OPC server (Windows).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review Ignition HMI base and OPC server placement",
+          "exact_action": "State that Ignition is the HMI base used to collect data and send to Aviva for UPS, and that Ignition/OPC runs on the OPC server (Windows-based).",
+          "role_required": "L1_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You can describe the documented module-by-module ownership of the data/command path using the source-backed architecture terms: XLE chat/S tunnel → XLE chat OBC com + Ignition tags → sorter sweeper tote state machine → robotics module maps → Geek Plus COM translation → Geek Plus API requests.",
+    "You can correctly name the example movement requests from sorter sweeper to robotics module (pick up tote, move out tote, drop off tote) and the named robotics maps/queues listed in the source."
+  ],
+  "healthy_conditions": [
+    "The described path includes the correct module sequence and the correct named components (XLE chat module, XLE chat OBC com module, sorter sweeper module, robotics module, Geek Plus COM module, Ignition HMI base).",
+    "The described responsibilities match the source’s ownership statements (tote state machine for sorter sweeper; map-based routing for robotics; translation/API requests for Geek Plus COM)."
+  ],
+  "failure_conditions": [
+    "You cannot map a symptom to a specific module using the source-described path.",
+    "You cannot name the required module sequence or the named map/queue routing responsibilities from the source."
+  ],
+  "escalation_guidance": [
+    "If you cannot map a symptom to a specific module using the source-described path, escalate to deeper troubleshooting documentation for the specific module (XLE chat OBC com module, sorter sweeper module, robotics module/maps, or Geek Plus COM module)."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0003_so_we_kind_of_started_this_primary_00_02_12_500",
+      "what_to_look_at": "Architecture overview labels for UPS-side equipment (scanner/ASX/XLE printers/sorter PLCs), XLE chat + S tunnel, XLE chat OBC com module, sorter sweeper tote state machine, robotics module maps, Geek Plus COM translation to Geek Plus API requests, and Ignition HMI base + Windows/OPC server placement."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 3,
+      "section_id": "training_video_day2_segment_0003",
+      "timestamp_start": "00:00:32.000",
+      "timestamp_end": "00:03:53.000",
+      "quote_or_summary": "Architecture overview: UPS side (scanner, ASX, XLE printers, sorter PLCs) → XLE chat via S tunnel → XLE chat OBC com module subscribes to tags and Ignition for read/write from tippers → sorter sweeper tote state machine tracks packages and tipper → sorter sweeper requests robotics module (pick up/move out/drop off) → robotics runs through maps (shorter entrance sorter queue, sorter sorter execute tipper entrance queue, tipper tipper execute sorter entrance queue) → Geek Plus COM translates robotics commands to Geek Plus API requests; Ignition is HMI base collecting data and sending to Aviva for UPS; Ignition/OPC runs on the OPC server (Windows).",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0003_so_we_kind_of_started_this_primary_00_02_12_500",
+      "what_to_look_at": "Architecture overview showing UPS-side equipment (scanner/ASX/XLE printers/sorter PLCs) and OptiSweep modules (XLE chat, XLE chat OBC com, sorter sweeper, robotics module, Geek Plus COM, Ignition/Windows service, OPC server)."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_d2_architecture_trace_dataflow_modules"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide concrete live troubleshooting inspection steps (e.g., specific SSMS queries, WCS/Helix DB tables, API endpoints, or UI locations) to validate module ownership against live system state.",
+    "The packet does not provide explicit failure signals/fields per module (e.g., which exact tag names, status codes, or request/response identifiers to check)."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

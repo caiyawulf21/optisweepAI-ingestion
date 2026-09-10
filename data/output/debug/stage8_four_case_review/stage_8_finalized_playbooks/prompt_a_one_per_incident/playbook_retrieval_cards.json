@@ -1,0 +1,1313 @@
+{
+  "cards": [
+    {
+      "playbook_id": "playbook_incident_228086_sitewide_robotic_stoppage",
+      "playbook_candidate_id": "playbook_candidate_incident_228086_sitewide_robotic_stoppage",
+      "case_id": "228086",
+      "extraction_mode": "one_playbook_candidate_per_incident",
+      "title": "Site-wide robotic stoppage with AGV synchronization loss",
+      "user_facing_summary": "Use this response pattern when operators report that robots or AGVs are stopped, nothing is moving, the small sort is not running, or the robotic system is not responding. Confirm the scope and observable system state, investigate service and application health, restore the named robotic service or gateway through an approved procedure, correct residual AGV synchronization issues, and validate API and operational recovery.",
+      "observed_entry_symptoms": [
+        "Operators reported that nothing was moving.",
+        "The robotic system was reported as not responding.",
+        "The small sort was not running.",
+        "Multiple bots were reported as not moving in different areas.",
+        "Totes could not be removed from the hospital workflow.",
+        "The RMS/HMI appeared mostly blank and displayed a message reported as '.NET Control not created.'",
+        "AGVs were reported as out of sync."
+      ],
+      "support_user_language_examples": [
+        "AGVs stopped",
+        "AGVs are stopped",
+        "robots stopped",
+        "nothing is moving",
+        "the robots aren't moving",
+        "small sort stopped",
+        "robotic system not responding",
+        "AGVs are out of sync",
+        "can't get the totes out",
+        "RMS is blank",
+        "Operators reported that nothing was moving",
+        "The robotic system was reported as not responding",
+        "The small sort was not running",
+        "Multiple bots were reported as not moving in different areas",
+        "Totes could not be removed from the hospital workflow",
+        "The RMS/HMI appeared mostly blank and displayed a",
+        "AGVs were reported as out of sync",
+        "AGVs aren't moving",
+        "no RMS alarms",
+        "rms showing no alarms"
+      ],
+      "affected_systems_or_components": [
+        "OptiSweep service",
+        "AGVs and robotic system",
+        "RMS / HMI",
+        "Ignition gateway",
+        "WCSWebApplication",
+        "Windows Event Viewer / Service Control Manager",
+        "OptiSweep / WCS API",
+        "Small sort and hospital workflow"
+      ],
+      "node_retrieval_summaries": [
+        {
+          "node_id": "node_1",
+          "node_type": "diagnostic_decision",
+          "title": "Confirm the observable scope of the stoppage",
+          "intent": "Determine whether the report represents a site-wide or broad robotic stoppage with abnormal control-system presentation rather than an isolated robot issue.",
+          "runbook_placeholder": "Procedure needed to ask the site which affected areas or workflows are stopped, whether multiple robots are stationary, and whether automated sorting or hospital tote removal is affected; also inspect the RMS/HMI overview for a normally populated versus mostly blank operational display and any readable system or AGV error indicators.",
+          "expected_or_observed_result": "The site operator or support user confirms through site interview and the RMS/HMI view whether multiple robots or areas are stopped, the small sort or hospital workflow is affected, and the RMS page is populated normally. Unhealthy signals are broad non-movement, robotic-system nonresponse, or a mostly blank RMS page with an apparent '.NET Control not created.' message. Healthy signals are localized impact with otherwise normal fleet presentation. Inconclusive signals are an unclear scope report, unreadable RMS display, or unavailable site confirmation.",
+          "allowed_roles": [
+            "operator",
+            "L1_support",
+            "L2_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "operator",
+            "L1_support"
+          ],
+          "ontology_capabilities": [
+            {
+              "id": "capability:fleet_system_status",
+              "support_contract": {},
+              "relevant_evidence": "The packet contains a site-wide stoppage report and a blank RMS/system-status presentation."
+            }
+          ],
+          "backend_observability": [],
+          "ontology_gaps": [],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "Site reports only a localized issue.",
+            "RMS overview is populated and shows normal system presentation.",
+            "Other automated areas continue operating."
+          ],
+          "unhealthy_indicators": [
+            "Multiple areas or robots are stopped.",
+            "Nothing is moving or the robotic system is not responding.",
+            "Small sort or hospital workflow is unavailable.",
+            "RMS main panel is mostly blank or shows the apparent '.NET Control not created.' message."
+          ],
+          "inconclusive_indicators": [
+            "Only one robot is reported stopped.",
+            "The RMS image or error sections cannot be read.",
+            "The site cannot confirm whether the stoppage is broad or localized."
+          ],
+          "retrieval_text": "diagnostic_decision Confirm the observable scope of the stoppage Determine whether the report represents a site-wide or broad robotic stoppage with abnormal control-system presentation rather than an isolated robot issue. Procedure needed to ask the site which affected areas or workflows are stopped, whether multiple robots are stationary, and whether automated sorting or hospital tote removal is affected; also inspect the RMS/HMI overview for a normally populated versus mostly blank operational display and any readable system or AGV error indicators. The site operator or support user confirms through site interview and the RMS/HMI view whether multiple robots or areas are stopped, the small sort or hospital workflow is affected, and the RMS page is populated normally. Unhealthy signals are broad non-movement, robotic-system nonresponse, or a mostly blank RMS page with an apparent '.NET Control not created.' message. Healthy signals are localized impact with otherwise normal fleet presentation. Inconclusive signals are an unclear scope report, unreadable RMS display, or unavailable site confirmation. operator L1_support L2_support operator L1_support {\"id\": \"capability:fleet_system_status\", \"support_contract\": {}, \"relevant_evidence\": \"The packet contains a site-wide stoppage report and a blank RMS/system-status presentation.\"} Site reports only a localized issue. RMS overview is populated and shows normal system presentation. Other automated areas continue operating. Multiple areas or robots are stopped. Nothing is moving or the robotic system is not responding. Small sort or hospital workflow is unavailable. RMS main panel is mostly blank or shows the apparent '.NET Control not created.' message. Only one robot is reported stopped. The RMS image or error sections cannot be read. The site cannot confirm whether the stoppage is broad or localized."
+        },
+        {
+          "node_id": "node_2",
+          "node_type": "diagnostic_decision",
+          "title": "Check for a named service or application failure",
+          "intent": "Determine whether Windows evidence indicates an OptiSweep service termination or clustered WCSWebApplication/application errors that correlate with the broad stoppage.",
+          "runbook_placeholder": "Procedure needed to inspect Windows Event Viewer System and Application logs for the named OptiSweep service and WCSWebApplication, including Service Control Manager termination events, the visible Event 7031 category, clustered application errors, and the WCSWebApplication Event 20102 failed-command evidence, while preserving timestamps and uncertainty.",
+          "expected_or_observed_result": "L1, L2, or L3 support reviews Windows Event Viewer. Unhealthy signals are a System-log Service Control Manager event showing OptiSweep terminated unexpectedly, or Application-log WCSWebApplication/Application Error entries clustered around the reported interruption, including the visible Event ID 20102 failed database-command evidence. Healthy signals are no relevant service termination or clustered application errors. Inconclusive signals are unavailable logs, ambiguous timestamps, or errors without a credible temporal relationship to the stoppage.",
+          "allowed_roles": [
+            "L1_support",
+            "L2_support",
+            "L3_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "L1_support",
+            "L2_support"
+          ],
+          "ontology_capabilities": [
+            {
+              "id": "capability:windows_service_or_event_log",
+              "support_contract": {},
+              "relevant_evidence": "Event Viewer artifacts directly show Service Control Manager Event 7031 and clustered application errors."
+            },
+            {
+              "id": "capability:wcs_service_health",
+              "support_contract": {},
+              "relevant_evidence": "The packet names OptiSweep and WCSWebApplication and documents their abnormal events."
+            }
+          ],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "The supplied ontology does not provide a specific Event Viewer event-to-service recovery mapping beyond the named capability."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "No relevant OptiSweep termination event is present in the incident window.",
+            "No clustered WCSWebApplication or Application Error entries are present.",
+            "The reviewed service and application evidence is temporally unrelated to the reported symptoms."
+          ],
+          "unhealthy_indicators": [
+            "Service Control Manager Event 7031 states that OptiSweep terminated unexpectedly.",
+            "Application-log entries show clustered WCSWebApplication or Application Error events around the stoppage.",
+            "WCSWebApplication Event 20102 shows a failed database command near the interruption."
+          ],
+          "inconclusive_indicators": [
+            "Event logs are unavailable or incomplete.",
+            "The event timestamp cannot be aligned with the symptom report.",
+            "The event text is unreadable or only indicates a generic warning."
+          ],
+          "retrieval_text": "diagnostic_decision Check for a named service or application failure Determine whether Windows evidence indicates an OptiSweep service termination or clustered WCSWebApplication/application errors that correlate with the broad stoppage. Procedure needed to inspect Windows Event Viewer System and Application logs for the named OptiSweep service and WCSWebApplication, including Service Control Manager termination events, the visible Event 7031 category, clustered application errors, and the WCSWebApplication Event 20102 failed-command evidence, while preserving timestamps and uncertainty. L1, L2, or L3 support reviews Windows Event Viewer. Unhealthy signals are a System-log Service Control Manager event showing OptiSweep terminated unexpectedly, or Application-log WCSWebApplication/Application Error entries clustered around the reported interruption, including the visible Event ID 20102 failed database-command evidence. Healthy signals are no relevant service termination or clustered application errors. Inconclusive signals are unavailable logs, ambiguous timestamps, or errors without a credible temporal relationship to the stoppage. L1_support L2_support L3_support L1_support L2_support {\"id\": \"capability:windows_service_or_event_log\", \"support_contract\": {}, \"relevant_evidence\": \"Event Viewer artifacts directly show Service Control Manager Event 7031 and clustered application errors.\"} {\"id\": \"capability:wcs_service_health\", \"support_contract\": {}, \"relevant_evidence\": \"The packet names OptiSweep and WCSWebApplication and documents their abnormal events.\"} The supplied ontology does not provide a specific Event Viewer event-to-service recovery mapping beyond the named capability. No relevant OptiSweep termination event is present in the incident window. No clustered WCSWebApplication or Application Error entries are present. The reviewed service and application evidence is temporally unrelated to the reported symptoms. Service Control Manager Event 7031 states that OptiSweep terminated unexpectedly. Application-log entries show clustered WCSWebApplication or Application Error events around the stoppage. WCSWebApplication Event 20102 shows a failed database command near the interruption. Event logs are unavailable or incomplete. The event timestamp cannot be aligned with the symptom report. The event text is unreadable or only indicates a generic warning."
+        },
+        {
+          "node_id": "node_3",
+          "node_type": "procedure_reference",
+          "title": "Restore the affected OptiSweep or gateway service through an approved procedure",
+          "intent": "Perform the source-supported recovery direction for the affected control service or gateway when the authorized support role confirms an abnormal service or gateway state.",
+          "runbook_placeholder": "Procedure needed for authorized recovery of the named OptiSweep service or Ignition gateway, including safety prerequisites, role limits, recovery completion criteria, and the distinction between a service reset, gateway restart, and unsupported configuration or database changes.",
+          "expected_or_observed_result": "L1, L2, or L3 support records that the approved recovery procedure for the affected OptiSweep service or Ignition gateway has completed or is still in progress. Progress is indicated by a returned service or gateway status and an available post-recovery validation surface. Failure is indicated by an unavailable service, repeated termination, or an incomplete gateway restart. Inconclusive status means the procedure outcome is not visible or cannot be confirmed.",
+          "allowed_roles": [
+            "L1_support",
+            "L2_support",
+            "L3_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "L2_support",
+            "L3_support"
+          ],
+          "ontology_capabilities": [],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "The packet does not establish whether OptiSweep reset or Ignition gateway restart was the sufficient recovery action.",
+            "The exact recovery command sequence is intentionally excluded from this playbook candidate."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "Authorized recovery is reported complete.",
+            "OptiSweep is shown as Running after the recovery attempt.",
+            "Ignition Systems Overview is reachable after gateway recovery."
+          ],
+          "unhealthy_indicators": [
+            "OptiSweep remains stopped or terminates again.",
+            "Ignition gateway remains unavailable or the restart does not complete.",
+            "The same service or application errors recur immediately."
+          ],
+          "inconclusive_indicators": [
+            "A restart is shown as in progress without a completion result.",
+            "A service is shown as Running but no responsiveness check has been completed.",
+            "The recovery action is described only in chat without direct status evidence."
+          ],
+          "retrieval_text": "procedure_reference Restore the affected OptiSweep or gateway service through an approved procedure Perform the source-supported recovery direction for the affected control service or gateway when the authorized support role confirms an abnormal service or gateway state. Procedure needed for authorized recovery of the named OptiSweep service or Ignition gateway, including safety prerequisites, role limits, recovery completion criteria, and the distinction between a service reset, gateway restart, and unsupported configuration or database changes. L1, L2, or L3 support records that the approved recovery procedure for the affected OptiSweep service or Ignition gateway has completed or is still in progress. Progress is indicated by a returned service or gateway status and an available post-recovery validation surface. Failure is indicated by an unavailable service, repeated termination, or an incomplete gateway restart. Inconclusive status means the procedure outcome is not visible or cannot be confirmed. L1_support L2_support L3_support L2_support L3_support The packet does not establish whether OptiSweep reset or Ignition gateway restart was the sufficient recovery action. The exact recovery command sequence is intentionally excluded from this playbook candidate. Authorized recovery is reported complete. OptiSweep is shown as Running after the recovery attempt. Ignition Systems Overview is reachable after gateway recovery. OptiSweep remains stopped or terminates again. Ignition gateway remains unavailable or the restart does not complete. The same service or application errors recur immediately. A restart is shown as in progress without a completion result. A service is shown as Running but no responsiveness check has been completed. The recovery action is described only in chat without direct status evidence."
+        },
+        {
+          "node_id": "node_4",
+          "node_type": "validation_gate",
+          "title": "Validate service and API responsiveness",
+          "intent": "Confirm that the recovered control path responds before attempting residual AGV correction or releasing the site to automated operation.",
+          "runbook_placeholder": "Procedure needed to validate OptiSweep responsiveness through the incident-evidenced GetAgvStatuses API endpoint, inspect returned AGV records without treating the client schema warning as a confirmed service failure, and corroborate with Ignition Systems Overview and Windows Services when those surfaces are available.",
+          "expected_or_observed_result": "L1, L2, or L3 support checks the named OptiSweep/WCS API and, where applicable, the Ignition Systems Overview and Windows Services state. Healthy signals are a successful GetAgvStatuses response with returned AGV records, an available gateway status page, and a Running OptiSweep service. Unhealthy signals are no API response, unavailable gateway, or a stopped or repeatedly failing service. Inconclusive signals are HTTP success with unclear data validity, such as the observed schema warning, or a status page without confirmation of current service responsiveness.",
+          "allowed_roles": [
+            "L1_support",
+            "L2_support",
+            "L3_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "L1_support",
+            "L2_support"
+          ],
+          "ontology_capabilities": [
+            {
+              "id": "capability:wcs_api_responsiveness",
+              "support_contract": {},
+              "relevant_evidence": "The packet documents GetAgvStatuses returning HTTP 200 with AGV records."
+            },
+            {
+              "id": "capability:wcs_service_health",
+              "support_contract": {},
+              "relevant_evidence": "The packet names OptiSweep and documents service-state checks."
+            },
+            {
+              "id": "capability:gateway_health",
+              "support_contract": {},
+              "relevant_evidence": "The packet includes an Ignition Systems Overview response-time check."
+            }
+          ],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "The packet does not define whether the API schema warning is an endpoint defect, client specification issue, or incident condition."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "GetAgvStatuses returns HTTP 200 with AGV records.",
+            "OptiSweep is shown as Running.",
+            "Ignition Systems Overview is reachable and reports current response with no recent slow response events."
+          ],
+          "unhealthy_indicators": [
+            "GetAgvStatuses does not respond or returns no usable records.",
+            "OptiSweep is stopped or unavailable.",
+            "Ignition gateway status is unavailable or shows sustained abnormal responsiveness."
+          ],
+          "inconclusive_indicators": [
+            "HTTP 200 is returned but the API client reports that response data differs from the endpoint specification.",
+            "Returned records are present but their operational status cannot be interpreted.",
+            "A gateway page is reachable but the current relationship to the recovered service is unknown."
+          ],
+          "retrieval_text": "validation_gate Validate service and API responsiveness Confirm that the recovered control path responds before attempting residual AGV correction or releasing the site to automated operation. Procedure needed to validate OptiSweep responsiveness through the incident-evidenced GetAgvStatuses API endpoint, inspect returned AGV records without treating the client schema warning as a confirmed service failure, and corroborate with Ignition Systems Overview and Windows Services when those surfaces are available. L1, L2, or L3 support checks the named OptiSweep/WCS API and, where applicable, the Ignition Systems Overview and Windows Services state. Healthy signals are a successful GetAgvStatuses response with returned AGV records, an available gateway status page, and a Running OptiSweep service. Unhealthy signals are no API response, unavailable gateway, or a stopped or repeatedly failing service. Inconclusive signals are HTTP success with unclear data validity, such as the observed schema warning, or a status page without confirmation of current service responsiveness. L1_support L2_support L3_support L1_support L2_support {\"id\": \"capability:wcs_api_responsiveness\", \"support_contract\": {}, \"relevant_evidence\": \"The packet documents GetAgvStatuses returning HTTP 200 with AGV records.\"} {\"id\": \"capability:wcs_service_health\", \"support_contract\": {}, \"relevant_evidence\": \"The packet names OptiSweep and documents service-state checks.\"} {\"id\": \"capability:gateway_health\", \"support_contract\": {}, \"relevant_evidence\": \"The packet includes an Ignition Systems Overview response-time check.\"} The packet does not define whether the API schema warning is an endpoint defect, client specification issue, or incident condition. GetAgvStatuses returns HTTP 200 with AGV records. OptiSweep is shown as Running. Ignition Systems Overview is reachable and reports current response with no recent slow response events. GetAgvStatuses does not respond or returns no usable records. OptiSweep is stopped or unavailable. Ignition gateway status is unavailable or shows sustained abnormal responsiveness. HTTP 200 is returned but the API client reports that response data differs from the endpoint specification. Returned records are present but their operational status cannot be interpreted. A gateway page is reachable but the current relationship to the recovered service is unknown."
+        },
+        {
+          "node_id": "node_5",
+          "node_type": "diagnostic_decision",
+          "title": "Determine whether residual AGV synchronization issues remain",
+          "intent": "Identify whether individual AGVs remain out of sync after service responsiveness has returned.",
+          "runbook_placeholder": "Procedure needed to inspect the RMS fleet or map view for out-of-sync AGVs and to corroborate relevant robot state through the read-only robotics database view in SQL Server Management Studio or the GetAgvStatuses response; the procedure must define how to distinguish residual synchronization problems from normal charging, queueing, or exchange states.",
+          "expected_or_observed_result": "The operator or support user reviews the RMS fleet or map view and, where available to authorized remote support, corroborates the AGV state through the incident-evidenced SSMS robotics view or API response. Unhealthy signals are AGVs still marked out of sync, inconsistent with the expected fleet state, or not participating normally after service recovery. Healthy signals are no residual out-of-sync AGVs and a coherent fleet view. Inconclusive signals are unreadable AGV state, ambiguous waiting or charging states, or an API response whose records cannot be interpreted.",
+          "allowed_roles": [
+            "operator",
+            "L1_support",
+            "L2_support",
+            "L3_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "operator",
+            "L2_support"
+          ],
+          "ontology_capabilities": [
+            {
+              "id": "capability:device_roster_state",
+              "support_contract": {},
+              "relevant_evidence": "The source describes locating individual out-of-sync AGVs and includes backend AGV state evidence."
+            },
+            {
+              "id": "capability:agv_active_errors",
+              "support_contract": {},
+              "relevant_evidence": "The RMS interface includes AGV error sections and the incident evidence includes AGV status and error-related records."
+            }
+          ],
+          "backend_observability": [
+            {
+              "concept": "AGV operational state",
+              "surface": "wcs_sql",
+              "database": "robotics-related database",
+              "model": "AgvStatusModel",
+              "fields": [
+                "state"
+              ],
+              "correlation_keys": [
+                "AGV or robot identity"
+              ],
+              "freshness_field": ""
+            }
+          ],
+          "ontology_gaps": [
+            "The packet does not define the authoritative state value that means out of sync.",
+            "The SQL artifact does not provide a validated interpretation for each displayed queue, charging, exchange, or waiting state."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "RMS shows the expected fleet without residual out-of-sync indicators.",
+            "Read-only state evidence is coherent with the expected operational state.",
+            "No residual AGV errors or mismatched roster states are identified."
+          ],
+          "unhealthy_indicators": [
+            "One or more AGVs remain reported as out of sync.",
+            "RMS and the corroborating status evidence disagree about AGV membership or state.",
+            "AGV error or abnormal-state indicators remain after service recovery."
+          ],
+          "inconclusive_indicators": [
+            "The RMS map or AGV error sections are unreadable.",
+            "The API returns records but their state meaning is unclear.",
+            "The SSMS results show waiting, charging, staging, or exchange states without a validated interpretation."
+          ],
+          "retrieval_text": "diagnostic_decision Determine whether residual AGV synchronization issues remain Identify whether individual AGVs remain out of sync after service responsiveness has returned. Procedure needed to inspect the RMS fleet or map view for out-of-sync AGVs and to corroborate relevant robot state through the read-only robotics database view in SQL Server Management Studio or the GetAgvStatuses response; the procedure must define how to distinguish residual synchronization problems from normal charging, queueing, or exchange states. The operator or support user reviews the RMS fleet or map view and, where available to authorized remote support, corroborates the AGV state through the incident-evidenced SSMS robotics view or API response. Unhealthy signals are AGVs still marked out of sync, inconsistent with the expected fleet state, or not participating normally after service recovery. Healthy signals are no residual out-of-sync AGVs and a coherent fleet view. Inconclusive signals are unreadable AGV state, ambiguous waiting or charging states, or an API response whose records cannot be interpreted. operator L1_support L2_support L3_support operator L2_support {\"id\": \"capability:device_roster_state\", \"support_contract\": {}, \"relevant_evidence\": \"The source describes locating individual out-of-sync AGVs and includes backend AGV state evidence.\"} {\"id\": \"capability:agv_active_errors\", \"support_contract\": {}, \"relevant_evidence\": \"The RMS interface includes AGV error sections and the incident evidence includes AGV status and error-related records.\"} {\"concept\": \"AGV operational state\", \"surface\": \"wcs_sql\", \"database\": \"robotics-related database\", \"model\": \"AgvStatusModel\", \"fields\": [\"state\"], \"correlation_keys\": [\"AGV or robot identity\"], \"freshness_field\": \"\"} The packet does not define the authoritative state value that means out of sync. The SQL artifact does not provide a validated interpretation for each displayed queue, charging, exchange, or waiting state. RMS shows the expected fleet without residual out-of-sync indicators. Read-only state evidence is coherent with the expected operational state. No residual AGV errors or mismatched roster states are identified. One or more AGVs remain reported as out of sync. RMS and the corroborating status evidence disagree about AGV membership or state. AGV error or abnormal-state indicators remain after service recovery. The RMS map or AGV error sections are unreadable. The API returns records but their state meaning is unclear. The SSMS results show waiting, charging, staging, or exchange states without a validated interpretation."
+        },
+        {
+          "node_id": "node_6",
+          "node_type": "procedure_reference",
+          "title": "Correct residual AGV synchronization state",
+          "intent": "Use the authorized RMS recovery procedure to correct individually identified out-of-sync AGVs after the control service is responsive.",
+          "runbook_placeholder": "Procedure needed for authorized RMS handling of an individually identified out-of-sync AGV, including safety preconditions, role limits, identification of the affected asset, correction completion criteria, and boundaries for physical AGV recovery or unsupported state changes.",
+          "expected_or_observed_result": "The authorized operator or support role records that the identified AGV synchronization corrections are complete. Progress is indicated by the affected AGV no longer appearing out of sync in the RMS or corroborating state view. Failure is indicated by an AGV remaining out of sync, becoming unavailable, or requiring an unsupported physical or configuration action. Inconclusive status means the correction result cannot be confirmed.",
+          "allowed_roles": [
+            "L2_support",
+            "L3_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "L2_support",
+            "L3_support"
+          ],
+          "ontology_capabilities": [],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "The source does not describe the exact RMS correction operation or define when physical AGV recovery is required."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "Each identified AGV is no longer represented as out of sync.",
+            "The RMS fleet view is coherent after the authorized correction.",
+            "No new AGV error or safety condition is introduced."
+          ],
+          "unhealthy_indicators": [
+            "An identified AGV remains out of sync after the approved correction.",
+            "The AGV cannot be safely or consistently represented in the RMS state.",
+            "Correction requires an operation outside the authorized role or source-supported procedure."
+          ],
+          "inconclusive_indicators": [
+            "RMS state does not refresh or is unreadable.",
+            "The source state and displayed state cannot be correlated.",
+            "The correction appears complete but automated operation has not yet been validated."
+          ],
+          "retrieval_text": "procedure_reference Correct residual AGV synchronization state Use the authorized RMS recovery procedure to correct individually identified out-of-sync AGVs after the control service is responsive. Procedure needed for authorized RMS handling of an individually identified out-of-sync AGV, including safety preconditions, role limits, identification of the affected asset, correction completion criteria, and boundaries for physical AGV recovery or unsupported state changes. The authorized operator or support role records that the identified AGV synchronization corrections are complete. Progress is indicated by the affected AGV no longer appearing out of sync in the RMS or corroborating state view. Failure is indicated by an AGV remaining out of sync, becoming unavailable, or requiring an unsupported physical or configuration action. Inconclusive status means the correction result cannot be confirmed. L2_support L3_support L2_support L3_support The source does not describe the exact RMS correction operation or define when physical AGV recovery is required. Each identified AGV is no longer represented as out of sync. The RMS fleet view is coherent after the authorized correction. No new AGV error or safety condition is introduced. An identified AGV remains out of sync after the approved correction. The AGV cannot be safely or consistently represented in the RMS state. Correction requires an operation outside the authorized role or source-supported procedure. RMS state does not refresh or is unreadable. The source state and displayed state cannot be correlated. The correction appears complete but automated operation has not yet been validated."
+        },
+        {
+          "node_id": "node_7",
+          "node_type": "validation_gate",
+          "title": "Validate stable automated operation",
+          "intent": "Confirm that service responsiveness, AGV state, and the affected automated workflows have recovered sufficiently to declare the technical response successful.",
+          "runbook_placeholder": "Procedure needed to validate OptiSweep service state, repeat the GetAgvStatuses responsiveness check, review RMS fleet state for residual synchronization issues, and obtain site confirmation that automated movement and the affected sort or bag-out workflow remain operational before declaring recovery.",
+          "expected_or_observed_result": "The site operator confirms that automated movement and the affected sort workflow have resumed, while support confirms service/API responsiveness and no residual out-of-sync AGVs in the available status views. Healthy signals are resumed auto bag-out or automated operation, normal or coherent AGV status, and continued service responsiveness. Unhealthy signals are renewed non-movement, inability to complete the affected workflow, repeated service termination, or residual AGV synchronization issues. Inconclusive signals are only a service-running display, a single HTTP 200 response with unresolved data ambiguity, or recovery of one workflow without confirmation of broader operation.",
+          "allowed_roles": [
+            "operator",
+            "L1_support",
+            "L2_support",
+            "L3_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "operator",
+            "L1_support",
+            "L2_support"
+          ],
+          "ontology_capabilities": [
+            {
+              "id": "capability:fleet_system_status",
+              "support_contract": {},
+              "relevant_evidence": "The packet documents site-wide stoppage and later resumed automated operation."
+            },
+            {
+              "id": "capability:wcs_api_responsiveness",
+              "support_contract": {},
+              "relevant_evidence": "GetAgvStatuses was explicitly used as a post-restart validation check."
+            },
+            {
+              "id": "capability:device_roster_state",
+              "support_contract": {},
+              "relevant_evidence": "RMS was used to locate and correct out-of-sync AGVs."
+            }
+          ],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "The packet does not define a duration or monitoring interval for stable recovery.",
+            "The source confirms resumed auto bag-out but does not quantify whether every site function was restored."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "GetAgvStatuses continues to return usable AGV records.",
+            "OptiSweep remains Running.",
+            "RMS shows no residual out-of-sync AGVs.",
+            "The site confirms automated movement and the affected sort or bag-out workflow have resumed."
+          ],
+          "unhealthy_indicators": [
+            "Robots stop again or nothing is moving.",
+            "The affected sort or bag-out workflow remains unavailable.",
+            "OptiSweep terminates again or API responsiveness is lost.",
+            "Residual out-of-sync AGVs remain after correction."
+          ],
+          "inconclusive_indicators": [
+            "Only the service Running state is confirmed.",
+            "The API returns HTTP 200 but the response schema warning remains unresolved.",
+            "The site reports one workflow resumed without confirming broader automated operation.",
+            "RMS status is unavailable or stale."
+          ],
+          "retrieval_text": "validation_gate Validate stable automated operation Confirm that service responsiveness, AGV state, and the affected automated workflows have recovered sufficiently to declare the technical response successful. Procedure needed to validate OptiSweep service state, repeat the GetAgvStatuses responsiveness check, review RMS fleet state for residual synchronization issues, and obtain site confirmation that automated movement and the affected sort or bag-out workflow remain operational before declaring recovery. The site operator confirms that automated movement and the affected sort workflow have resumed, while support confirms service/API responsiveness and no residual out-of-sync AGVs in the available status views. Healthy signals are resumed auto bag-out or automated operation, normal or coherent AGV status, and continued service responsiveness. Unhealthy signals are renewed non-movement, inability to complete the affected workflow, repeated service termination, or residual AGV synchronization issues. Inconclusive signals are only a service-running display, a single HTTP 200 response with unresolved data ambiguity, or recovery of one workflow without confirmation of broader operation. operator L1_support L2_support L3_support operator L1_support L2_support {\"id\": \"capability:fleet_system_status\", \"support_contract\": {}, \"relevant_evidence\": \"The packet documents site-wide stoppage and later resumed automated operation.\"} {\"id\": \"capability:wcs_api_responsiveness\", \"support_contract\": {}, \"relevant_evidence\": \"GetAgvStatuses was explicitly used as a post-restart validation check.\"} {\"id\": \"capability:device_roster_state\", \"support_contract\": {}, \"relevant_evidence\": \"RMS was used to locate and correct out-of-sync AGVs.\"} The packet does not define a duration or monitoring interval for stable recovery. The source confirms resumed auto bag-out but does not quantify whether every site function was restored. GetAgvStatuses continues to return usable AGV records. OptiSweep remains Running. RMS shows no residual out-of-sync AGVs. The site confirms automated movement and the affected sort or bag-out workflow have resumed. Robots stop again or nothing is moving. The affected sort or bag-out workflow remains unavailable. OptiSweep terminates again or API responsiveness is lost. Residual out-of-sync AGVs remain after correction. Only the service Running state is confirmed. The API returns HTTP 200 but the response schema warning remains unresolved. The site reports one workflow resumed without confirming broader automated operation. RMS status is unavailable or stale."
+        },
+        {
+          "node_id": "node_8",
+          "node_type": "escalation_gate",
+          "title": "Stop when the supported recovery path cannot be validated",
+          "intent": "Hand off when the authorized diagnostic, recovery, or validation path is unavailable, unsafe, unauthorized, or does not restore stable operation.",
+          "runbook_placeholder": "Procedure needed to prepare a technical escalation handoff with Windows Event Viewer System and Application evidence, OptiSweep Windows Services state, Ignition gateway status, GetAgvStatuses response evidence, RMS AGV-state evidence, recovery attempts, validation results, and explicit stop criteria.",
+          "expected_or_observed_result": "L1 or L2 support identifies that the service or gateway cannot be recovered through the approved path, the API or status evidence remains unavailable or ambiguous, AGVs remain out of sync, or automated operation does not remain stable. The escalation package should preserve the relevant Event Viewer evidence, service state, API result, RMS state, attempted recovery outcomes, and site-observed operational impact.",
+          "allowed_roles": [
+            "L1_support",
+            "L2_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "L2_support",
+            "L3_support"
+          ],
+          "ontology_capabilities": [],
+          "backend_observability": [],
+          "ontology_gaps": [],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "Not applicable; this node is entered only when the supported path cannot safely continue."
+          ],
+          "unhealthy_indicators": [
+            "Authorized recovery cannot be performed or completed.",
+            "Service or gateway repeatedly fails.",
+            "API, RMS, or service validation fails after recovery.",
+            "Automated operation remains stopped or unstable."
+          ],
+          "inconclusive_indicators": [
+            "Evidence is insufficient to determine whether recovery succeeded.",
+            "The source-named diagnostic surfaces are unavailable.",
+            "The API returns ambiguous data and no corroborating status is available."
+          ],
+          "retrieval_text": "escalation_gate Stop when the supported recovery path cannot be validated Hand off when the authorized diagnostic, recovery, or validation path is unavailable, unsafe, unauthorized, or does not restore stable operation. Procedure needed to prepare a technical escalation handoff with Windows Event Viewer System and Application evidence, OptiSweep Windows Services state, Ignition gateway status, GetAgvStatuses response evidence, RMS AGV-state evidence, recovery attempts, validation results, and explicit stop criteria. L1 or L2 support identifies that the service or gateway cannot be recovered through the approved path, the API or status evidence remains unavailable or ambiguous, AGVs remain out of sync, or automated operation does not remain stable. The escalation package should preserve the relevant Event Viewer evidence, service state, API result, RMS state, attempted recovery outcomes, and site-observed operational impact. L1_support L2_support L2_support L3_support Not applicable; this node is entered only when the supported path cannot safely continue. Authorized recovery cannot be performed or completed. Service or gateway repeatedly fails. API, RMS, or service validation fails after recovery. Automated operation remains stopped or unstable. Evidence is insufficient to determine whether recovery succeeded. The source-named diagnostic surfaces are unavailable. The API returns ambiguous data and no corroborating status is available."
+        }
+      ],
+      "retrieval_text": "Site-wide robotic stoppage with AGV synchronization loss Operators reported that nothing was moving. The robotic system was reported as not responding. The small sort was not running. Multiple bots were reported as not moving in different areas. Totes could not be removed from the hospital workflow. The RMS/HMI appeared mostly blank and displayed a message reported as '.NET Control not created.' AGVs were reported as out of sync. AGVs stopped AGVs are stopped robots stopped nothing is moving the robots aren't moving small sort stopped robotic system not responding AGVs are out of sync can't get the totes out RMS is blank Operators reported that nothing was moving The robotic system was reported as not responding The small sort was not running Multiple bots were reported as not moving in different areas Totes could not be removed from the hospital workflow The RMS/HMI appeared mostly blank and displayed a AGVs were reported as out of sync AGVs aren't moving no RMS alarms rms showing no alarms",
+      "validation_status": "needs_sme_review"
+    },
+    {
+      "playbook_id": "playbook_incident_228723_agv_pairing_roster_recovery",
+      "playbook_candidate_id": "playbook_candidate_incident_228723_agv_pairing_roster_recovery",
+      "case_id": "228723",
+      "extraction_mode": "one_playbook_candidate_per_incident",
+      "title": "AMR pairing failure with abnormal fleet roster or mapping state",
+      "user_facing_summary": "Use this path when a site reports that an ACB or zone cannot obtain an AMR pair, multiple AMRs route unexpectedly, or the system appears down after an AMR replacement or add/remove event.",
+      "observed_entry_symptoms": [
+        "A site reports that an ACB or affected zone cannot get a pair.",
+        "The ACB system is described as down or production is seriously impacted.",
+        "Replacement AMRs reportedly route to the hospital lane instead of supporting the affected workflow.",
+        "An AMR was previously reported with low battery or in an abnormal physical location.",
+        "The issue follows an AMR replacement, add, or remove activity."
+      ],
+      "support_user_language_examples": [
+        "Zone can't get a pair",
+        "ACB system is down",
+        "AMRs are going to the hospital",
+        "The robot was replaced and nothing is pairing",
+        "AGV was added but it is not getting a task",
+        "Robot is not mapped",
+        "Robots are not working after an add/remove",
+        "A site reports that an ACB or affected",
+        "The ACB system is described as down or production is seriously impacted",
+        "Replacement AMRs reportedly route to the hospital lane",
+        "An AMR was previously reported with low battery",
+        "The issue follows an AMR replacement, add, or remove activity",
+        "zone unable to get a pair",
+        "every AMR goes to the hospital",
+        "AMRs going to hospital",
+        "pairing failure",
+        "robot not mapped"
+      ],
+      "affected_systems_or_components": [
+        "ACB system",
+        "AMRs / AGVs",
+        "RMS",
+        "Hospital lane",
+        "Affected zone pairing workflow"
+      ],
+      "node_retrieval_summaries": [
+        {
+          "node_id": "node_1",
+          "node_type": "diagnostic_decision",
+          "title": "Confirm the observable pairing and routing pattern",
+          "intent": "Determine whether the site is experiencing an active pairing failure with abnormal AMR routing or behavior after a replacement or add/remove event.",
+          "runbook_placeholder": "Procedure needed to interview the site about the affected zone's pairing availability, intended AMR routing, recent replacement or add/remove activity, and current physical robot behavior; this is an evidence-collection and interpretation aid, not a case-intake procedure.",
+          "expected_or_observed_result": "The site operator or L1 support confirms through site interview or visual observation whether the affected zone cannot obtain a pair, whether AMRs are routing to the hospital lane instead of the intended workflow, and whether the pattern followed an AMR replacement or add/remove event. Healthy means pairing and intended routing are available; unhealthy means pairing remains unavailable or multiple AMRs show the reported abnormal routing; inconclusive means the site cannot confirm the affected workflow, timing, or current behavior.",
+          "allowed_roles": [
+            "operator",
+            "L1_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "operator",
+            "L1_support"
+          ],
+          "ontology_capabilities": [
+            {
+              "id": "capability:device_roster_state",
+              "support_contract": "Confirm robot roster, mapping, locations, cell codes, or abnormal fleet membership.",
+              "relevant_evidence": "The source describes replacement/add activity, a robot reportedly not mapped, and abnormal routing."
+            }
+          ],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "No ontology-backed source mapping is provided for interpreting the phrase 'unable to get a pair' from the site interview alone."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "Site reports that the affected workflow can obtain a pair.",
+            "AMRs are routing to the intended workflow rather than uniformly to the hospital lane."
+          ],
+          "unhealthy_indicators": [
+            "Site confirms the affected zone still cannot obtain a pair.",
+            "Multiple replacement AMRs continue routing to the hospital lane.",
+            "A recent add/remove or replacement event coincides with the current failure."
+          ],
+          "inconclusive_indicators": [
+            "The site cannot reproduce the pairing failure.",
+            "The affected workflow or current robot behavior cannot be identified."
+          ],
+          "retrieval_text": "diagnostic_decision Confirm the observable pairing and routing pattern Determine whether the site is experiencing an active pairing failure with abnormal AMR routing or behavior after a replacement or add/remove event. Procedure needed to interview the site about the affected zone's pairing availability, intended AMR routing, recent replacement or add/remove activity, and current physical robot behavior; this is an evidence-collection and interpretation aid, not a case-intake procedure. The site operator or L1 support confirms through site interview or visual observation whether the affected zone cannot obtain a pair, whether AMRs are routing to the hospital lane instead of the intended workflow, and whether the pattern followed an AMR replacement or add/remove event. Healthy means pairing and intended routing are available; unhealthy means pairing remains unavailable or multiple AMRs show the reported abnormal routing; inconclusive means the site cannot confirm the affected workflow, timing, or current behavior. operator L1_support operator L1_support {\"id\": \"capability:device_roster_state\", \"support_contract\": \"Confirm robot roster, mapping, locations, cell codes, or abnormal fleet membership.\", \"relevant_evidence\": \"The source describes replacement/add activity, a robot reportedly not mapped, and abnormal routing.\"} No ontology-backed source mapping is provided for interpreting the phrase 'unable to get a pair' from the site interview alone. Site reports that the affected workflow can obtain a pair. AMRs are routing to the intended workflow rather than uniformly to the hospital lane. Site confirms the affected zone still cannot obtain a pair. Multiple replacement AMRs continue routing to the hospital lane. A recent add/remove or replacement event coincides with the current failure. The site cannot reproduce the pairing failure. The affected workflow or current robot behavior cannot be identified."
+        },
+        {
+          "node_id": "node_2",
+          "node_type": "diagnostic_decision",
+          "title": "Check fleet roster and mapping state",
+          "intent": "Determine whether RMS shows an abnormal robot membership, mapping, or status condition that could explain the pairing failure.",
+          "runbook_placeholder": "Procedure needed to inspect the RMS fleet or robot status view for roster membership, mapping, location, and exception indicators associated with the affected workflow, and to interpret whether the displayed state is consistent with normal pairing.",
+          "expected_or_observed_result": "The site operator or L1 support inspects the RMS fleet or robot status view. Healthy means the relevant robot membership, mapping, and status appear consistent with the intended operating area; unhealthy means a robot is shown as not mapped, missing, duplicated, abnormal, or highlighted as an exception; inconclusive means the RMS view is unreadable, unavailable, or does not identify the relevant robot state.",
+          "allowed_roles": [
+            "operator",
+            "L1_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "operator",
+            "L1_support"
+          ],
+          "ontology_capabilities": [
+            {
+              "id": "capability:device_roster_state",
+              "support_contract": "Confirm robot roster, mapping, locations, cell codes, or abnormal fleet membership.",
+              "relevant_evidence": "The case states that the removed robot was shown as not mapped and includes RMS status-table evidence."
+            }
+          ],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "The supplied incident evidence does not provide readable RMS field names or a validated mapping from the red table entries to a specific pairing state."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "RMS shows the relevant robot roster and mapping as consistent with the operating area.",
+            "No relevant exception or abnormal membership indicator remains."
+          ],
+          "unhealthy_indicators": [
+            "RMS shows a relevant robot as not mapped or otherwise abnormal.",
+            "RMS displays exception-highlighted robot or fleet entries associated with the affected workflow."
+          ],
+          "inconclusive_indicators": [
+            "RMS status text or table values cannot be read reliably.",
+            "The displayed abnormal entry cannot be correlated with the affected workflow."
+          ],
+          "retrieval_text": "diagnostic_decision Check fleet roster and mapping state Determine whether RMS shows an abnormal robot membership, mapping, or status condition that could explain the pairing failure. Procedure needed to inspect the RMS fleet or robot status view for roster membership, mapping, location, and exception indicators associated with the affected workflow, and to interpret whether the displayed state is consistent with normal pairing. The site operator or L1 support inspects the RMS fleet or robot status view. Healthy means the relevant robot membership, mapping, and status appear consistent with the intended operating area; unhealthy means a robot is shown as not mapped, missing, duplicated, abnormal, or highlighted as an exception; inconclusive means the RMS view is unreadable, unavailable, or does not identify the relevant robot state. operator L1_support operator L1_support {\"id\": \"capability:device_roster_state\", \"support_contract\": \"Confirm robot roster, mapping, locations, cell codes, or abnormal fleet membership.\", \"relevant_evidence\": \"The case states that the removed robot was shown as not mapped and includes RMS status-table evidence.\"} The supplied incident evidence does not provide readable RMS field names or a validated mapping from the red table entries to a specific pairing state. RMS shows the relevant robot roster and mapping as consistent with the operating area. No relevant exception or abnormal membership indicator remains. RMS shows a relevant robot as not mapped or otherwise abnormal. RMS displays exception-highlighted robot or fleet entries associated with the affected workflow. RMS status text or table values cannot be read reliably. The displayed abnormal entry cannot be correlated with the affected workflow."
+        },
+        {
+          "node_id": "node_3",
+          "node_type": "procedure_reference",
+          "title": "Use an authorized site-side robot isolation or removal path",
+          "intent": "If an abnormal roster or mapping condition is supported, use the approved site procedure to isolate or remove the affected robot from the operating system and place it in a safe non-operational state.",
+          "runbook_placeholder": "Procedure needed for authorized site-side AGV physical isolation and system removal, including safety prerequisites, handling of a robot in an abnormal location, charger placement, and confirmation of the corresponding RMS state; exact removal or handling steps belong in the runbook.",
+          "expected_or_observed_result": "The authorized site operator observes that the identified robot has been removed or isolated from active operation and placed in the reported safe state, such as charging, without creating a new physical hazard. Successful completion is confirmed by the site; failure or uncertainty means the robot cannot be safely isolated, the system-side state is unclear, or the action is outside the executor's authorization.",
+          "allowed_roles": [
+            "operator"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "operator"
+          ],
+          "ontology_capabilities": [],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "The packet does not specify the approved remove/add procedure, authorization boundary, or exact system-side confirmation criteria."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "Authorized site personnel confirm the affected robot is safely isolated and no longer participating in active operation."
+          ],
+          "unhealthy_indicators": [
+            "The robot remains active, obstructed, or associated with the abnormal roster state.",
+            "The system continues to exhibit the pairing failure after the supported isolation action."
+          ],
+          "inconclusive_indicators": [
+            "The site cannot confirm the robot's physical state or the corresponding RMS state.",
+            "The source-supported action cannot be performed safely or by an authorized role."
+          ],
+          "retrieval_text": "procedure_reference Use an authorized site-side robot isolation or removal path If an abnormal roster or mapping condition is supported, use the approved site procedure to isolate or remove the affected robot from the operating system and place it in a safe non-operational state. Procedure needed for authorized site-side AGV physical isolation and system removal, including safety prerequisites, handling of a robot in an abnormal location, charger placement, and confirmation of the corresponding RMS state; exact removal or handling steps belong in the runbook. The authorized site operator observes that the identified robot has been removed or isolated from active operation and placed in the reported safe state, such as charging, without creating a new physical hazard. Successful completion is confirmed by the site; failure or uncertainty means the robot cannot be safely isolated, the system-side state is unclear, or the action is outside the executor's authorization. operator operator The packet does not specify the approved remove/add procedure, authorization boundary, or exact system-side confirmation criteria. Authorized site personnel confirm the affected robot is safely isolated and no longer participating in active operation. The robot remains active, obstructed, or associated with the abnormal roster state. The system continues to exhibit the pairing failure after the supported isolation action. The site cannot confirm the robot's physical state or the corresponding RMS state. The source-supported action cannot be performed safely or by an authorized role."
+        },
+        {
+          "node_id": "node_4",
+          "node_type": "validation_gate",
+          "title": "Confirm pairing and operational stability",
+          "intent": "Determine whether the affected workflow has recovered after the authorized robot isolation or removal action.",
+          "runbook_placeholder": "Procedure needed to validate pairing availability through site observation and to review the RMS fleet or robot status view for persistent abnormal membership, mapping, or exception indicators during a defined monitoring period.",
+          "expected_or_observed_result": "The site operator confirms that the affected workflow can obtain a pair and that AMRs are operating as expected; where available, the operator or L1 support checks the RMS fleet view for the abnormal entry to be absent or no longer active. Healthy means pairing resumes and operation remains stable during observation; unhealthy means pairing remains unavailable, AMRs continue routing abnormally, or the abnormal RMS state persists; inconclusive means recovery is only reported administratively or the RMS details cannot be read.",
+          "allowed_roles": [
+            "operator",
+            "L1_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "operator",
+            "L1_support"
+          ],
+          "ontology_capabilities": [
+            {
+              "id": "capability:device_roster_state",
+              "support_contract": "Confirm robot roster, mapping, locations, cell codes, or abnormal fleet membership.",
+              "relevant_evidence": "The source uses RMS screenshots and reports continued operation after robot removal, but does not provide independently readable final roster values."
+            }
+          ],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "The packet does not define a validated live RMS success state or an independent telemetry-based recovery check."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "Site confirms that the affected workflow can obtain a pair.",
+            "AMRs no longer uniformly route to the hospital lane.",
+            "RMS no longer shows the relevant abnormal roster or mapping indication.",
+            "Operation remains stable during monitoring."
+          ],
+          "unhealthy_indicators": [
+            "The affected workflow still cannot obtain a pair.",
+            "AMRs continue routing to the hospital lane unexpectedly.",
+            "RMS continues to show a relevant unmapped or abnormal robot state."
+          ],
+          "inconclusive_indicators": [
+            "Recovery is stated only in a case comment or message without direct operational confirmation.",
+            "The RMS screenshots do not show readable final status details.",
+            "The system works briefly but stable monitoring is not completed."
+          ],
+          "retrieval_text": "validation_gate Confirm pairing and operational stability Determine whether the affected workflow has recovered after the authorized robot isolation or removal action. Procedure needed to validate pairing availability through site observation and to review the RMS fleet or robot status view for persistent abnormal membership, mapping, or exception indicators during a defined monitoring period. The site operator confirms that the affected workflow can obtain a pair and that AMRs are operating as expected; where available, the operator or L1 support checks the RMS fleet view for the abnormal entry to be absent or no longer active. Healthy means pairing resumes and operation remains stable during observation; unhealthy means pairing remains unavailable, AMRs continue routing abnormally, or the abnormal RMS state persists; inconclusive means recovery is only reported administratively or the RMS details cannot be read. operator L1_support operator L1_support {\"id\": \"capability:device_roster_state\", \"support_contract\": \"Confirm robot roster, mapping, locations, cell codes, or abnormal fleet membership.\", \"relevant_evidence\": \"The source uses RMS screenshots and reports continued operation after robot removal, but does not provide independently readable final roster values.\"} The packet does not define a validated live RMS success state or an independent telemetry-based recovery check. Site confirms that the affected workflow can obtain a pair. AMRs no longer uniformly route to the hospital lane. RMS no longer shows the relevant abnormal roster or mapping indication. Operation remains stable during monitoring. The affected workflow still cannot obtain a pair. AMRs continue routing to the hospital lane unexpectedly. RMS continues to show a relevant unmapped or abnormal robot state. Recovery is stated only in a case comment or message without direct operational confirmation. The RMS screenshots do not show readable final status details. The system works briefly but stable monitoring is not completed."
+        },
+        {
+          "node_id": "node_5",
+          "node_type": "escalation_gate",
+          "title": "Stop when the supported roster-recovery path is unsafe or unsuccessful",
+          "intent": "Hand off when the abnormal state cannot be safely isolated, the available evidence is inconclusive, or pairing and stable operation do not return after the supported path.",
+          "runbook_placeholder": "Procedure needed to prepare an escalation handoff containing the site-observed pairing and routing symptoms, RMS screenshots or status evidence, physical robot state, actions attempted, authorization constraints, and validation results; it must define stop criteria without prescribing case-management or communication workflow.",
+          "expected_or_observed_result": "L1 or L2 support observes that the site cannot safely complete the authorized action, RMS evidence remains unreadable or contradictory, or the affected workflow fails validation after the attempted recovery. A supported continuation exists only when role authorization, physical safety, system-side state, and recovery evidence are all available.",
+          "allowed_roles": [
+            "L1_support",
+            "L2_support",
+            "L3_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "L2_support",
+            "L3_support"
+          ],
+          "ontology_capabilities": [],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "The source does not define the exact escalation role boundary or a canonical evidence package."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [],
+          "unhealthy_indicators": [
+            "Physical safety or authorization cannot be confirmed.",
+            "RMS state is unavailable, contradictory, or insufficient to identify the affected robot condition.",
+            "Pairing or intended routing remains abnormal after the supported action."
+          ],
+          "inconclusive_indicators": [
+            "The source evidence does not identify whether the issue is mechanical, mapping-related, or another subsystem condition."
+          ],
+          "retrieval_text": "escalation_gate Stop when the supported roster-recovery path is unsafe or unsuccessful Hand off when the abnormal state cannot be safely isolated, the available evidence is inconclusive, or pairing and stable operation do not return after the supported path. Procedure needed to prepare an escalation handoff containing the site-observed pairing and routing symptoms, RMS screenshots or status evidence, physical robot state, actions attempted, authorization constraints, and validation results; it must define stop criteria without prescribing case-management or communication workflow. L1 or L2 support observes that the site cannot safely complete the authorized action, RMS evidence remains unreadable or contradictory, or the affected workflow fails validation after the attempted recovery. A supported continuation exists only when role authorization, physical safety, system-side state, and recovery evidence are all available. L1_support L2_support L3_support L2_support L3_support The source does not define the exact escalation role boundary or a canonical evidence package. Physical safety or authorization cannot be confirmed. RMS state is unavailable, contradictory, or insufficient to identify the affected robot condition. Pairing or intended routing remains abnormal after the supported action. The source evidence does not identify whether the issue is mechanical, mapping-related, or another subsystem condition."
+        }
+      ],
+      "retrieval_text": "AMR pairing failure with abnormal fleet roster or mapping state A site reports that an ACB or affected zone cannot get a pair. The ACB system is described as down or production is seriously impacted. Replacement AMRs reportedly route to the hospital lane instead of supporting the affected workflow. An AMR was previously reported with low battery or in an abnormal physical location. The issue follows an AMR replacement, add, or remove activity. Zone can't get a pair ACB system is down AMRs are going to the hospital The robot was replaced and nothing is pairing AGV was added but it is not getting a task Robot is not mapped Robots are not working after an add/remove A site reports that an ACB or affected The ACB system is described as down or production is seriously impacted Replacement AMRs reportedly route to the hospital lane An AMR was previously reported with low battery The issue follows an AMR replacement, add, or remove activity zone unable to get a pair every AMR goes to the hospital AMRs going to hospital pairing failure robot not mapped",
+      "validation_status": "needs_sme_review"
+    },
+    {
+      "playbook_id": "playbook_incident_218550_bagout_agv_sequence",
+      "playbook_candidate_id": "playbook_candidate_incident_218550_bagout_agv_sequence",
+      "case_id": "218550",
+      "extraction_mode": "one_playbook_candidate_per_incident",
+      "title": "Bag-out stoppage with unresponsive or out-of-sequence AGVs",
+      "user_facing_summary": "Use this path when automated bag-out stops or progresses only partially and site personnel report that an AGV is not moving, a robot may be out of sequence, or a related HMI shows a fault.",
+      "observed_entry_symptoms": [
+        "Automated bag-out stops after sorting or starts and then stops before completion.",
+        "Manual bagging out is required because the automated process does not progress.",
+        "One or more AGVs or robots appear not to be moving.",
+        "The site reports that a robot may be out of sequence or out of position.",
+        "An HMI associated with the hospital area shows a fault or a task-related condition."
+      ],
+      "support_user_language_examples": [
+        "Bag-out stopped",
+        "Bag out started then stopped",
+        "We are manually bagging out",
+        "AGV stopped",
+        "The robot hasn't moved",
+        "Robots are out of sequence",
+        "One pair won't start bag-out",
+        "The hospital HMI has a fault",
+        "There is a stuck task",
+        "Automated bag-out stops after sorting or starts and then stops before completion",
+        "Manual bagging out is required because the automated process does not progress",
+        "One or more AGVs or robots appear not to be moving",
+        "The site reports that a robot may be",
+        "An HMI associated with the hospital area shows",
+        "bag out stopped",
+        "system stopped at bag-out",
+        "manually bagging out",
+        "hospital HMI fault"
+      ],
+      "affected_systems_or_components": [
+        "Bag-out stage",
+        "AGV / robot fleet",
+        "AGV pairing or sequence state",
+        "RMS",
+        "Hospital-area HMI",
+        "Tote or task handling workflow",
+        "AVEVA screen visibility context"
+      ],
+      "node_retrieval_summaries": [
+        {
+          "node_id": "node_1",
+          "node_type": "diagnostic_decision",
+          "title": "Confirm automated bag-out stoppage and affected operating scope",
+          "intent": "Confirm that automated bag-out is stopped or only partially progressing and determine whether the condition is site-wide, localized to a zone or pair, or limited to a tote or task.",
+          "runbook_placeholder": "Procedure needed to interview the site about whether automated bag-out is stopped, whether it started and stopped again, whether manual bagging is being used, and which affected zone, pair, tote, or task is involved; use the incident-supported RMS activity or status view when available to compare the affected operating scope.",
+          "expected_or_observed_result": "The site operator or L1 support observes the bag-out state through site reporting and available operational views. Unhealthy evidence is automated bag-out stopped, only partially completed, or requiring manual bagging; healthy evidence is automated bag-out progressing normally; inconclusive evidence is an unclear scope, unavailable view, or conflicting site reports.",
+          "allowed_roles": [
+            "operator",
+            "L1_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "operator",
+            "L1_support"
+          ],
+          "ontology_capabilities": [
+            {
+              "id": "capability:agv_active_errors",
+              "support_contract": {},
+              "relevant_evidence": "The incident includes an RMS-style activity observation showing an AGV did not move for three hours."
+            }
+          ],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "No supplied ontology mapping establishes a specific bag-out progress or exchange-pair status surface."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "Site reports automated bag-out is progressing and does not require manual intervention.",
+            "The affected scope cannot be reproduced or is limited to a resolved transient condition."
+          ],
+          "unhealthy_indicators": [
+            "Automated bag-out is stopped.",
+            "Bag-out starts but stops before completion.",
+            "Manual bagging out is required.",
+            "A specific zone, pair, tote, or task is identified as unable to progress."
+          ],
+          "inconclusive_indicators": [
+            "The site cannot identify whether the condition is automated or manual.",
+            "The RMS or other operational view is unavailable or does not show enough detail to determine scope."
+          ],
+          "retrieval_text": "diagnostic_decision Confirm automated bag-out stoppage and affected operating scope Confirm that automated bag-out is stopped or only partially progressing and determine whether the condition is site-wide, localized to a zone or pair, or limited to a tote or task. Procedure needed to interview the site about whether automated bag-out is stopped, whether it started and stopped again, whether manual bagging is being used, and which affected zone, pair, tote, or task is involved; use the incident-supported RMS activity or status view when available to compare the affected operating scope. The site operator or L1 support observes the bag-out state through site reporting and available operational views. Unhealthy evidence is automated bag-out stopped, only partially completed, or requiring manual bagging; healthy evidence is automated bag-out progressing normally; inconclusive evidence is an unclear scope, unavailable view, or conflicting site reports. operator L1_support operator L1_support {\"id\": \"capability:agv_active_errors\", \"support_contract\": {}, \"relevant_evidence\": \"The incident includes an RMS-style activity observation showing an AGV did not move for three hours.\"} No supplied ontology mapping establishes a specific bag-out progress or exchange-pair status surface. Site reports automated bag-out is progressing and does not require manual intervention. The affected scope cannot be reproduced or is limited to a resolved transient condition. Automated bag-out is stopped. Bag-out starts but stops before completion. Manual bagging out is required. A specific zone, pair, tote, or task is identified as unable to progress. The site cannot identify whether the condition is automated or manual. The RMS or other operational view is unavailable or does not show enough detail to determine scope."
+        },
+        {
+          "node_id": "node_2",
+          "node_type": "diagnostic_decision",
+          "title": "Check for AGV inactivity or active fault evidence",
+          "intent": "Determine whether one or more AGVs show abnormal inactivity, active error, or a related sequence or pairing indication that correlates with the bag-out stoppage.",
+          "runbook_placeholder": "Procedure needed to inspect RMS fleet activity and status for AGV movement, active fault indications, and sequence or pairing abnormalities, and to compare the affected AGV or pair with the bag-out stoppage; if the relevant screen is unavailable, use the source-mentioned system active-error view without assuming a specific backend field.",
+          "expected_or_observed_result": "The site operator or L1 support observes the RMS activity or status view; support may also use the source-mentioned system active-error view when available. Unhealthy evidence is an AGV not moving for an extended period, an active robot fault, or a sequence or pairing indication associated with the stoppage; healthy evidence is normal movement and no relevant active fault; inconclusive evidence is an unreadable or unavailable view, unidentified AGV, or no correlation to bag-out.",
+          "allowed_roles": [
+            "operator",
+            "L1_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "operator",
+            "L1_support"
+          ],
+          "ontology_capabilities": [
+            {
+              "id": "capability:agv_active_errors",
+              "support_contract": {},
+              "relevant_evidence": "The source reports an AGV that did not move for three hours and mentions checking system active error."
+            }
+          ],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "The supplied capability snippet lists backend models but does not provide a complete Stage 5 mapping for this incident's exact active-error evidence."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "Affected AGVs show current movement or normal activity.",
+            "No relevant active AGV fault or sequence indication is present.",
+            "The bag-out stoppage does not correlate with AGV inactivity."
+          ],
+          "unhealthy_indicators": [
+            "An AGV is shown as not moving for an extended period.",
+            "An active robot fault or abnormal sequence or pairing indication is present.",
+            "AGV inactivity or abnormal state corresponds with the stalled bag-out scope."
+          ],
+          "inconclusive_indicators": [
+            "The AGV identifier or status details cannot be read.",
+            "RMS activity is stale, unavailable, or does not explain the bag-out condition.",
+            "Only a suspected out-of-sequence condition is reported without corroborating status evidence."
+          ],
+          "retrieval_text": "diagnostic_decision Check for AGV inactivity or active fault evidence Determine whether one or more AGVs show abnormal inactivity, active error, or a related sequence or pairing indication that correlates with the bag-out stoppage. Procedure needed to inspect RMS fleet activity and status for AGV movement, active fault indications, and sequence or pairing abnormalities, and to compare the affected AGV or pair with the bag-out stoppage; if the relevant screen is unavailable, use the source-mentioned system active-error view without assuming a specific backend field. The site operator or L1 support observes the RMS activity or status view; support may also use the source-mentioned system active-error view when available. Unhealthy evidence is an AGV not moving for an extended period, an active robot fault, or a sequence or pairing indication associated with the stoppage; healthy evidence is normal movement and no relevant active fault; inconclusive evidence is an unreadable or unavailable view, unidentified AGV, or no correlation to bag-out. operator L1_support operator L1_support {\"id\": \"capability:agv_active_errors\", \"support_contract\": {}, \"relevant_evidence\": \"The source reports an AGV that did not move for three hours and mentions checking system active error.\"} The supplied capability snippet lists backend models but does not provide a complete Stage 5 mapping for this incident's exact active-error evidence. Affected AGVs show current movement or normal activity. No relevant active AGV fault or sequence indication is present. The bag-out stoppage does not correlate with AGV inactivity. An AGV is shown as not moving for an extended period. An active robot fault or abnormal sequence or pairing indication is present. AGV inactivity or abnormal state corresponds with the stalled bag-out scope. The AGV identifier or status details cannot be read. RMS activity is stale, unavailable, or does not explain the bag-out condition. Only a suspected out-of-sequence condition is reported without corroborating status evidence."
+        },
+        {
+          "node_id": "node_3",
+          "node_type": "diagnostic_decision",
+          "title": "Check HMI-visible task, tote, or lane fault",
+          "intent": "Determine whether an HMI-visible fault, stuck task, tote association, or hospital-area workflow condition is preventing bag-out from progressing.",
+          "runbook_placeholder": "Procedure needed to inspect the source-named hospital-area HMI for the displayed fault, task state, tote identity or location indication, and whether the workflow request progresses; include the approved HMI acknowledgement or retry decision rubric without prescribing exact screen navigation or physical disconnection.",
+          "expected_or_observed_result": "The site operator observes the named HMI or hospital-area interface. Unhealthy evidence is a displayed fault, stuck task, tote mismatch or location discrepancy, or a request that does not progress; healthy evidence is no relevant HMI fault and normal task or tote progression; inconclusive evidence is an unreadable screen, an HMI that cannot be reached, or a reported fault whose relationship to bag-out is unclear.",
+          "allowed_roles": [
+            "operator",
+            "L1_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "operator",
+            "L1_support"
+          ],
+          "ontology_capabilities": [],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "The supplied ontology snippets do not provide a validated HMI task or tote-state mapping for this incident."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "The HMI shows no relevant fault or stuck task.",
+            "The relevant tote or task is correctly identified and the workflow request progresses.",
+            "The site confirms the HMI-related condition is no longer blocking operation."
+          ],
+          "unhealthy_indicators": [
+            "The HMI shows a fault.",
+            "A stuck task is visible only on the HMI.",
+            "A tote is reported at an unexpected location or the request enters a state but does not progress."
+          ],
+          "inconclusive_indicators": [
+            "The HMI screen is unavailable, unreadable, or not updated.",
+            "The referenced hospital area cannot be reconciled with the ingestion site metadata.",
+            "The fault is visible but its relationship to the bag-out stoppage is not established."
+          ],
+          "retrieval_text": "diagnostic_decision Check HMI-visible task, tote, or lane fault Determine whether an HMI-visible fault, stuck task, tote association, or hospital-area workflow condition is preventing bag-out from progressing. Procedure needed to inspect the source-named hospital-area HMI for the displayed fault, task state, tote identity or location indication, and whether the workflow request progresses; include the approved HMI acknowledgement or retry decision rubric without prescribing exact screen navigation or physical disconnection. The site operator observes the named HMI or hospital-area interface. Unhealthy evidence is a displayed fault, stuck task, tote mismatch or location discrepancy, or a request that does not progress; healthy evidence is no relevant HMI fault and normal task or tote progression; inconclusive evidence is an unreadable screen, an HMI that cannot be reached, or a reported fault whose relationship to bag-out is unclear. operator L1_support operator L1_support The supplied ontology snippets do not provide a validated HMI task or tote-state mapping for this incident. The HMI shows no relevant fault or stuck task. The relevant tote or task is correctly identified and the workflow request progresses. The site confirms the HMI-related condition is no longer blocking operation. The HMI shows a fault. A stuck task is visible only on the HMI. A tote is reported at an unexpected location or the request enters a state but does not progress. The HMI screen is unavailable, unreadable, or not updated. The referenced hospital area cannot be reconciled with the ingestion site metadata. The fault is visible but its relationship to the bag-out stoppage is not established."
+        },
+        {
+          "node_id": "node_4",
+          "node_type": "procedure_reference",
+          "title": "Restore the affected AGV sequence or pairing state through an authorized recovery path",
+          "intent": "Use an approved, role-authorized recovery procedure to restore the affected AGV or pair to a valid operating sequence when the diagnostic evidence supports that direction.",
+          "runbook_placeholder": "Procedure needed for authorized AGV sequence, pairing, removal, replacement, or controlled return-to-operation recovery, including the requirement that an AGV removed from the grid be appropriately replaced and that safety and role limits be respected; do not infer a specific robot or exact recovery action.",
+          "expected_or_observed_result": "L2 support or another authorized role records that the approved recovery path was completed. Progress evidence is that affected robots remain on, the relevant sequence or pairing state is restored, and bag-out can proceed; failure evidence is continued inactivity, repeated stopping, or an unresolved sequence or pairing condition; inconclusive evidence is that the exact recovery action or resulting state cannot be verified.",
+          "allowed_roles": [
+            "L2_support",
+            "L3_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "L2_support",
+            "L3_support"
+          ],
+          "ontology_capabilities": [],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "The packet does not establish the exact authorized AGV recovery procedure or the decisive action used in this case."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "Authorized personnel confirm the affected AGV or pair is in the expected sequence.",
+            "Robots remain on and available after the approved recovery.",
+            "The recovery path reports completion without introducing a new fault."
+          ],
+          "unhealthy_indicators": [
+            "The affected AGV or pair remains out of sequence or unavailable.",
+            "Robots turn off again or remain unable to support bag-out.",
+            "Bag-out starts but stops again after the recovery attempt."
+          ],
+          "inconclusive_indicators": [
+            "The source does not identify which action restored service.",
+            "The sequence or pairing state cannot be confirmed.",
+            "The role authorized to perform the recovery is unavailable."
+          ],
+          "retrieval_text": "procedure_reference Restore the affected AGV sequence or pairing state through an authorized recovery path Use an approved, role-authorized recovery procedure to restore the affected AGV or pair to a valid operating sequence when the diagnostic evidence supports that direction. Procedure needed for authorized AGV sequence, pairing, removal, replacement, or controlled return-to-operation recovery, including the requirement that an AGV removed from the grid be appropriately replaced and that safety and role limits be respected; do not infer a specific robot or exact recovery action. L2 support or another authorized role records that the approved recovery path was completed. Progress evidence is that affected robots remain on, the relevant sequence or pairing state is restored, and bag-out can proceed; failure evidence is continued inactivity, repeated stopping, or an unresolved sequence or pairing condition; inconclusive evidence is that the exact recovery action or resulting state cannot be verified. L2_support L3_support L2_support L3_support The packet does not establish the exact authorized AGV recovery procedure or the decisive action used in this case. Authorized personnel confirm the affected AGV or pair is in the expected sequence. Robots remain on and available after the approved recovery. The recovery path reports completion without introducing a new fault. The affected AGV or pair remains out of sequence or unavailable. Robots turn off again or remain unable to support bag-out. Bag-out starts but stops again after the recovery attempt. The source does not identify which action restored service. The sequence or pairing state cannot be confirmed. The role authorized to perform the recovery is unavailable."
+        },
+        {
+          "node_id": "node_5",
+          "node_type": "validation_gate",
+          "title": "Validate stable AGV operation and automated bag-out",
+          "intent": "Confirm that the recovery restored the affected workflow and that AGVs remain functional rather than merely showing a temporary improvement.",
+          "runbook_placeholder": "Procedure needed to validate sustained AGV availability and sequence state through the source-supported RMS activity view, confirm bag-out progress with the site, and check the relevant hospital-area HMI for recurrence of the fault or stuck-task indication before declaring recovery.",
+          "expected_or_observed_result": "The site operator confirms automated bag-out progress and normal AGV operation, while support observes the available RMS or HMI status. Healthy evidence is AGVs moving or available, the relevant sequence or pairing state remaining valid, bag-out completing or continuing normally, and no relevant HMI fault; unhealthy evidence is renewed inactivity, another partial bag-out stop, or a recurring task or HMI fault; inconclusive evidence is only a verbal improvement without observable continued operation.",
+          "allowed_roles": [
+            "operator",
+            "L1_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "operator",
+            "L1_support"
+          ],
+          "ontology_capabilities": [
+            {
+              "id": "capability:agv_active_errors",
+              "support_contract": {},
+              "relevant_evidence": "The source used AGV activity and active-error discussion as evidence during troubleshooting."
+            }
+          ],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "No supplied ontology mapping defines a complete automated bag-out validation contract."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "The customer confirms AGVs are functional.",
+            "AGVs remain available or moving after recovery.",
+            "Automated bag-out continues or completes without another stoppage.",
+            "The relevant HMI no longer shows the blocking fault or stuck task."
+          ],
+          "unhealthy_indicators": [
+            "AGV inactivity returns.",
+            "Bag-out stops again after partial progress.",
+            "The HMI fault or stuck task recurs.",
+            "The affected sequence or pairing state is not maintained."
+          ],
+          "inconclusive_indicators": [
+            "Only a temporary 'all good' report is available.",
+            "No continued bag-out or AGV activity can be observed.",
+            "The HMI or RMS view remains unavailable."
+          ],
+          "retrieval_text": "validation_gate Validate stable AGV operation and automated bag-out Confirm that the recovery restored the affected workflow and that AGVs remain functional rather than merely showing a temporary improvement. Procedure needed to validate sustained AGV availability and sequence state through the source-supported RMS activity view, confirm bag-out progress with the site, and check the relevant hospital-area HMI for recurrence of the fault or stuck-task indication before declaring recovery. The site operator confirms automated bag-out progress and normal AGV operation, while support observes the available RMS or HMI status. Healthy evidence is AGVs moving or available, the relevant sequence or pairing state remaining valid, bag-out completing or continuing normally, and no relevant HMI fault; unhealthy evidence is renewed inactivity, another partial bag-out stop, or a recurring task or HMI fault; inconclusive evidence is only a verbal improvement without observable continued operation. operator L1_support operator L1_support {\"id\": \"capability:agv_active_errors\", \"support_contract\": {}, \"relevant_evidence\": \"The source used AGV activity and active-error discussion as evidence during troubleshooting.\"} No supplied ontology mapping defines a complete automated bag-out validation contract. The customer confirms AGVs are functional. AGVs remain available or moving after recovery. Automated bag-out continues or completes without another stoppage. The relevant HMI no longer shows the blocking fault or stuck task. AGV inactivity returns. Bag-out stops again after partial progress. The HMI fault or stuck task recurs. The affected sequence or pairing state is not maintained. Only a temporary 'all good' report is available. No continued bag-out or AGV activity can be observed. The HMI or RMS view remains unavailable."
+        },
+        {
+          "node_id": "node_6",
+          "node_type": "escalation_gate",
+          "title": "Stop and escalate when the supported path cannot establish stable recovery",
+          "intent": "Hand off when the available evidence does not identify a supported recovery path, authorized recovery cannot be completed safely, or validation fails after recovery.",
+          "runbook_placeholder": "Procedure needed to prepare an escalation handoff with RMS activity evidence, HMI or hospital-area fault evidence, affected scope, sequence or pairing state, recovery attempts, role and safety constraints, and validation outcomes; include stop criteria for repeated bag-out stoppage or unresolved AGV inactivity.",
+          "expected_or_observed_result": "L2 or L3 support receives an evidence package containing the observable bag-out behavior, RMS activity or fault evidence, HMI fault or task evidence, sequence or pairing actions attempted, and validation results. Escalation is required when the condition persists or evidence remains ambiguous; the path may continue only when a supported and authorized recovery is identified.",
+          "allowed_roles": [
+            "L2_support",
+            "L3_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "L2_support",
+            "L3_support"
+          ],
+          "ontology_capabilities": [],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "The incident packet does not define a complete evidence package or formal escalation role boundary beyond the need for additional technical assistance."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [],
+          "unhealthy_indicators": [
+            "Bag-out remains stopped or repeatedly stops.",
+            "AGV inactivity or sequence abnormality remains unresolved.",
+            "The HMI fault or stuck task cannot be cleared or interpreted.",
+            "Validation cannot demonstrate stable automated operation."
+          ],
+          "inconclusive_indicators": [
+            "The source-supported surfaces are unavailable or unreadable.",
+            "The decisive recovery action cannot be identified.",
+            "The relationship between the HMI condition and bag-out remains ambiguous."
+          ],
+          "retrieval_text": "escalation_gate Stop and escalate when the supported path cannot establish stable recovery Hand off when the available evidence does not identify a supported recovery path, authorized recovery cannot be completed safely, or validation fails after recovery. Procedure needed to prepare an escalation handoff with RMS activity evidence, HMI or hospital-area fault evidence, affected scope, sequence or pairing state, recovery attempts, role and safety constraints, and validation outcomes; include stop criteria for repeated bag-out stoppage or unresolved AGV inactivity. L2 or L3 support receives an evidence package containing the observable bag-out behavior, RMS activity or fault evidence, HMI fault or task evidence, sequence or pairing actions attempted, and validation results. Escalation is required when the condition persists or evidence remains ambiguous; the path may continue only when a supported and authorized recovery is identified. L2_support L3_support L2_support L3_support The incident packet does not define a complete evidence package or formal escalation role boundary beyond the need for additional technical assistance. Bag-out remains stopped or repeatedly stops. AGV inactivity or sequence abnormality remains unresolved. The HMI fault or stuck task cannot be cleared or interpreted. Validation cannot demonstrate stable automated operation. The source-supported surfaces are unavailable or unreadable. The decisive recovery action cannot be identified. The relationship between the HMI condition and bag-out remains ambiguous."
+        }
+      ],
+      "retrieval_text": "Bag-out stoppage with unresponsive or out-of-sequence AGVs Automated bag-out stops after sorting or starts and then stops before completion. Manual bagging out is required because the automated process does not progress. One or more AGVs or robots appear not to be moving. The site reports that a robot may be out of sequence or out of position. An HMI associated with the hospital area shows a fault or a task-related condition. Bag-out stopped Bag out started then stopped We are manually bagging out AGV stopped The robot hasn't moved Robots are out of sequence One pair won't start bag-out The hospital HMI has a fault There is a stuck task Automated bag-out stops after sorting or starts and then stops before completion Manual bagging out is required because the automated process does not progress One or more AGVs or robots appear not to be moving The site reports that a robot may be An HMI associated with the hospital area shows bag out stopped system stopped at bag-out manually bagging out hospital HMI fault",
+      "validation_status": "needs_sme_review"
+    },
+    {
+      "playbook_id": "playbook_incident_223554_hospital_induct_flow",
+      "playbook_candidate_id": "playbook_candidate_incident_223554_hospital_induct_flow",
+      "case_id": "223554",
+      "extraction_mode": "one_playbook_candidate_per_incident",
+      "title": "Hospital tote-induct or site-flow disruption with AGV state anomalies",
+      "user_facing_summary": "Use this path when a hospital station cannot add or induct totes, a robot appears shut down, or the site cannot start or sustain sort. Confirm the observable impact, check for AGV location or tote-association anomalies, consider the source-supported service and lane recovery path, and validate tote flow and site operation.",
+      "observed_entry_symptoms": [
+        "Hospital station cannot add or induct totes.",
+        "Totes can be removed but cannot be added at the hospital area.",
+        "A robot or AGV is reported in a shut down state.",
+        "The site cannot start sort or goes down during sort.",
+        "Hospital backlog or abnormal tote flow to the hospital area is reported."
+      ],
+      "support_user_language_examples": [
+        "Hospital can't induct totes",
+        "Hospital can't add totes",
+        "They can remove totes but cannot add",
+        "AGV is shut down",
+        "AGVs are in the wrong location",
+        "There are two AGVs under the rack",
+        "Site is down",
+        "Sort won't start",
+        "Nothing is moving",
+        "System is running now",
+        "Hospital station cannot add or induct totes",
+        "Totes can be removed but cannot be added at the hospital area",
+        "A robot or AGV is reported in a shut down state",
+        "The site cannot start sort or goes down during sort",
+        "Hospital backlog or abnormal tote flow to the hospital area is reported",
+        "can't induct totes",
+        "hospital induct blocked",
+        "AGV doesn't belong here"
+      ],
+      "affected_systems_or_components": [
+        "ACB hospital station",
+        "Hospital Lane",
+        "AGV hospital station",
+        "AGVs and robot locations",
+        "Totes and tote associations",
+        "OptiSweep services",
+        "Tippers",
+        "Sort operation"
+      ],
+      "node_retrieval_summaries": [
+        {
+          "node_id": "node_1",
+          "node_type": "diagnostic_decision",
+          "title": "Confirm the observable hospital and site-flow impact",
+          "intent": "Determine whether the current report is an active hospital tote-induct problem, a broader sort disruption, or a localized condition that does not match this response path.",
+          "runbook_placeholder": "Procedure needed to confirm with the site whether totes can be added and removed at the affected hospital station, whether the reported robot or station is shut down, whether sort can start or remain running, and what the Hospital HMI or related HMI view visibly reports.",
+          "expected_or_observed_result": "Site operator or support user confirms the affected workflow through a site interview and, when available, the Hospital HMI or related HMI view. Healthy signal: totes can be added and removed and sort is operating normally. Unhealthy signal: hospital tote addition or induction is unavailable, the station reports a shut down condition, or sort cannot start or sustain operation. Inconclusive: the site cannot identify the affected workflow or the available HMI/status image is unreadable.",
+          "allowed_roles": [
+            "operator",
+            "L1_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "operator",
+            "L1_support"
+          ],
+          "ontology_capabilities": [
+            {
+              "id": "capability:zone_pairing_state",
+              "support_contract": {},
+              "relevant_evidence": "The ontology snippet references pairing symptoms and site-reported zone conditions, but the incident does not clearly establish a pairing failure; use only as a possible later corroboration, not as the entry diagnosis."
+            }
+          ],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "No supplied ontology mapping clearly identifies the unreadable hospital HMI artifact or provides a backend mapping for hospital tote induction state."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "Site confirms totes can be added and removed at the hospital station.",
+            "Hospital workflow is accepting normal tote flow.",
+            "Sort starts and remains operating."
+          ],
+          "unhealthy_indicators": [
+            "Site confirms totes cannot be added or inducted.",
+            "A robot or hospital station is reported shut down.",
+            "Sort cannot start or stops during operation.",
+            "Hospital backlog continues to increase."
+          ],
+          "inconclusive_indicators": [
+            "Only second-hand symptom information is available.",
+            "The HMI screenshot has no readable labels or status meanings.",
+            "The report describes historical symptoms that are no longer active."
+          ],
+          "retrieval_text": "diagnostic_decision Confirm the observable hospital and site-flow impact Determine whether the current report is an active hospital tote-induct problem, a broader sort disruption, or a localized condition that does not match this response path. Procedure needed to confirm with the site whether totes can be added and removed at the affected hospital station, whether the reported robot or station is shut down, whether sort can start or remain running, and what the Hospital HMI or related HMI view visibly reports. Site operator or support user confirms the affected workflow through a site interview and, when available, the Hospital HMI or related HMI view. Healthy signal: totes can be added and removed and sort is operating normally. Unhealthy signal: hospital tote addition or induction is unavailable, the station reports a shut down condition, or sort cannot start or sustain operation. Inconclusive: the site cannot identify the affected workflow or the available HMI/status image is unreadable. operator L1_support operator L1_support {\"id\": \"capability:zone_pairing_state\", \"support_contract\": {}, \"relevant_evidence\": \"The ontology snippet references pairing symptoms and site-reported zone conditions, but the incident does not clearly establish a pairing failure; use only as a possible later corroboration, not as the entry diagnosis.\"} No supplied ontology mapping clearly identifies the unreadable hospital HMI artifact or provides a backend mapping for hospital tote induction state. Site confirms totes can be added and removed at the hospital station. Hospital workflow is accepting normal tote flow. Sort starts and remains operating. Site confirms totes cannot be added or inducted. A robot or hospital station is reported shut down. Sort cannot start or stops during operation. Hospital backlog continues to increase. Only second-hand symptom information is available. The HMI screenshot has no readable labels or status meanings. The report describes historical symptoms that are no longer active."
+        },
+        {
+          "node_id": "node_2",
+          "node_type": "diagnostic_decision",
+          "title": "Check for AGV location, roster, and tote-association anomalies",
+          "intent": "Determine whether the reported hospital-flow problem coincides with an AGV in an unexpected location, duplicate occupancy, disconnected tote, or residual tote association.",
+          "runbook_placeholder": "Procedure needed to compare the affected AGV or robot location and rack occupancy with the expected fleet or station state using the source-referenced HMI/layout view, the source-supported operational view or fleet status view, and API/Aveva state view when available; the procedure should also identify residual or disconnected tote associations without prescribing data mutations.",
+          "expected_or_observed_result": "Site operator or support user observes the physical or displayed AGV state using the available HMI/layout view, the source-supported operational view or fleet view when available, and the source-referenced API/Aveva state-management interface. Healthy signal: AGVs occupy expected locations and no disconnected or residual tote association is reported. Unhealthy signal: an AGV is reported in an unexpected location, multiple AGVs appear under one rack or in one location, an AGV is absent from an expected rack, or a disconnected/associated tote remains in the system. Inconclusive: identifiers, locations, or tote associations cannot be confirmed from the available view.",
+          "allowed_roles": [
+            "operator",
+            "L1_support",
+            "L2_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "operator",
+            "L1_support",
+            "L2_support"
+          ],
+          "ontology_capabilities": [
+            {
+              "id": "capability:zone_pairing_state",
+              "support_contract": {},
+              "relevant_evidence": "The packet includes a possible zone/location mismatch, but not a confirmed pairing failure."
+            }
+          ],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "The supplied ontology does not provide a specific backend mapping for the source-described disconnected tote and rack-occupancy evidence."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "AGVs are shown or confirmed in expected locations.",
+            "Expected racks or stations have the expected AGV occupancy.",
+            "No disconnected or residual tote association is reported.",
+            "The hospital station's displayed tote state is consistent with physical operation."
+          ],
+          "unhealthy_indicators": [
+            "AGV is reported not to belong in the displayed location.",
+            "Two AGVs appear under the same rack or in the same zone.",
+            "A rack or expected location is missing an AGV.",
+            "An AGV is associated with a disconnected or residual tote.",
+            "Hospital tote state cannot be reconciled with the displayed AGV state."
+          ],
+          "inconclusive_indicators": [
+            "AGV identifiers or rack labels are unreadable.",
+            "The display is only an annotated image without a reliable legend.",
+            "Physical and displayed locations cannot be compared."
+          ],
+          "retrieval_text": "diagnostic_decision Check for AGV location, roster, and tote-association anomalies Determine whether the reported hospital-flow problem coincides with an AGV in an unexpected location, duplicate occupancy, disconnected tote, or residual tote association. Procedure needed to compare the affected AGV or robot location and rack occupancy with the expected fleet or station state using the source-referenced HMI/layout view, the source-supported operational view or fleet status view, and API/Aveva state view when available; the procedure should also identify residual or disconnected tote associations without prescribing data mutations. Site operator or support user observes the physical or displayed AGV state using the available HMI/layout view, the source-supported operational view or fleet view when available, and the source-referenced API/Aveva state-management interface. Healthy signal: AGVs occupy expected locations and no disconnected or residual tote association is reported. Unhealthy signal: an AGV is reported in an unexpected location, multiple AGVs appear under one rack or in one location, an AGV is absent from an expected rack, or a disconnected/associated tote remains in the system. Inconclusive: identifiers, locations, or tote associations cannot be confirmed from the available view. operator L1_support L2_support operator L1_support L2_support {\"id\": \"capability:zone_pairing_state\", \"support_contract\": {}, \"relevant_evidence\": \"The packet includes a possible zone/location mismatch, but not a confirmed pairing failure.\"} The supplied ontology does not provide a specific backend mapping for the source-described disconnected tote and rack-occupancy evidence. AGVs are shown or confirmed in expected locations. Expected racks or stations have the expected AGV occupancy. No disconnected or residual tote association is reported. The hospital station's displayed tote state is consistent with physical operation. AGV is reported not to belong in the displayed location. Two AGVs appear under the same rack or in the same zone. A rack or expected location is missing an AGV. An AGV is associated with a disconnected or residual tote. Hospital tote state cannot be reconciled with the displayed AGV state. AGV identifiers or rack labels are unreadable. The display is only an annotated image without a reliable legend. Physical and displayed locations cannot be compared."
+        },
+        {
+          "node_id": "node_3",
+          "node_type": "diagnostic_decision",
+          "title": "Determine whether the hospital-station service condition is contributing",
+          "intent": "Determine whether the reported AGV hospital-station server or OptiSweep service condition is present and sufficiently correlated with the hospital or site-flow symptoms.",
+          "runbook_placeholder": "Procedure needed to review the incident's AGV hospital-station and OptiSweep service evidence, inspect Windows Event Viewer and Windows Services for current service health when access is authorized, and correlate that state with Hospital Lane or HMI responsiveness without assuming that the historical reset note proves a current fault.",
+          "expected_or_observed_result": "L1 or L2 support inspects the source-named service evidence in the available work-order or service notes and, where authorized, Windows Event Viewer or Windows Services for the affected host; the site or support user may also confirm Hospital Lane or HMI responsiveness. Healthy signal: the relevant service and hospital interface are responsive and no current abnormal service condition is evident. Unhealthy signal: current evidence shows an AGV hospital-station server or OptiSweep service abnormality, the hospital interface is unresponsive, or service-reset context coincides with the reported disruption. Inconclusive: the source only contains a historical note saying services need reset, without current status or named service details.",
+          "allowed_roles": [
+            "L1_support",
+            "L2_support",
+            "L3_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "L1_support",
+            "L2_support"
+          ],
+          "ontology_capabilities": [],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "The supplied ontology does not identify the exact OptiSweep service names or map the historical service-note artifact to current service-state fields."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "Authorized support confirms the relevant service is running and responsive.",
+            "Hospital Lane or the related HMI responds normally.",
+            "No current service abnormality is found."
+          ],
+          "unhealthy_indicators": [
+            "Current evidence shows a stopped, repeatedly failing, or otherwise abnormal relevant service.",
+            "Hospital Lane or its related HMI remains unresponsive while service health is abnormal.",
+            "A current service condition correlates with the inability to induct or start sort."
+          ],
+          "inconclusive_indicators": [
+            "Only a historical note says services need reset.",
+            "The exact service names or host are not identified.",
+            "The available artifact is a notes pane rather than a live service-status view."
+          ],
+          "retrieval_text": "diagnostic_decision Determine whether the hospital-station service condition is contributing Determine whether the reported AGV hospital-station server or OptiSweep service condition is present and sufficiently correlated with the hospital or site-flow symptoms. Procedure needed to review the incident's AGV hospital-station and OptiSweep service evidence, inspect Windows Event Viewer and Windows Services for current service health when access is authorized, and correlate that state with Hospital Lane or HMI responsiveness without assuming that the historical reset note proves a current fault. L1 or L2 support inspects the source-named service evidence in the available work-order or service notes and, where authorized, Windows Event Viewer or Windows Services for the affected host; the site or support user may also confirm Hospital Lane or HMI responsiveness. Healthy signal: the relevant service and hospital interface are responsive and no current abnormal service condition is evident. Unhealthy signal: current evidence shows an AGV hospital-station server or OptiSweep service abnormality, the hospital interface is unresponsive, or service-reset context coincides with the reported disruption. Inconclusive: the source only contains a historical note saying services need reset, without current status or named service details. L1_support L2_support L3_support L1_support L2_support The supplied ontology does not identify the exact OptiSweep service names or map the historical service-note artifact to current service-state fields. Authorized support confirms the relevant service is running and responsive. Hospital Lane or the related HMI responds normally. No current service abnormality is found. Current evidence shows a stopped, repeatedly failing, or otherwise abnormal relevant service. Hospital Lane or its related HMI remains unresponsive while service health is abnormal. A current service condition correlates with the inability to induct or start sort. Only a historical note says services need reset. The exact service names or host are not identified. The available artifact is a notes pane rather than a live service-status view."
+        },
+        {
+          "node_id": "node_4",
+          "node_type": "procedure_reference",
+          "title": "Apply authorized high-level recovery for the identified condition",
+          "intent": "Use the approved recovery procedure appropriate to the confirmed condition: service or lane recovery, correction of supported AGV/tote state, or controlled physical AGV handling.",
+          "runbook_placeholder": "Procedure needed for the authorized recovery path selected from the diagnosis: reset or recover the named OptiSweep or AGV hospital-station services and restart Hospital Lane when approved; alternatively use the approved API dog or Aveva procedure for supported tote or AGV state correction; include site safety controls, role limits, and conditions for any physical AGV removal. Exact commands, click paths, and mutation steps belong in the linked runbook.",
+          "expected_or_observed_result": "Authorized support or site personnel complete the applicable approved recovery and record whether it completed. Recovery signal: the source-supported service or lane recovery is completed, or the affected AGV/tote state is corrected through the approved API/Aveva or physical procedure. Unsuccessful signal: the action cannot be completed, the state remains abnormal, or the action introduces additional tote or AGV discrepancies. Inconclusive: the source does not identify the exact service, authorization, or safe physical conditions required.",
+          "allowed_roles": [
+            "L2_support",
+            "L3_support",
+            "operator"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "L2_support",
+            "L3_support",
+            "operator"
+          ],
+          "ontology_capabilities": [],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "The source does not identify the exact OptiSweep services, API operation names, physical isolation requirements, or authorization boundaries for the historical recovery actions."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [],
+          "unhealthy_indicators": [],
+          "inconclusive_indicators": [
+            "The recovery action or authorization is not supported by a named procedure.",
+            "The required service, AGV, tote, or physical location cannot be identified safely.",
+            "The source-supported high-level action does not produce a clear completion signal."
+          ],
+          "retrieval_text": "procedure_reference Apply authorized high-level recovery for the identified condition Use the approved recovery procedure appropriate to the confirmed condition: service or lane recovery, correction of supported AGV/tote state, or controlled physical AGV handling. Procedure needed for the authorized recovery path selected from the diagnosis: reset or recover the named OptiSweep or AGV hospital-station services and restart Hospital Lane when approved; alternatively use the approved API dog or Aveva procedure for supported tote or AGV state correction; include site safety controls, role limits, and conditions for any physical AGV removal. Exact commands, click paths, and mutation steps belong in the linked runbook. Authorized support or site personnel complete the applicable approved recovery and record whether it completed. Recovery signal: the source-supported service or lane recovery is completed, or the affected AGV/tote state is corrected through the approved API/Aveva or physical procedure. Unsuccessful signal: the action cannot be completed, the state remains abnormal, or the action introduces additional tote or AGV discrepancies. Inconclusive: the source does not identify the exact service, authorization, or safe physical conditions required. L2_support L3_support operator L2_support L3_support operator The source does not identify the exact OptiSweep services, API operation names, physical isolation requirements, or authorization boundaries for the historical recovery actions. The recovery action or authorization is not supported by a named procedure. The required service, AGV, tote, or physical location cannot be identified safely. The source-supported high-level action does not produce a clear completion signal."
+        },
+        {
+          "node_id": "node_5",
+          "node_type": "validation_gate",
+          "title": "Validate hospital flow, AGV state, and sustained sort recovery",
+          "intent": "Confirm that recovery restored the affected workflow without leaving residual AGV, tote, or station-state anomalies.",
+          "runbook_placeholder": "Procedure needed to validate Hospital Lane and hospital HMI tote-add and tote-remove behavior, confirm AGV roster and location state through the source-used fleet or Aveva/API view, confirm relevant service responsiveness when applicable, and monitor sort long enough to distinguish stable recovery from a temporary movement indication.",
+          "expected_or_observed_result": "Site operator observes tote handling and sort operation, while authorized support checks the relevant service or API/Aveva status used during recovery. Healthy signal: totes can be added and removed, Hospital Lane accepts normal flow, AGVs are re-added or operating in expected locations, movement resumes, and sort starts and remains stable. Unhealthy signal: tote addition remains blocked, AGVs remain stopped or misplaced, disconnected tote state persists, or sort fails again. Inconclusive: only a general statement that the system is running is available without confirmation of hospital tote flow and residual AGV/tote state.",
+          "allowed_roles": [
+            "operator",
+            "L1_support",
+            "L2_support"
+          ],
+          "required_evidence_concepts": [],
+          "expects_capability": [],
+          "expects_surface": [],
+          "preferred_audience": [
+            "operator",
+            "L1_support",
+            "L2_support"
+          ],
+          "ontology_capabilities": [
+            {
+              "id": "capability:zone_pairing_state",
+              "support_contract": {},
+              "relevant_evidence": "The incident includes location and rack anomalies, so pairing or location consistency may be relevant to validation, but the source does not confirm a pairing fault."
+            }
+          ],
+          "backend_observability": [],
+          "ontology_gaps": [
+            "No supplied ontology mapping defines the exact validation fields for hospital tote induction, residual tote association, or the source's API dog/Aveva actions."
+          ],
+          "evidence_required": [],
+          "healthy_indicators": [
+            "Site confirms totes can again be added and removed.",
+            "Hospital Lane accepts normal tote flow.",
+            "AGVs are re-added and operating in expected locations.",
+            "Movement resumes and sort remains running.",
+            "No disconnected or residual tote association is reported."
+          ],
+          "unhealthy_indicators": [
+            "Hospital tote addition remains unavailable.",
+            "AGVs remain stopped, misplaced, duplicated under a rack, or absent from expected locations.",
+            "A disconnected tote remains associated in the system.",
+            "Sort cannot start or stops again during monitoring."
+          ],
+          "inconclusive_indicators": [
+            "Only the statement \"system is running\" is available.",
+            "Validation covers movement but not hospital tote-add behavior.",
+            "The HMI or API/Aveva view is unreadable or unavailable.",
+            "No stable observation period is available."
+          ],
+          "retrieval_text": "validation_gate Validate hospital flow, AGV state, and sustained sort recovery Confirm that recovery restored the affected workflow without leaving residual AGV, tote, or station-state anomalies. Procedure needed to validate Hospital Lane and hospital HMI tote-add and tote-remove behavior, confirm AGV roster and location state through the source-used fleet or Aveva/API view, confirm relevant service responsiveness when applicable, and monitor sort long enough to distinguish stable recovery from a temporary movement indication. Site operator observes tote handling and sort operation, while authorized support checks the relevant service or API/Aveva status used during recovery. Healthy signal: totes can be added and removed, Hospital Lane accepts normal flow, AGVs are re-added or operating in expected locations, movement resumes, and sort starts and remains stable. Unhealthy signal: tote addition remains blocked, AGVs remain stopped or misplaced, disconnected tote state persists, or sort fails again. Inconclusive: only a general statement that the system is running is available without confirmation of hospital tote flow and residual AGV/tote state. operator L1_support L2_support operator L1_support L2_support {\"id\": \"capability:zone_pairing_state\", \"support_contract\": {}, \"relevant_evidence\": \"The incident includes location and rack anomalies, so pairing or location consistency may be relevant to validation, but the source does not confirm a pairing fault.\"} No supplied ontology mapping defines the exact validation fields for hospital tote induction, residual tote association, or the source's API dog/Aveva actions. Site confirms totes can again be added and removed. Hospital Lane accepts normal tote flow. AGVs are re-added and operating in expected locations. Movement resumes and sort remains running. No disconnected or residual tote association is reported. Hospital tote addition remains unavailable. AGVs remain stopped, misplaced, duplicated under a rack, or absent from expected locations. A disconnected tote remains associated in the system. Sort cannot start or stops again during monitoring. Only the statement \"system is running\" is available. Validation covers movement but not hospital tote-add behavior. The HMI or API/Aveva view is unreadable or unavailable. No stable observation period is available."
+        }
+      ],
+      "retrieval_text": "Hospital tote-induct or site-flow disruption with AGV state anomalies Hospital station cannot add or induct totes. Totes can be removed but cannot be added at the hospital area. A robot or AGV is reported in a shut down state. The site cannot start sort or goes down during sort. Hospital backlog or abnormal tote flow to the hospital area is reported. Hospital can't induct totes Hospital can't add totes They can remove totes but cannot add AGV is shut down AGVs are in the wrong location There are two AGVs under the rack Site is down Sort won't start Nothing is moving System is running now Hospital station cannot add or induct totes Totes can be removed but cannot be added at the hospital area A robot or AGV is reported in a shut down state The site cannot start sort or goes down during sort Hospital backlog or abnormal tote flow to the hospital area is reported can't induct totes hospital induct blocked AGV doesn't belong here",
+      "validation_status": "needs_sme_review"
+    }
+  ],
+  "generated_at": "2026-08-06T23:55:29.088492Z"
+}

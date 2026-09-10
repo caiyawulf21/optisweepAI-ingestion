@@ -18,6 +18,15 @@ candidate prompt:
 - Do not bind nodes to production automation.
 - Use only the provided incident packet.
 
+## Site Location Rules
+
+Use `source_package.site_location` as authoritative ingestion metadata for which
+customer site this case belongs to. Populate `incident_context.site`,
+`incident_context.site_code`, and `incident_context.site_location` from that
+metadata when present. Preserve `site_code` and `site_label` on source refs.
+If evidence location text conflicts with ingestion metadata, note the ambiguity
+in `extraction_notes` rather than silently replacing the ingestion site.
+
 ## Cardinality Rule
 
 Return one or more `playbook_candidates`.
@@ -71,6 +80,13 @@ internal technical interpretation.
 Entry symptoms should describe what an operator, L1 support user, or
 customer-facing support person could reasonably observe or say before the root
 cause is known.
+
+`support_user_language_examples` must include short operator speech, not just
+polished symptom sentences. Prefer phrases callers actually type or say
+(for example "AGVs stopped", "AGVs are stopped", "robots stopped",
+"nothing is moving", "zone can't get a pair"). Include near-paraphrases that
+match sparse turn-1 queries. Stage 10 embeds title + entry symptoms + these
+examples only — missing operator speech cannot be recovered by a fatter vector.
 
 Internal patterns are tentative technical interpretations extracted from the
 incident evidence. They are useful for later ML training, retrieval improvement,
@@ -258,6 +274,54 @@ node_type: escalation_gate
 intent: Escalate because this case was new to support.
 ```
 
+## Branch Hint Topology Rules
+
+`branch_hints` become executable Stage 8 edges. Incomplete or wrong-polarity
+hints will cause the app to skip recovery or loop.
+
+1. Cover every diagnostic / branching node with both an unhealthy-style edge
+   (fault/pattern indicated → continue investigation or recovery) and a
+   healthy-style edge (fault/pattern not indicated → exit, retriage, or a true
+   alternate investigation node).
+2. Healthy means leave this path or take an alternate check. Do **not** point
+   healthy exits at nodes whose title/intent assumes recovery already happened
+   (for example "after service recovery", residual AGV sync after recovery).
+3. Post-recovery checks may be reached only from an explicit recovery
+   `procedure_reference` / recovery-phase edge whose condition is recovery
+   completed (or equivalent). Example: node_5 recovery completed → node_6.
+4. Recovery-completed conditions are success/progress edges, not unhealthy.
+5. Do not emit self-loops on healthy outcomes unless the label is an intentional
+   wait/retry/monitor state.
+6. Entry diagnostic nodes must include an explicit next node for the confirmed
+   pattern (usually the next diagnostic) and an explicit exit/retriage destination
+   when the pattern is not matched.
+
+Good:
+
+```yaml
+# From entry diagnostic
+- from: node_1
+  condition: Confirmed site-wide stoppage / abnormal RMS-HMI presentation
+  next: node_2
+- from: node_1
+  condition: Localized or normal presentation; pattern not matched
+  next: ""   # exit / retriage
+
+# From recovery procedure
+- from: node_5
+  condition: Primary service or gateway recovery completed
+  next: node_6   # residual AGV check AFTER recovery
+```
+
+Bad:
+
+```yaml
+# Healthy/filler exit jumping to a post-recovery residual check
+- from: node_1
+  condition: Diagnostic check does not indicate the fault condition
+  next: node_6
+```
+
 ## Runbook Placeholder Rule
 
 Every playbook node must use `runbook_placeholder` to describe the supporting
@@ -312,8 +376,7 @@ runbook_placeholder: >
 Bad:
 
 ```yaml
-runbook_ref: restart_optisweep_ignition_service_v1
-fallback_if_missing_runbook: create_runbook_gap
+runbook_placeholder: Procedure needed for authorized recovery of the source-named service.
 ```
 
 Bad:
@@ -365,9 +428,21 @@ Return JSON only:
           "node_type": "diagnostic_decision | procedure_reference | escalation_gate | validation_gate | branching_condition | recovery_phase_marker",
           "title": "",
           "intent": "",
-          "expected_or_observed_result": "",
+          "expected_or_observed_result": "<who observes + source-grounded tool/view when present + healthy / unhealthy / inconclusive signals>",
           "runbook_placeholder": "<plain-text procedure placeholder required for every node>",
+          "observed_surfaces": [],
+          "source_used_surfaces": [],
+          "required_evidence_concepts": [],
+          "recommended_diagnostic_surfaces": [],
+          "stage8_candidate_surfaces": [],
+          "ontology_capabilities": [],
+          "backend_observability": [],
+          "ontology_gaps": [],
+          "healthy_indicators": [],
+          "unhealthy_indicators": [],
+          "inconclusive_indicators": [],
           "allowed_roles": ["operator | L1_support | L2_support | L3_support"],
+          "preferred_audience": ["operator", "L2_support"],
           "stop_or_escalation_note": "",
           "source_supported_description": "",
           "related_artifact_ids": [],
@@ -434,9 +509,14 @@ Return JSON only:
 ## Placeholder Specificity and First-Node Distinctiveness
 
 When the first node in a playbook is a `diagnostic_decision` that confirms the
-observable symptom pattern, its `runbook_placeholder` must describe specific
-questions to ask the site and specific tools or views to check — not a generic
-"procedure needed to collect and interpret site-reported symptoms" description.
+observable symptom pattern, its `runbook_placeholder` must describe the
+**generic** questions to ask the site and the named tools or views to check.
+Use "the affected zone" or "the reported robot" rather than hardcoding zone
+numbers or robot IDs from one source incident.
+
+Do not embed incident-specific identifiers in reusable node fields, playbook
+titles, or `playbook_id` values. Those facts belong in the canonical incident
+record, which Stage 8 links to the finalized playbook via `case_id`.
 
 A generic first-node placeholder like the one below will produce nearly
 identical first nodes across different prompt variants and gives responders no
@@ -452,7 +532,7 @@ A specific first-node placeholder names the observable state to confirm, the
 questions to ask the site, and the named tools or views to check:
 
 ```text
-Procedure needed to confirm with the site which specific zone is reporting
+Procedure needed to confirm with the site which affected zone is reporting
 unable to get a pair, whether AMRs are actively routing to the hospital lane,
 and whether the issue began after recent robot replacement or remove/add
 activity. In RMS, check the zone pairing view for the affected zone and the
@@ -468,6 +548,114 @@ different candidates.
 Apply the same specificity standard to all diagnostic, branching, and
 validation node placeholders — not only the first node.
 
+## Component and Domain Vocabulary
+
+When writing node placeholders, name a **component or interface** only when the
+incident source names it or a readable source artifact visibly shows it. The
+following vocabulary is an interpretation aid, not permission to introduce a
+surface. Stage 8 links runbooks by domain match. Prefer one primary component
+per node.
+
+| Component / interface | Use when the node checks… |
+| --- | --- |
+| **RMS / fleet status** | Pairing failures, zone balance, fleet-wide faults, robot roster/mapping, AGV locations, active error codes, system-down overview |
+| **WCS database / SSMS (read-only)** | Remote L1/L2 corroboration of AGV errors, robot/roster state, dwell/shutdown staging, WcsError/Robotics/SorterSweeper table state — name the **surface**, not SQL text |
+| **Hospital HMI / lane UI** | Hospital lane routing, hospital station status, stacklight/alarm indications, hospital workflow diversion |
+| **Operator / tipper HMI (VISU)** | Tipper faults, operator station alarms, VISU_IO/VISU_DATA screens, pneumatic/mechanical operator actions |
+| **Building / ACB overview HMI** | Building/area overview, bin status, message panel, smalls layout |
+| **Ignition gateway** | Gateway health, memory trend, Systems Overview responsiveness, gateway restart validation |
+| **OptiSweep / WCS API** | GetAgvStatuses/API responsiveness, WCSWebApplication faults, dependent-service validation after gateway recovery |
+| **Windows Event Viewer / services** | Application/System log errors, service crash/recovery (7031, service control manager) |
+| **AGV physical recovery / removal** | Remove/add AGV, bump fault recovery, motionless AGV, isolation from active fleet |
+| **AVEVA HMI** | Floor/site AVEVA screens only (`operator`); FORTNA has no access |
+
+**Same-capability multi-surface:** Name multiple surfaces only when the incident
+source supports each one and they corroborate the same check. Leave
+query/table detail to runbooks.
+
+**Cross-domain rule:** Do not combine **unrelated** components in one placeholder
+(for example Event Viewer log review + RMS fleet inspection). Split into separate
+nodes or keep site-interview portions orchestration-only with no runbook link.
+
+**Good placeholder (surface yes, procedure detail no):**
+`Procedure needed to confirm active AGV errors via RMS fleet status and/or WCS/SSMS read-only query (L2 remote)`
+
+**Bad placeholder (SQL detail in playbook):**
+`Procedure needed to run SELECT * FROM SystemActiveErrorModel in Helix2x_1Prod_Robotics`
+
+## Expects tags (diagnostic / branching / validation nodes)
+
+For every `diagnostic_decision`, `branching_condition`, and `validation_gate` node, emit
+taxonomy IDs (see `docs/ontology/taxonomy/runbook_capability_taxonomy.json`):
+
+| Field | Required | Purpose |
+| --- | --- | --- |
+| `expects_capability` | Yes (at least one) | Job this node confirms for its healthy/unhealthy branch (full taxonomy; ontology-informed) |
+| `expects_surface` | Recommended | How to do this job. Emit only surfaces the node needs; when RMS and SSMS both corroborate, list both as equal weight (RMS is not preferred). |
+| `preferred_audience` | Recommended | Who should execute. **RMS ≈ `operator` (+ optional L1); WCS/SSMS ≈ L2/L3.** Dual-surface nodes often use e.g. `["operator", "L2_support"]`. |
+
+### Ontology snippets → expects
+
+Use packet `ontology_snippets` (models, capability cards, surfaces) to author **detailed** nodes — especially `expected_or_observed_result` healthy/unhealthy/inconclusive signals.
+
+1. Ground evidence in ontology tools/views (RMS pages and/or SSMS models such as `SystemDatabaseModel` / `SystemActiveErrorModel`).
+2. Emit `expects_*` only when supported by the node job + ontology cards — do not invent tags.
+3. **RMS is not preferred over SSMS.** System state and active errors live in SSMS; when both corroborate, name both as equal-weight surfaces.
+4. Incident evidence wins on conflicts; do not paste snippet prose into placeholders.
+5. For each selected ontology capability, emit an `ontology_capabilities` item with
+   `id`, the supplied `support_contract`, and only the relevant evidence.
+6. Emit `backend_observability` mappings with `concept`, `surface`, `database`,
+   `model`, `fields`, `correlation_keys`, and `freshness_field` when supplied.
+7. Treat WCS SQL/SSMS as the default remote read surface whenever a validated
+   WCS-backed UI mapping exists. The exception is VPN/connectivity failure.
+
+### Expects rules
+
+1. Pick capabilities from evidence + ontology — full taxonomy, no fixed shortlist.
+2. Do not rely on pipeline post-process to fill missing `expects_*`.
+3. `procedure_reference` / `escalation_gate` may omit `expects_*`.
+4. Follow the appended **Playbook expects_* Guidance**.
+
+## Attainable-evidence contract
+
+For the same node types, `expected_or_observed_result` must state **attainable evidence**, not a vague label:
+
+1. **Who observes** — site/operator vs remote L1/L2 (or either)
+2. **Tool / view** — RMS page, WCS/SSMS read-only, Event Viewer, HMI, API, site interview
+3. **Healthy signal** — concrete observable
+4. **Unhealthy signal** — concrete observable
+5. **Inconclusive** — what is missing or ambiguous
+
+Include remote SSMS when the capability is L1/L2-attainable. Escalation for unsupported
+database **changes** is not a substitute for naming read-only SSMS diagnostics.
+
+Entry symptoms and playbook titles should describe **generic observable patterns**
+(for example "a zone unable to get a pair"), not incident-specific zone numbers,
+robot IDs, or site names. Those facts belong in the canonical incident record.
+
+## Role / Component Access Matrix
+
+When assigning `allowed_roles`, `required_role`, or `suggested_role`, follow this matrix.
+Do not assign a role that has **No access** to a component the node requires.
+
+**Role meanings:** `operator` = site/customer (not FORTNA). `L1_support` / `L2_support` / `L3_support` = FORTNA remote on Zscaler. **Access** = may interact.
+
+| Component | `operator` (site) | `L1_support` | `L2_support` / `L3_support` |
+| --- | --- | --- | --- |
+| RMS (fleet / AGV status web) | Access | Access | Access |
+| RMS soft stop (pause — **not** E-stop) | — | No access | Access |
+| E-stop (physical) | Access | No access | No access |
+| OptiSweep / WCS API | No access | Access | Access |
+| WCS / Helix DB (SSMS) | No access | Access | Access |
+| Event Viewer / Windows Services | No access | Access | Access |
+| Ignition gateway | No access | Access | Access |
+| Tipper HMI / WebVisu / VISU | Access | Access | Access |
+| Hospital HMI / lane UI | Access | Access | Access |
+| Building / ACB overview HMI | Access | Access | Access |
+| AVEVA HMI | Access | No access | No access |
+
+Hard rules: only `operator` may E-stop; RMS soft stop is L2/L3 only; AVEVA is site-only.
+
 ## Safety Rules
 
 1. Return at least one playbook candidate, but mark it low confidence when the
@@ -475,14 +663,67 @@ validation node placeholders — not only the first node.
 2. Do not split one troubleshooting flow into multiple candidates unless the
    split test is satisfied.
 3. Keep nodes lightweight and non-procedural.
-4. Do not include exact commands, screen sequences, click paths, SQL, service
-   restart steps, or tool navigation steps.
-5. Do not create support call, bridge call, communication, Salesforce,
+4. Ground source observations in the incident source or a readable source
+   artifact. Use the supplied ontology snippets to identify validated
+   capabilities, support surfaces, backend mappings, roles, prerequisites, and
+   forbidden procedure families. Do not invent ontology IDs or fields.
+5. For every node, separate source-observed surfaces and provenance-bearing
+   `source_used_surfaces` from ontology-derived
+   `recommended_diagnostic_surfaces`, `required_evidence_concepts`, and
+   backend mappings. If the ontology cannot establish a mapping, emit a
+   specific catalog or mapping gap rather than silently leaving the contract
+   ambiguous.
+6. Each `source_used_surfaces` item requires `surface`, `provenance`, and
+   `source_evidence`. Allowed provenance values are `explicit_source`,
+   `strongly_implied_by_source`, and `source_artifact_visible`.
+7. Healthy, unhealthy, and inconclusive indicators describe operational state.
+   A tool-specific indicator is allowed when the source or supplied ontology
+   makes that tool state relevant. For remote support, prefer validated
+   read-only WCS SQL/SSMS when the ontology maps the observed UI state to
+   backend data. Treat VPN/connectivity failure as the exception; if the
+   OptiSweep service is down, include Ignition, host/service, API, and SQL
+   evidence paths because site UIs may be unavailable.
+8. Do not include SQL statements, SELECT/FROM clauses, table schemas, column
+   lists, click-by-click SSMS navigation, exact commands, screen sequences,
+   service restart steps, or mutating database/config steps.
+9. Do not create support call, bridge call, communication, Salesforce,
    case-management, or intake nodes.
-6. Do not create category labels or final issue classifications.
-7. Do not invent root cause as fact.
-8. Do not invent canonical runbook IDs or runbook relationships.
-9. Every node must include a non-empty plain-text `runbook_placeholder`.
+10. Do not create category labels or final issue classifications.
+11. Do not invent root cause as fact.
+12. Do not invent canonical runbook IDs or runbook relationships.
+13. Every node must include a non-empty plain-text `runbook_placeholder`.
+
+## Stage 8 Linking Constraints
+
+Playbook nodes become reusable orchestration templates. Keep incident-specific facts
+in the canonical incident record and playbook-level entry context, not embedded in
+reusable node decision rubrics.
+
+- Do **not** put specific zone numbers, robot IDs, site names, or "in this incident"
+  phrasing in `expected_or_observed_result`, branch `condition_or_signal`, or
+  `decision_outcomes`. Use generic observable criteria instead.
+- `expected_or_observed_result` should describe attainable evidence: who observes,
+  which tool/view (RMS, WCS/SSMS, Event Viewer, HMI, API, site interview), and
+  concrete healthy / unhealthy / inconclusive signals — not a vague label and not
+  a restatement of what happened in the source incident.
+- Do **not** combine unrelated procedure types in one placeholder when they require
+  different catalog runbooks (for example site interview + RMS fleet inspection in a
+  single node). Split into separate nodes or mark the site-interview portion as
+  orchestration-only with no runbook placeholder for the interview itself.
+- Name the system/tool domain in placeholders only when the incident source names
+  it or a readable source artifact visibly shows it. Avoid vague "approved
+  support tools" when the incident names a specific tool. Do not add SSMS
+  corroboration when the case evidence showed only RMS/HMI screens; Stage 8
+  selects current corroboration separately.
+- `branching_condition` nodes that depend on site-reported history should describe a
+  decision rubric placeholder, not a fleet diagnostic procedure, unless the branch is
+  decided purely from RMS evidence.
+- Follow **Branch Hint Topology Rules** above: healthy exits must not skip into
+  post-recovery nodes; recovery-completed polarity is success/progress; diagnose
+  nodes need both healthy and unhealthy next destinations.
+- Use generic `playbook_id` and title patterns without embedded zone numbers, robot
+  IDs, or site names. Link incident specifics through `case_id` and canonical record
+  metadata, not reusable playbook identifiers.
 10. Use placeholders for diagnostic, reference, branching, validation,
     escalation, and recovery procedure capabilities, not only recovery actions.
 11. Include placeholders for approved tool, system, screen, status,

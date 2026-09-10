@@ -1,0 +1,303 @@
+{
+  "procedure_id": "proc_check_systemdatabasemodel_lifecycle_staging_status_ssms_v1",
+  "candidate_id": "candidate_training_video_diagnostic_systemdatabasemodel_lifecycle_status",
+  "title": "Check SystemDatabaseModel lifecycle/staging status in Helix2x_1Prod_Robotics (SSMS)",
+  "procedure_type": "diagnostic",
+  "summary": "Use SSMS against the Helix2x_1Prod_Robotics database to confirm the SystemDatabaseModel snapshot lifecycle/staging status value is currently one of the expected states (StartingUp, StartUpRequested, Running, ShutDownRequested, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, CloseOutStaged).",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L2_support"
+  ],
+  "capability_tags": [
+    "sort_lifecycle_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to verify the current system lifecycle/staging state (startup, running, shutdown, zone config, closeout) by checking the SystemDatabaseModel snapshot status values in the Robotics database.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the SSMS read-only check against Helix2x_1Prod_Robotics and interpret whether the SystemDatabaseModel snapshot status is consistent and within the documented lifecycle/staging set."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "SSMS (WCS / Helix DB (SSMS))",
+    "Helix2x_1Prod_Robotics database",
+    "dbo.SystemDatabaseModel"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "SSMS access to the WCS / Helix DB (SSMS) surface",
+      "Read access to the Helix2x_1Prod_Robotics database and dbo.SystemDatabaseModel"
+    ],
+    "system_preconditions": [
+      "Helix2x_1Prod_Robotics database is available in SSMS"
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_system_database_model_v1",
+    "ctx_training_video_system_status_values_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0020_yes_and_there_ll_be_a_primary_01_36_33_500",
+      "description": "Training frame showing [Helix2x_1Prod_Robotics].[dbo].[SystemDatabaseModel] WITH (SNAPSHOT) and the lifecycle/staging status values list (StartingUp, StartUpRequested, Running, ShutDownRequested, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, CloseOutStaged).",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000",
+      "description": "Training frame showing the SystemDatabaseModel status concept and the status values set used for interpreting current system state.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Connect to the WCS / Helix DB (SSMS) and select Helix2x_1Prod_Robotics",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish the correct SSMS connection and database context for reading SystemDatabaseModel snapshot status.",
+      "instruction": "Using SSMS (WCS / Helix DB (SSMS)), connect to the environment and select the Helix2x_1Prod_Robotics database.",
+      "expected_result": "SSMS is connected and the Helix2x_1Prod_Robotics database is selected as the active database.",
+      "healthy_condition": "The Helix2x_1Prod_Robotics database appears in the SSMS object tree and is selectable/active.",
+      "failure_condition": "You cannot connect to SSMS or cannot select/open Helix2x_1Prod_Robotics due to connection or permission errors.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open SSMS and connect",
+          "exact_action": "Open SSMS and connect to the WCS / Helix DB (SSMS)",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Select Helix2x_1Prod_Robotics",
+          "exact_action": "Select the Helix2x_1Prod_Robotics database",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop if you cannot connect to SSMS or cannot access the Helix2x_1Prod_Robotics database (permissions/query errors)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0020",
+          "page": 20,
+          "evidence_source_refs": [
+            "segment_training_video_0020"
+          ],
+          "quote_or_summary": "Slide shows [Helix2x_1Prod_Robotics].[dbo].[SystemDatabaseModel] WITH (SNAPSHOT) and lists lifecycle/staging status values."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Locate dbo.SystemDatabaseModel in the dbo schema",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure you are querying the correct model/table that contains the system lifecycle/staging snapshot status.",
+      "instruction": "In SSMS, navigate to the dbo schema and locate the table/model named [dbo].[SystemDatabaseModel].",
+      "expected_result": "dbo.SystemDatabaseModel is found and visible in the SSMS database object tree.",
+      "healthy_condition": "dbo.SystemDatabaseModel exists under the dbo schema for Helix2x_1Prod_Robotics.",
+      "failure_condition": "dbo.SystemDatabaseModel is missing/unavailable or cannot be accessed due to permissions.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Find dbo.SystemDatabaseModel",
+          "exact_action": "In the dbo schema, locate the table/model named [dbo].[SystemDatabaseModel].",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop if dbo.SystemDatabaseModel cannot be located or accessed (permissions/query errors)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0020",
+          "page": 20,
+          "evidence_source_refs": [
+            "segment_training_video_0020"
+          ],
+          "quote_or_summary": "Slide references [Helix2x_1Prod_Robotics].[dbo].[SystemDatabaseModel] WITH (SNAPSHOT)."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Read the SystemDatabaseModel snapshot status using WITH (SNAPSHOT)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Retrieve the current lifecycle/staging status value(s) from the SystemDatabaseModel snapshot.",
+      "instruction": "Run a read-only query/view of [dbo].[SystemDatabaseModel] using WITH (SNAPSHOT) to view the current snapshot row(s) and the status field(s) that represent lifecycle/staging state.",
+      "expected_result": "You can view the current SystemDatabaseModel snapshot row(s) and identify the lifecycle/staging status value present in the status field(s).",
+      "healthy_condition": "The query returns snapshot row(s) showing a lifecycle/staging status value that is one of the documented set.",
+      "failure_condition": "The snapshot cannot be read (query/permission errors) or the returned status value(s) are outside the documented set or appear inconsistent.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Query snapshot status",
+          "exact_action": "Run a read-only query to view the current snapshot row(s) for SystemDatabaseModel (the slide indicates it uses WITH (SNAPSHOT) to show state and current sort plan).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the snapshot cannot be read (permissions/query errors).",
+        "Stop and escalate if the status value(s) are outside the documented lifecycle/staging set or appear inconsistent (e.g., multiple lifecycle states simultaneously)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0020",
+          "page": 20,
+          "evidence_source_refs": [
+            "segment_training_video_0020"
+          ],
+          "quote_or_summary": "Slide shows [dbo].[SystemDatabaseModel] WITH (SNAPSHOT) and describes it as showing the state of the system and current sort plan; status values listed include StartingUp, StartUpRequested, Running, ShutDownRequested, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, CloseOutStaged."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Confirm the current lifecycle/staging status is within the documented set",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Validate that the system lifecycle/staging state is one of the expected values and interpret whether it is consistent.",
+      "instruction": "Identify which lifecycle/staging status value is currently present in the SystemDatabaseModel status field(s) and confirm it matches one of: StartingUp, StartUpRequested, Running, ShutDownRequested, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, CloseOutStaged.",
+      "expected_result": "Exactly one current lifecycle/staging status value is present and it matches one of the documented values.",
+      "healthy_condition": "The status value shown is a single, current lifecycle/staging state from the documented set.",
+      "failure_condition": "The status value is not in the documented set, or the snapshot shows an unexpected combination (e.g., multiple lifecycle states simultaneously).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Match status to documented set",
+          "exact_action": "Identify which lifecycle/staging status value is currently present in the SystemDatabaseModel status field(s) and confirm it matches one of the documented values.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the snapshot shows an unexpected combination (e.g., multiple lifecycle states simultaneously).",
+        "Escalate if the status value is outside the documented lifecycle/staging set."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "section_id": "training_video_day2_segment_0020",
+          "page": 20,
+          "evidence_source_refs": [
+            "segment_training_video_0020"
+          ],
+          "quote_or_summary": "Slide lists lifecycle/staging status values: StartingUp, StartUpRequested, Running, ShutDownRequested, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, CloseOutStaged."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "SystemDatabaseModel snapshot status is readable in SSMS.",
+    "The current lifecycle/staging status value is present and matches one of the documented values: StartingUp, StartUpRequested, Running, ShutDownRequested, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, CloseOutStaged.",
+    "No inconsistent/unexpected combination is observed (e.g., multiple lifecycle states simultaneously)."
+  ],
+  "healthy_conditions": [
+    "A single current lifecycle/staging status value is shown in SystemDatabaseModel snapshot status field(s) and it is one of the documented set."
+  ],
+  "failure_conditions": [
+    "Snapshot cannot be read due to permissions/query errors.",
+    "Status value(s) are outside the documented lifecycle/staging set.",
+    "Inconsistent/unexpected combination is observed (e.g., multiple lifecycle states simultaneously)."
+  ],
+  "escalation_guidance": [
+    "Escalate to appropriate support if the snapshot cannot be read (permissions/query errors) or if the status value(s) are outside the documented set or appear inconsistent (e.g., multiple lifecycle states simultaneously)."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 20,
+      "section_id": "training_video_day2_segment_0020",
+      "quote_or_summary": "Slide shows [Helix2x_1Prod_Robotics].[dbo].[SystemDatabaseModel] WITH (SNAPSHOT) and lists lifecycle/staging status values: StartingUp, StartUpRequested, Running, ShutDownRequested, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, CloseOutStaged.",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0020_yes_and_there_ll_be_a_primary_01_36_33_500"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_diagnostic_systemdatabasemodel_lifecycle_status"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide the exact column name(s) within [dbo].[SystemDatabaseModel] that hold the lifecycle/staging status value(s); the operator must identify the status field(s) from the live schema/query results."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000",
+    "artifact_training_video_training_video_day2_0020_yes_and_there_ll_be_a_primary_01_36_33_500"
+  ]
+}

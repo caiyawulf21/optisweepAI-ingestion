@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Explain and Verify &#x27;Disabled&#x27; Sorter Side Entries Based on CSV Phase Configuration and Phase-Based Enable</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Explain and Verify &#x27;Disabled&#x27; Sorter Side Entries Based on CSV Phase Configuration and Phase-Based Enable</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_explain_verify_disabled_sorter_side_entries_csv_phase_configuration_v1</td></tr>
+<tr><th>Title</th><td>Explain and Verify &#x27;Disabled&#x27; Sorter Side Entries Based on CSV Phase Configuration and Phase-Based Enable</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>zone_config_state, sorter_item_or_scan_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>pairing_failure, system_fault</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the live sorter-side configuration/state in the OptiSweep/WCS/Robotics database to explain why a sorter side (example: sorter 2B) appears disabled: the initial CSV configuration populates the database and disables anything not in phase one. Then verify whether a later phase-based database update/script has been applied that would enable the sorter side for its later phase (example: enabling phase 4).</p>
+<h2>When To Use</h2>
+<p>When a sorter side entry (e.g., sorter 2B) is showing as disabled in the live sorter-side configuration/state, and you need to determine whether that disabled state is expected due to phase-based CSV configuration (phase one vs later phases) and whether a later phase enablement update has been applied.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/566cf64c9e45d275.jpg" alt="artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500" /><figcaption>Training frame showing the explanation that sorter sides are disabled when not in phase one, and that a later database update can enable phase 4 (includes example sorter 2B).</figcaption></figure>
+<figure><img src="assets/e6b308f21a2ed402.jpg" alt="artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500" /><figcaption>Training frame describing the SorterSideDatabaseModel fields including whether the sorter side is disabled.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Locate the sorter side entry that is showing as disabled (example: sorter 2B)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using your live WCS/Robotics database access (SSMS/Helix/WCS DB as applicable), locate the sorter-side record corresponding to the sorter side that is currently disabled (example mentioned: sorter 2B). The sorter-side model includes a disabled/not-disabled attribute.</p>
+<p><strong>Expected result:</strong></p>
+<p>The sorter-side record you locate for the target sorter side (e.g., sorter 2B) shows it is disabled in the live database model.</p>
+<hr>
+<h3>Step 2 — Confirm the phase rule: CSV populates the database and anything not in phase one is disabled</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In your live investigation, use the source-backed rule to interpret the disabled state: confirm that the environment’s initial configuration mechanism is CSV-based population and that entries not in phase one are disabled until later phase enablement.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can justify the disabled state using the rule: disabled sorter sides are those not included in phase one of the CSV-based configuration.</p>
+<hr>
+<h3>Step 3 — Identify whether the sorter side belongs to a later phase (example: phase 4) rather than phase one</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the live database/configuration data you have access to, determine the phase association for the target sorter side (example discussed: sorter 2B being disabled until its phase is enabled; later phase example given: enabling phase 4).</p>
+<p><strong>Expected result:</strong></p>
+<p>You identify that the target sorter side is associated with a later phase (not phase one), consistent with why it is disabled.</p>
+<hr>
+<h3>Step 4 — Verify whether a phase-based database update/script has been applied to enable the later phase</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If the environment supports it and you have access to configuration/update evidence, check for evidence that the phase-based enablement update/script for the relevant later phase (example: phase 4) has been applied.</p>
+<p><strong>Expected result:</strong></p>
+<p>You find evidence that the later phase enablement update/script has been applied (example: phase 4 enablement), which should correspond to the sorter side no longer being disabled.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the sorter side remains disabled after the relevant phase-based enablement is confirmed, stop and escalate for deeper configuration/database troubleshooting.</li>
+</ul>
+<hr>
+<h3>Step 5 — Record the observed evidence and expected enablement outcome</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Record what you observed in the live database: (1) the sorter side is disabled, (2) it is not in phase one (belongs to a later phase), and (3) whether the later phase enablement update/script evidence exists (example: phase 4).</p>
+<p><strong>Expected result:</strong></p>
+<p>A clear diagnostic justification is recorded: the sorter side is disabled due to phase-based CSV configuration and should become enabled after the relevant phase-based update.</p>
+<hr>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Diagnose XLE communication loss using RMS / fleet status UI, Ignition gateway, and S-Tunnel / Chat path</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Diagnose XLE communication loss using RMS / fleet status UI, Ignition gateway, and S-Tunnel / Chat path</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_xle_communication_loss_diagnostic_v1</td></tr>
+<tr><th>Title</th><td>Diagnose XLE communication loss using RMS / fleet status UI, Ignition gateway, and S-Tunnel / Chat path</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>agv_active_errors</td></tr>
+<tr><th>Access Surface</th><td>rms_ui, ignition_gateway, stunnel</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>api_unresponsive, stunnel_or_chat_down, site_stoppage</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the RMS / fleet status UI, Ignition gateway, and S-Tunnel / Chat path at UPS Haslet TX (TXRTH) to compare live AGV and task state with XLE communication and stunnel indicators. The incident showed no reported AGV faults or crashes, 80 canceled tasks, 88 received tasks, repeated XLE communication-loss messages, failed TCP connectivity on port 42400, and stunnel errors. Do not modify firewall or service configuration from this diagnostic procedure.</p>
+<h2>When To Use</h2>
+<p>Use on the live UPS Haslet TX (TXRTH) job when tote exchange, bag-out, or sorter communication is abnormal and the cause may involve XLE communication, abnormal AGV task state, or S-Tunnel / Chat communication errors. Compare RMS / fleet status UI, Ignition gateway, and S-Tunnel / Chat path observations before escalating.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/ceeea3240c08ceb3.png" alt="artifact_incident_233681_page_004_nested_image_01" /><figcaption>RMS / fleet status UI screenshot showing current robot status, average battery power of 57%, and current task data; the exact health state is not established.</figcaption></figure>
+<figure><img src="assets/92ba1e2fa840f186.png" alt="artifact_incident_233681_page_005_nested_image_01" /><figcaption>Incident communication view showing loss of connection to XLE and repeated communication-lost entries.</figcaption></figure>
+<figure><img src="assets/f4f6bcd2a4d99c02.png" alt="artifact_incident_233681_page_006_detected_region_01" /><figcaption>Ignition gateway-associated diagnostic screenshot showing lost communication to XLEs and failed TCP connectivity on port 42400; several target addresses are OCR-uncertain.</figcaption></figure>
+<figure><img src="assets/941b26989e7751d9.png" alt="artifact_incident_233681_page_012_nested_image_01" /><figcaption>S-Tunnel / Chat path evidence reporting stunnel errors and firewall-related blocking of scanner and sorter communication.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Inspect live AGV and task state in the RMS / fleet status UI</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the RMS / fleet status UI for UPS Haslet TX (TXRTH), inspect current robot status, current task data, and the displayed tote-exchange or bag-out operating state. Record whether AGVs are reported as faulted or crashed and record the displayed canceled and received task counts.</p>
+<p><strong>Expected result:</strong></p>
+<p>The RMS / fleet status UI displays current robot and task values that can be compared with the live tote-exchange or sorter symptom, including whether AGV faults or crashes are reported and the current canceled and received task counts.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>RMS / fleet status UI shows an AGV fault or crash and the condition cannot be explained by the communication comparison.</li>
+<li>No AGV fault or crash is shown but tote exchange, bag-out, or task state remains abnormal.</li>
+</ul>
+<hr>
+<h3>Step 2 — Check XLE communication in the Ignition gateway</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the Ignition gateway Systems Overview or status view for UPS Haslet TX (TXRTH), check for a current or recent message stating lost communication to XLEs. If the source-documented connectivity diagnostic is available, inspect the result for the documented XLE targets on port 42400 without substituting OCR-uncertain endpoint values.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Ignition gateway status view shows either an active/recent XLE communication-loss indication or no such indication, and the connectivity diagnostic exposes an observable TCP result for the documented port when run.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The Ignition gateway continues to report lost communication to XLEs.</li>
+<li>TCP connectivity remains failed on port 42400.</li>
+<li>The target address or command details are not confirmed in the live environment.</li>
+</ul>
+<hr>
+<h3>Step 3 — Inspect stunnel communication in the S-Tunnel / Chat path</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the S-Tunnel / Chat path for UPS Haslet TX (TXRTH), inspect the connection list and current error state, and record whether stunnel errors are present. Record whether scanners or the sorter are reported as unable to communicate with the system.</p>
+<p><strong>Expected result:</strong></p>
+<p>The S-Tunnel / Chat path exposes the current connection/error state and indicates whether stunnel errors or scanner/sorter communication failures are being reported.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stunnel continues to report errors.</li>
+<li>Scanners or the sorter remain unable to communicate with the system.</li>
+<li>The evidence suggests a firewall or network-owner issue requiring site or network-owner action.</li>
+</ul>
+<hr>
+<h3>Step 4 — Compare RMS / fleet status UI, Ignition gateway, and S-Tunnel / Chat path observations</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Compare the observations from the RMS / fleet status UI, Ignition gateway, and S-Tunnel / Chat path. Treat a communication-related abnormal state as supported when XLE loss or stunnel errors coincide with tote-exchange or sorter communication failure, including when RMS reports no AGV fault or crash.</p>
+<p><strong>Expected result:</strong></p>
+<p>The comparison identifies whether the live tote-exchange or sorter symptom coincides with XLE communication loss, failed TCP connectivity on port 42400, stunnel errors, abnormal RMS task counts, or no corroborating communication indicator.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>XLE communication remains lost.</li>
+<li>Stunnel continues to report errors.</li>
+<li>TCP connectivity remains failed on port 42400.</li>
+<li>The sorter remains non-communicating or tote exchange remains unavailable.</li>
+<li>RMS shows no AGV faults or crashes but task counts or tote exchange remain abnormal.</li>
+</ul>
+<hr>
+</body>
+</html>

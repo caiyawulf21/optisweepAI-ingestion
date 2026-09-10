@@ -1,0 +1,431 @@
+{
+  "procedure_id": "proc_use_api_dog_to_observe_ignition_hmi_request_response_behavior_v1",
+  "candidate_id": "candidate_training_video_day2_api_dog_request_response_model_vhmiapi",
+  "title": "Use API Dog to observe Ignition HMI API request/response behavior (fault stats, pause, recover, startup)",
+  "procedure_type": "diagnostic",
+  "summary": "Use API Dog on a primary server to verify that AVEVA/HMI actions are implemented as request/response calls through Ignition (used as an OPC server). Confirm that API Dog returns responses reflecting system state (e.g., startup returns a response indicating whether the system is in the running/shutdown state) and that data-oriented calls return payloads rather than downstream module-to-module tracing.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "wcs_api_responsiveness",
+    "gateway_health"
+  ],
+  "access_surface": [
+    "apidog",
+    "rms_ui"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive",
+    "gateway_unhealthy"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to confirm that AVEVA/HMI interactions are correctly represented at the Ignition-hosted API layer as request/response behavior (GET-style data fetches and push-button/action-style requests like startup), and to interpret the returned response as system state (running/shutdown) rather than expecting internal module-to-module flow tracing.",
+  "not_for": [
+    "Do not use this procedure to perform deep downstream module-to-module tracing for failures (the source states this level of stacking/flow tracing is not exposed at the HMI API request/response layer)."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support: Execute API Dog calls from a primary server and interpret request/response outputs for system state and API responsiveness."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "API Dog",
+    "Primary server access (APIs are locally hosted and installed on every primary server)",
+    "API guide / API documentation referenced by the source"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to a primary server where the APIs are locally hosted"
+    ],
+    "system_preconditions": [
+      "API Dog must be able to run on the server where the APIs are locally hosted (source states API Dog can only live on the server because it is locally hosted)."
+    ],
+    "external_references": [
+      "API guide / API documentation referenced by the source (Word document mentioned in source)"
+    ]
+  },
+  "related_context_ids": [
+    "ctx_training_video_api_hosting_on_primary_servers_v1",
+    "ctx_training_video_ignition_as_opc_bridge_for_aveva_v1",
+    "ctx_training_video_hmi_api_request_response_model_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+      "description": "Frame showing Ignition has the APIs outlined in the API guide and that AVEVA sends a request which Ignition processes and returns responses (fault stats, pause, recover).",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Connect to a primary server where the Ignition-hosted APIs are locally hosted",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure API Dog can run where the APIs are locally hosted and where request parameters are set up.",
+      "instruction": "Jump onto a primary server. The source states the APIs are locally hosted and installed on every primary server, and that anyone can jump on the primary to get to all the APIs.",
+      "expected_result": "You are operating from a primary server environment where the locally hosted APIs are available for API Dog calls.",
+      "healthy_condition": "API Dog can be launched/used on the same server where the APIs are locally hosted (source: API Dog can only live on the server because it is locally hosted).",
+      "failure_condition": "You cannot access or run API Dog in the same server context as the locally hosted APIs.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm primary server context",
+          "exact_action": "Connect to a primary server where the APIs are locally hosted (APIs are installed on every primary server).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "“it can only live on the server because it's locally hosted… everything is set up on every primary server.”",
+          "site_code": "",
+          "site_label": ""
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "“APIs are locally hosted and installed on primary servers; anyone can jump on the primary to get to all the APIs.”",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Open API Dog and locate the shared API collection/documentation used for Ignition HMI APIs",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Use the correct API Dog collection/documentation so the calls match the Ignition-hosted APIs AVEVA/HMI uses.",
+      "instruction": "Open API Dog and locate the shared API collection/documentation referenced by the source. The source states they use API Dog rather than Postman and that there is API documentation in an API guide (Word document mentioned).",
+      "expected_result": "API Dog is open and you have access to the API guide/collection entries needed to call the Ignition-hosted APIs.",
+      "healthy_condition": "You are using the API Dog collection/guide that corresponds to the Ignition APIs outlined for AVEVA functionality.",
+      "failure_condition": "You cannot find the referenced API Dog collection/guide needed to make the correct request/response calls.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open API Dog collection/guide",
+          "exact_action": "Open API Dog and locate the shared API collection/documentation referenced by the source (API guide; source notes they use API Dog instead of Postman).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "“We don't use Postman, we use API dog.”",
+          "site_code": "",
+          "site_label": ""
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "“we have documentation… it's all documented in the API guide.”",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Run an API Dog call for an HMI action (e.g., startup) to observe request/response behavior",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Verify that AVEVA/HMI actions are implemented as request/response calls through Ignition and that the response reflects system state.",
+      "instruction": "In API Dog, run an API call corresponding to an HMI action such as “startup”. The source states AVEVA hits a request tag; Ignition processes and returns responses.",
+      "expected_result": "API Dog returns a response message for the startup action.",
+      "healthy_condition": "The response indicates whether the system is in the running state or not in the running/shutdown state (source provides the pattern: if you click startup while not in the correct state, the response says the system is not in the running state; similarly for shutdown state).",
+      "failure_condition": "API Dog does not return responses or returns unexpected errors.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Call startup action via API Dog",
+          "exact_action": "Run an API Dog call corresponding to an HMI action such as “startup”.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If API Dog calls do not return responses or return unexpected errors, escalate to support (source indicates deeper module-to-module tracing is not available at this layer)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "“Aveva will send a request… Ignition… returns responses… fault stats, pause, recover.”",
+          "site_code": "",
+          "site_label": ""
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "“if you start up, you get a response back saying system's not in the running or system's not in the shutdown state… It's a request and you get a response.”",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Interpret the startup response as system state (running vs shutdown) rather than expecting internal flow tracing",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm that the API response is the observable signal for system state at the HMI API request/response layer.",
+      "instruction": "Read the API Dog response message from the startup call and determine whether it indicates the system is in the running state or not (and similarly for shutdown state). The source states there is no stacking/flow tracing at this level—only request/response.",
+      "expected_result": "You can map the response message to system state constraints (e.g., response indicates system is not in the running state when startup is clicked in the wrong state).",
+      "healthy_condition": "Response clearly indicates state gating (running/shutdown) consistent with the source’s described pattern.",
+      "failure_condition": "Response does not reflect system state gating or is missing/blank/unparseable.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Validate response message content",
+          "exact_action": "Observe the response message for system state (running/shutdown) as described by the source.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the response does not reflect system state gating or is missing/unexpected, escalate to support (source: deeper module-to-module tracing is not exposed at this layer)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "“if you start up, you get a response back saying system's not in the running or system's not in the shutdown state… There's no stacking… It's a request and you get a response.”",
+          "site_code": "",
+          "site_label": ""
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "“No, we don't track that… There's no stacking… It's a request and you get a response.”",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "For data-oriented calls, confirm you receive a response payload (not downstream module-to-module flow)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Validate that GET/data-oriented interactions return payloads as the observable behavior at the HMI API layer.",
+      "instruction": "Run a data-oriented API Dog call (the source describes these as mainly fetching data). Confirm that the call returns a response payload rather than a trace of downstream module-to-module flow.",
+      "expected_result": "API Dog returns a response payload for data-oriented calls.",
+      "healthy_condition": "You see a response payload consistent with a data fetch behavior (source: mainly fetching data).",
+      "failure_condition": "You receive no response, an error, or content that looks like missing payload/trace rather than a response payload.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Call a data-fetch API",
+          "exact_action": "Run an API Dog call that is mainly fetching data and observe the returned response payload.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If API Dog calls do not return responses or return unexpected errors, escalate to support (source: deeper module-to-module tracing is not available at this layer)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "“These are mainly fetching data… if you start up, you get a response back… There's no stacking… It's a request and you get a response.”",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "If you suspect downstream failures (e.g., 55XX), note that this layer does not expose module-to-module stacking/flow tracing",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Set correct expectations for what can be diagnosed from HMI API request/response outputs.",
+      "instruction": "When interpreting API Dog results, remember the source claim: there is no stacking/flow tracing at this level. Even if a downstream module call fails with a 55XX error, the HMI API request/response layer only provides the response indicating state (or failure) rather than a trace of where it stopped.",
+      "expected_result": "You do not attempt to infer internal module call chains from the API Dog request/response layer; you treat the response as the observable signal.",
+      "healthy_condition": "Your diagnosis stays within request/response interpretation (response indicates state gating or failure) and you avoid expecting internal flow trace.",
+      "failure_condition": "You rely on missing module-to-module trace information from the HMI API layer to pinpoint downstream failure origin.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm diagnostic scope",
+          "exact_action": "Interpret API Dog outputs as request/response only; do not expect module-to-module stacking/flow tracing at this layer.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you need deeper downstream failure origin beyond request/response, escalate to support (source: deeper stacking/flow tracing is not exposed at the HMI API request/response layer)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 33,
+          "section_id": "training_video_day2_segment_0033",
+          "quote_or_summary": "“If… a downstream module call… failed or… there was a 55XX error… These are just fetching data… There's no stacking… It's a request and you get a response.”",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "API Dog calls return request/response outputs for Ignition-hosted HMI APIs used by AVEVA.",
+    "Startup action responses reflect system state gating (running vs shutdown) as described by the source.",
+    "Data-oriented calls return response payloads (mainly fetching data) rather than downstream module-to-module flow traces."
+  ],
+  "healthy_conditions": [
+    "API Dog is executed on the primary server where the APIs are locally hosted.",
+    "Startup response indicates whether the system is in the running state or not (and similarly for shutdown state).",
+    "No expectation of module-to-module stacking/flow tracing at the HMI API request/response layer."
+  ],
+  "failure_conditions": [
+    "API Dog calls do not return responses or return unexpected errors.",
+    "Startup response does not indicate system state gating (running/shutdown) or is missing/unexpected.",
+    "Attempting to diagnose downstream module call origin using only HMI API request/response outputs."
+  ],
+  "escalation_guidance": [
+    "If API Dog calls do not return responses or return unexpected errors, escalate to support. The source indicates deeper module-to-module stacking/flow tracing is not exposed at this HMI API request/response layer."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 33,
+      "section_id": "training_video_day2_segment_0033",
+      "quote_or_summary": "“We use API Dog… it can only live on the server because it's locally hosted… everything is set up on every primary server.”",
+      "site_code": "",
+      "site_label": ""
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 33,
+      "section_id": "training_video_day2_segment_0033",
+      "quote_or_summary": "“Ignition… we use it as OPC server… Ignition has the APIs outlined… AVEVA will send a request… recreate… data in tags… fault stats, pause, recover.”",
+      "site_code": "",
+      "site_label": ""
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 33,
+      "section_id": "training_video_day2_segment_0033",
+      "quote_or_summary": "“These are mainly fetching data… if you start up, you get a response back saying system's not in the running or system's not in the shutdown state… There's no stacking… It's a request and you get a response.”",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0033_a_purge_or_close_so_manual_primary_02_50_45_500",
+      "what_to_look_at": "Frame showing Ignition has the APIs outlined in the API guide and that AVEVA sends a request which Ignition processes and returns responses (fault stats, pause, recover)."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_api_dog_request_response_model_vhmiapi"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide exact API endpoints, request parameter names, or the specific API Dog collection name.",
+    "The packet does not provide the exact API Dog UI labels/fields to click for the startup call; steps are kept at the source-described request/response behavior level."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

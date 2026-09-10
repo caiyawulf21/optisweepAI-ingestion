@@ -1,0 +1,1489 @@
+[
+  {
+    "playbook_candidate_id": "playbook_candidate_incident_223554_hospital_tote_induction",
+    "title": "Hospital station cannot add or induct totes",
+    "user_facing_summary": "Troubleshoot a hospital-station flow where totes cannot be added or inducted, especially when tote removal still works or an AGV appears in an unexpected location.",
+    "playbook_goal": "Determine whether the hospital induction failure is associated with an abnormal AGV location, roster state, or tote association, then guide authorized recovery and validate that hospital tote add and remove operations work again.",
+    "incident_context": {
+      "case_id": "223554",
+      "site": "UPS Haslet TX (TXRTH)",
+      "site_code": "ups_haslet_tx",
+      "site_location": {
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "customer": "UPS",
+        "city": "Haslet",
+        "state": "TX",
+        "country": "US",
+        "hub_code": "TXRTH",
+        "region_label": "Fort Worth, TX"
+      },
+      "incident_start_time": "2025-09-26T02:11:00",
+      "incident_resolved_time": "2025-09-26T21:00:00",
+      "time_to_resolve": "18h 49m",
+      "resolution_confirmed": true
+    },
+    "observed_entry_symptoms": [
+      "The hospital station cannot add or induct totes.",
+      "Totes can be removed but cannot be added at the hospital.",
+      "A robot or AGV is reported in a shut down state.",
+      "An AGV appears not to belong in the displayed location, or two AGVs appear under the same rack or in the same zone.",
+      "Hospital backlog or tote flow disruption is reported."
+    ],
+    "negative_or_absent_signals": [
+      "The packet does not establish that the entire site is down for every occurrence of this symptom.",
+      "The packet does not confirm a single root cause; the removed-AGV and associated-tote explanation is explicitly presented as a possibility.",
+      "The packet does not provide a confirmed live alarm code or exact service state for the hospital station."
+    ],
+    "support_user_language_examples": [
+      "Hospital can't add totes",
+      "Cannot induct at hospital",
+      "Totes can come out but not go in",
+      "Hospital tote add is not working",
+      "AGV is in the wrong spot",
+      "Two AGVs are under the rack",
+      "Robot is shut down",
+      "Hospital is backed up"
+    ],
+    "tentative_internal_patterns": [
+      "Possible AGV-to-tote association left behind after AGV removal",
+      "Possible AGV roster, location, or rack-position mismatch",
+      "Possible hospital-station service or server abnormality"
+    ],
+    "internal_pattern_notes": "These are tentative patterns from chat, work-order notes, and screenshots. The packet does not confirm that any one pattern caused the failure.",
+    "affected_systems_or_components": [
+      "ACB hospital station",
+      "AGV hospital station",
+      "AGVs and robot roster/location state",
+      "Tote associations",
+      "Hospital lane",
+      "API dog / Aveva recovery interfaces"
+    ],
+    "separability_reason": "This flow can be selected directly from the distinct observable symptom that hospital tote addition or induction fails, including the reported remove-versus-add asymmetry. Its troubleshooting goal is to restore hospital tote-flow state, independent of the separate site-wide sort availability flow.",
+    "confidence": "high",
+    "confidence_reason": "The packet repeatedly documents hospital inability to add or induct totes, AGV location and tote-association anomalies, high-level corrective actions, and successful validation that totes could again be added and removed.",
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm the hospital induction symptom and current AGV/tote context",
+        "intent": "Confirm whether the reported failure is specifically inability to add or induct totes at the hospital station and whether an affected AGV, rack position, or associated tote appears abnormal.",
+        "goal": "Confirm whether the reported failure is specifically inability to add or induct totes at the hospital station and whether an affected AGV, rack position, or associated tote appears abnormal.",
+        "runbook_placeholder": "Procedure needed to interview the site about whether the affected hospital station can add and remove totes, inspect the Hospital HMI or other source-evidenced hospital layout view for the affected station, and compare the displayed AGV placement and tote association with the operator's physical observation.",
+        "allowed_roles": [
+          "operator",
+          "L1_support",
+          "L2_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "The source reports that the site could remove totes but could not add them, and shows an annotated HMI-style layout in a discussion of an AGV being in the wrong location.",
+        "needed_runbook_capability": "Procedure needed to interview the site about whether the affected hospital station can add and remove totes, inspect the Hospital HMI or other source-evidenced hospital layout view for the affected station, and compare the displayed AGV placement and tote association with the operator's physical observation.",
+        "expected_or_observed_result": "The site operator observes the hospital station and reports whether tote removal works while tote addition fails; the operator or L1 support checks the hospital HMI or readable layout view for the affected station and reports whether an AGV is shown in an unexpected location or whether multiple AGVs appear associated with one rack or zone. Healthy signal: tote add and remove both work and no abnormal AGV or tote association is reported. Unhealthy signal: tote add or induction fails, especially with an unexpected AGV or associated tote. Inconclusive: the site cannot reproduce the symptom or the displayed location/association is unreadable.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "hospital_hmi",
+            "provenance": "source_artifact_visible",
+            "source_evidence": "Page 8 contains an HMI-style rack/layout screenshot used while discussing hospital tote-add failure and AGV placement."
+          },
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "Teams messages report what the site could and could not do with hospital totes and describe AGV placement."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "hospital_hmi",
+          "site_interview",
+          "rms_ui",
+          "wcs_sql"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [
+          {
+            "id": "capability:zone_pairing_state",
+            "support_contract": {},
+            "relevant_evidence": "The packet documents a hospital-area failure with an AGV reported in an unexpected location and multiple AGVs under one rack or in one zone; the capability is relevant as a possible state check, not a confirmed classification."
+          }
+        ],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology snippet does not provide a validated backend mapping for hospital tote-add state or AGV-to-tote association."
+        ],
+        "ontology_contract_status": "complete",
+        "healthy_indicators": [
+          "Site reports both adding and removing totes work at the hospital.",
+          "The hospital view does not show an unexpected AGV or duplicate occupancy pattern."
+        ],
+        "unhealthy_indicators": [
+          "Site reports totes can be removed but not added.",
+          "Hospital induction remains unavailable.",
+          "An AGV is reported in an unexpected location or two AGVs appear under the same rack or zone."
+        ],
+        "inconclusive_indicators": [
+          "The symptom is no longer reproducible.",
+          "The HMI/layout labels or AGV association cannot be read.",
+          "The operator and displayed state disagree without enough evidence to reconcile them."
+        ],
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_223554_page_008_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_223554_event_020",
+          "incident_223554_event_021",
+          "incident_223554_event_023",
+          "incident_223554_event_024"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_8",
+            "chunk_id": "stage4_page_chunk_003",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "They can remove totes but cannot add; chat also says an AGV does not belong in the shown location and two AGVs are under the rack in the same zone."
+          }
+        ]
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "diagnostic_decision",
+        "title": "Determine whether AGV and tote state is inconsistent",
+        "intent": "Determine whether an AGV removal, unexpected location, duplicate rack occupancy, or disconnected tote association is present and plausibly connected to the hospital induction symptom.",
+        "goal": "Determine whether an AGV removal, unexpected location, duplicate rack occupancy, or disconnected tote association is present and plausibly connected to the hospital induction symptom.",
+        "runbook_placeholder": "Procedure needed to inspect the hospital rack or AGV layout view and, where authorized, the API dog or Aveva-fed AGV and tote state for unexpected AGV placement, duplicate location occupancy, removed-AGV residue, or disconnected tote association; the procedure should define how to record evidence without changing state.",
+        "allowed_roles": [
+          "operator",
+          "L1_support",
+          "L2_support"
+        ],
+        "preferred_audience": [
+          "L1_support",
+          "L2_support"
+        ],
+        "source_supported_description": "The packet repeatedly discusses an AGV in the wrong location, multiple AGVs under a rack, a disconnected tote, and use of API dog or Aveva to correct AGV and tote state.",
+        "needed_runbook_capability": "Procedure needed to inspect the hospital rack or AGV layout view and, where authorized, the API dog or Aveva-fed AGV and tote state for unexpected AGV placement, duplicate location occupancy, removed-AGV residue, or disconnected tote association; the procedure should define how to record evidence without changing state.",
+        "expected_or_observed_result": "The operator observes the physical or displayed AGV position, while L1/L2 support reviews the source-evidenced AGV/layout or API client context when available. Healthy signal: the expected AGV is associated with the expected station or rack and no disconnected tote is present. Unhealthy signal: an AGV is in an unexpected location, two AGVs are shown under one rack or in one zone, or a tote remains associated with an unavailable or removed AGV. Inconclusive: the source view lacks readable identifiers or the association cannot be confirmed.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "hospital_hmi",
+            "provenance": "source_artifact_visible",
+            "source_evidence": "Annotated HMI-style rack/layout screenshot was shared alongside the statement that an AGV did not belong in the location."
+          },
+          {
+            "surface": "aveva_hmi",
+            "provenance": "explicit_source",
+            "source_evidence": "The packet states that Aveva was used to remove an AGV from a zone and add a tote to a station."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "rms_ui",
+          "wcs_sql",
+          "wcs_api",
+          "aveva_hmi"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "No supplied ontology card establishes the backend model or fields for AGV-to-tote association or hospital-station tote ownership."
+        ],
+        "ontology_contract_status": "missing",
+        "healthy_indicators": [
+          "AGV location and station association agree with the expected layout.",
+          "No disconnected or orphaned tote association is observed."
+        ],
+        "unhealthy_indicators": [
+          "AGV is displayed in an unexpected location.",
+          "Two AGVs appear under one rack or in one zone.",
+          "A tote remains associated with a removed or disconnected AGV."
+        ],
+        "inconclusive_indicators": [
+          "Only a low-resolution annotated layout is available.",
+          "The interface does not expose a readable roster, location, or tote association.",
+          "The reported anomaly is based only on second-hand discussion."
+        ],
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_223554_page_008_nested_image_01",
+          "artifact_incident_223554_page_009_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_223554_event_023",
+          "incident_223554_event_028",
+          "incident_223554_event_031",
+          "incident_223554_event_032"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_11",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Summary describes an AGV with a disconnected tote, removal of an inducted tote through API dog, and removal of additional AGVs to restore flow."
+          },
+          {
+            "page_ref": "case_223554:page_12",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Chat says Aveva hits the same endpoints as API dog and was used to remove an AGV from a zone and add a tote to a station."
+          }
+        ]
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "procedure_reference",
+        "title": "Apply authorized correction for supported AGV or tote-state mismatch",
+        "intent": "Use an authorized, source-supported recovery procedure to correct the affected AGV or tote state when the diagnostic evidence identifies a supported mismatch.",
+        "goal": "Use an authorized, source-supported recovery procedure to correct the affected AGV or tote state when the diagnostic evidence identifies a supported mismatch.",
+        "runbook_placeholder": "Procedure needed for authorized AGV and tote-state correction using the source-evidenced Aveva or API dog interface, including safety prerequisites, role limits, handling of an inducted or disconnected tote, and evidence capture; exact API actions and screen steps belong in the procedure.",
+        "allowed_roles": [
+          "operator",
+          "L1_support",
+          "L2_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "The source reports high-level use of API dog and Aveva to remove totes, remove an AGV from a zone, and add a tote to a station; it does not provide the exact procedure.",
+        "needed_runbook_capability": "Procedure needed for authorized AGV and tote-state correction using the source-evidenced Aveva or API dog interface, including safety prerequisites, role limits, handling of an inducted or disconnected tote, and evidence capture; exact API actions and screen steps belong in the procedure.",
+        "expected_or_observed_result": "The authorized operator or support role observes that the targeted AGV or tote state has been corrected in the approved interface. Progress signal: the stale or disconnected association is removed or the expected station association is restored. Unhealthy signal: the interface rejects the correction, the state remains inconsistent, or the action would require an unapproved physical or database change. Inconclusive: the source interface does not show a reliable post-action state.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "aveva_hmi",
+            "provenance": "explicit_source",
+            "source_evidence": "The packet states that the site used Aveva to remove an AGV from a zone and add a tote to a station."
+          }
+        ],
+        "stage8_candidate_surfaces": [],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The packet does not provide a validated capability card for the specific mutating AGV or tote correction operation."
+        ],
+        "ontology_contract_status": "not_required",
+        "healthy_indicators": [
+          "Approved interface reflects the intended AGV or tote association.",
+          "The affected hospital station can proceed to validation."
+        ],
+        "unhealthy_indicators": [
+          "Correction is rejected or produces a new inconsistent association.",
+          "A tote remains stuck or disconnected after the authorized action."
+        ],
+        "inconclusive_indicators": [
+          "The interface does not provide a reliable state confirmation.",
+          "The required role or safety precondition is unavailable."
+        ],
+        "stop_or_escalation_note": "Do not continue with state-changing actions if the authorized interface, target association, or safety preconditions cannot be confirmed.",
+        "related_artifact_ids": [],
+        "related_event_ids": [
+          "incident_223554_event_031",
+          "incident_223554_event_032"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_11",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "API dog was used to remove an inducted tote and a disconnected tote, and additional AGVs were taken out during recovery."
+          }
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "validation_gate",
+        "title": "Validate hospital tote flow and AGV recovery",
+        "intent": "Confirm that the hospital station accepts totes again and that the affected AGV and tote state no longer prevents normal flow.",
+        "goal": "Confirm that the hospital station accepts totes again and that the affected AGV and tote state no longer prevents normal flow.",
+        "runbook_placeholder": "Procedure needed to validate hospital-station tote add and remove behavior, confirm the affected AGV roster or location state through the source-evidenced hospital or AGV view, and monitor for continued backlog or recurrence before declaring the hospital flow recovered.",
+        "allowed_roles": [
+          "operator",
+          "L1_support",
+          "L2_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "The source reports restoration of adding and removing totes and that all robots were re-added and running.",
+        "needed_runbook_capability": "Procedure needed to validate hospital-station tote add and remove behavior, confirm the affected AGV roster or location state through the source-evidenced hospital or AGV view, and monitor for continued backlog or recurrence before declaring the hospital flow recovered.",
+        "expected_or_observed_result": "The site operator observes the hospital station and performs the approved validation activity. Healthy signal: totes can be added and removed at the hospital, AGVs are re-added or operating as expected, and movement resumes. Unhealthy signal: tote addition remains unavailable, an AGV remains shut down or misplaced, or backlog continues to grow. Inconclusive: only a general statement that the system is running is available without a hospital-specific tote-flow check.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "Case comments state that the site was able to add and remove totes again and that all robots were re-added and running."
+          },
+          {
+            "surface": "hospital_hmi",
+            "provenance": "source_artifact_visible",
+            "source_evidence": "The packet includes an HMI-style hospital-area layout screenshot used during the tote and AGV investigation."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "hospital_hmi",
+          "rms_ui",
+          "site_interview"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology does not provide a detailed validation mapping for hospital tote-flow recovery."
+        ],
+        "ontology_contract_status": "missing",
+        "healthy_indicators": [
+          "Site confirms totes can be added and removed.",
+          "Robots are re-added and back up and running.",
+          "Movement resumes without immediate recurrence."
+        ],
+        "unhealthy_indicators": [
+          "Hospital still cannot accept or induct totes.",
+          "AGVs remain shut down, misplaced, or associated with disconnected totes.",
+          "Hospital backlog or tote-flow disruption continues."
+        ],
+        "inconclusive_indicators": [
+          "Only a general 'system running' message is available.",
+          "Validation is not performed at the hospital station."
+        ],
+        "stop_or_escalation_note": "If hospital tote flow fails after the supported correction or the AGV/tote state remains ambiguous, stop this path and use the escalation gate.",
+        "related_artifact_ids": [],
+        "related_event_ids": [
+          "incident_223554_event_012",
+          "incident_223554_event_013",
+          "incident_223554_event_039",
+          "incident_223554_event_040"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_16",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Site was able to add and remove totes and all robots were re-added and back up and running."
+          }
+        ]
+      },
+      {
+        "node_id": "node_5",
+        "node_order": 5,
+        "node_type": "escalation_gate",
+        "title": "Stop if hospital-state correction is unsupported or validation fails",
+        "intent": "Hand off when the hospital tote or AGV state cannot be safely identified or the approved correction does not restore hospital tote flow.",
+        "goal": "Hand off when the hospital tote or AGV state cannot be safely identified or the approved correction does not restore hospital tote flow.",
+        "runbook_placeholder": "Procedure needed to prepare an escalation handoff containing hospital HMI or layout evidence, AGV and tote association observations, API dog or Aveva action results, validation results, and clear stop criteria; the handoff procedure must identify the role authorized to continue.",
+        "allowed_roles": [
+          "L1_support",
+          "L2_support",
+          "L3_support"
+        ],
+        "preferred_audience": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "The packet documents uncertain cause, unreadable artifacts, and high-level state-correction actions without a complete supported procedure.",
+        "needed_runbook_capability": "Procedure needed to prepare an escalation handoff containing hospital HMI or layout evidence, AGV and tote association observations, API dog or Aveva action results, validation results, and clear stop criteria; the handoff procedure must identify the role authorized to continue.",
+        "expected_or_observed_result": "L1/L2 support observes that the evidence is insufficient, the authorized interface cannot complete the supported correction, or hospital validation remains unsuccessful. Healthy signal for this gate is not recovery; it is a documented stop condition with sufficient evidence for the next role. Unhealthy continuation signal: further unapproved state changes, physical handling, or database changes would be required.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "hospital_hmi",
+            "provenance": "source_artifact_visible",
+            "source_evidence": "The packet contains an annotated hospital-area HMI-style layout used in the investigation."
+          },
+          {
+            "surface": "aveva_hmi",
+            "provenance": "explicit_source",
+            "source_evidence": "The source describes using Aveva for AGV and tote state correction."
+          }
+        ],
+        "stage8_candidate_surfaces": [],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [],
+        "ontology_contract_status": "not_required",
+        "healthy_indicators": [],
+        "unhealthy_indicators": [
+          "Supported correction cannot be completed or validated.",
+          "Further action would require unauthorized physical, database, or configuration changes."
+        ],
+        "inconclusive_indicators": [
+          "The affected AGV, tote, or station cannot be uniquely identified.",
+          "Evidence is limited to second-hand reports or unreadable screenshots."
+        ],
+        "stop_or_escalation_note": "Do not treat the source's suspected removed-AGV explanation as confirmed diagnosis.",
+        "related_artifact_ids": [
+          "artifact_incident_223554_page_008_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_223554_event_031",
+          "incident_223554_event_032",
+          "incident_223554_event_039"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_11",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Incident summary states the exact cause was not known and lists several recovery actions."
+          }
+        ]
+      }
+    ],
+    "branch_hints": [
+      {
+        "from_node_id": "node_1",
+        "condition_or_signal": "Hospital tote addition or induction fails, with or without an AGV or tote anomaly",
+        "suggested_next_node_id": "node_2",
+        "reason": "The source-supported symptom pattern warrants checking AGV and tote state.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_8",
+            "chunk_id": "stage4_page_chunk_003",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Totes could be removed but not added; AGV location anomaly was discussed."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_1",
+        "condition_or_signal": "Hospital tote add and remove work, and no relevant AGV or tote anomaly is observed",
+        "suggested_next_node_id": "",
+        "reason": "The hospital induction pattern is not currently present; exit or retriage.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_16",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Site later reported that it could add and remove totes."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_2",
+        "condition_or_signal": "AGV location, roster, or tote association inconsistency is indicated",
+        "suggested_next_node_id": "node_3",
+        "reason": "The source describes authorized high-level correction through Aveva or API dog for this pattern.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_11",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "API dog was used to remove inducted or disconnected totes and additional AGVs were taken out."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_2",
+        "condition_or_signal": "AGV and tote state appears consistent or the reported anomaly cannot be confirmed",
+        "suggested_next_node_id": "node_5",
+        "reason": "Do not perform state-changing recovery without a supported target and observable mismatch.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_11",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The incident summary says the cause was uncertain."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_3",
+        "condition_or_signal": "Authorized AGV or tote-state correction completed",
+        "suggested_next_node_id": "node_4",
+        "reason": "Post-recovery validation is appropriate only after the supported correction completes.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_12",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Aveva was used to correct AGV and tote state during the incident."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_3",
+        "condition_or_signal": "Correction is rejected, unsafe, unauthorized, or leaves the association ambiguous",
+        "suggested_next_node_id": "node_5",
+        "reason": "Stop rather than continue with unsupported state changes.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_11",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The source lists high-level actions but does not provide a complete procedure or confirmed cause."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_4",
+        "condition_or_signal": "Hospital can add and remove totes and AGVs are operating or re-added",
+        "suggested_next_node_id": "",
+        "reason": "Hospital flow recovery is validated.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_16",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Site could add and remove totes and robots were re-added and running."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_4",
+        "condition_or_signal": "Hospital still cannot add or induct totes, or AGV/tote inconsistency persists",
+        "suggested_next_node_id": "node_5",
+        "reason": "Validation failure requires a supported handoff.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_16",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Successful validation was reported, but the playbook must stop if that result is not achieved."
+          }
+        ]
+      }
+    ],
+    "escalation_gates": [
+      {
+        "condition_or_signal": "AGV or tote state cannot be uniquely identified, the authorized correction cannot be completed, or hospital validation fails after the supported path.",
+        "required_role": "L2_support",
+        "reason": "Further state-changing or physical actions are not source-supported without a confirmed target, authorization, and safe procedure.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_11",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The source says the exact cause was not known and describes several high-level recovery actions."
+          }
+        ]
+      }
+    ],
+    "validation_gates": [
+      {
+        "validation_goal": "Restore and confirm hospital tote flow.",
+        "expected_recovery_signal": "Site can add and remove totes at the hospital, and affected robots are re-added or operating normally.",
+        "failure_outcome": "Remain stopped and escalate with AGV/tote evidence and attempted-action results.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_16",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Site was able to add and remove totes and all robots were re-added and running."
+          }
+        ]
+      }
+    ],
+    "runbook_placeholders": [
+      {
+        "needed_procedure": "Hospital symptom and AGV/tote-state evidence collection using the Hospital HMI, site observation, and source-evidenced layout view.",
+        "why_needed": "The first decision depends on distinguishing inability to add totes from a general site outage and identifying whether an AGV or tote association is abnormal.",
+        "suggested_role": "L1_support",
+        "risk_note": "Do not infer the removed-AGV explanation as confirmed cause.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_8",
+            "chunk_id": "stage4_page_chunk_003",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Hospital tote-add failure and AGV location anomaly were reported."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Authorized AGV and tote-state correction using Aveva or API dog, including target identification, role limits, safety preconditions, and post-action evidence.",
+        "why_needed": "The historical recovery used these interfaces to remove or correct tote and AGV state, but the packet does not contain exact steps.",
+        "suggested_role": "operator",
+        "risk_note": "State-changing actions require an approved procedure and must not be improvised.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_12",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Aveva was used to remove an AGV from a zone and add a tote to a station."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Hospital tote-flow and AGV recovery validation.",
+        "why_needed": "The source validates recovery through restored tote add/remove behavior and robots running again.",
+        "suggested_role": "operator",
+        "risk_note": "A general statement that the system is running is not sufficient without hospital-specific validation.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_16",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Site could add and remove totes and robots were back up and running."
+          }
+        ]
+      }
+    ],
+    "ignored_non_playbook_content": [
+      {
+        "content_type": "intake",
+        "example_from_incident": "Case subject, priority, and work-order creation details.",
+        "reason_ignored": "Administrative intake metadata does not describe reusable troubleshooting orchestration."
+      },
+      {
+        "content_type": "support_coordination",
+        "example_from_incident": "Requests to call support, discuss escalation paths, or identify who was on site.",
+        "reason_ignored": "These are historical coordination facts rather than diagnostic or recovery nodes."
+      },
+      {
+        "content_type": "communication",
+        "example_from_incident": "Requests to notify people when the system was back up.",
+        "reason_ignored": "Notification and messaging are outside the playbook boundary."
+      },
+      {
+        "content_type": "exact_procedure",
+        "example_from_incident": "Historical API dog or Aveva actions to remove totes or AGVs.",
+        "reason_ignored": "Only the high-level recovery direction is retained; exact actions belong in procedures."
+      },
+      {
+        "content_type": "reference_background",
+        "example_from_incident": "Contact names, phone numbers, and work-order assignment details.",
+        "reason_ignored": "These do not provide reusable troubleshooting orchestration."
+      }
+    ],
+    "source_refs": [
+      {
+        "page_ref": "case_223554:page_8",
+        "chunk_id": "stage4_page_chunk_003",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "Hospital tote-add failure and AGV location anomaly."
+      },
+      {
+        "page_ref": "case_223554:page_11",
+        "chunk_id": "stage4_page_chunk_004",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "Disconnected tote and API dog recovery summary."
+      }
+    ],
+    "evidence_source_refs": [
+      {
+        "page_ref": "case_223554:page_8",
+        "chunk_id": "stage4_page_chunk_003",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "Hospital tote-add failure and AGV location anomaly."
+      },
+      {
+        "page_ref": "case_223554:page_11",
+        "chunk_id": "stage4_page_chunk_004",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "Disconnected tote and API dog recovery summary."
+      }
+    ],
+    "extraction_notes": [
+      "Ingestion metadata is authoritative for site: UPS Haslet TX (TXRTH), site_code ups_haslet_tx.",
+      "Evidence text also uses UPS Fort Worth, TX (Haslet) and a Fort Worth address; this appears compatible with the ingestion site but is preserved as an ambiguity.",
+      "The removed-AGV and associated-tote explanation is a tentative internal pattern, not confirmed root cause.",
+      "Several screenshots are low resolution or unreadable; branches require confirmation from current observable state."
+    ],
+    "summary": "Troubleshoot a hospital-station flow where totes cannot be added or inducted, especially when tote removal still works or an AGV appears in an unexpected location.",
+    "likely_roles": [
+      "L1_support",
+      "L2_support",
+      "L3_support",
+      "operator"
+    ],
+    "related_artifact_ids": [],
+    "related_event_ids": [],
+    "source_id": "source_case_223554",
+    "source_type": "incident_case",
+    "source_title": "Case 223554 Data",
+    "source_version": "0.1",
+    "ingestion_batch_id": "batch_20260716T212454Z",
+    "extraction_mode": "one_or_more_playbook_candidates_when_separable"
+  },
+  {
+    "playbook_candidate_id": "playbook_candidate_incident_223554_site_sort_unavailable",
+    "title": "Site cannot start or sustain sort",
+    "user_facing_summary": "Troubleshoot a broad operational outage where the site cannot start sort or stops during sort, with possible server or service abnormality and subsequent recovery validation.",
+    "playbook_goal": "Determine whether the report represents a site-wide sort availability problem, assess the source-supported service or server recovery direction, and validate stable operation without treating the historical service hypothesis as confirmed cause.",
+    "incident_context": {
+      "case_id": "223554",
+      "site": "UPS Haslet TX (TXRTH)",
+      "site_code": "ups_haslet_tx",
+      "site_location": {
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "customer": "UPS",
+        "city": "Haslet",
+        "state": "TX",
+        "country": "US",
+        "hub_code": "TXRTH",
+        "region_label": "Fort Worth, TX"
+      },
+      "incident_start_time": "2025-09-26T02:11:00",
+      "incident_resolved_time": "2025-09-26T21:00:00",
+      "time_to_resolve": "18h 49m",
+      "resolution_confirmed": true
+    },
+    "observed_entry_symptoms": [
+      "The site is reported down.",
+      "The site cannot start sort.",
+      "The site goes down in the middle of sort.",
+      "Movement stops or the system is not running.",
+      "A work-order or repair note reports AGV hospital-station server issues and a need to reset services."
+    ],
+    "negative_or_absent_signals": [
+      "The packet does not identify the application represented by the color-coded grid screenshot.",
+      "The packet does not provide a confirmed service name, event ID, or live Windows service state.",
+      "The packet does not establish that the server or service condition was the sole cause of the site-wide disruption.",
+      "The hospital-specific tote and AGV anomalies may coexist with, precede, or contribute to the broader outage; their relationship is not confirmed."
+    ],
+    "support_user_language_examples": [
+      "Site is down",
+      "Can't start sort",
+      "Sort went down",
+      "We went down in the middle of sort",
+      "Nothing is moving",
+      "System is not running",
+      "AGV server is having issues",
+      "Services need to be reset"
+    ],
+    "tentative_internal_patterns": [
+      "Possible OptiSweep or AGV-server service abnormality",
+      "Possible service reset and Hospital Lane restart recovery path",
+      "Possible broader operational effect from unresolved hospital AGV or tote state"
+    ],
+    "internal_pattern_notes": "The source reports service reset and Hospital Lane restart in closure details, while other messages describe AGV and tote corrections. These are source-supported recovery observations, not confirmed causal classifications.",
+    "affected_systems_or_components": [
+      "Site-wide sort operation",
+      "OptiSweep services",
+      "AGV hospital station server",
+      "Hospital Lane",
+      "AGVs and tippers"
+    ],
+    "separability_reason": "This flow has a different entry pattern—site-wide inability to start or sustain sort—and a different troubleshooting goal—restore overall operational availability. It is independently reusable from the hospital-only tote-induction flow, although it may branch to that flow when hospital symptoms are also present.",
+    "confidence": "medium",
+    "confidence_reason": "The packet clearly documents site-down and sort-start failure reports, server/service-reset notes, a high-level OptiSweep service reset and Hospital Lane restart, and later reports that movement and the system resumed. Exact service diagnosis and validation evidence are incomplete.",
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm site-wide sort unavailability",
+        "intent": "Determine whether the report is a broad inability to start or sustain sort rather than only a localized hospital-station symptom.",
+        "goal": "Determine whether the report is a broad inability to start or sustain sort rather than only a localized hospital-station symptom.",
+        "runbook_placeholder": "Procedure needed to confirm with the site whether sort is unavailable across the operation, whether movement stopped or only the hospital flow is affected, and whether the available site status or dashboard view shows a readable down or running state; do not infer the meaning of unreadable color cells.",
+        "allowed_roles": [
+          "operator",
+          "L1_support",
+          "L2_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "The source reports that the site was down and could not start sort or went down in the middle of sort; the associated dashboard screenshot is not readable enough to interpret independently.",
+        "needed_runbook_capability": "Procedure needed to confirm with the site whether sort is unavailable across the operation, whether movement stopped or only the hospital flow is affected, and whether the available site status or dashboard view shows a readable down or running state; do not infer the meaning of unreadable color cells.",
+        "expected_or_observed_result": "The site operator reports whether sort cannot start or stopped during operation and whether movement is broadly affected; the source-evidenced status screenshot or site operational view is checked only for readable overall state. Healthy signal: sort starts and continues with normal movement. Unhealthy signal: site is down, sort cannot start, or sort stops broadly. Inconclusive: the screenshot is unreadable or the report is limited to one station or one AGV.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "Teams messages state that the site was down and could not start sort or went down during sort."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "site_interview",
+          "rms_ui",
+          "wcs_sql"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology snippets do not establish a mapping for the unreadable status dashboard or a specific site-wide sort-state backend model."
+        ],
+        "ontology_contract_status": "missing",
+        "healthy_indicators": [
+          "Site reports sort starts and remains active.",
+          "Movement is occurring across the affected operation."
+        ],
+        "unhealthy_indicators": [
+          "Site is reported down.",
+          "Sort cannot start or stops in progress.",
+          "Broad movement is absent."
+        ],
+        "inconclusive_indicators": [
+          "Only a localized hospital or AGV issue is reported.",
+          "The dashboard screenshot has no readable labels or legend.",
+          "The report is second hand and cannot be reproduced."
+        ],
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_223554_page_006_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_223554_event_016",
+          "incident_223554_event_017",
+          "incident_223554_event_019"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_6",
+            "chunk_id": "stage4_page_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Site was reported down and could not start sort or went down during sort."
+          }
+        ]
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "diagnostic_decision",
+        "title": "Check for source-supported service or server abnormality",
+        "intent": "Determine whether the broad outage correlates with the documented AGV hospital-station server or service abnormality.",
+        "goal": "Determine whether the broad outage correlates with the documented AGV hospital-station server or service abnormality.",
+        "runbook_placeholder": "Procedure needed to inspect the AGV hospital-station server or OptiSweep service state using the named service evidence available in the case, including Windows Services or Event Viewer only if the current diagnostic artifact identifies those views, and to distinguish a live service fault from a historical notes entry.",
+        "allowed_roles": [
+          "L1_support",
+          "L2_support",
+          "L3_support"
+        ],
+        "preferred_audience": [
+          "L1_support",
+          "L2_support"
+        ],
+        "source_supported_description": "The case artifacts and closure details mention AGV hospital-station server issues, services needing reset, and later reset of OptiSweep services, but do not show the live service state or exact service names.",
+        "needed_runbook_capability": "Procedure needed to inspect the AGV hospital-station server or OptiSweep service state using the named service evidence available in the case, including Windows Services or Event Viewer only if the current diagnostic artifact identifies those views, and to distinguish a live service fault from a historical notes entry.",
+        "expected_or_observed_result": "L1/L2 support inspects the documented service/server evidence and any available named service view. Healthy signal: relevant services are responsive and no abnormal condition is observed. Unhealthy signal: the named incident context continues to show a server or service abnormality, or service responsiveness is absent. Inconclusive: the packet provides only a notes entry saying services need reset and no live service state or exact service name is available.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "event_viewer",
+            "provenance": "source_artifact_visible",
+            "source_evidence": "The packet labels the AGV repair artifact as a Windows-services-related screenshot, although enrichment notes that the visible crop is a notes pane rather than a live Services console."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "event_viewer",
+          "wcs_sql",
+          "wcs_api"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The packet does not identify exact OptiSweep service names or provide a validated event-log mapping.",
+          "The artifact is a notes pane rather than proof of a live Windows Services state."
+        ],
+        "ontology_contract_status": "missing",
+        "healthy_indicators": [
+          "Relevant service or server state is responsive.",
+          "No current service abnormality is observed in the available named view."
+        ],
+        "unhealthy_indicators": [
+          "AGV hospital-station server is reported as having service issues.",
+          "OptiSweep services are reported as requiring reset or are not responsive."
+        ],
+        "inconclusive_indicators": [
+          "Only a historical work-order note is available.",
+          "Exact service names and live state are unavailable.",
+          "The dashboard or service artifact cannot be read."
+        ],
+        "stop_or_escalation_note": "",
+        "related_artifact_ids": [
+          "artifact_incident_223554_page_005_nested_image_01",
+          "artifact_incident_223554_page_015_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_223554_event_014",
+          "incident_223554_event_037",
+          "incident_223554_event_038",
+          "incident_223554_event_043"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_5",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "AGV hospital station is described as having server issues and needing services reset."
+          },
+          {
+            "page_ref": "case_223554:page_17",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Resolution details state that Opti sweep services were reset."
+          }
+        ]
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "procedure_reference",
+        "title": "Perform authorized service or lane recovery",
+        "intent": "Use the approved procedure for the documented service or Hospital Lane recovery path when the responsible role confirms that it is authorized and supported.",
+        "goal": "Use the approved procedure for the documented service or Hospital Lane recovery path when the responsible role confirms that it is authorized and supported.",
+        "runbook_placeholder": "Procedure needed for authorized recovery of the source-named OptiSweep services and Hospital Lane, including operational safety preconditions, role limits, service-state evidence, and post-recovery checks; exact restart steps and commands belong in the runbook.",
+        "allowed_roles": [
+          "L1_support",
+          "L2_support",
+          "operator"
+        ],
+        "preferred_audience": [
+          "L1_support",
+          "operator"
+        ],
+        "source_supported_description": "The closure summary says OptiSweep services were reset and the site restarted Hospital Lane; the packet does not provide exact steps.",
+        "needed_runbook_capability": "Procedure needed for authorized recovery of the source-named OptiSweep services and Hospital Lane, including operational safety preconditions, role limits, service-state evidence, and post-recovery checks; exact restart steps and commands belong in the runbook.",
+        "expected_or_observed_result": "L1/L2 support or the authorized site role observes that the approved service recovery or Hospital Lane restart has completed. Progress signal: service responsiveness or lane availability returns. Unhealthy signal: the recovery is rejected, the service remains abnormal, or the action would affect an unsafe or unknown operational state. Inconclusive: completion is asserted but no observable service, lane, or movement change is available.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "hospital_hmi",
+            "provenance": "explicit_source",
+            "source_evidence": "Closure details state that the site restarted Hospital Lane; hospital station and Hospital Lane are named in the incident."
+          }
+        ],
+        "stage8_candidate_surfaces": [],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The packet does not provide exact service names, restart sequence, or a validated Hospital Lane control mapping."
+        ],
+        "ontology_contract_status": "not_required",
+        "healthy_indicators": [
+          "Authorized recovery is completed.",
+          "Service or Hospital Lane responsiveness returns.",
+          "Movement begins again."
+        ],
+        "unhealthy_indicators": [
+          "Service remains unavailable or the lane does not recover.",
+          "Recovery causes or reveals additional AGV, tote, or safety anomalies."
+        ],
+        "inconclusive_indicators": [
+          "Recovery completion is reported without a direct operational observation.",
+          "No authorized role is available to perform the supported recovery."
+        ],
+        "stop_or_escalation_note": "Do not infer that resetting services is safe or sufficient without the approved procedure and role authorization.",
+        "related_artifact_ids": [],
+        "related_event_ids": [
+          "incident_223554_event_043"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_17",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Reset Opti sweep services and had site restart Hospital Lane."
+          }
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "validation_gate",
+        "title": "Validate stable sort and movement recovery",
+        "intent": "Confirm that the site can start or sustain sort and that movement remains active after service or lane recovery.",
+        "goal": "Confirm that the site can start or sustain sort and that movement remains active after service or lane recovery.",
+        "runbook_placeholder": "Procedure needed to validate OptiSweep or service responsiveness, confirm Hospital Lane and site sort operation, observe sustained movement, and check for recurrence after recovery; the validation procedure should define the monitoring interval and evidence to retain without prescribing exact screen navigation.",
+        "allowed_roles": [
+          "operator",
+          "L1_support",
+          "L2_support"
+        ],
+        "preferred_audience": [
+          "operator",
+          "L1_support"
+        ],
+        "source_supported_description": "The packet reports that movement started and the system was running, while the earlier symptom was inability to start or sustain sort.",
+        "needed_runbook_capability": "Procedure needed to validate OptiSweep or service responsiveness, confirm Hospital Lane and site sort operation, observe sustained movement, and check for recurrence after recovery; the validation procedure should define the monitoring interval and evidence to retain without prescribing exact screen navigation.",
+        "expected_or_observed_result": "The site operator observes sort startup and continued movement, while support verifies any available named service or operational status view. Healthy signal: sort starts, movement is active, and the site remains running. Unhealthy signal: sort cannot start, the site goes down again, or movement stops. Inconclusive: a general message says the system is running but no sustained sort or movement observation is available.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "Teams messages report that movement started and that the system was running."
+          },
+          {
+            "surface": "hospital_hmi",
+            "provenance": "explicit_source",
+            "source_evidence": "The resolution path names Hospital Lane as part of recovery."
+          }
+        ],
+        "stage8_candidate_surfaces": [
+          "site_interview",
+          "rms_ui",
+          "wcs_api",
+          "wcs_sql"
+        ],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [
+          "The supplied ontology does not provide a detailed mapping for sustained sort validation or the specific Hospital Lane status."
+        ],
+        "ontology_contract_status": "missing",
+        "healthy_indicators": [
+          "Site reports sort started successfully.",
+          "Movement is occurring and remains active.",
+          "System is reported running after recovery."
+        ],
+        "unhealthy_indicators": [
+          "Sort cannot start.",
+          "Sort stops again after recovery.",
+          "Movement does not resume or quickly stops."
+        ],
+        "inconclusive_indicators": [
+          "Only a single 'system is running' message is available.",
+          "No direct observation of sustained sort or movement is available."
+        ],
+        "stop_or_escalation_note": "If broad sort availability is not restored or stability cannot be demonstrated, use the escalation gate rather than declaring recovery.",
+        "related_artifact_ids": [
+          "artifact_incident_223554_page_006_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_223554_event_029",
+          "incident_223554_event_030",
+          "incident_223554_event_031"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_11",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Chat reports that movement started and the system was running."
+          }
+        ]
+      },
+      {
+        "node_id": "node_5",
+        "node_order": 5,
+        "node_type": "escalation_gate",
+        "title": "Stop if service recovery or sort validation fails",
+        "intent": "Hand off when the service or server condition cannot be confirmed, authorized recovery does not restore operation, or the site remains unable to start or sustain sort.",
+        "goal": "Hand off when the service or server condition cannot be confirmed, authorized recovery does not restore operation, or the site remains unable to start or sustain sort.",
+        "runbook_placeholder": "Procedure needed to prepare escalation evidence including service or server observations, Event Viewer or Windows Services evidence when available, sort availability reports, Hospital Lane state, recovery actions attempted, and validation results, with stop criteria and the receiving technical role.",
+        "allowed_roles": [
+          "L2_support",
+          "L3_support"
+        ],
+        "preferred_audience": [
+          "L2_support",
+          "L3_support"
+        ],
+        "source_supported_description": "The source contains incomplete service evidence, an unreadable dashboard artifact, and a site-wide outage that eventually recovered through multiple actions.",
+        "needed_runbook_capability": "Procedure needed to prepare escalation evidence including service or server observations, Event Viewer or Windows Services evidence when available, sort availability reports, Hospital Lane state, recovery actions attempted, and validation results, with stop criteria and the receiving technical role.",
+        "expected_or_observed_result": "L1/L2 support observes unresolved service abnormality, failed recovery, repeated outage, or insufficient evidence to continue safely. Healthy signal for this gate is a complete evidence package and controlled handoff, not continued troubleshooting. Unhealthy continuation signal: repeated resets, unsupported changes, or declaring recovery from a single unverified status message.",
+        "required_evidence_concepts": [],
+        "observed_surfaces": [],
+        "source_used_surfaces": [
+          {
+            "surface": "event_viewer",
+            "provenance": "source_artifact_visible",
+            "source_evidence": "The packet includes an artifact categorized as Windows-services-related, but notes that the visible crop is not a live service console."
+          },
+          {
+            "surface": "site_interview",
+            "provenance": "explicit_source",
+            "source_evidence": "Site-down, sort-start failure, movement recovery, and system-running reports are present in Teams."
+          }
+        ],
+        "stage8_candidate_surfaces": [],
+        "recommended_diagnostic_surfaces": [],
+        "expects_capability": [],
+        "expects_surface": [],
+        "ontology_capabilities": [],
+        "backend_observability": [],
+        "ontology_gaps": [],
+        "ontology_contract_status": "not_required",
+        "healthy_indicators": [],
+        "unhealthy_indicators": [
+          "Sort remains unavailable after the supported recovery path.",
+          "The site repeatedly goes down or cannot start sort.",
+          "Further recovery would require unsupported or unauthorized changes."
+        ],
+        "inconclusive_indicators": [
+          "Only an unreadable dashboard or historical notes entry is available.",
+          "The service name or current state cannot be identified."
+        ],
+        "stop_or_escalation_note": "Historical unfamiliarity, support participation, and communication delays are not themselves escalation conditions; escalation is based on unsafe, unsupported, or unresolved technical state.",
+        "related_artifact_ids": [
+          "artifact_incident_223554_page_005_nested_image_01",
+          "artifact_incident_223554_page_006_nested_image_01"
+        ],
+        "related_event_ids": [
+          "incident_223554_event_016",
+          "incident_223554_event_019",
+          "incident_223554_event_043"
+        ],
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_6",
+            "chunk_id": "stage4_page_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The site was reported down and could not start sort or went down during sort."
+          }
+        ]
+      }
+    ],
+    "branch_hints": [
+      {
+        "from_node_id": "node_1",
+        "condition_or_signal": "Site cannot start sort, sort stops broadly, or site-wide movement is absent",
+        "suggested_next_node_id": "node_2",
+        "reason": "The site-wide symptom supports checking the documented service or server condition.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_6",
+            "chunk_id": "stage4_page_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "They could not start sort or went down in the middle of sort."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_1",
+        "condition_or_signal": "Sort is running and the issue is limited to hospital tote induction",
+        "suggested_next_node_id": "",
+        "reason": "Exit this site-wide flow and use the hospital induction flow.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_8",
+            "chunk_id": "stage4_page_chunk_003",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The separate localized symptom was inability to add totes at the hospital."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_2",
+        "condition_or_signal": "Current service or server abnormality is indicated",
+        "suggested_next_node_id": "node_3",
+        "reason": "The source supports an authorized service or Hospital Lane recovery direction.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_17",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Resolution details state that Opti sweep services were reset and Hospital Lane was restarted."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_2",
+        "condition_or_signal": "No current service abnormality is indicated, or only historical notes are available",
+        "suggested_next_node_id": "node_5",
+        "reason": "Do not assume a service reset is the correct recovery without current evidence.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_5",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The artifact says services need reset but does not show live service state or completed reset."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_3",
+        "condition_or_signal": "Authorized service or Hospital Lane recovery completed",
+        "suggested_next_node_id": "node_4",
+        "reason": "Post-recovery validation is reached only after the recovery phase completes.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_17",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Closure details describe service reset and Hospital Lane restart."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_3",
+        "condition_or_signal": "Recovery cannot be performed safely or service remains abnormal",
+        "suggested_next_node_id": "node_5",
+        "reason": "Stop and hand off rather than repeat unsupported recovery.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_5",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The source documents a reset need but not exact services, steps, or validation."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_4",
+        "condition_or_signal": "Sort starts, movement resumes, and operation remains stable",
+        "suggested_next_node_id": "",
+        "reason": "Broad recovery is validated.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_11",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Movement started and the system was reported running."
+          }
+        ]
+      },
+      {
+        "from_node_id": "node_4",
+        "condition_or_signal": "Sort cannot start, stops again, or sustained movement is not confirmed",
+        "suggested_next_node_id": "node_5",
+        "reason": "Validation failure requires escalation with evidence.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_6",
+            "chunk_id": "stage4_page_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The original symptom was inability to start sort or a stop during sort."
+          }
+        ]
+      }
+    ],
+    "escalation_gates": [
+      {
+        "condition_or_signal": "Service or server abnormality remains unresolved, authorized recovery cannot be completed, or sort remains unavailable after validation.",
+        "required_role": "L2_support",
+        "reason": "The packet does not provide enough evidence for additional unsupported service or configuration changes.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_5",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "The artifact documents server issues and a need to reset services but not a complete procedure."
+          }
+        ]
+      }
+    ],
+    "validation_gates": [
+      {
+        "validation_goal": "Confirm stable site-wide sort recovery.",
+        "expected_recovery_signal": "Sort starts or continues, movement resumes, and the system remains running after the recovery path.",
+        "failure_outcome": "Stop and escalate with service evidence, outage scope, recovery results, and observed recurrence.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_11",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Chat reports that movement started and the system was running."
+          }
+        ]
+      }
+    ],
+    "runbook_placeholders": [
+      {
+        "needed_procedure": "Site-wide outage and sort-availability confirmation using site observation and a readable operational status view.",
+        "why_needed": "The first decision must distinguish broad sort unavailability from the separate hospital-only tote symptom.",
+        "suggested_role": "operator",
+        "risk_note": "Do not interpret unreadable dashboard colors as a confirmed fault state.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_6",
+            "chunk_id": "stage4_page_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Site was reported down and unable to start or sustain sort."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Current service and server health inspection for the documented AGV hospital-station and OptiSweep service context.",
+        "why_needed": "The packet mentions server issues and service reset but does not establish whether the condition is live or which exact service is affected.",
+        "suggested_role": "L1_support",
+        "risk_note": "A historical notes entry is not proof of a current service fault.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_5",
+            "chunk_id": "stage4_artifact_chunk_001",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "AGV hospital station server issues and services needing reset."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Authorized OptiSweep service and Hospital Lane recovery procedure.",
+        "why_needed": "The closure details identify this as a historical recovery direction but omit exact steps and safety conditions.",
+        "suggested_role": "L1_support",
+        "risk_note": "Do not reset services or restart a lane without an approved procedure and role authorization.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_17",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Reset Opti sweep services and had site restart Hospital Lane."
+          }
+        ]
+      },
+      {
+        "needed_procedure": "Sustained sort and movement validation after service recovery.",
+        "why_needed": "The source reports movement and system recovery but does not provide a complete validation protocol.",
+        "suggested_role": "operator",
+        "risk_note": "A single 'system is running' report is not enough to establish sustained recovery.",
+        "source_refs": [
+          {
+            "page_ref": "case_223554:page_11",
+            "chunk_id": "stage4_page_chunk_004",
+            "site_code": "ups_haslet_tx",
+            "site_label": "UPS Haslet TX (TXRTH)",
+            "quote_or_summary": "Movement started and the system was reported running."
+          }
+        ]
+      }
+    ],
+    "ignored_non_playbook_content": [
+      {
+        "content_type": "support_coordination",
+        "example_from_incident": "Discussion of call timing, support response, escalation-path meetings, and who was on site.",
+        "reason_ignored": "These are coordination facts, not reusable troubleshooting nodes."
+      },
+      {
+        "content_type": "communication",
+        "example_from_incident": "Requests to notify stakeholders when the system was back up.",
+        "reason_ignored": "Communication is outside the playbook boundary."
+      },
+      {
+        "content_type": "intake",
+        "example_from_incident": "Emergency work-order status, priority, caller, and assignment information.",
+        "reason_ignored": "Administrative case and work-order information is not troubleshooting orchestration."
+      },
+      {
+        "content_type": "exact_procedure",
+        "example_from_incident": "Historical service reset and Hospital Lane restart actions.",
+        "reason_ignored": "The candidate retains only the high-level recovery direction; exact how-to instructions belong in procedures."
+      },
+      {
+        "content_type": "reference_background",
+        "example_from_incident": "Unreadable color-coded dashboard and ambiguous cropped UI fragments.",
+        "reason_ignored": "They do not provide reliable reusable decision evidence."
+      }
+    ],
+    "source_refs": [
+      {
+        "page_ref": "case_223554:page_6",
+        "chunk_id": "stage4_page_chunk_001",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "Site reported down and unable to start or sustain sort."
+      },
+      {
+        "page_ref": "case_223554:page_17",
+        "chunk_id": "stage4_page_chunk_004",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "Resolution details name OptiSweep service reset and Hospital Lane restart."
+      }
+    ],
+    "evidence_source_refs": [
+      {
+        "page_ref": "case_223554:page_6",
+        "chunk_id": "stage4_page_chunk_001",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "Site reported down and unable to start or sustain sort."
+      },
+      {
+        "page_ref": "case_223554:page_17",
+        "chunk_id": "stage4_page_chunk_004",
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "quote_or_summary": "Resolution details name OptiSweep service reset and Hospital Lane restart."
+      }
+    ],
+    "extraction_notes": [
+      "Ingestion metadata is authoritative for site: UPS Haslet TX (TXRTH), site_code ups_haslet_tx.",
+      "Evidence text also uses UPS Fort Worth, TX (Haslet) and a Fort Worth address; this appears compatible with the ingestion site but is preserved as an ambiguity.",
+      "The service/server condition is source-supported context, not confirmed root cause.",
+      "The color-coded status screenshot is unreadable and must not drive a specific branch without current corroborating evidence."
+    ],
+    "summary": "Troubleshoot a broad operational outage where the site cannot start sort or stops during sort, with possible server or service abnormality and subsequent recovery validation.",
+    "likely_roles": [
+      "L1_support",
+      "L2_support",
+      "L3_support",
+      "operator"
+    ],
+    "related_artifact_ids": [],
+    "related_event_ids": [],
+    "source_id": "source_case_223554",
+    "source_type": "incident_case",
+    "source_title": "Case 223554 Data",
+    "source_version": "0.1",
+    "ingestion_batch_id": "batch_20260716T212454Z",
+    "extraction_mode": "one_or_more_playbook_candidates_when_separable"
+  }
+]

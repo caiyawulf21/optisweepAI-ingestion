@@ -1,0 +1,351 @@
+{
+  "procedure_id": "proc_explain_verify_disabled_sorter_side_entries_csv_phase_configuration_v1",
+  "candidate_id": "candidate_training_video_diagnostic_sorter_side_disabled_phase_configuration_csv_enable_phase",
+  "title": "Explain and Verify 'Disabled' Sorter Side Entries Based on CSV Phase Configuration and Phase-Based Enable",
+  "procedure_type": "diagnostic",
+  "summary": "Use the live sorter-side configuration/state in the OptiSweep/WCS/Robotics database to explain why a sorter side (example: sorter 2B) appears disabled: the initial CSV configuration populates the database and disables anything not in phase one. Then verify whether a later phase-based database update/script has been applied that would enable the sorter side for its later phase (example: enabling phase 4).",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "zone_config_state",
+    "sorter_item_or_scan_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "pairing_failure",
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When a sorter side entry (e.g., sorter 2B) is showing as disabled in the live sorter-side configuration/state, and you need to determine whether that disabled state is expected due to phase-based CSV configuration (phase one vs later phases) and whether a later phase enablement update has been applied.",
+  "not_for": [
+    "Do not perform mutating database/config changes as part of this diagnostic unless a separate approved procedure exists."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the diagnostic by locating the sorter-side record in the live database view/table, confirming its disabled state and phase association, and checking for evidence that the relevant phase-based enablement update/script has been applied."
+  ],
+  "safety_notes": [
+    "This is a diagnostic procedure. Do not perform mutating database/config changes as part of this diagnostic unless a separate approved procedure exists."
+  ],
+  "access_or_tools_needed": [
+    "Robotics/WCS database access to view sorter side configuration/status (SSMS/Helix/WCS DB as applicable)",
+    "Access to configuration/phase-based update evidence (as available in the environment)"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2_support access to the live WCS/Robotics database (SSMS/Helix/WCS DB as applicable)"
+    ],
+    "system_preconditions": [
+      "The environment has a live sorter-side configuration/state that can be queried (the sorter-side concept is represented in the Robotics database model)."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_sorter_side_disabled_status_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500",
+      "description": "Training frame showing the explanation that sorter sides are disabled when not in phase one, and that a later database update can enable phase 4 (includes example sorter 2B).",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+      "description": "Training frame describing the SorterSideDatabaseModel fields including whether the sorter side is disabled.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Locate the sorter side entry that is showing as disabled (example: sorter 2B)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Find the exact sorter-side record whose live status is disabled so you can validate whether the disabled state matches the phase-based CSV configuration rule.",
+      "instruction": "Using your live WCS/Robotics database access (SSMS/Helix/WCS DB as applicable), locate the sorter-side record corresponding to the sorter side that is currently disabled (example mentioned: sorter 2B). The sorter-side model includes a disabled/not-disabled attribute.",
+      "expected_result": "The sorter-side record you locate for the target sorter side (e.g., sorter 2B) shows it is disabled in the live database model.",
+      "healthy_condition": "The disabled state is clearly represented on the sorter-side record (i.e., there is an explicit disabled/not-disabled field in the sorter-side database model).",
+      "failure_condition": "You cannot find a sorter-side record for the target sorter side, or the record does not expose a disabled/not-disabled attribute in the live database model you are using.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Query sorter-side record and confirm disabled state",
+          "exact_action": "Locate the sorter side entry that is showing as disabled (example discussed: sorter 2B).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0011",
+          "timestamp_start": "00:21:10.000",
+          "timestamp_end": "00:32:47.000",
+          "quote_or_summary": "Example: “that one being sorter 2B, sorter 2B is disabled …”"
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0009",
+          "timestamp_start": "00:17:15.500",
+          "timestamp_end": "00:17:15.500",
+          "quote_or_summary": "SorterSideDatabaseModel includes “whether the sorter side is disabled or not.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Confirm the phase rule: CSV populates the database and anything not in phase one is disabled",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Validate that the disabled state you observed is consistent with the documented mechanism: initial CSV population disables entries not in phase one.",
+      "instruction": "In your live investigation, use the source-backed rule to interpret the disabled state: confirm that the environment’s initial configuration mechanism is CSV-based population and that entries not in phase one are disabled until later phase enablement.",
+      "expected_result": "You can justify the disabled state using the rule: disabled sorter sides are those not included in phase one of the CSV-based configuration.",
+      "healthy_condition": "Your justification aligns with the source rule that “anything that's not in phase one is disabled” after CSV-based database population.",
+      "failure_condition": "The disabled sorter side cannot be explained by the phase-one CSV rule (e.g., it should have been in phase one but is still disabled), or you lack any evidence to connect it to phase configuration.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Apply CSV/phase-one rule to the observed disabled sorter side",
+          "exact_action": "Confirm the source rule: the initial CSV configuration populates the entire database, and anything not in phase one is disabled.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0011",
+          "timestamp_start": "00:21:10.000",
+          "timestamp_end": "00:32:47.000",
+          "quote_or_summary": "“we configure … as a CSV file that we populates the entire database … anything that's not in phase one is disabled.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Identify whether the sorter side belongs to a later phase (example: phase 4) rather than phase one",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the disabled sorter side is expected to be disabled because it belongs to a later phase (not phase one).",
+      "instruction": "Using the live database/configuration data you have access to, determine the phase association for the target sorter side (example discussed: sorter 2B being disabled until its phase is enabled; later phase example given: enabling phase 4).",
+      "expected_result": "You identify that the target sorter side is associated with a later phase (not phase one), consistent with why it is disabled.",
+      "healthy_condition": "The live configuration/state you inspect provides a way to associate the sorter side with a phase (or provides enough evidence to conclude it is not in phase one).",
+      "failure_condition": "You cannot determine the phase association for the sorter side, or the sorter side appears to be in phase one but is still disabled.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check phase association for the sorter side",
+          "exact_action": "Identify whether the sorter side belongs to a later phase (example discussed: phase 4) rather than phase one.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0011",
+          "timestamp_start": "00:21:10.000",
+          "timestamp_end": "00:32:47.000",
+          "quote_or_summary": "“anything that's not in phase one is disabled … enable phase 4 …” and example “sorter 2B is disabled …”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify whether a phase-based database update/script has been applied to enable the later phase",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm whether the later phase enablement has already been applied, which should result in the sorter side becoming enabled.",
+      "instruction": "If the environment supports it and you have access to configuration/update evidence, check for evidence that the phase-based enablement update/script for the relevant later phase (example: phase 4) has been applied.",
+      "expected_result": "You find evidence that the later phase enablement update/script has been applied (example: phase 4 enablement), which should correspond to the sorter side no longer being disabled.",
+      "healthy_condition": "Evidence exists that the relevant phase-based update/script was applied after the initial CSV population.",
+      "failure_condition": "No evidence of the phase-based enablement update/script is found, or the sorter side remains disabled despite the enablement evidence.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check update/evidence for phase enablement",
+          "exact_action": "If the environment supports it, verify that a phase-based database update/script has been applied to enable the later phase (example: enabling phase 4).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the sorter side remains disabled after the relevant phase-based enablement is confirmed, stop and escalate for deeper configuration/database troubleshooting."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0011",
+          "timestamp_start": "00:21:10.000",
+          "timestamp_end": "00:32:47.000",
+          "quote_or_summary": "“And then in a database update, I can enable phase 4, right with a phase based script.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Record the observed evidence and expected enablement outcome",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Document the diagnostic conclusion: disabled because not in phase one; should become enabled after the relevant phase-based update.",
+      "instruction": "Record what you observed in the live database: (1) the sorter side is disabled, (2) it is not in phase one (belongs to a later phase), and (3) whether the later phase enablement update/script evidence exists (example: phase 4).",
+      "expected_result": "A clear diagnostic justification is recorded: the sorter side is disabled due to phase-based CSV configuration and should become enabled after the relevant phase-based update.",
+      "healthy_condition": "Your recorded conclusion directly ties the disabled state to the phase mechanism and includes whether the phase enablement evidence is present.",
+      "failure_condition": "Your recorded conclusion cannot connect the disabled state to phase-one vs later-phase configuration, or it contradicts the live evidence.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Summarize evidence and expected state",
+          "exact_action": "Record the observed evidence: sorter side is disabled because it is not in phase one, and it should become enabled after the relevant phase-based update.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0011",
+          "timestamp_start": "00:21:10.000",
+          "timestamp_end": "00:32:47.000",
+          "quote_or_summary": "“anything that's not in phase one is disabled … enable phase 4 …” and example “sorter 2B is disabled …”"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You can point to the live sorter-side record showing it is disabled.",
+    "You can justify the disabled state using the CSV/phase-one mechanism (disabled because not in phase one).",
+    "You can identify the sorter side as belonging to a later phase (example: phase 4) and check for evidence that the phase-based enablement update/script was applied.",
+    "If enablement evidence exists and the sorter side still remains disabled, you stop and escalate for deeper configuration/database troubleshooting."
+  ],
+  "healthy_conditions": [
+    "Sorter-side record shows disabled when not in phase one.",
+    "After the relevant phase-based enablement update/script is applied, the sorter side is expected to become enabled (i.e., disabled state should no longer apply)."
+  ],
+  "failure_conditions": [
+    "Sorter side remains disabled even after the relevant phase-based enablement is confirmed.",
+    "Phase association for the sorter side cannot be determined from available live evidence.",
+    "Sorter side appears to be in phase one but is still disabled."
+  ],
+  "escalation_guidance": [
+    "If the sorter side remains disabled after the relevant phase-based enablement is confirmed, stop and escalate for deeper configuration/database troubleshooting.",
+    "Do not perform mutating database/config changes as part of this diagnostic unless a separate approved procedure exists."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500",
+      "what_to_look_at": "The explanation that sorter sides are disabled when not in phase one due to CSV-based database population, and that a later database update can enable phase 4 (example: sorter 2B)."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+      "what_to_look_at": "The SorterSideDatabaseModel description including the disabled/not-disabled attribute for sorter sides."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 11,
+      "section_id": "training_video_day2_segment_0011",
+      "quote_or_summary": "The configuration file is a CSV that populates the entire database; anything not in phase one is disabled. A later database update can enable phase 4 using a phase-based script (example: sorter 2B is disabled until its phase is enabled).",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0011_so_all_right_we_ll_move_primary_00_26_58_500",
+      "what_to_look_at": "Training frame showing the explanation that sorter sides are disabled when not in phase one, and that a later database update can enable phase 4 (includes example sorter 2B)."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0009_the_robot_location_database_model_table_primary_00_17_15_500",
+      "what_to_look_at": "Training frame describing the SorterSideDatabaseModel fields including whether the sorter side is disabled."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_diagnostic_sorter_side_disabled_phase_configuration_csv_enable_phase"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide explicit live table/column names or the exact live UI/SSMS query path for the sorter-side disabled status; it only states the concept exists in the SorterSideDatabaseModel.",
+    "The packet does not provide explicit phase association fields/columns for sorter sides; it only provides the phase-one vs later-phase rule and an example (phase 4).",
+    "The packet does not provide explicit database update history locations or a specific evidence table/log for confirming that the phase-based enablement script was applied."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Use Memory Trend to Identify Service Crash/Restart vs Garbage Collection Pattern</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Use Memory Trend to Identify Service Crash/Restart vs Garbage Collection Pattern</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_use_memory_trend_identify_service_crash_restart_gc_v1</td></tr>
+<tr><th>Title</th><td>Use Memory Trend to Identify Service Crash/Restart vs Garbage Collection Pattern</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L1_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>wcs_service_health</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L1_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>service_crash_or_restart, shutdown_or_dwell_abnormal</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the OptiSweep Memory Trend (memory over time) view to correlate a crash/service-stop window (silent period / service gone) with a garbage-collection memory-clearing pattern, then confirm memory build-up and resumed activity after the clearing.</p>
+<h2>When To Use</h2>
+<p>When you need to interpret a Memory Trend chart to determine whether a service likely stopped/crashed and later restarted, and whether a garbage-collection memory-clearing pattern explains the memory drop followed by memory build-up.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/0f6cee71bf142dce.jpg" alt="artifact_training_video_training_video_day2_0044_probably_understand_this_so_if_the_primary_03_07_17_500" /><figcaption>Memory Trend chart frame labeled “Memory Trend 4GB” used to identify the spike, long draft/activity, silent/nothing period, and garbage-collection clearing pattern.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the Memory Trend view used for service behavior interpretation</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Open the Memory Trend display/view that shows the memory chart labeled “Memory Trend 4GB”.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can see the Memory Trend 4GB chart with a time axis so you can identify the spike and subsequent segments.</p>
+<hr>
+<h3>Step 2 — Locate the “good spike in the middle” and surrounding long activity/silent pattern</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the Memory Trend 4GB chart, find the “good spike in the middle,” then identify the surrounding sequence: a big draft/long activity period, followed by a period of “nothing”/silent, and then activity again.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can point to chart regions matching: (1) a “good spike in the middle,” (2) a big draft/long period, (3) a “nothing”/silent gap, and (4) activity resuming after the gap.</p>
+<hr>
+<h3>Step 3 — Identify the garbage-collection portion where memory clears and then fills up again</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the same Memory Trend 4GB chart, identify the “garbage collection” portion: memory clears out (a drop/clearing), followed by memory filling up again.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can identify a memory-clearing segment consistent with “garbage collection” and then a subsequent memory build-up segment.</p>
+<hr>
+<h3>Step 4 — Correlate the silent period with the expected ~10–12 minute service-stop/crash window</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Measure/estimate the duration of the “nothing”/silent gap on the Memory Trend chart and correlate it with the source’s expectation that the service can be silent for almost 10–12 minutes during the stop/crash window.</p>
+<p><strong>Expected result:</strong></p>
+<p>The silent/nothing gap duration on the chart is consistent with an approximately 10–12 minute window as described by the source.</p>
+<hr>
+<h3>Step 5 — Explain whether the service likely stopped due to a crash and restarted after memory cleared</h3>
+<p><strong>Responsible role:</strong> L1_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the matched chart sequence (spike → big draft/long activity → silent/nothing period → garbage collection memory clearing → memory fills up again), determine whether it is consistent with the source’s crash/service-stop and later restart behavior.</p>
+<p><strong>Expected result:</strong></p>
+<p>Your interpretation can point to the chart segments that match the source’s described sequence and supports a crash/stop + restart explanation when the pattern is clear.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the Memory Trend pattern cannot be matched to the described crash/silent/log-gap behavior, escalate for deeper log/service verification beyond the chart interpretation described in the source.</li>
+<li>Do not assume a crash occurred solely from the chart if the pattern is ambiguous.</li>
+</ul>
+<hr>
+</body>
+</html>

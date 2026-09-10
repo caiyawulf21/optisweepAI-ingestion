@@ -8,11 +8,7 @@ from pathlib import Path
 from typing import Any, Protocol
 import json
 import os
-import re
 import sys
-import urllib.error
-import urllib.parse
-import urllib.request
 
 from dotenv import load_dotenv
 
@@ -22,12 +18,16 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from shared_pipeline_stages.llm_pacing import default_azure_api_version, request_azure_chat_json
 from shared_pipeline_stages.stage_prompts import (
     compose_stage6_system_prompt,
     load_prompt_file,
     resolve_stage6_incident_prompt_path,
     resolve_stage6_structure_reference_path,
 )
+from shared_pipeline_stages.ontology_rag import ontology_snippets_for_stage6
+from shared_pipeline_stages.runbook_eligibility import allowed_access_surfaces_packet
+from shared_pipeline_stages.runbook_tags import infer_runbook_tags
 from optisweep_ingestion.stage6_runbook_finalization import (
     normalize_runbook,
     parse_llm_response,
@@ -35,9 +35,6 @@ from optisweep_ingestion.stage6_runbook_finalization import (
     write_runbook_review_html,
     write_runbook_review_markdown,
 )
-
-FOUNDRY_API_VERSION = "2025-04-01-preview"
-CLASSIC_AZURE_OPENAI_API_VERSION = "2024-10-21"
 
 MAX_CHARS = 900
 MAX_PAGE_CHUNK_TEXT_CHARS = 5000
@@ -63,7 +60,7 @@ class AzureOpenAIStage6RunbookFinalizationClient:
         self.api_key = _clean_env_value(api_key or os.getenv("AZURE_OPENAI_API_KEY"))
         self.deployment = _clean_env_value(deployment or os.getenv("AZURE_OPENAI_DEPLOYMENT"))
         env_api_version = _clean_env_value(os.getenv("AZURE_OPENAI_API_VERSION"))
-        self.api_version = _clean_env_value(api_version) or self._default_api_version(env_api_version)
+        self.api_version = _clean_env_value(api_version) or default_azure_api_version(self.endpoint, env_api_version)
         default_prompt = resolve_stage6_incident_prompt_path()
         task_prompt = load_prompt_file(prompt_path or default_prompt)
         self.prompt = compose_stage6_system_prompt(
@@ -84,55 +81,17 @@ class AzureOpenAIStage6RunbookFinalizationClient:
             raise RuntimeError("Azure OpenAI is not configured. Set these environment variables: " + ", ".join(missing))
 
     def finalize(self, packet: dict[str, Any]) -> dict[str, Any]:
-        body = {
-            "messages": [
-                {"role": "system", "content": self.prompt},
-                {"role": "user", "content": json.dumps(packet, ensure_ascii=False)},
-            ],
-            "temperature": 0.1,
-            "response_format": {"type": "json_object"},
-        }
-        errors: list[str] = []
-        for url, headers, include_model in self._candidate_requests(self.api_version):
-            request_body = body | ({"model": self.deployment} if include_model else {})
-            request = urllib.request.Request(
-                url,
-                data=json.dumps(request_body).encode("utf-8"),
-                headers=headers,
-                method="POST",
-            )
-            try:
-                with _urlopen_no_proxy(request, timeout=240) as response:
-                    payload = json.loads(response.read().decode("utf-8"))
-                return parse_llm_response(payload["choices"][0]["message"]["content"])
-            except urllib.error.HTTPError as exc:
-                details = exc.read().decode("utf-8", errors="replace")
-                errors.append(f"HTTP {exc.code}: {details}")
-                if exc.code not in {400, 404}:
-                    raise RuntimeError(f"Azure OpenAI request failed with HTTP {exc.code}: {details}") from exc
-            except urllib.error.URLError as exc:
-                raise RuntimeError(f"Azure OpenAI request failed: {exc.reason}") from exc
-        raise RuntimeError("Azure OpenAI request failed for endpoint patterns tried: " + " | ".join(errors))
-
-    def _candidate_requests(self, api_version: str) -> list[tuple[str, dict[str, str], bool]]:
-        encoded_deployment = urllib.parse.quote(self.deployment, safe="")
-        query = urllib.parse.urlencode({"api-version": api_version})
-        headers = {"Content-Type": "application/json", "api-key": self.api_key}
-        parsed = urllib.parse.urlparse(self.endpoint)
-        if self._is_foundry_project_endpoint():
-            foundry_base = urllib.parse.urlunparse((parsed.scheme, parsed.netloc, "", "", "", "")).rstrip("/")
-            return [(f"{foundry_base}/models/chat/completions?{query}", headers, True)]
-        return [(f"{self.endpoint}/openai/deployments/{encoded_deployment}/chat/completions?{query}", headers, False)]
-
-    def _is_foundry_project_endpoint(self) -> bool:
-        parsed = urllib.parse.urlparse(self.endpoint)
-        return parsed.netloc.endswith(".services.ai.azure.com") and "/api/projects/" in parsed.path
-
-    def _default_api_version(self, env_api_version: str = "") -> str:
-        parsed = urllib.parse.urlparse(self.endpoint)
-        if parsed.netloc.endswith(".services.ai.azure.com") and "/api/projects/" in parsed.path:
-            return FOUNDRY_API_VERSION
-        return env_api_version or CLASSIC_AZURE_OPENAI_API_VERSION
+        response = request_azure_chat_json(
+            endpoint=self.endpoint,
+            api_key=self.api_key,
+            deployment=self.deployment,
+            api_version=self.api_version,
+            system_prompt=self.prompt,
+            user_content=json.dumps(packet, ensure_ascii=False),
+            label="Azure OpenAI (stage 6 incident runbook finalization)",
+            timeout=240,
+        )
+        return parse_llm_response(response)
 
 
 def create_stage6_incident_runbooks(
@@ -180,6 +139,13 @@ def create_stage6_incident_runbooks(
         write_json(output_path / "runbook_finalization_report.json", report)
         write_json(output_path / "incident_source_package.json", _package_with_stage6_refs(package, output_path, report))
         return [], report
+
+    # Clear prior finalized outputs so regen cannot leave orphaned runbooks in the pool.
+    for path in finalized_dir.glob("*.json"):
+        path.unlink()
+    for path in review_dir.glob("*"):
+        if path.is_file() and path.suffix.lower() in {".md", ".html"}:
+            path.unlink()
 
     finalized: list[dict[str, Any]] = []
     failed: list[dict[str, Any]] = []
@@ -264,7 +230,41 @@ def create_stage6_incident_runbooks(
     )
     write_json(output_path / "runbook_finalization_report.json", report)
     write_json(output_path / "incident_source_package.json", _package_with_stage6_refs(package, output_path, report))
+
+    _ingest_finalized_runbooks_into_brain(finalized, package)
+
     return finalized, report
+
+
+def _ingest_finalized_runbooks_into_brain(finalized: list[dict[str, Any]], package: dict[str, Any]) -> None:
+    """Fires the in-tandem Brain hook on this stage's own new finalized
+    runbooks. Gated by BRAIN_INGESTION_ENABLED (default on) -- see
+    stage4_canonical_incident_record._ingest_timeline_events_into_brain for
+    the identical pattern and its rationale."""
+    from brain_service.pipeline_hook import brain_enabled
+
+    if not brain_enabled():
+        return
+
+    from brain_service.adapters.finalized_runbooks import finalized_runbooks_to_records
+    from brain_service.pipeline_hook import ingest_stage_output
+    from providers.azure_openai_llm import AzureOpenAILLMProvider
+    from providers.local_storage import LocalStorageProvider
+
+    case_id = str(package.get("source_case_id") or "").strip()
+    if not case_id:
+        return
+
+    ingest_stage_output(
+        llm=AzureOpenAILLMProvider(),
+        storage=LocalStorageProvider(),
+        pipeline="incidence",
+        stage_name="stage6_finalized_runbooks",
+        source_id=f"case:{case_id}",
+        scope=f"incidents/case_{case_id}",
+        records=finalized_runbooks_to_records(finalized),
+        record_kind="finalized_runbook",
+    )
 
 
 def build_incident_finalization_packet(
@@ -279,11 +279,14 @@ def build_incident_finalization_packet(
     related_artifact_ids = _string_list(candidate.get("related_artifact_ids"))
     related_event_ids = _string_list(candidate.get("related_event_ids"))
     chunk_ids = _chunk_ids_from_refs(candidate.get("source_refs") or [])
+    related_artifacts = [
+        _compact_artifact(artifacts[artifact_id]) for artifact_id in related_artifact_ids if artifact_id in artifacts
+    ]
     return {
         "packet_type": "stage_6_incident_runbook_finalization_packet",
         "schema_version": "0.1",
         "runbook_candidate": candidate,
-        "related_artifacts": [_compact_artifact(artifacts[artifact_id]) for artifact_id in related_artifact_ids if artifact_id in artifacts],
+        "related_artifacts": related_artifacts,
         "timeline_events": [_compact_event(events[event_id]) for event_id in related_event_ids if event_id in events],
         "canonical_incident_record": _compact_canonical_record(canonical_record),
         "evidence_chunks": {
@@ -299,10 +302,15 @@ def build_incident_finalization_packet(
             ],
         },
         "source_package": source_package,
+        "allowed_access_surfaces": allowed_access_surfaces_packet(),
+        "ontology_snippets": ontology_snippets_for_stage6(candidate, artifacts=related_artifacts),
         "instructions": [
             "Finalize exactly one incident-derived source-specific runbook from the supplied candidate.",
             "Use only incident evidence from this packet.",
             "Do not merge with other candidates or sources.",
+            "Name only verified live access surfaces from allowed_access_surfaces (or their labels).",
+            "Use ontology_snippets for surface/field/observable grounding; incident evidence still wins on conflicts.",
+            "Emit taxonomy-constrained capability_tags, access_surface, audience_roles, and optional failure_pattern_tags.",
         ],
     }
 
@@ -319,6 +327,8 @@ def _finalize_one(
     runbook = normalize_runbook(response, candidate, lineage)
     if not runbook.get("related_event_ids"):
         runbook["related_event_ids"] = _string_list(candidate.get("related_event_ids"))
+    if not runbook.get("access_surface") or not runbook.get("capability_tags"):
+        infer_runbook_tags(runbook)
     metadata = runbook.get("metadata") if isinstance(runbook.get("metadata"), dict) else {}
     metadata["created_by"] = "stage_6_incident_runbook_finalization"
     metadata["source_quality"] = "incident_case"
@@ -406,6 +416,7 @@ def _compact_source_package(package: dict[str, Any], canonical_record: dict[str,
         "source_title": package.get("source_title"),
         "source_type": package.get("source_type") or "incident_case",
         "ingestion_batch_id": package.get("ingestion_batch_id"),
+        "site_location": package.get("site_location") or {},
     }
 
 
@@ -417,6 +428,7 @@ def _compact_canonical_record(record: dict[str, Any]) -> dict[str, Any]:
         "title": record.get("title"),
         "status": record.get("status"),
         "site_label": site.get("primary_label") or site.get("observed_location_text") or "",
+        "site_code": (site.get("ingestion_site") or {}).get("site_code") or "",
         "what_resolved_it": _truncate(record.get("what_resolved_it"), MAX_CHARS),
         "symptoms": record.get("symptoms") or [],
         "systems_involved": record.get("systems_involved") or [],
@@ -484,8 +496,3 @@ def _clean_env_value(value: str | None) -> str:
     if cleaned in {"", "your-api-version", "your_api_version", "<api-version>"}:
         return ""
     return cleaned
-
-
-def _urlopen_no_proxy(request: urllib.request.Request, timeout: int) -> Any:
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-    return opener.open(request, timeout=timeout)

@@ -1,0 +1,394 @@
+{
+  "procedure_id": "proc_verify_sorter_sweeper_ups_chat_message_flow_v1",
+  "candidate_id": "candidate_training_video_day2_verify_sorter_sweeper_ups_chat_message_flow",
+  "title": "Verify Sorter Sweeper UPS chat message flow for tote induction, sorting, closeout, and label printing",
+  "procedure_type": "diagnostic",
+  "summary": "Remote diagnostic to confirm the UPS-facing chat message sequence used by the Sorter Sweeper orchestration (tote inducted → destination enabled → scan data collection → sort → sort confirmation/final destination → hot bin closeout exchange when applicable → destination close before exchange → print label message). Use the missing/absent message stage as the evidence point for escalation to the responsible module (Sorter Sweeper vs XLE COM vs UPS chat integration).",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "wcs_api_responsiveness",
+    "gateway_health",
+    "sorter_item_or_scan_state"
+  ],
+  "access_surface": [
+    "stunnel",
+    "wcs_api",
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive",
+    "gateway_unhealthy",
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when you need to verify that the documented UPS chat message flow for tote processing at the sorter is occurring in the expected order and that the Sorter Sweeper orchestration is acting on each stage (including closeout and label printing).",
+  "not_for": [
+    "Do not use this procedure as a corrective runbook to change message mappings or implement new integrations; it is diagnostic and relies on observing the presence/absence of the documented message stages."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the diagnostic by validating that each documented UPS chat message stage is exchanged/triggered as described and identify the first missing/inaction stage for escalation."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Access to the UPS chat message integration surface used by Sorter Sweeper / XLE COM (exact UI/logging surface not specified in the source).",
+    "Ability to observe message presence for: tote inducted, destination enabled, scan data (scan tunnel), sort (XLE/UPS version of WCS), sort confirmation, hot bin closeout (hot bin message), sure post notification, destination close, and print label message."
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the UPS chat message integration surface used by Sorter Sweeper/XLE COM (exact UI/logging surface not specified in the source)."
+    ],
+    "system_preconditions": [
+      "Sorter Sweeper orchestration is running and communicating with the UPS chat server via XLE COM (as described in the architecture)."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_sorter_sweeper_system_overview_v1",
+    "ctx_training_video_ups_chat_message_flow_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500",
+      "description": "Diagram/frame describing the Sorter Sweeper orchestration and the UPS chat message flow stages (tote inducted, destination enabled, scan data, sort, sort confirmation, hot bin closeout, sure post, destination close, print label).",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Confirm Sorter Sweeper orchestration and its communication path to UPS chat",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish the correct module ownership for the UPS chat message flow so that missing stages can be attributed to the right integration component.",
+      "instruction": "On the live system, use the known architecture to anchor where the UPS chat messages originate/are handled: Sorter Sweeper (tote state machine) orchestrates tote movement; XLE COM manages communication between Sorter Sweeper and the UPS chat server; OPC COM manages communication between the robotics module and Geek Plus RMS server.",
+      "expected_result": "You can map each observed message stage to the described path: Sorter Sweeper sends/receives via XLE COM to the UPS chat server, and Sorter Sweeper updates tote state based on received UPS chat messages (including scan data and sort confirmation).",
+      "healthy_condition": "The system is actively exchanging UPS chat messages through the XLE COM path and Sorter Sweeper is updating tote state based on those messages (no evidence of a total communication breakdown at the chat integration level).",
+      "failure_condition": "You observe that UPS chat message exchange is absent or not progressing beyond an early stage (e.g., no tote inducted/destination enabled), indicating a likely integration/communication failure in the Sorter Sweeper ↔ XLE COM ↔ UPS chat path.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Anchor module ownership for message flow",
+          "exact_action": "Use the described architecture: Sorter Sweeper orchestrates tote movement; XLE COM manages communication between Sorter Sweeper and the UPS chat server.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot observe any UPS chat message exchange at all, stop and escalate for deeper system-side investigation of the Sorter Sweeper ↔ XLE COM ↔ UPS chat integration."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Validate tote arrival triggers “tote inducted” and “destination enabled” messages to chat",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the first UPS chat stage that PLC/chute opening and downstream containerization depend on.",
+      "instruction": "Trigger/observe a tote arrival at the sorter and verify that Sorter Sweeper sends a “tote inducted” message and a “destination enabled” message to the UPS chat server.",
+      "expected_result": "For the observed tote arrival, both “tote inducted” and “destination enabled” messages appear in the UPS chat message exchange as described.",
+      "healthy_condition": "After tote arrival, the chat shows “tote inducted” followed by “destination enabled” for that tote, enabling the PLC chute opening behavior described in the segment.",
+      "failure_condition": "One or both messages are missing (e.g., no “destination enabled” after “tote inducted”).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Observe chat messages for tote arrival",
+          "exact_action": "Verify that the tote arrives at the sorter and that a “tote inducted” message and a “destination enabled” message are sent to the chat.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If “tote inducted” and/or “destination enabled” are missing for the tote arrival, stop and escalate for deeper system-side investigation of the responsible module (Sorter Sweeper vs XLE COM vs UPS chat integration)."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Verify scan data collection from scan tunnel and parcel dimensions/load category",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm that the scan tunnel data is being listened to on the chat and that parcel dimensions and load category are collected for the subsequent sort stage.",
+      "instruction": "During the same tote processing window, verify that scan data from the scan tunnel is received/listened to on the chat and that parcel dimensions and load category are collected.",
+      "expected_result": "Scan data is present and parcel dimensions and load category are collected for the parcel/tote being processed.",
+      "healthy_condition": "You observe scan data arriving from the scan tunnel and the collected fields (dimensions and load category) are available for the parcel before sort is sent/processed.",
+      "failure_condition": "Scan data is missing or dimensions/load category are not collected, preventing correct sort/destination handling.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check scan data presence and collected fields",
+          "exact_action": "Verify that UPS chat messages we listen to include scan data from the scan tunnel and that we collect the dimensions of the parcel and the load category.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If scan data (or the derived dimensions/load category collection) is missing, stop and escalate for deeper system-side investigation of the scan data → chat integration and/or Sorter Sweeper handling."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify “sort” is sent from XLE (UPS version of WCS) and destinations are collected",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the sort request/response stage that determines possible destinations for each parcel.",
+      "instruction": "Observe the sort stage for the parcel/tote and verify that “sort” is sent from XLE (described as the UPS version of WCS) onto the chat, and that possible destinations are collected for each parcel.",
+      "expected_result": "A “sort” exchange occurs on the chat and possible destinations for the parcel are collected.",
+      "healthy_condition": "After scan data collection, the chat shows the “sort” stage and the system collects possible destinations for the parcel.",
+      "failure_condition": "No “sort” stage is observed or possible destinations are not collected.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check sort stage and destination collection",
+          "exact_action": "Verify that Sort is sent from XLE (UPS version of WCS) onto the chat and that possible destinations are collected for each parcel.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If “sort” is missing or possible destinations are not collected, stop and escalate for deeper system-side investigation of the XLE COM / UPS chat sort integration."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Verify “sort confirmation” is received/sent and final destination is determined",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the confirmation stage that finalizes the destination for the parcel.",
+      "instruction": "Observe the chat exchange for the parcel/tote and verify that a “sort confirmation” is received/sent from the sorter onto the chat and that the final destination is determined.",
+      "expected_result": "A “sort confirmation” stage is present in the chat exchange and the final destination for the parcel is determined.",
+      "healthy_condition": "After the sort stage, the chat shows “sort confirmation” and the final destination is available for downstream closeout/exchange steps.",
+      "failure_condition": "No “sort confirmation” is observed or final destination is not determined.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check sort confirmation and final destination",
+          "exact_action": "Verify that “sort confirmation” is received/sent from the sorter onto the chat and that the final destination is determined.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If “sort confirmation” is missing or final destination is not determined, stop and escalate for deeper system-side investigation of Sorter Sweeper’s confirmation handling and/or XLE COM chat integration."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 6,
+      "title": "If closeout is involved, verify hot bin closeout via “hot bin message” and immediate exchange",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the closeout exchange trigger for totes that are “hot bin,” including immediate exchange behavior.",
+      "instruction": "For totes that are expected to be “hot bin,” verify that UPS can trigger a hot bin closeout by sending a “hot bin message,” and that an exchange is performed immediately as described.",
+      "expected_result": "When a tote is “hot bin,” a “hot bin message” is observed and the exchange occurs immediately.",
+      "healthy_condition": "Hot bin totes show the hot bin closeout trigger and immediate exchange behavior in the observed message/exchange sequence.",
+      "failure_condition": "Hot bin closeout is not triggered (no “hot bin message”) or exchange does not occur immediately.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check hot bin closeout trigger and exchange timing",
+          "exact_action": "Verify that UPS can trigger a hop in close out by sending us a hop in message for all totes that are hop in and we do an exchange immediately.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If hot bin closeout is missing for hot bin totes (no “hot bin message” and/or no immediate exchange), stop and escalate for deeper system-side investigation of the closeout trigger handling."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 7,
+      "title": "Verify “sure post” notification and tipper bag switching notification before the tip",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm that UPS load status (“sure post”) is communicated and that the tipper is notified before the tip to switch to a poly bag.",
+      "instruction": "Observe the chat exchange for the destination load status and verify that UPS notifies when the load for a destination is a “sure post,” and that the system notifies the tipper before the tip so they can switch out the bag to a Poly bag.",
+      "expected_result": "A “sure post” notification is observed for the destination load, and the tipper is notified before the tip (enabling the poly bag switch).",
+      "healthy_condition": "Sure post notifications occur and tipper notification precedes the tipping action for the relevant tote/destination.",
+      "failure_condition": "Sure post notification is missing or tipper notification does not occur before the tip.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check sure post and pre-tip tipper notification",
+          "exact_action": "Verify that UPS notifies us if the load for a destination is a sure post, and that we notify the tipper before the tip so they can switch out the bag to a Poly bag.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If “sure post” notification is missing or tipper pre-tip notification is missing, stop and escalate for deeper system-side investigation of the sure post handling and tipper notification path."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 8,
+      "title": "Verify “destination close” message is sent before exchange when tote is ready to leave",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the pre-exchange closeout stage that must occur before the exchange happens.",
+      "instruction": "When the tote is ready to leave for the exchange, verify that a “destination close” message is sent onto the chat before the exchange.",
+      "expected_result": "For the tote ready to leave, “destination close” appears on the chat before the exchange occurs.",
+      "healthy_condition": "The observed sequence shows “destination close” preceding the exchange for the tote.",
+      "failure_condition": "“destination close” is missing or appears after the exchange.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check destination close ordering",
+          "exact_action": "Verify that we send the destination close message onto the chat before doing an exchange.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If “destination close” is missing or not ordered before exchange, stop and escalate for deeper system-side investigation of the destination close stage handling."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 9,
+      "title": "Verify “print label message” is sent to the printer at the tipper",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the final stage that triggers label printing using the label provided by XLE.",
+      "instruction": "At the tipper stage for the processed tote, verify that a “print label message” is sent to the printer so it can print a label provided by XLE.",
+      "expected_result": "A “print label message” is observed being sent to the printer for the tote at the tipper stage.",
+      "healthy_condition": "Print label messaging occurs at the tipper stage after destination close/exchange readiness, consistent with the described flow.",
+      "failure_condition": "No “print label message” is observed at the tipper stage.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check print label message to printer",
+          "exact_action": "Verify that at the tipper, we send a print label message to the printer so it can print a label provided by the XLE.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If “print label message” is missing, stop and escalate for deeper system-side investigation of the label printing trigger path (Sorter Sweeper ↔ XLE COM ↔ printer integration)."
+      ],
+      "source_evidence": [],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "For a tote processing cycle, the documented UPS chat message stages are observed in order: tote inducted + destination enabled → scan data collection (dimensions/load category) → sort (XLE/UPS version of WCS) → sort confirmation/final destination → (if applicable) hot bin closeout via hot bin message with immediate exchange → destination close before exchange → print label message to printer."
+  ],
+  "healthy_conditions": [
+    "UPS chat message exchange progresses through all documented stages for the tote without a missing/inaction stage.",
+    "Scan data from the scan tunnel is received and parcel dimensions/load category are collected before sort.",
+    "Destination close occurs before exchange.",
+    "Print label message is sent at the tipper stage."
+  ],
+  "failure_conditions": [
+    "Missing “tote inducted” and/or “destination enabled” after tote arrival.",
+    "Missing scan data collection (dimensions/load category not collected).",
+    "Missing “sort” stage and/or missing possible destinations collection.",
+    "Missing “sort confirmation” and/or final destination determination.",
+    "Missing hot bin closeout trigger (“hot bin message”) and/or exchange not performed immediately for hot bin totes.",
+    "Missing “sure post” notification and/or tipper not notified before the tip.",
+    "Missing “destination close” before exchange.",
+    "Missing “print label message” to the printer at the tipper stage."
+  ],
+  "escalation_guidance": [
+    "If one or more documented message types are missing (e.g., no destination enabled after tote inducted, no sort confirmation, no destination close before exchange, or no print label message), stop and escalate for deeper system-side investigation of the responsible module (Sorter Sweeper vs XLE COM vs UPS chat integration).",
+    "Use the first missing/inaction message stage as the evidence point for escalation; do not assume corrective actions not described in the segment."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500",
+      "what_to_look_at": "The frame/diagram that lists the UPS chat message flow stages and the module ownership (Sorter Sweeper, XLE COM, scan tunnel data, sort confirmation, hot bin closeout, destination close, print label)."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 4,
+      "section_id": "training_video_day2_segment_0004",
+      "quote_or_summary": "Segment describes Sorter Sweeper sending “tote inducted” and “destination enabled” to chat; listening to scan data from scan tunnel; collecting dimensions/load category; sort sent from XLE (UPS version of WCS) to chat; collecting destinations and receiving “sort confirmation”; UPS hot bin closeout via “hot bin message” and immediate exchange; sure post notification; notify tipper before the tip for poly bag; send “destination close” before exchange; send “print label message” to printer for label provided by XLE."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500",
+      "what_to_look_at": "Diagram/frame describing the Sorter Sweeper orchestration and the UPS chat message flow stages (tote inducted, destination enabled, scan data, sort, sort confirmation, hot bin closeout, sure post, destination close, print label)."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_verify_sorter_sweeper_ups_chat_message_flow"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not specify the exact live UI/logging surface where UPS chat messages (tote inducted, destination enabled, sort, sort confirmation, hot bin message, destination close, print label message) can be observed. This runbook therefore describes what to verify but cannot name a specific SSMS table, Helix DB view, or chat log screen."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source"
+  ]
+}

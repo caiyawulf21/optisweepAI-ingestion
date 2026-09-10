@@ -28,6 +28,7 @@ These files are snapshots copied from ingestion stage outputs. Edit and approve 
 | `case_228723/` | Incident Case 228723 Stage 5 runbook candidate review |
 | `stage_8_playbooks/prompt_a_one_per_incident/` | Shared Stage 8 Prompt A finalized playbook review (MD + HTML) |
 | `stage_8_playbooks/prompt_b_multi_flow/` | Shared Stage 8 Prompt B finalized playbook review (MD + HTML) |
+| `stage_8_playbooks_linking_guards/` | Stage 8 playbook review with linking-guard rules (primary + alternate dropdowns) |
 
 ## File Types
 

@@ -99,6 +99,49 @@ def test_likely_section_heading_rejects_prose_steps_and_metadata() -> None:
     assert all(not is_likely_section_heading(line) for line in rejected)
 
 
+def test_document_level_fallback_section_for_short_guides() -> None:
+    from optisweep_ingestion.stage1_source_bundle import clean_extracted_page_text
+
+    pages = [
+        {
+            "page_number": 1,
+            "text": clean_extracted_page_text(
+                "Active AGV error Query\n1) Log into the WCS primary server\nFormatted: Font: 14 pt, Bold"
+            ),
+        },
+        {
+            "page_number": 2,
+            "text": "3) Open a new query tab\nSELECT TOP (1000) [Name], [Error] FROM SystemActiveErrorModel",
+        },
+    ]
+    bundle = build_source_bundle_from_pages(
+        pages=pages,
+        source_path="Active AGV error Query 1.pdf",
+        source_bundle_id="active_agv_error_query_1",
+        source_id="active_agv_error_query_1",
+        source_title="Active AGV error Query 1",
+    )
+    data = bundle.model_dump(mode="json")
+    assert len(data["sections"]) == 1
+    assert data["sections"][0]["title"] == "Active AGV error Query 1"
+    assert data["sections"][0]["page_start"] == 1
+    assert data["sections"][0]["page_end"] == 2
+    assert data["build_metadata"]["section_detection"] == "document_level_section_fallback"
+    assert data["pages"][0]["section_id"] == data["sections"][0]["section_id"]
+    assert "Formatted:" not in data["pages"][0]["text"]
+
+
+def test_clean_extracted_page_text_strips_word_noise() -> None:
+    from optisweep_ingestion.stage1_source_bundle import clean_extracted_page_text
+
+    cleaned = clean_extracted_page_text(
+        "Active AGV error Query\nFormatted: Font: 14 pt, Bold\n<spaceholder>\n2) Open the WCS database"
+    )
+    assert "Formatted:" not in cleaned
+    assert "<spaceholder>" not in cleaned
+    assert "Open the WCS database" in cleaned
+
+
 def test_front_matter_refs_do_not_win_when_body_occurrence_exists() -> None:
     pages = [
         {

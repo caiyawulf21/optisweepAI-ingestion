@@ -1,0 +1,408 @@
+{
+  "procedure_id": "proc_check_robotics_systemdatabasemodel_state_v1",
+  "candidate_id": "candidate_training_video_day2_check_robotics_system_database_state",
+  "title": "Check Robotics SystemDatabaseModel State in SSMS",
+  "procedure_type": "diagnostic",
+  "summary": "Use the WCS / Helix DB (SSMS) surface to perform a read-only inspection of Helix2x_1Prod_Robotics.dbo.SystemDatabaseModel. Verify the live system configuration state, current SortGuid, EntityInserted timestamp, and EntityLastUpdate timestamp.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "wcs_system_faults"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this WCS / Helix DB (SSMS) diagnostic when support needs to verify the live system configuration state, current sort GUID, and update timestamps in Helix2x_1Prod_Robotics.dbo.SystemDatabaseModel.",
+  "not_for": [
+    "Do not use this read-only diagnostic to modify the database or configuration.",
+    "Do not use this procedure as corrective action for a startup, shutdown, staging, requested, or close-out state; the source does not define corrective actions for those states."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Connect to the WCS / Helix DB (SSMS) surface and inspect the SystemDatabaseModel values."
+    },
+    {
+      "role": "L3_support",
+      "responsibility": "Review or receive escalation when the model cannot be opened, the expected row or fields are unavailable, or the displayed status is unexpected or does not transition as expected."
+    }
+  ],
+  "safety_notes": [
+    "This is a read-only WCS / Helix DB (SSMS) diagnostic.",
+    "Do not modify the database or configuration during this procedure."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "SSMS",
+    "Helix2x_1Prod_Robotics",
+    "dbo.SystemDatabaseModel"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2 or L3 access to the WCS / Helix DB (SSMS) surface."
+    ],
+    "system_preconditions": [
+      "The Helix2x_1Prod_Robotics database is available in SSMS.",
+      "The dbo.SystemDatabaseModel object and its results can be opened for read-only inspection."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_system_database_model_v1",
+    "ctx_training_video_system_database_statuses_v1",
+    "ctx_training_video_robotics_database_landscape_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0020_yes_and_there_ll_be_a_primary_01_36_33_500",
+      "description": "SSMS Robotics Database view showing Helix2x_1Prod_Robotics, dbo.SystemDatabaseModel, and the EntityInserted, EntityLastUpdate, Status, and SortGuid result columns.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000",
+      "description": "SSMS SystemDatabaseModel results and the displayed system status values, including Running, StartingUp, StartUpRequested, ShutDownRequested, Shutdown, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, and CloseOutStaged.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Connect to the Robotics database in SSMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Establish the read-only WCS / Helix DB (SSMS) view needed to inspect the system model.",
+      "instruction": "Open SSMS and connect to the Robotics Database, selecting the Helix2x_1Prod_Robotics database.",
+      "expected_result": "SSMS displays Helix2x_1Prod_Robotics as the selected database and exposes its database objects.",
+      "healthy_condition": "Helix2x_1Prod_Robotics is available for inspection in SSMS.",
+      "failure_condition": "The database cannot be selected or opened in SSMS.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Select Robotics database",
+          "exact_action": "Open SSMS and connect to the Robotics Database, selecting the Helix2x_1Prod_Robotics database.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L3 support or engineering if Helix2x_1Prod_Robotics cannot be opened."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0020",
+          "page": 20,
+          "timestamp_start": "01:36:26.000",
+          "timestamp_end": "01:36:41.000",
+          "segment_id": "segment_training_video_0020",
+          "quote_or_summary": "The SSMS Robotics Database view shows Helix2x_1Prod_Robotics.dbo.SystemDatabaseModel."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Open dbo.SystemDatabaseModel results",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Display the live SystemDatabaseModel row and its observable fields.",
+      "instruction": "In the SSMS object list for Helix2x_1Prod_Robotics, open dbo.SystemDatabaseModel and view its results in the read-only query view.",
+      "expected_result": "The SSMS results view displays the SystemDatabaseModel row with the EntityInserted, EntityLastUpdate, Status, and SortGuid columns.",
+      "healthy_condition": "dbo.SystemDatabaseModel opens and returns a row with the expected result columns.",
+      "failure_condition": "dbo.SystemDatabaseModel cannot be opened, the expected row is absent, or the required columns are unavailable.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open system model",
+          "exact_action": "Open the dbo.SystemDatabaseModel table/model in the database object list and view its results in the read-only query view.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L3 support or engineering if dbo.SystemDatabaseModel cannot be opened, the expected row is absent, or the required fields are unavailable."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0020",
+          "page": 20,
+          "timestamp_start": "01:36:26.000",
+          "timestamp_end": "01:36:41.000",
+          "segment_id": "segment_training_video_0020",
+          "artifact_id": "artifact_training_video_training_video_day2_0020_yes_and_there_ll_be_a_primary_01_36_33_500",
+          "quote_or_summary": "The SSMS Robotics Database view shows Helix2x_1Prod_Robotics.dbo.SystemDatabaseModel with EntityInserted, EntityLastUpdate, Status, and SortGuid fields."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Inspect the current model fields",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Capture the live configuration state, current sort GUID, and model update timestamps.",
+      "instruction": "In the SSMS SystemDatabaseModel results, inspect the current row's EntityInserted, EntityLastUpdate, Status, and SortGuid fields.",
+      "expected_result": "The current row exposes observable values for Status and SortGuid and displayed values for EntityInserted and EntityLastUpdate.",
+      "healthy_condition": "Status is displayed, SortGuid is populated, and EntityInserted and EntityLastUpdate contain displayed timestamps.",
+      "failure_condition": "Any required field is empty, missing, or unavailable in the current row.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect system state fields",
+          "exact_action": "Inspect the EntityInserted, EntityLastUpdate, Status, and SortGuid fields for the current row.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L3 support or engineering if the required fields are unavailable or the expected row does not contain the fields."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0020",
+          "page": 20,
+          "timestamp_start": "01:36:26.000",
+          "timestamp_end": "01:36:41.000",
+          "segment_id": "segment_training_video_0020",
+          "artifact_id": "artifact_training_video_training_video_day2_0020_yes_and_there_ll_be_a_primary_01_36_33_500",
+          "quote_or_summary": "The model view displays EntityInserted, EntityLastUpdate, Status, and SortGuid; the model shows system configuration state and the current sort GUID."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Interpret the displayed Status",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Determine the live system configuration or lifecycle state represented by the current row.",
+      "instruction": "Compare the displayed Status in the WCS / Helix DB (SSMS) results with the status values shown for SystemDatabaseModel: Running, StartingUp, StartUpRequested, ShutDownRequested, Shutdown, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, and CloseOutStaged.",
+      "expected_result": "The current row has one explicitly displayed Status value that identifies the current system configuration or lifecycle state.",
+      "healthy_condition": "The displayed Status is readable and its current state is understood in relation to the listed model values; Running is one explicitly displayed live state.",
+      "failure_condition": "The Status is unexpected for the reported condition or remains in a startup, shutdown, staging, requested, or close-out state without the expected state transition.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Compare status value",
+          "exact_action": "Compare the displayed Status with the documented live values shown in the model, including Running, StartingUp, StartUpRequested, ShutDownRequested, Shutdown, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, and CloseOutStaged.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the live Status is unexpected for the reported condition.",
+        "Escalate if the Status remains in a startup, shutdown, staging, requested, or close-out state without the expected state transition."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0020",
+          "page": 20,
+          "timestamp_start": "01:36:26.000",
+          "timestamp_end": "01:36:41.000",
+          "segment_id": "segment_training_video_0020",
+          "quote_or_summary": "SystemDatabaseModel status values include Running, StartingUp, StartUpRequested, ShutDownRequested, Shutdown, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, and CloseOutStaged."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Confirm SortGuid and timestamps",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Verify that the current sort identifier and model timestamps are present in the live database result.",
+      "instruction": "Confirm in the SSMS SystemDatabaseModel results that SortGuid is populated and that EntityInserted and EntityLastUpdate contain displayed timestamps rather than being empty or missing.",
+      "expected_result": "The row shows a populated SortGuid and displayed EntityInserted and EntityLastUpdate timestamps.",
+      "healthy_condition": "SortGuid is populated, EntityInserted is displayed, and EntityLastUpdate is displayed.",
+      "failure_condition": "SortGuid is empty or missing, or EntityInserted or EntityLastUpdate is empty or unavailable.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify GUID and timestamps",
+          "exact_action": "Confirm whether SortGuid is populated and whether EntityInserted and EntityLastUpdate contain displayed timestamps rather than being empty or missing.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L3 support or engineering if SortGuid is not populated or either timestamp is empty or unavailable."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "ingestion_batch_id": "batch_training_video_day2",
+          "source_document_id": "training_video_day2_video",
+          "section_id": "training_video_day2_segment_0020",
+          "page": 20,
+          "timestamp_start": "01:36:26.000",
+          "timestamp_end": "01:36:41.000",
+          "segment_id": "segment_training_video_0020",
+          "quote_or_summary": "The SystemDatabaseModel result shows EntityInserted, EntityLastUpdate, Status, and SortGuid values."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "SSMS opens Helix2x_1Prod_Robotics.dbo.SystemDatabaseModel in a read-only view.",
+    "A current row is available with EntityInserted, EntityLastUpdate, Status, and SortGuid.",
+    "The displayed Status is identified from the live result.",
+    "SortGuid is populated.",
+    "EntityInserted and EntityLastUpdate contain displayed timestamps."
+  ],
+  "healthy_conditions": [
+    "Helix2x_1Prod_Robotics.dbo.SystemDatabaseModel opens in SSMS.",
+    "The current row displays a readable Status.",
+    "SortGuid contains a value.",
+    "EntityInserted and EntityLastUpdate contain displayed timestamps.",
+    "The observed Status can be identified as Running or another explicitly displayed lifecycle/configuration state."
+  ],
+  "failure_conditions": [
+    "The database or dbo.SystemDatabaseModel cannot be opened.",
+    "The expected row is absent.",
+    "EntityInserted, EntityLastUpdate, Status, or SortGuid is unavailable.",
+    "SortGuid is empty or missing.",
+    "EntityInserted or EntityLastUpdate is empty or missing.",
+    "The live Status is unexpected for the reported condition or does not transition as expected from a startup, shutdown, staging, requested, or close-out state."
+  ],
+  "escalation_guidance": [
+    "Stop the diagnostic and escalate to L3 support or engineering if dbo.SystemDatabaseModel cannot be opened, the expected row is absent, or the required fields are unavailable.",
+    "Escalate when the live Status is unexpected for the reported condition or remains in a startup, shutdown, staging, requested, or close-out state without the expected state transition.",
+    "Do not modify the database or configuration during this read-only diagnostic."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0020_yes_and_there_ll_be_a_primary_01_36_33_500",
+      "what_to_look_at": "Helix2x_1Prod_Robotics, dbo.SystemDatabaseModel, and the EntityInserted, EntityLastUpdate, Status, and SortGuid result columns."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000",
+      "what_to_look_at": "SystemDatabaseModel results and the displayed lifecycle/configuration Status values."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0020",
+      "page": 20,
+      "timestamp_start": "01:36:26.000",
+      "timestamp_end": "01:36:41.000",
+      "segment_id": "segment_training_video_0020",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "The SSMS Robotics Database view shows Helix2x_1Prod_Robotics.dbo.SystemDatabaseModel with EntityInserted, EntityLastUpdate, Status, and SortGuid fields. The model is described as showing system configuration state and the current sort GUID."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0020_yes_and_there_ll_be_a_primary_01_36_33_500",
+      "what_to_look_at": "Helix2x_1Prod_Robotics, dbo.SystemDatabaseModel, and the EntityInserted, EntityLastUpdate, Status, and SortGuid result columns."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000",
+      "what_to_look_at": "SystemDatabaseModel results and the displayed lifecycle/configuration Status values."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_check_robotics_system_database_state"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not define corrective actions for individual SystemDatabaseModel Status values.",
+    "The source does not define an expected timestamp age or freshness threshold for EntityInserted or EntityLastUpdate.",
+    "The source does not define how to determine the expected state transition timing.",
+    "No SQL command is included because the source provides no command beyond the displayed model reference."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000",
+    "artifact_training_video_training_video_day2_0020_yes_and_there_ll_be_a_primary_01_36_33_500"
+  ]
+}

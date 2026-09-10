@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Inspect Sort Confirmation and Dimension Data in the Helix Lane Activity Model with SSMS</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Inspect Sort Confirmation and Dimension Data in the Helix Lane Activity Model with SSMS</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_inspect_sort_confirmation_dimension_data_helix_lane_activity_model_v1</td></tr>
+<tr><th>Title</th><td>Inspect Sort Confirmation and Dimension Data in the Helix Lane Activity Model with SSMS</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>sorter_item_or_scan_state</td></tr>
+<tr><th>Access Surface</th><td>wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>miss_scan_or_dimension_fallback</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use the WCS / Helix DB (SSMS) to review recent SortConf records in the Helix2x_1Prod_SorterSweeper database and determine whether lane activity contains package dimensions and sorter-event indicators relevant to missing dimension data, AI1 data loss, or tote overflow.</p>
+<h2>When To Use</h2>
+<p>Use the WCS / Helix DB (SSMS) diagnostic when totes are overflowing, AI1 is reported as not sending data, default package dimensions may be in use, or recent lane activity needs to be checked for missing dimension data and related sorter events.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/a359db66d5e12322.jpg" alt="artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000" /><figcaption>WCS / Helix DB (SSMS) results view filtered to SortConf records, showing TrackingNumber, Length, Width, Height, Weight, Cube, and related event-indicator columns.</figcaption></figure>
+<figure><img src="assets/d3061ef3fe825a42.jpg" alt="artifact_training_video_training_video_day2_0060_they_they_had_a_power_flicker_primary_03_28_33_000" /><figcaption>WCS / Helix DB (SSMS) results view showing recent SortConf rows and dimension fields in the IgnitionLaneActivityModel.</figcaption></figure>
+<figure><img src="assets/44d937dbe3eba2e0.jpg" alt="artifact_training_video_training_video_day2_0024_the_items_model_so_items_are_primary_02_10_19_000" /><figcaption>IgnitionLaneActivityModel field view showing lane, package, dimension, classification, and sorter-event fields, including MissingDimensionData and Recirc.</figcaption></figure>
+<figure><img src="assets/c02be26d0fda2a25.jpg" alt="artifact_training_video_training_video_day2_0057_but_this_is_it_not_for_primary_03_23_52_500" /><figcaption>WCS / Helix DB (SSMS) results view showing recent IgnitionLaneActivityModel rows and SortConf-related fields.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Open the Helix sorter database in SSMS</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS), open the Helix2x_1Prod_SorterSweeper database without making changes to records or configuration.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Helix2x_1Prod_SorterSweeper database is selected and available for inspection in SSMS.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The Helix2x_1Prod_SorterSweeper database is unavailable to the WCS / Helix DB (SSMS) user.</li>
+</ul>
+<hr>
+<h3>Step 2 — Review recent SortConf records</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS), open or query dbo.IgnitionLaneActivityModel and filter the Message field to SortConf. Review the most recent records, ordered by the available record identifier in descending order when using the source-supported query pattern.</p>
+<p><strong>Expected result:</strong></p>
+<p>Recent SortConf rows are visible in dbo.IgnitionLaneActivityModel with lane, package, dimension, classification, and sorter-event fields.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Recent SortConf records are absent from dbo.IgnitionLaneActivityModel.</li>
+</ul>
+<hr>
+<h3>Step 3 — Inspect dimension and sorter-event fields</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In the WCS / Helix DB (SSMS) SortConf results, inspect TrackingNumber, Length, Width, Height, Weight, and Cube. Also inspect MissingDimensionData, MissingInduct, ToteNotFound, Diverted, OffTheEnd, and Recirc for the same records.</p>
+<p><strong>Expected result:</strong></p>
+<p>The selected SortConf rows show which package dimension fields are populated and the corresponding values of the sorter-event indicators.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Dimension fields are consistently missing or defaulted.</li>
+<li>The event indicators show an abnormal pattern that cannot be explained from the available WCS / Helix DB (SSMS) records.</li>
+</ul>
+<hr>
+<h3>Step 4 — Compare the records with the reported condition</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Compare the recent SortConf dimension values and event indicators in the WCS / Helix DB (SSMS) with the reported condition. Treat repeated missing or defaulted dimensions together with MissingDimensionData or the reported AI1 data loss as evidence that the lane activity is not receiving expected dimension data. Do not infer a cause beyond the records.</p>
+<p><strong>Expected result:</strong></p>
+<p>The diagnostic identifies whether the live SortConf records support or do not support the reported missing-dimension or tote-overflow condition.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>AI1-related data is not represented in recent lane activity records.</li>
+<li>Default dimensions or tote overflow continue and the available records do not explain the condition.</li>
+</ul>
+<hr>
+<h3>Step 5 — Stop the read-only diagnostic and escalate unexplained findings</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Stop the WCS / Helix DB (SSMS) inspection without modifying records or configuration when recent SortConf rows are absent, dimensions remain consistently missing or defaulted, or event indicators show an unexplained abnormal pattern. Escalate the evidence and the reported operating condition to L3_support.</p>
+<p><strong>Expected result:</strong></p>
+<p>The diagnostic ends with the observed database evidence preserved for escalation and no database or configuration changes made.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Recent SortConf records are absent.</li>
+<li>Dimension fields are consistently missing or defaulted.</li>
+<li>Event indicators show an abnormal pattern that cannot be explained from the available records.</li>
+<li>Tote overflow continues while AI1 data or expected dimension data is not represented in the lane activity records.</li>
+</ul>
+<hr>
+</body>
+</html>

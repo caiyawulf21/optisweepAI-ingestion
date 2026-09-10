@@ -1,0 +1,330 @@
+{
+  "procedure_id": "proc_diagnose_tipper_issues_ssms_tipper_departure_tag_logs_v1",
+  "candidate_id": "candidate_training_video_tipper_departure_tag_log_diagnostic",
+  "title": "Diagnose Tipper Issues in SSMS Using Sorter Sweeper Database Tipper Departure and Tag Logs",
+  "procedure_type": "diagnostic",
+  "summary": "Use read-only SSMS access to the WCS / Helix Sorter Sweeper Database to inspect Tipper Departure Activity Model records and Tag Read/Tag Write log values associated with an AGV departure. Review the departure destination, tote identifier, fault information, tag path, and recorded value to narrow down a tipper issue without inferring undocumented fault-code meanings or corrective actions.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "tipper_station_fault"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "tipper_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this SSMS / WCS / Helix DB diagnostic when investigating a tipper issue and a corresponding AGV departure from a tipper, DropOffSorter, or DropOffHospital needs to be checked in the Sorter Sweeper Database.",
+  "not_for": [
+    "Do not use this procedure to change database records, perform recovery, or prescribe corrective action.",
+    "Do not infer the meaning of a fault code from the recorded database value alone.",
+    "Do not use this procedure as a replacement for physical intervention or an operational stop."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support performs the read-only inspection in SSMS against the WCS / Helix Sorter Sweeper Database.",
+    "L3_support may review or receive the escalation when records are missing, contain fault information, or cannot be correlated."
+  ],
+  "safety_notes": [
+    "Use read-only SSMS inspection only.",
+    "Do not modify database records or infer an unverified fault-code meaning or corrective action."
+  ],
+  "access_or_tools_needed": [
+    "SSMS",
+    "WCS / Helix DB (SSMS)",
+    "Sorter Sweeper Database",
+    "Tipper Departure Activity Model records",
+    "Tag Read and Tag Write logs"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2_support access to the WCS / Helix DB (SSMS) surface"
+    ],
+    "system_preconditions": [
+      "A relevant AGV departure from a tipper, DropOffSorter, or DropOffHospital has been identified for inspection."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_tag_read_write_logs_v1",
+    "ctx_training_video_tipper_departure_activity_model_v1",
+    "ctx_training_video_tipper_departure_record_fields_v1",
+    "ctx_training_video_tipper_issue_log_context_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0023_the_tag_read_and_tag_write_primary_02_01_38_500",
+      "description": "Sorter Sweeper Database view showing Tipper Departure Activity Model records and Tag Read/Tag Write log fields, including Task Name, ToteId, Fault, TagPath, and Value.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Sorter Sweeper Database records in SSMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Locate the live WCS database records needed to investigate the tipper departure.",
+      "instruction": "In SSMS on the WCS / Helix DB surface, open the Sorter Sweeper Database and locate the Tipper Departure Activity Model records and the Tag Read and Tag Write log view or model. Use the available record display without modifying data.",
+      "expected_result": "The live SSMS display exposes Tipper Departure Activity Model records and Tag Read/Tag Write entries with recorded tag paths and values.",
+      "healthy_condition": "The relevant database records and log fields are available for inspection.",
+      "failure_condition": "The Sorter Sweeper Database records or Tag Read/Tag Write fields cannot be located or accessed.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect Sorter Sweeper Database",
+          "exact_action": "Open the Sorter Sweeper Database and locate the Tipper Departure Activity Model records and Tag Read and Tag Write log view or model.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the expected Sorter Sweeper Database records or log fields are unavailable."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "section_id": "training_video_day2_segment_0023",
+          "page": 23,
+          "timestamp_start": "02:01:19.000",
+          "timestamp_end": "02:01:58.000",
+          "quote_or_summary": "The Sorter Sweeper Database contains Tipper Departure Activity Model records, and Tag Read and Tag Write logs record tags the system reads and writes.",
+          "artifact_id": "artifact_training_video_training_video_day2_0023_the_tag_read_and_tag_write_primary_02_01_38_500"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Locate the relevant departure record",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Find the database record corresponding to the AGV departure being investigated.",
+      "instruction": "In the SSMS Tipper Departure Activity Model records, review the entries for the relevant AGV departure from a tipper, DropOffSorter, or DropOffHospital.",
+      "expected_result": "A departure record is identified for the relevant tipper, DropOffSorter, or DropOffHospital event.",
+      "healthy_condition": "A corresponding departure record is present and identifies the applicable departure destination type or task.",
+      "failure_condition": "No corresponding departure record can be found for the relevant event.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review departure records",
+          "exact_action": "Review the departure records for the relevant AGV departure from a tipper, DropOffSorter, or DropOffHospital.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the expected departure record is missing."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "section_id": "training_video_day2_segment_0023",
+          "page": 23,
+          "timestamp_start": "02:01:19.000",
+          "timestamp_end": "02:01:58.000",
+          "quote_or_summary": "Every time an AGV is sent away from the tipper, DropOffSorter, or DropOffHospital, a Tipper Departure Activity Model record is recorded.",
+          "artifact_id": "artifact_training_video_training_video_day2_0023_the_tag_read_and_tag_write_primary_02_01_38_500"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Inspect the departure and tag log fields",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Capture the observable database values associated with the departure and its tag activity.",
+      "instruction": "In the live SSMS record display, inspect the Task Name, ToteId, Fault or fault-code field, TagPath, and Value fields for the relevant departure and associated Tag Read/Tag Write entries.",
+      "expected_result": "The record display provides the Task Name, ToteId, Fault or fault-code information, TagPath, and Value associated with the departure or tag log entry.",
+      "healthy_condition": "The relevant departure and tag entries expose the fields needed for comparison, including a recorded tag path and value where applicable.",
+      "failure_condition": "One or more expected fields are absent, unreadable, or contain associated fault information requiring further review.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect record fields",
+          "exact_action": "Check the displayed Task Name, ToteId, Fault or fault code, TagPath, and Value fields for the departure record.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the record has an associated fault code.",
+        "Escalate if the expected Task Name, ToteId, Fault, TagPath, or Value fields cannot be inspected."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "section_id": "training_video_day2_segment_0023",
+          "page": 23,
+          "timestamp_start": "02:01:19.000",
+          "timestamp_end": "02:01:58.000",
+          "quote_or_summary": "OCR shows fields including Task Name, ToteId, Fault, TagPath, and Value. The tote, tag path, and any fault code are recorded for the departure.",
+          "artifact_id": "artifact_training_video_training_video_day2_0023_the_tag_read_and_tag_write_primary_02_01_38_500"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Correlate tag values with the departure record",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine whether the tag activity is represented consistently with the associated departure and recorded fault information.",
+      "instruction": "In SSMS, compare the TagPath and Value from the Tag Read/Tag Write entries with the relevant Tipper Departure Activity Model record, including its Task Name, ToteId, departure destination, and Fault or fault-code information. Treat the displayed values as recorded data; do not assign an undocumented meaning to a fault code.",
+      "expected_result": "The tag path and value can be associated with the relevant departure record, or the record shows that the event cannot be correlated.",
+      "healthy_condition": "The relevant departure record and Tag Read/Tag Write entries are present and their Task Name, ToteId, TagPath, Value, and available fault information can be correlated.",
+      "failure_condition": "The TagPath and Value cannot be correlated with the departure event, the departure record is missing, or the record contains fault information requiring escalation.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Compare departure and tag entries",
+          "exact_action": "Compare the recorded tag path and value with the associated departure and fault-code information to determine whether the event is represented in the logs.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate if the TagPath and Value cannot be correlated with the tipper event.",
+        "Do not infer a fault-code meaning or corrective action when the database record only provides the recorded value."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "section_id": "training_video_day2_segment_0023",
+          "page": 23,
+          "timestamp_start": "02:01:19.000",
+          "timestamp_end": "02:01:58.000",
+          "quote_or_summary": "Recorded tote, tag path, and fault-code information, together with Tag Read and Tag Write values, can help narrow down tipper issues.",
+          "artifact_id": "artifact_training_video_training_video_day2_0023_the_tag_read_and_tag_write_primary_02_01_38_500"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "A corresponding Tipper Departure Activity Model record is identified for the relevant tipper, DropOffSorter, or DropOffHospital departure.",
+    "The live SSMS display provides the applicable Task Name, ToteId, Fault or fault-code information, TagPath, and Value fields.",
+    "Tag Read/Tag Write entries can be correlated with the associated departure record, or the inability to correlate them is clearly identified for escalation.",
+    "No database mutation or unsupported fault-code interpretation is performed."
+  ],
+  "healthy_conditions": [
+    "The Sorter Sweeper Database is accessible through SSMS.",
+    "A relevant Tipper Departure Activity Model record is present.",
+    "The departure and tag entries expose observable Task Name, ToteId, TagPath, Value, and available Fault information.",
+    "The recorded TagPath and Value can be associated with the relevant departure event."
+  ],
+  "failure_conditions": [
+    "The expected departure record is missing.",
+    "The record contains an associated fault code.",
+    "Task Name, ToteId, Fault, TagPath, or Value cannot be inspected.",
+    "TagPath and Value cannot be correlated with the tipper departure.",
+    "The available database value does not support a verified fault-code meaning or corrective action."
+  ],
+  "escalation_guidance": [
+    "Escalate to L3_support or the applicable engineering support path when the expected departure record is missing, the record has an associated fault code, or TagPath and Value cannot be correlated with the tipper event.",
+    "Provide the observed Task Name, ToteId, Fault or fault-code value, TagPath, Value, and the associated departure destination in the escalation.",
+    "Do not infer a fault-code meaning or corrective action from the database record alone."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0023_the_tag_read_and_tag_write_primary_02_01_38_500",
+      "what_to_look_at": "Sorter Sweeper Database Tipper Departure Activity Model records and Tag Read/Tag Write fields, especially Task Name, ToteId, Fault, TagPath, and Value."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0023",
+      "page": 23,
+      "timestamp_start": "02:01:19.000",
+      "timestamp_end": "02:01:58.000",
+      "segment_id": "segment_training_video_0023",
+      "figure_id": null,
+      "figure_number": null,
+      "quote_or_summary": "The Sorter Sweeper Database contains Tipper Departure Activity Model records. For AGV departures from a tipper, DropOffSorter, or DropOffHospital, the tote, tag path, and any fault code are recorded. Tag Read and Tag Write logs record tags the system reads and writes."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0023_the_tag_read_and_tag_write_primary_02_01_38_500",
+      "what_to_look_at": "Sorter Sweeper Database Tipper Departure Activity Model records and Tag Read/Tag Write fields, especially Task Name, ToteId, Fault, TagPath, and Value."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_tipper_departure_tag_log_diagnostic"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide a table name or exact SSMS navigation path.",
+    "The source does not provide a SQL statement or query filter for identifying the relevant AGV departure.",
+    "The source does not define the meaning of individual fault-code values.",
+    "The source does not specify a corrective action or recovery procedure for a fault code or an uncorrelated TagPath and Value.",
+    "The source does not specify an estimate for procedure duration.",
+    "No site, customer, or incident context metadata is supplied."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

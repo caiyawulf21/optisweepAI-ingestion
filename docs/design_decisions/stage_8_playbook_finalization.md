@@ -176,7 +176,8 @@ Stage 8 performs:
 5. Emit explicit `branches[]` on branching nodes, seeded from `branch_hints[]`.
 6. Surface `decision_outcomes[]` with healthy/unhealthy/inconclusive descriptors
    from linked runbook `healthy_conditions` and step expected results.
-7. Resolve inline images per node from linked runbook visual refs.
+7. Resolve inline images per node from linked runbook visual refs in review
+   artifacts without embedding runbook bodies in canonical playbooks.
 8. Write JSON, Markdown, and HTML review artifacts.
 9. Emit link records, per-variant finalization reports, and A/B comparison report.
 
@@ -247,6 +248,83 @@ Rules:
 Each ID in the array gets its own `link_confidence`, `link_rationale`, and
 inherited image set on the node.
 
+### Backend-vs-UI evidence rule (2026-08-07)
+
+For diagnostic nodes that investigate system state — pairing, roster, tote,
+task, hospital, tipper, sequence, or recovery validation — Stage 8 must
+attach:
+
+- at most one RMS/UI procedure or RMS/UI evidence check;
+- exactly one SQL/SSMS backend evidence check.
+
+RMS/UI may corroborate or confirm operator-side state, but must not be the
+only diagnostic surface for these nodes. The SQL/SSMS check is the primary
+backend state inspection whenever the node concerns AGV state, robot mapping,
+robot location, tote association, task state, hospital flow, tipper state,
+sequence state, or validation after a state-changing action.
+
+Exceptions (use only the source-supported surface(s)):
+
+- operator-required procedures where the source explicitly makes the UI the
+  correct surface;
+- ignition / OptiSweep / WCS service-health nodes;
+- service-restart nodes;
+- gateway-health nodes;
+- Event Viewer / Windows Services / API-responsiveness nodes;
+- any case where the source or validated procedure explicitly requires a
+  different surface.
+
+Expected shape for an in-scope node:
+
+- keep one RMS/UI check at most;
+- include one SQL/SSMS query or backend inspection, preferred as the primary
+  evidence;
+- use RMS/UI only to confirm what the backend state should correspond to
+  on-site;
+- do not attach multiple overlapping RMS procedures;
+- do not attach multiple overlapping SQL procedures unless the node
+  explicitly requires two distinct backend checks.
+
+This sharpens the evidence-first WCS-SQL-primary/RMS-corroboration principle
+already stated in `docs/architecture.md`'s 2026-08-05 Stage 8 entries and in
+`docs/ontology/stage5_surface_evidence_guidance.md` into a concrete per-node
+linking cap, so finalization (and review) can check node link counts directly
+instead of relying on prose intent alone.
+
+**Audit note (2026-08-07):** a spot-check of the `stage8_four_case_review`
+pilot output against this rule found the pairing was not yet enforced:
+
+- `playbook_incident_218550_bagout_agv_sequence.md` — node 1 links two
+  RMS/UI-primary procedures and no SQL/SSMS procedure; node 2 links one
+  RMS/UI procedure and no SQL/SSMS procedure; node 5 (validation gate)
+  requires only RMS evidence, no SQL/SSMS.
+- `playbook_incident_223554_hospital_induct_flow.md` — nodes 1 and 2 (state/
+  roster/tote-association diagnostics) carry only "Suggested database check"
+  hints, not a linked SQL/SSMS procedure, and no RMS/UI link either; node 5
+  (validation gate for hospital flow/AGV state/sort recovery) has no linked
+  procedure at all despite `Required evidence sources: Service state, API
+  response, fleet or database state, site observation` naming backend state.
+  Node 3 (OptiSweep/WCS service-health) and node 4 (recovery via RMS E-stop)
+  are consistent with the documented exceptions.
+
+By contrast, `playbook_incident_228086_sitewide_robotic_stoppage.md` nodes 5–6
+already show the target shape: one RMS/UI procedure paired with
+`proc_wcs_helix_db_ssms_agv_state_inspection_v1` (WCS/Helix SSMS) as the
+backend check. That pairing is the reference pattern the other two playbooks
+should be brought into line with once this rule is enforced in linking.
+
+**Root-cause fix (2026-08-07):** the reason this rule wasn't already
+enforced for 218550/223554 is documented in
+[Day 2 / Ontology Deep Dive: Backend Evidence Root Cause & Fixes](day2_ontology_backend_evidence_deep_dive.md) —
+an empty `support_contract` in `capability_catalog.json` for
+`agv_active_errors`/`wcs_system_faults` silently zeroed Stage 8's SQL-surface
+scoring bonus, and `filter_intent_compatible_matches` had no SQL-allowance
+branch for hospital-flow or sequence/backfill nodes (only roster/mapping
+nodes had one). Both are now fixed in
+`docs/ontology/catalogs/capability_catalog.json` and
+`shared_pipeline_stages/stage_8/{link_scoring,normalize}.py`; see that doc for
+the full trace and remaining open gaps.
+
 ## Branch Wiring
 
 Stage 8 uses **both** Stage 5 `branch_hints[]` and LLM-emitted explicit
@@ -305,14 +383,18 @@ Rules:
 
 ## Image Inheritance
 
-Images are embedded with linked runbook steps, not as separate reference-only blocks.
+Canonical playbook nodes contain procedure references and image IDs only. They
+do not contain runbook steps, SQL, click paths, healthy conditions, or other
+catalog bodies. Review and runtime surfaces resolve referenced procedures from
+the Stage 7 catalog when detailed content is needed.
 
 Per node in review output:
 
-1. Embed the full linked runbook body (summary, steps, healthy conditions, success/failure criteria).
+1. Resolve referenced procedure IDs against the Stage 7 catalog.
 2. Copy assets into `review_markdown/playbooks/assets/` using the Stage 7 artifact image resolver.
 3. Render runbook header images and per-step images inline under each linked runbook within the node section.
-4. Store full runbook payloads on `linked_runbooks[]` in finalized playbook JSON (not just IDs).
+4. Keep `linked_runbooks[]` and `evidence_collection_procedures[]` compact and
+   reference-oriented in finalized playbook JSON.
 
 If image file missing, render artifact ID + caption text; do not drop the node
 image slot silently.
@@ -355,6 +437,28 @@ Despite the filename (consistent with Stage 7 naming), records are
         {
           "node_id": "",
           "node_type": "",
+          "purpose": "",
+          "diagnostic_reasoning": "",
+          "evidence_required": [],
+          "healthy_indicators": [],
+          "unhealthy_indicators": [],
+          "inconclusive_indicators": [],
+          "primary_action": "",
+          "performed_by": "",
+          "primary_surface": "",
+          "evidence_to_collect": [],
+          "healthy_interpretation": "",
+          "unhealthy_interpretation": "",
+          "inconclusive_interpretation": "",
+          "optional_corroboration": [],
+          "linked_primary_procedure": null,
+          "generated_guidance": "",
+          "ontology_evidence": [],
+          "confidence": "unresolved",
+          "requires_sme_review": true,
+          "query_mode": "none",
+          "evidence_retrieval_success": "",
+          "diagnostic_interpretation": "",
           "resolved_runbook_ids": [],
           "runbook_links": [
             {
@@ -365,6 +469,16 @@ Despite the filename (consistent with Stage 7 naming), records are
               "preferred_incident_source": true
             }
           ],
+          "evidence_collection_procedures": [
+            {
+              "procedure_id": "",
+              "title": "",
+              "purpose": "",
+              "role_required": "",
+              "audience_roles": []
+            }
+          ],
+          "catalog_gaps": [],
           "decision_outcomes": [],
           "branches": [],
           "inherited_image_refs": []
@@ -443,7 +557,9 @@ Report is per case and rolled up across cases 228086 and 228723.
 Post-LLM gates:
 
 1. Every `procedure_id` exists in canonical catalog.
-2. `resolved_runbook_ids.length` ≤ 3 per node.
+2. Diagnostic nodes have at most one primary and one distinct optional
+   corroboration procedure; recovery nodes have exactly one recovery procedure
+   when a recovery action is selected.
 3. All branch `next_node_id` values exist in playbook nodes.
 4. No invented procedure IDs.
 5. `diagnostic_decision` nodes must not link only to `recovery` runbooks.
@@ -451,11 +567,21 @@ Post-LLM gates:
    overridden by SME tooling later.
 7. Low-confidence links must include non-empty `match_gaps[]`.
 8. HTML and Markdown review files exist for every playbook in output.
+9. LLM action-plan fields are preserved; missing or malformed fields become
+   validation/SME warnings rather than deterministic repairs. Deterministic
+   action synthesis is available only through an explicit non-LLM/testing
+   fallback.
 
 ## Mode
 
-**LLM Assisted** — one LLM call per playbook (or per playbook batch) for link
-selection and branch emission. Retrieval and validation are deterministic.
+**LLM Assisted** — one LLM call per playbook (or per playbook batch) for action
+plan generation, link selection, and branch emission. Retrieval and safety
+validation are deterministic; action-plan content is not overwritten.
+
+Advisory component–symptom hint tables live in
+[`stage_prompts/stage_8/stage8_playbook_linking_prompt.md`](../../stage_prompts/stage_8/stage8_playbook_linking_prompt.md).
+Long-term structured enrichment is described under
+[Future Design Considerations](#future-design-considerations-knowledge-graph-component-enrichment).
 
 ## Relationship To Operational Stage 8
 
@@ -491,6 +617,109 @@ stages at different layers. Shared stage numbering stays at **Stage 8** per
 | Multi-runbook nodes confuse runtime ordering | Medium | Max 3 IDs; ordered array with link_rank |
 | Image missing from runbook asset copy | Low | Fallback caption; warn in finalization report |
 | Pilot N=2 overfits A/B comparison | Low | Treat comparison as directional only |
+
+## Future Design Considerations: Knowledge Graph Component Enrichment
+
+Stage 8 currently uses **advisory component–symptom hint tables** in the linking
+prompt plus deterministic domain guards in code (`link_scoring.py`). These are
+pilot scaffolding, not the long-term source of truth.
+
+### Problem
+
+Runbook linking quality depends on knowing which **component or interface** a
+procedure inspects or acts on (RMS, hospital HMI, VISU operator station,
+Ignition, OptiSweep API, etc.). Today that signal is inferred from free text in
+placeholders and runbook titles/summaries. That works for pilot tuning but does
+not scale cleanly as the catalog grows or as cross-domain lexical collisions
+increase (for example map monitor message panel vs hospital HMI diagnostics).
+
+### Proposed knowledge graph model (future)
+
+Add structured metadata during Stage 6/7 runbook finalization and Stage 5 playbook
+extraction, then consume it in Stage 8 retrieval and linking.
+
+**Node types (illustrative):**
+
+| Node type | Examples |
+| --- | --- |
+| `Component` | `RMS`, `Hospital_HMI`, `VISU_Operator_Station`, `Ignition_Gateway`, `OptiSweep_API`, `Event_Viewer`, `ACB_Building_Overview` |
+| `FailurePattern` | `pairing_failure`, `hospital_diversion`, `mapping_abnormal`, `bump_fault`, `gateway_unhealthy`, `api_unresponsive`, `tipper_fault` |
+| `Runbook` | Stage 7 `procedure_id` |
+| `PlaybookNode` | Stage 5/8 node within a playbook candidate |
+
+**Edge types (illustrative):**
+
+| Edge | Meaning |
+| --- | --- |
+| `runbook --checks_component--> Component` | Primary UI/system the procedure reads or uses |
+| `runbook --acts_on_component--> Component` | State-changing target (recovery/operation) |
+| `runbook --addresses_failure--> FailurePattern` | Symptom/failure the procedure helps evaluate or resolve |
+| `playbook_node --expects_check--> Component` | Parsed from Stage 5 placeholder domain vocabulary |
+| `playbook_node --addresses_failure--> FailurePattern` | Parsed from node intent / entry symptom pattern |
+| `incident --observed_at--> Component` | From canonical incident record (zone, robot, subsystem) |
+| `incident --exhibited--> FailurePattern` | From canonical timeline / symptoms |
+
+**Stage 8 consumption (future):**
+
+1. **Retrieval boost**: when `playbook_node.expects_check` overlaps
+   `runbook.checks_component`, boost cosine score before LLM selection.
+2. **Hard guard (optional)**: block links where component sets are disjoint unless
+   placeholder is explicitly compound.
+3. **Unresolved explanation**: emit `match_gaps` such as
+   `no_catalog_runbook_for_component:Event_Viewer` instead of silent wrong-domain links.
+4. **SME review**: surface component mismatches in HTML review alongside link confidence.
+
+### Extraction sources for graph edges
+
+| Source stage | What to extract | When |
+| --- | --- | --- |
+| Stage 6/7 runbook finalization | `checks_component`, `acts_on_component`, `procedure_domain` enum | During SME review of canonical runbooks |
+| Stage 5 playbook extraction | `expects_check`, `failure_pattern` on each node placeholder | LLM + validator against component vocabulary |
+| Stage 4 canonical incident | `observed_components`, `failure_patterns` | Already partially present in affected systems / timeline |
+| Stage 8 pilot hints | Seed taxonomy and edge types | Now (manual tables) → automated later |
+
+### Component taxonomy seed (pilot)
+
+Align with Stage 5 **Component and Domain Vocabulary** and Stage 8 hint tables:
+
+- RMS / fleet status
+- Hospital HMI / lane UI
+- Operator / tipper HMI (VISU)
+- Building / ACB overview HMI
+- Ignition gateway
+- OptiSweep / WCS API
+- Windows Event Viewer / services
+- AGV physical recovery / removal
+- Teknic / motor / axis
+- Tote / material handling recovery
+- LOTO / safety isolation
+- Network / connectivity
+
+### Catalog gaps to close before graph helps infra incidents
+
+| Component | Current merged runbooks | Impact |
+| --- | ---: | --- |
+| Windows Event Viewer / services | 0 | 228086-style infra entry paths stay unresolved |
+| Ignition gateway | 2 | Gateway-health playbooks rely on thin coverage |
+
+Ingest or author runbooks for these domains before expecting high-confidence
+Stage 8 links on infra-only playbook nodes.
+
+### Implementation phasing (recommended)
+
+| Phase | Scope | Outcome |
+| --- | --- | --- |
+| **P0 (pilot)** | Hint tables in Stage 8 prompt + deterministic domain guards in code | Reduce wrong-domain links; document unresolved gaps |
+| **P1** | Add optional `component_tags[]` and `failure_pattern_tags[]` to Stage 7 canonical runbook schema | Machine-readable catalog metadata |
+| **P2** | Stage 5 validator: require one primary `expects_check` component per node | Cleaner placeholders → better retrieval |
+| **P3** | Stage 8 retrieval uses component overlap scoring; hints become fallback | Less LLM reliance for domain disambiguation |
+| **P4** | Publish graph edges to Cosmos / graph store; runtime router uses component + symptom match | Production orchestration |
+
+### Non-goals (for now)
+
+- Do not treat pilot hint tables as authoritative enforcement without catalog metadata.
+- Do not auto-merge incident playbooks into canonical playbooks based on graph similarity alone.
+- Do not infer root cause as confirmed graph fact; keep failure patterns as observable/supported labels.
 
 ## Open Questions (Resolved For Pilot)
 

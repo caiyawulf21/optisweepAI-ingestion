@@ -1,1 +1,1 @@
-"""Future shared state model for the ingestion graph."""
+"""Graph state moved to `orchestration.state`."""

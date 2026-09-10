@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Verify OPC COM tag subscription/update behavior between Ignition, OPC server, and Sorter Sweeper (hospital/tippers tags)</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Verify OPC COM tag subscription/update behavior between Ignition, OPC server, and Sorter Sweeper (hospital/tippers tags)</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_verify_opc_com_tag_subscription_update_behavior_between_ignition_opc_server_and_sorter_sweeper_v1</td></tr>
+<tr><th>Title</th><td>Verify OPC COM tag subscription/update behavior between Ignition, OPC server, and Sorter Sweeper (hospital/tippers tags)</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>wcs_api_responsiveness</td></tr>
+<tr><th>Access Surface</th><td>wcs_api</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>api_unresponsive</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Validate the tag-based communication loop described in the source segment: Ignition’s built-in tag provider connects to hospital and tippers tags; the OPC communication module connects to the OPC server and subscribes to tags; when a tag updates, the update is forwarded to Sorter Sweeper for processing; Sorter Sweeper sends data back to the OPC communication module, which writes to the OPC server; and the tag provider reflects the updated data back to the system.</p>
+<h2>When To Use</h2>
+<p>Use when you need to confirm that the OPC COM tag subscription/update loop is functioning end-to-end between Ignition’s tag provider, the OPC server, the OPC communication module (OPC COM), and Sorter Sweeper, specifically for hospital and tippers tag behavior.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/ad817609844d3adb.jpg" alt="artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500" /><figcaption>Segment frame describing the OPC COM / Ignition tag provider / OPC server subscription and the forwarding of tag updates to Sorter Sweeper, plus write-back to the OPC server.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Confirm the described components and tag flow boundaries (Ignition tag provider ↔ hospital/tippers ↔ OPC COM ↔ OPC server ↔ Sorter Sweeper)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the source-described architecture, confirm you are validating: (1) Ignition’s built-in tag provider connecting to the hospital and tippers relaying relevant tags, (2) the OPC communication module connecting to the OPC server and subscribing to tags, (3) tag updates being forwarded to Sorter Sweeper for processing, and (4) Sorter Sweeper sending messages back to the OPC communication module, which writes data to the OPC server via the tag provider.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can identify the loop endpoints as: Ignition tag provider (hospital/tippers tags) → OPC communication module (OPC server subscriptions) → Sorter Sweeper (processing on tag update) → OPC communication module (writes back to OPC server) → tag provider reflects updated data back to the system.</p>
+<hr>
+<h3>Step 2 — Verify OPC communication module subscribes to OPC server tags</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Check that the OPC communication module is connected to the OPC server and has active tag subscriptions for the relevant tags (hospital/tippers tags as described). Use the available OPC COM runtime/logging or equivalent observation method in your environment (the source does not specify the exact tool).</p>
+<p><strong>Expected result:</strong></p>
+<p>OPC COM is connected to the OPC server and is subscribed to tags such that tag updates can be received and forwarded.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you cannot confirm OPC COM connectivity/subscription evidence, stop and escalate for deeper OPC COM/OPC server troubleshooting (the source provides no remediation steps).</li>
+</ul>
+<hr>
+<h3>Step 3 — Verify tag updates propagate from OPC COM subscriptions to Sorter Sweeper processing</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Trigger or observe a tag update on the OPC server side (for the relevant hospital/tippers tags) and confirm that the update is sent to the Sorter Sweeper module for processing. Use your available observation method for Sorter Sweeper processing behavior (the source does not specify the exact UI/log/DB to check).</p>
+<p><strong>Expected result:</strong></p>
+<p>When a tag is updated, Sorter Sweeper receives the update for processing.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If tag updates are not reaching Sorter Sweeper, stop and escalate for deeper OPC COM/OPC server/Tag provider troubleshooting (the segment does not provide specific remediation steps).</li>
+</ul>
+<hr>
+<h3>Step 4 — Verify Sorter Sweeper writes back through OPC COM to the OPC server</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>After confirming Sorter Sweeper processes the tag update, verify that Sorter Sweeper sends messages to the OPC communication module and that OPC communication module writes the data to the OPC server.</p>
+<p><strong>Expected result:</strong></p>
+<p>Sorter Sweeper outputs result in OPC COM writing data back to the OPC server.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If Sorter Sweeper outputs are not being written back to the OPC server, stop and escalate for deeper OPC COM/OPC server/Tag provider troubleshooting (the segment does not provide specific remediation steps).</li>
+</ul>
+<hr>
+<h3>Step 5 — Confirm tag provider reflects updated data back through the loop (Ignition tag provider gets back updated data)</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Using the described loop, confirm that after OPC COM writes data to the OPC server, the tag provider gets back the updated data (described as “using tag provider gets back to Todd. Sorter.”). Observe the updated data availability using your available Ignition/tag provider observation method (the source does not specify the exact screen).</p>
+<p><strong>Expected result:</strong></p>
+<p>Updated data is observable via the tag provider path back into the system (Todd/Sorter side as described).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If the updated data does not return via the tag provider path, stop and escalate for deeper OPC COM/OPC server/Tag provider troubleshooting (the segment does not provide specific remediation steps).</li>
+</ul>
+<hr>
+</body>
+</html>

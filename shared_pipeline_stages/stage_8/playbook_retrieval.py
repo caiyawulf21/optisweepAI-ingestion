@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 from typing import Any
 
@@ -38,6 +39,27 @@ def build_node_retrieval_summary(node: dict[str, Any]) -> NodeRetrievalSummary:
         runbook_placeholder=str(node.get("runbook_placeholder") or node.get("needed_runbook_capability") or "").strip(),
         expected_or_observed_result=str(node.get("expected_or_observed_result") or "").strip(),
         allowed_roles=[str(role) for role in node.get("allowed_roles") or [] if str(role).strip()],
+        required_evidence_concepts=[
+            str(item)
+            for item in node.get("required_evidence_concepts") or node.get("expects_capability") or []
+            if str(item).strip()
+        ],
+        expects_capability=[str(item) for item in node.get("expects_capability") or [] if str(item).strip()],
+        expects_surface=[str(item) for item in node.get("expects_surface") or [] if str(item).strip()],
+        preferred_audience=[str(item) for item in node.get("preferred_audience") or [] if str(item).strip()],
+        ontology_capabilities=[
+            item for item in node.get("ontology_capabilities") or [] if isinstance(item, dict)
+        ],
+        backend_observability=[
+            item for item in node.get("backend_observability") or [] if isinstance(item, dict)
+        ],
+        ontology_gaps=[str(item) for item in node.get("ontology_gaps") or [] if str(item).strip()],
+        evidence_required=[str(item) for item in node.get("evidence_required") or [] if str(item).strip()],
+        healthy_indicators=[str(item) for item in node.get("healthy_indicators") or [] if str(item).strip()],
+        unhealthy_indicators=[str(item) for item in node.get("unhealthy_indicators") or [] if str(item).strip()],
+        inconclusive_indicators=[
+            str(item) for item in node.get("inconclusive_indicators") or [] if str(item).strip()
+        ],
     )
     summary.retrieval_text = build_node_retrieval_text(summary)
     return summary
@@ -51,6 +73,17 @@ def build_node_retrieval_text(summary: NodeRetrievalSummary) -> str:
         summary.runbook_placeholder,
         summary.expected_or_observed_result,
         " ".join(summary.allowed_roles),
+        " ".join(summary.required_evidence_concepts),
+        " ".join(summary.expects_capability),
+        " ".join(summary.expects_surface),
+        " ".join(summary.preferred_audience),
+        " ".join(json.dumps(item, ensure_ascii=False) for item in summary.ontology_capabilities),
+        " ".join(json.dumps(item, ensure_ascii=False) for item in summary.backend_observability),
+        " ".join(summary.ontology_gaps),
+        " ".join(summary.evidence_required),
+        " ".join(summary.healthy_indicators),
+        " ".join(summary.unhealthy_indicators),
+        " ".join(summary.inconclusive_indicators),
     ]
     return _compact_text(parts)
 
@@ -90,10 +123,8 @@ def build_playbook_retrieval_card(
 def build_playbook_retrieval_text(card: PlaybookRetrievalCard) -> str:
     parts = [
         card.title,
-        card.user_facing_summary,
         " ".join(card.observed_entry_symptoms),
         " ".join(card.support_user_language_examples),
-        " ".join(card.affected_systems_or_components),
     ]
     return _compact_text(parts)
 

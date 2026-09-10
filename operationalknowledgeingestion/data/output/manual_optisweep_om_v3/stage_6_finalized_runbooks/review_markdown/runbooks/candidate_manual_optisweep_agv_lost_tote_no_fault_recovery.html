@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Recover an AGV After It Loses a Tote (No Fault) Using RMS and Hospital HMI</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Recover an AGV After It Loses a Tote (No Fault) Using RMS and Hospital HMI</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_recover_agv_after_lost_tote_no_fault_using_rms_and_hospital_hmi_v1</td></tr>
+<tr><th>Title</th><td>Recover an AGV After It Loses a Tote (No Fault) Using RMS and Hospital HMI</td></tr>
+<tr><th>Procedure Type</th><td>recovery</td></tr>
+<tr><th>Primary Role</th><td>operator</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>agv_active_errors, agv_physical_recovery</td></tr>
+<tr><th>Access Surface</th><td>rms_ui, hospital_hmi, physical_floor</td></tr>
+<tr><th>Audience Roles</th><td>operator</td></tr>
+<tr><th>Failure Pattern Tags</th><td>None</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Recover from the “AGV LOST TOTE NO FAULT” condition by stopping RMS, physically moving the AGV to the Hospital, removing and re-adding the AGV via the Hospital station PC/HMI workflow, power-cycling the AGV, re-localizing it by rolling over the Inbound Hospital Station QR code, then locating/removing the missing tote and adding it back into the system so the AGV can return the tote to the sorter.</p>
+<h2>When To Use</h2>
+<p>Use when an AGV has lost a tote but is in the “AGV LOST TOTE NO FAULT” recovery scenario, and you need to remove/re-add the AGV and re-localize it at the Inbound Hospital Station so the missing tote can be removed and reintroduced for normal sorter flow.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/d87070d22301b81d.jpeg" alt="artifact_fig_5_4_faulted_agv_with_tote_screen" /><figcaption>Faulted AGV with Tote screen used as visual context for the recovery scenario (includes the recovery step list for AGV LOST TOTE NO FAULT).</figcaption></figure>
+<figure><img src="assets/2c21ae93aa1bc610.png" alt="artifact_fig_4_37_hospital_hmi_add_remove_agv_screen" /><figcaption>Hospital HMI Add/Remove AGV screen (AGV ID field, Tote ID scanner, Call to Maintenance, Insert Into System).</figcaption></figure>
+<figure><img src="assets/12f351ab67fe300a.png" alt="artifact_fig_4_31_hospital_hmi_add_tote_screen" /><figcaption>Hospital HMI Add Tote screen (Tote ID and Barcode fields via green scanner; Confirm &amp; Execute).</figcaption></figure>
+<figure><img src="assets/ef35eabc75ef8254.png" alt="artifact_page_92_image_2" /><figcaption>Hospital Station layout diagram showing induct/extract sides and green scanner location for tote handling.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — E-stop RMS</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the RMS / fleet status UI (rms_ui), perform the RMS E-stop action.</p>
+<p><strong>Expected result:</strong></p>
+<p>RMS is in an E-stopped state (E-stop control/status reflects the stopped condition on the RMS UI).</p>
+<hr>
+<h3>Step 2 — Release the AGV brake</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>On the AGV that lost a tote, press the brake release.</p>
+<p><strong>Expected result:</strong></p>
+<p>The AGV brake is released, allowing the AGV to be pushed.</p>
+<hr>
+<h3>Step 3 — Push the AGV to the Hospital</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Push the AGV over to the Hospital.</p>
+<p><strong>Expected result:</strong></p>
+<p>The AGV is physically positioned at the Hospital station area for the next remove/add step.</p>
+<hr>
+<h3>Step 4 — Remove and re-add the AGV at the Hospital station PC/HMI</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>At the Hospital station PC, remove the AGV from the system, then add the AGV back into the system using the Hospital station PC workflow/HMI.</p>
+<p><strong>Expected result:</strong></p>
+<p>The AGV is removed and then inserted back into the system via the Hospital station PC/HMI workflow.</p>
+<hr>
+<h3>Step 5 — Power-cycle the AGV</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Turn the AGV off, then turn it on again.</p>
+<p><strong>Expected result:</strong></p>
+<p>AGV has been turned off and then back on.</p>
+<hr>
+<h3>Step 6 — Wait for AGV lights to turn green</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Wait for the AGV lights to turn green.</p>
+<p><strong>Expected result:</strong></p>
+<p>AGV lights are green.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if the AGV does not show green lights after the power cycle.</li>
+</ul>
+<hr>
+<h3>Step 7 — Re-localize by rolling over the Inbound Hospital Station QR code</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Roll the AGV over the QR code in front of the Inbound Hospital Station.</p>
+<p><strong>Expected result:</strong></p>
+<p>AGV has been rolled over the Inbound Hospital Station QR code after lights turned green.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if the AGV does not successfully re-localize after rolling over the Inbound Hospital QR code.</li>
+</ul>
+<hr>
+<h3>Step 8 — Locate and remove the missing tote at the Hospital</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Locate the missing tote and bring it to the Hospital to remove it from the system.</p>
+<p><strong>Expected result:</strong></p>
+<p>The missing tote is located and removed from the system via the Hospital station workflow.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if the missing tote cannot be located or cannot be removed/added via the Hospital station PC/HMI controls.</li>
+</ul>
+<hr>
+<h3>Step 9 — Add the tote back into the system</h3>
+<p><strong>Responsible role:</strong> operator</p>
+<p><strong>Instruction:</strong></p>
+<p>Add the tote back into the system using the Hospital station PC workflow/HMI.</p>
+<p><strong>Expected result:</strong></p>
+<p>The tote is added back into the system via the Hospital station workflow.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>Stop and escalate if the missing tote cannot be located or cannot be removed/added via the Hospital station PC/HMI controls.</li>
+</ul>
+<hr>
+</body>
+</html>

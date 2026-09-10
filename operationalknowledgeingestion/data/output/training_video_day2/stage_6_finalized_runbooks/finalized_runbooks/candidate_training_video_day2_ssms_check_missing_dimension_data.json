@@ -1,0 +1,445 @@
+{
+  "procedure_id": "proc_check_ignition_lane_activity_model_missing_dimension_data_v1",
+  "candidate_id": "candidate_training_video_day2_ssms_check_missing_dimension_data",
+  "title": "Check IgnitionLaneActivityModel for Missing Dimension Data in SSMS",
+  "procedure_type": "diagnostic",
+  "summary": "Use the WCS / Helix DB (SSMS) to inspect the read-only dbo.IgnitionLaneActivityModel view and determine whether recent lane activity records contain dimension data expected from the dimensioners. Correlate dimension fields with package identifiers, Message, PackageClassification, Missing DimensionData, MissingInduct, Tote Not Found, and Diverted indicators. This procedure does not modify or reboot dimensioners.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "sorter_item_or_scan_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "miss_scan_or_dimension_fallback"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this WCS / Helix DB (SSMS) diagnostic when support needs to verify whether recent lane activity records contain expected dimension data, especially when Missing DimensionData is suspected or affected records show blank or absent dimension values.",
+  "not_for": [
+    "Do not use this procedure to reboot, reconfigure, or otherwise modify dimensioners.",
+    "Do not use this procedure as a dimensioner recovery procedure; the source supports database verification only."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Access the WCS / Helix DB (SSMS), inspect dbo.IgnitionLaneActivityModel records, and determine whether dimension fields and related indicators show missing data."
+    },
+    {
+      "role": "L3_support",
+      "responsibility": "Review or assist with escalation when recent records are absent, dimension fields remain blank or missing, or Missing DimensionData is present for affected records."
+    }
+  ],
+  "safety_notes": [
+    "Use the read-only database view for inspection.",
+    "Do not reboot, reconfigure, or otherwise modify the dimensioners from this database check.",
+    "The source describes dimensioner behavior after a power flicker but does not provide a supported dimensioner recovery procedure."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "Read-only access to the applicable WCS / Helix database",
+    "dbo.IgnitionLaneActivityModel"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2 or L3 support access to the applicable WCS / Helix database through SSMS.",
+      "Read-only access to dbo.IgnitionLaneActivityModel."
+    ],
+    "system_preconditions": [
+      "The applicable WCS / Helix database is available for inspection.",
+      "Lane activity records are available for the period or lanes being investigated."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_dimension_data_dependency_v1",
+    "ctx_training_video_ignition_lane_activity_fields_v1",
+    "ctx_training_video_lane_activity_status_flags_v1",
+    "ctx_training_video_dimensioner_power_flicker_behavior_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0060_they_they_had_a_power_flicker_primary_03_28_33_000",
+      "description": "SSMS database view containing dbo.IgnitionLaneActivityModel with Last Update, sorter and lane identifiers, package identifiers, dimension fields, and status fields.",
+      "required_level": "required"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000",
+      "description": "Lane activity table view showing dimension fields and filtering or inspection of SortConf records with missing dimension data.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0024_the_items_model_so_items_are_primary_02_10_19_000",
+      "description": "IgnitionLaneActivityModel field view showing package identifiers, Length, Width, Height, Weight, Cube, Message, PackageClassification, and MissingDimensionData-related fields.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the applicable WCS / Helix database in SSMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Establish access to the live database that contains the lane activity model.",
+      "instruction": "In SSMS, select the applicable WCS / Helix database containing the dbo.IgnitionLaneActivityModel view or model. Use the database for inspection only.",
+      "expected_result": "The applicable WCS / Helix database is selected and dbo.IgnitionLaneActivityModel is available to open.",
+      "healthy_condition": "SSMS can access the applicable WCS / Helix database and expose dbo.IgnitionLaneActivityModel for read-only inspection.",
+      "failure_condition": "The applicable database or dbo.IgnitionLaneActivityModel cannot be accessed or located.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Select WCS / Helix database",
+          "exact_action": "Select the applicable WCS/Helix database containing the dbo.IgnitionLaneActivityModel view or model.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L3 support if the applicable WCS / Helix database or dbo.IgnitionLaneActivityModel cannot be accessed."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0060",
+          "timestamp_start": "03:28:16.000",
+          "timestamp_end": "03:28:50.000",
+          "quote_or_summary": "The captured database view is dbo.IgnitionLaneActivityModel and is used to inspect whether expected dimension data is present.",
+          "site_code": null,
+          "site_label": null
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Open dbo.IgnitionLaneActivityModel in read-only view",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Display the live lane activity records and the fields needed for the dimension-data check.",
+      "instruction": "Open dbo.IgnitionLaneActivityModel in the read-only WCS / Helix DB (SSMS) view. Confirm that the lane activity table displays the record and field set used for this check.",
+      "expected_result": "The live view displays dbo.IgnitionLaneActivityModel records with lane, package, dimension, and status-related columns.",
+      "healthy_condition": "The view is readable and includes fields such as Last Update, SorterName, SortName, SortGuid, Zone, LaneName, PackageUid, Tracking Number, Length, Width, Height, Weight, Cube, Message, PackageClassification, Missing DimensionData, MissingInduct, Tote Not Found, and Diverted.",
+      "failure_condition": "The view is unavailable, unreadable, or does not expose the records and fields required for the investigation.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open lane activity model",
+          "exact_action": "Open the dbo.IgnitionLaneActivityModel records using the read-only view.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L3 support if the model cannot be opened or the required fields are not available."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0060",
+          "timestamp_start": "03:28:33.000",
+          "timestamp_end": "03:28:33.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0060_they_they_had_a_power_flicker_primary_03_28_33_000",
+          "quote_or_summary": "The SSMS view is labeled dbo.IgnitionLaneActivityModel and shows lane activity, package, dimension, and status columns.",
+          "site_code": null,
+          "site_label": null
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Identify recent lane activity records",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Limit the inspection to the relevant recent records and identify the affected sorter, zone, lane, and package activity.",
+      "instruction": "Review recent values in Last Update, SorterName, SortName, Zone, LaneName, PackageUid, and Tracking Number in the WCS / Helix DB (SSMS) lane activity view. Use these fields to identify the records relevant to the reported lane or sorter condition.",
+      "expected_result": "Relevant recent lane activity records are identified with their update time, sorter and lane location, PackageUid, and Tracking Number.",
+      "healthy_condition": "Recent records are present and can be associated with the investigated sorter, zone, lane, or package.",
+      "failure_condition": "No recent lane activity records are present, or the records cannot be associated with the affected lane, sorter, or package.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review recent identifiers",
+          "exact_action": "Review recent values in Last Update, SorterName, SortName, Zone, LaneName, PackageUid, and Tracking Number.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if recent lane activity records are absent for the affected area or investigation period."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0060",
+          "timestamp_start": "03:28:16.000",
+          "timestamp_end": "03:28:50.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0060_they_they_had_a_power_flicker_primary_03_28_33_000",
+          "quote_or_summary": "The captured view lists Last Update, SorterName, SortName, SortGuid, Zone, LaneName, PackageUid, and Tracking Number.",
+          "site_code": null,
+          "site_label": null
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Inspect dimension and weight fields",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Determine whether the relevant lane activity records contain dimension and weight data or show missing values.",
+      "instruction": "In the WCS / Helix DB (SSMS) records identified in the previous step, inspect Length, Width, Height, Weight, and Cube. Compare whether these fields contain values or are blank or missing for the affected records.",
+      "expected_result": "Each relevant record shows the observable state of Length, Width, Height, Weight, and Cube.",
+      "healthy_condition": "The relevant records contain observable values in the available dimension and weight fields. The source does not define a universal numeric threshold; interpret the result from field presence or absence.",
+      "failure_condition": "One or more relevant records have blank or absent Length, Width, Height, Weight, or Cube values, indicating that expected dimension data is not present for those records.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check dimension fields",
+          "exact_action": "Check whether Length, Width, Height, Weight, and Cube contain dimension and weight values or are blank/missing for the records being investigated.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if dimension fields remain blank or missing for affected records."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0024",
+          "timestamp_start": "02:10:19.000",
+          "timestamp_end": "02:10:19.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0024_the_items_model_so_items_are_primary_02_10_19_000",
+          "quote_or_summary": "The lane activity view includes Length, Height, Weight, and Cube; the discussion explains that missing dimension data can result in default dimensions.",
+          "site_code": null,
+          "site_label": null
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0059",
+          "timestamp_start": "03:28:03.000",
+          "timestamp_end": "03:28:03.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000",
+          "quote_or_summary": "The database inspection example identifies records where width, height, and weight were not being sent and uses the lane activity records to identify missing dimension data.",
+          "site_code": null,
+          "site_label": null
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Review lane activity status indicators",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Correlate the dimension-field state with the message and status indicators for the same records.",
+      "instruction": "For the same records in the WCS / Helix DB (SSMS), review Message, PackageClassification, Missing DimensionData, MissingInduct, Tote Not Found, and Diverted. Record the observed values without assigning undocumented meanings to binary-like or value-like indicators.",
+      "expected_result": "The affected records show their Message and PackageClassification values together with the observed Missing DimensionData, MissingInduct, Tote Not Found, and Diverted values.",
+      "healthy_condition": "The records have a visible Message and PackageClassification, dimension fields are populated where expected, and Missing DimensionData is not indicated for the records under investigation.",
+      "failure_condition": "Missing DimensionData is indicated, or the records combine blank or absent dimension fields with a relevant status indicator. MissingInduct, Tote Not Found, or Diverted may also be present and should be reported as observed rather than reinterpreted.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review status columns",
+          "exact_action": "Review Message, PackageClassification, Missing DimensionData, MissingInduct, Tote Not Found, and Diverted for the same records.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if Missing DimensionData is present for affected records.",
+        "Escalate to L2/L3 support if the status fields and dimension fields do not provide a clear observable result."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0060",
+          "timestamp_start": "03:28:16.000",
+          "timestamp_end": "03:28:50.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0060_they_they_had_a_power_flicker_primary_03_28_33_000",
+          "quote_or_summary": "The captured table lists Message, PackageClassification, Missing DimensionData, MissingInduct, Tote Not Found, and Diverted.",
+          "site_code": null,
+          "site_label": null
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0059",
+          "timestamp_start": "03:28:03.000",
+          "timestamp_end": "03:28:03.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000",
+          "quote_or_summary": "The database inspection example filters lane activity records and identifies a sorter area that was not sending sort or dimension data.",
+          "site_code": null,
+          "site_label": null
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The applicable WCS / Helix database and dbo.IgnitionLaneActivityModel are accessible in SSMS.",
+    "Recent lane activity records are identified using Last Update, sorter, zone, lane, PackageUid, and Tracking Number values.",
+    "Length, Width, Height, Weight, and Cube values are observed for the affected records.",
+    "Message, PackageClassification, Missing DimensionData, MissingInduct, Tote Not Found, and Diverted values are reviewed for the same records.",
+    "The result clearly states whether expected dimension data is present, missing, or not determinable from the available records."
+  ],
+  "healthy_conditions": [
+    "Recent lane activity records are present in dbo.IgnitionLaneActivityModel.",
+    "Relevant records contain observable values in the available Length, Width, Height, Weight, and Cube fields.",
+    "Missing DimensionData is not indicated for the records being investigated.",
+    "Message and PackageClassification values are visible for the records reviewed."
+  ],
+  "failure_conditions": [
+    "Recent lane activity records are absent for the affected sorter, zone, lane, or investigation period.",
+    "Length, Width, Height, Weight, or Cube is blank or absent for affected records.",
+    "Missing DimensionData is indicated for affected records.",
+    "The WCS / Helix database or dbo.IgnitionLaneActivityModel cannot be accessed.",
+    "The available records do not provide enough observable information to determine the dimension-data state."
+  ],
+  "escalation_guidance": [
+    "Escalate to L2/L3 support if recent lane activity records are absent.",
+    "Escalate to L2/L3 support if dimension fields remain blank or missing for affected records.",
+    "Escalate to L2/L3 support if Missing DimensionData is present for affected records.",
+    "Report the affected sorter, SortName, Zone, LaneName, PackageUid, Tracking Number, Last Update, observed dimension fields, Message, PackageClassification, and status indicators.",
+    "Do not direct support or site personnel to reboot or reconfigure dimensioners based solely on this database check; the source supports verification and escalation only."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0060_they_they_had_a_power_flicker_primary_03_28_33_000",
+      "what_to_look_at": "dbo.IgnitionLaneActivityModel in the WCS / Helix DB (SSMS), including Last Update, lane and package identifiers, Length, Width, Height, Weight, Cube, Message, PackageClassification, Missing DimensionData, MissingInduct, Tote Not Found, and Diverted."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000",
+      "what_to_look_at": "Lane activity records showing inspection of SortConf records and observable missing dimension values."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0024_the_items_model_so_items_are_primary_02_10_19_000",
+      "what_to_look_at": "IgnitionLaneActivityModel field layout, including package identifiers, dimension and weight fields, Cube, Message, PackageClassification, and MissingDimensionData."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 60,
+      "section_id": "training_video_day2_segment_0060",
+      "figure_id": null,
+      "figure_number": null,
+      "timestamp_start": "03:28:16.000",
+      "timestamp_end": "03:28:50.000",
+      "quote_or_summary": "The support discussion states that support expects dimension data and that database inspection can show when the expected data is not present. The captured database view is dbo.IgnitionLaneActivityModel with dimension-related and status fields.",
+      "site_code": null,
+      "site_label": null
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "section_id": "training_video_day2_segment_0024",
+      "timestamp_start": "02:10:19.000",
+      "timestamp_end": "02:10:19.000",
+      "artifact_id": "artifact_training_video_training_video_day2_0024_the_items_model_so_items_are_primary_02_10_19_000",
+      "quote_or_summary": "The IgnitionLaneActivityModel view contains package, dimension, weight, classification, and MissingDimensionData-related fields."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "section_id": "training_video_day2_segment_0059",
+      "timestamp_start": "03:28:03.000",
+      "timestamp_end": "03:28:03.000",
+      "artifact_id": "artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000",
+      "quote_or_summary": "The lane activity inspection identifies records that were not receiving sort or dimension data."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0060_they_they_had_a_power_flicker_primary_03_28_33_000",
+      "what_to_look_at": "dbo.IgnitionLaneActivityModel in the WCS / Helix DB (SSMS), including Last Update, lane and package identifiers, Length, Width, Height, Weight, Cube, Message, PackageClassification, Missing DimensionData, MissingInduct, Tote Not Found, and Diverted."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0059_and_so_you_can_kind_of_primary_03_28_03_000",
+      "what_to_look_at": "Lane activity records showing inspection of SortConf records and observable missing dimension values."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0024_the_items_model_so_items_are_primary_02_10_19_000",
+      "what_to_look_at": "IgnitionLaneActivityModel field layout, including package identifiers, dimension and weight fields, Cube, Message, PackageClassification, and MissingDimensionData."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_ssms_check_missing_dimension_data"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide a universal numeric threshold or complete interpretation for the dimension fields.",
+    "The source does not define universal values for Missing DimensionData, MissingInduct, Tote Not Found, or Diverted; record the observed values without assigning undocumented meanings.",
+    "The source does not provide a supported query, filtering syntax, database server name, database name, connection path, or command.",
+    "The source does not provide a dimensioner reboot, reconfiguration, or recovery procedure.",
+    "The packet does not identify a site code, site label, customer, or incident case ID."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

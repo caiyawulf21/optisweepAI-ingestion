@@ -60,10 +60,12 @@ def prepare_training_video_for_extraction(
             {
                 "section_id": section_id,
                 "title": _section_title(segment, index),
+                "heading": _section_title(segment, index),
                 "level": 1,
                 "page_start": index,
                 "page_end": index,
                 "parent_section_id": None,
+                "text": text,
                 "text_preview": text[:500],
                 "unit_type": "training_video_slide_segment",
                 "segment_id": segment_id,
@@ -234,11 +236,22 @@ def _prepare_artifact(
     updated["linked_runbook_ids"] = []
     if segment:
         transcript = _clean_text(str(segment.get("transcript_text") or "").strip())
+        ocr = _clean_text(str(segment.get("ocr_text") or "").strip())
         current_retrieval = _clean_text(str(updated.get("retrieval_text") or "").strip())
         if transcript and transcript not in current_retrieval:
-            updated["retrieval_text"] = f"{current_retrieval} Transcript near this frame: {transcript[:800]}".strip()
+            updated["retrieval_text"] = f"{current_retrieval} Transcript near this frame: {transcript[:2000]}".strip()
         updated["nearby_text"] = transcript
         updated["caption_text"] = _clean_text(str(segment.get("title") or ""))
+        if ocr and not updated.get("ocr_text"):
+            updated["ocr_text"] = ocr
+        short = _clean_text(str(updated.get("short_description") or "").strip())
+        if not short or short.lower() in {"captured training video slide frame.", "captured training video slide frame"}:
+            if ocr:
+                updated["short_description"] = ocr[:240]
+            elif transcript:
+                updated["short_description"] = transcript[:240]
+            elif updated.get("caption_text"):
+                updated["short_description"] = str(updated["caption_text"])[:240]
     return updated
 
 

@@ -79,11 +79,10 @@ Stage 6: Source runbook finalization [LLM Assisted]
 Shared Stage 6.5: Shared runbook pool and merge preparation [Deterministic]
 Shared Stage 7: Cross-source runbook merge [LLM Assisted, selective]
 Shared Stage 8: Playbook finalization and runbook linking [LLM Assisted]
-Shared Stage 9: Relationship linking [Deterministic]
-Shared Stage 10: Validation and repair [Deterministic]
-Shared Stage 11: Final output writing [Deterministic]
-Shared Stage 12: Vector embedding generation [Deterministic]
-Shared Stage 13: LangGraph orchestration / publishing later
+Shared Stage 9: Corpus validation [Deterministic]
+Shared Stage 10: Vector embedding generation [Deterministic]
+Shared Stage 11: Cosmos DB publishing and manifest [Deterministic]
+Shared Stage 12: Knowledge graph relationship generation later [Deterministic]
 ```
 
 The incident pipeline should reuse this pattern where it makes sense, especially:
@@ -215,23 +214,9 @@ Stage 4: Create canonical incident records and timeline [LLM Assisted]
 Stage 5: Incident runbook candidate discovery [LLM Assisted]
          + incident playbook candidate discovery [LLM Assisted, Prompt A/B]
 Stage 6: Source runbook finalization for runbook candidates [LLM Assisted]
-Stage 7: Source-specific validation and extraction report [Deterministic]
-Stage 8: Source-specific final output writing [Deterministic]
 ```
 
-For v1, we may build only the core subset first:
-
-```text
-Stage 1: Incident source package loading
-Stage 2: OCR and evidence artifact extraction
-Stage 2.5: Artifact enrichment packet preparation
-Stage 3: Incident artifact enrichment
-Stage 4: Create canonical incident records and timeline
-Stage 5: Incident runbook candidate discovery
-         + incident playbook candidate discovery (Prompt A/B)
-Stage 6: Source runbook finalization for runbook candidates
-Stage 7: Source-specific validation and extraction report
-```
+For v1, the implemented core subset is Stages 1–6. After Stage 6, hand off to Shared Stage 6.5+.
 
 Playbook candidates remain source-specific discovery outputs. They do not enter
 Stage 6 runbook finalization or Shared Stage 6.5 runbook pooling. Shared Stage 8
@@ -247,11 +232,10 @@ Recommended shared stages:
 Shared Stage 6.5: Shared runbook pool and merge preparation [Deterministic]
 Shared Stage 7: Cross-source runbook merge [LLM Assisted, selective]
 Shared Stage 8: Playbook finalization and runbook linking [LLM Assisted]
-Shared Stage 9: Relationship linking [Deterministic]
-Shared Stage 10: Validation and repair [Deterministic]
-Shared Stage 11: Final reviewed output writing [Deterministic]
-Shared Stage 12: Embedding generation / publishing later [Deterministic]
-Shared Stage 13: Knowledge graph relationship generation later [Deterministic]
+Shared Stage 9: Corpus validation [Deterministic]
+Shared Stage 10: Embedding generation [Deterministic]
+Shared Stage 11: Cosmos DB publishing and manifest [Deterministic]
+Shared Stage 12: Knowledge graph relationship generation later [Deterministic]
 ```
 
 Stages 1–6 are source-specific. Stages 6.5–8 are shared.
@@ -1469,51 +1453,44 @@ finalize playbooks for review
 preserve symptom-driven entry logic and source lineage
 ```
 
-### Shared Stage 9 — Relationship Linking [Deterministic]
+### Shared Stage 9 — Corpus Validation [Deterministic]
 
-Link:
-
-```text
-artifacts ↔ operational context
-artifacts ↔ canonical runbooks
-canonical runbooks ↔ workflows
-incidents ↔ runbooks
-incidents ↔ workflows
-timeline events ↔ artifacts
-timeline events ↔ runbook candidates
-components ↔ incidents
-systems ↔ procedures
-```
-
-### Shared Stage 10 — Validation and Repair [Deterministic]
-
-Validate:
+Validate shared Stage 7 canonical runbooks and Stage 8 finalized playbooks:
 
 ```text
 schema correctness
 source refs
 artifact refs
 procedure refs
-workflow node refs
+playbook node refs
+playbook branch coverage
 candidate-to-canonical mappings
+unresolved runbook links
 unsupported claims
 review status
 role validity
 procedure type validity
-workflow canonicalization status
 ```
 
-### Shared Stage 11 — Final Output Writing
+### Shared Stage 10 — Vector Embedding Generation
 
-Write:
+Generate `EmbeddingRecord` exports for:
+
+```text
+canonical runbook retrieval cards
+playbook entry-symptom retrieval cards (Prompt A and Prompt B variants)
+```
+
+### Shared Stage 11 — Cosmos DB Publishing And Manifest
+
+Publish:
 
 ```text
 final canonical runbooks
-final canonical workflows/playbooks
-review markdown
-relationship links
-validation reports
-runtime-ready datasets later
+final canonical playbooks
+embedding records
+publish_manifest.json
+cosmos_publish_report.json
 ```
 
 ## Design Decisions To Confirm Before Implementation

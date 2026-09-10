@@ -4,6 +4,8 @@ import re
 from datetime import UTC, datetime
 from typing import Any
 
+from shared_pipeline_stages.runbook_tags import union_runbook_tags
+
 
 ALLOWED_PROCEDURE_TYPES = {"operation", "diagnostic", "recovery", "reference"}
 ALLOWED_ROLES = {"operator", "L1_support", "L2_support", "L3_support"}
@@ -54,6 +56,7 @@ def normalize_merged_runbook(
     normalized["supporting_roles"] = [
         role for role in _string_list(normalized.get("supporting_roles")) if role in ALLOWED_ROLES
     ]
+    union_runbook_tags(normalized, source_runbooks)
     normalized["summary"] = str(normalized.get("summary") or _best_summary(source_runbooks)).strip()
     normalized["when_to_use"] = str(normalized.get("when_to_use") or normalized["summary"]).strip()
     normalized["not_for"] = _string_list(normalized.get("not_for"))

@@ -29,6 +29,127 @@ HMI_CONTEXT_TYPES = {
     "hmi_alarm_reference",
     "hmi_control_reference",
 }
+WEAK_EVIDENCE_TITLE_RE = re.compile(
+    r"\b(questions?|comments?|concerns?|lunch|break|agenda|thanks|thank you|any questions)\b",
+    re.IGNORECASE,
+)
+STOPWORDS = {
+    "a",
+    "an",
+    "and",
+    "are",
+    "as",
+    "at",
+    "be",
+    "by",
+    "for",
+    "from",
+    "how",
+    "in",
+    "into",
+    "is",
+    "it",
+    "its",
+    "of",
+    "on",
+    "or",
+    "that",
+    "the",
+    "then",
+    "this",
+    "to",
+    "use",
+    "used",
+    "using",
+    "when",
+    "where",
+    "with",
+    "you",
+    "your",
+}
+GENERIC_DB_TERMS = {
+    "activity",
+    "archived",
+    "database",
+    "db",
+    "model",
+    "module",
+    "record",
+    "records",
+    "table",
+    "tables",
+}
+FILLER_TERMS = {
+    "active",
+    "already",
+    "appears",
+    "before",
+    "cancelled",
+    "check",
+    "commands",
+    "complete",
+    "completed",
+    "confirm",
+    "currently",
+    "destination",
+    "determine",
+    "example",
+    "expected",
+    "historical",
+    "include",
+    "instruction",
+    "locate",
+    "location",
+    "missing",
+    "needed",
+    "open",
+    "optional",
+    "present",
+    "procedure",
+    "progress",
+    "provide",
+    "relevant",
+    "requested",
+    "required",
+    "result",
+    "robotics",
+    "should",
+    "specific",
+    "status",
+    "support",
+    "timing",
+    "transactional",
+    "verify",
+    "whether",
+    "view_table",
+}
+DOMAIN_MARKERS = (
+    "agv",
+    "apidog",
+    "charger",
+    "command",
+    "dwell",
+    "entitylog",
+    "estop",
+    "exchange",
+    "geek",
+    "getagv",
+    "heartbeat",
+    "helix",
+    "ignition",
+    "optisweep",
+    "pickup",
+    "robotcommand",
+    "rms",
+    "sort",
+    "sorter",
+    "ssms",
+    "stunnel",
+    "tipper",
+    "tote",
+    "visu_",
+    "wcs",
+)
 
 
 def index_artifacts(artifacts: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
@@ -89,9 +210,12 @@ def _artifact_text_blob(artifact: dict[str, Any]) -> str:
     parts = [
         str(artifact.get("artifact_id") or ""),
         str(artifact.get("title") or ""),
+        str(artifact.get("caption_text") or ""),
         str(artifact.get("short_description") or ""),
         str(artifact.get("summary") or ""),
         str(artifact.get("retrieval_text") or ""),
+        str(artifact.get("nearby_text") or "")[:1200],
+        str(artifact.get("ocr_text") or "")[:800],
         str(artifact.get("detailed_description") or ""),
         str(artifact.get("figure_id") or ""),
         str(artifact.get("figure_number") or ""),
@@ -121,6 +245,37 @@ def collect_record_text(record: dict[str, Any]) -> str:
     return " ".join(parts)
 
 
+def is_weak_evidence_artifact(artifact: dict[str, Any]) -> bool:
+    title_blob = " ".join(
+        [
+            str(artifact.get("title") or ""),
+            str(artifact.get("caption_text") or ""),
+            str(artifact.get("detected_title") or ""),
+            str(artifact.get("artifact_id") or ""),
+            str(artifact.get("short_description") or "")[:200],
+        ]
+    )
+    return is_weak_evidence_text(title_blob)
+
+
+def is_weak_evidence_text(value: Any) -> bool:
+    text = re.sub(r"[_\-]+", " ", str(value or "").lower())
+    return bool(WEAK_EVIDENCE_TITLE_RE.search(text))
+
+
+def _is_strong_term(term: str) -> bool:
+    if not term or term in STOPWORDS or term in GENERIC_DB_TERMS or term in FILLER_TERMS:
+        return False
+    if len(term) >= 12:
+        return True
+    if "_" in term and len(term) >= 8:
+        return True
+    # Bare short domain tokens like "command"/"sort" are too common across slides.
+    if any(marker in term for marker in DOMAIN_MARKERS) and len(term) >= 9:
+        return True
+    return False
+
+
 def extract_search_terms(record: dict[str, Any]) -> list[str]:
     text = collect_record_text(record)
     terms: list[str] = []
@@ -128,7 +283,7 @@ def extract_search_terms(record: dict[str, Any]) -> list[str]:
 
     def add_term(raw: Any) -> None:
         normalized = _normalize_term(raw)
-        if len(normalized) < 3 or normalized in seen:
+        if len(normalized) < 3 or normalized in seen or normalized in STOPWORDS:
             return
         seen.add(normalized)
         terms.append(normalized)
@@ -160,10 +315,12 @@ def _score_artifact(
     pages: set[int],
     figure_ids: set[str],
     prefer_screen_types: bool,
+    preferred_section_ids: set[str] | None = None,
 ) -> int:
     score = 0
     artifact_figure = str(artifact.get("figure_id") or "").strip().lower()
-    if artifact_figure and artifact_figure in figure_ids:
+    figure_hit = bool(artifact_figure and artifact_figure in figure_ids)
+    if figure_hit:
         score += 120
     try:
         artifact_page = int(artifact.get("page_number") or 0)
@@ -172,16 +329,40 @@ def _score_artifact(
     if artifact_page and artifact_page in pages:
         score += 35
 
+    section_id = str(artifact.get("section_id") or "").strip()
+    same_section = bool(preferred_section_ids and section_id and section_id in preferred_section_ids)
+    if same_section:
+        score += 80
+
+    if is_weak_evidence_artifact(artifact) and not figure_hit:
+        return 0
+
     blob = _artifact_text_blob(artifact)
     blob_normalized = blob.replace("-", "_").replace(" ", "_")
+    strong_hits = 0
+    weak_hits = 0
     for term in terms:
         if not term:
             continue
-        if term in blob or term in blob_normalized:
-            score += 18
+        if term not in blob and term not in blob_normalized:
+            continue
+        if _is_strong_term(term):
+            strong_hits += 1
+            score += 40
+        else:
+            weak_hits += 1
+            score += 6
 
-    if prefer_screen_types and str(artifact.get("image_type") or "") in SCREEN_IMAGE_TYPES:
+    image_type = str(artifact.get("image_type") or "")
+    if prefer_screen_types and image_type in SCREEN_IMAGE_TYPES:
         score += 12
+
+    if image_type == "training_video_frame" and not figure_hit:
+        has_anchor = same_section or strong_hits >= 1
+        if not has_anchor:
+            return 0
+        if strong_hits == 0 and weak_hits and not same_section:
+            return 0
     return score
 
 
@@ -193,11 +374,15 @@ def find_matching_artifact_ids(
     max_results: int = 8,
     page_margin: int = 3,
     min_score: int = 18,
+    preferred_section_ids: set[str] | None = None,
 ) -> list[str]:
     existing = set(existing_ids or [])
     refs = [ref for ref in (record.get("source_refs") or []) if isinstance(ref, dict)]
     pages = expand_pages(pages_from_source_refs(refs), margin=page_margin)
     figure_ids = figure_ids_from_source_refs(refs)
+    preferred = set(preferred_section_ids or ())
+    preferred.update(str(ref.get("section_id") or "").strip() for ref in refs if ref.get("section_id"))
+    preferred.discard("")
     terms = extract_search_terms(record)
     prefer_screen_types = str(record.get("context_type") or "") in HMI_CONTEXT_TYPES or bool(
         VISUAL_STEP_RE.search(collect_record_text(record))
@@ -214,6 +399,7 @@ def find_matching_artifact_ids(
             pages=pages,
             figure_ids=figure_ids,
             prefer_screen_types=prefer_screen_types,
+            preferred_section_ids=preferred,
         )
         if score >= min_score:
             scored.append((score, artifact_id))
@@ -260,18 +446,27 @@ def enrich_context_record(
     record: dict[str, Any],
     artifacts: list[dict[str, Any]],
     *,
-    max_artifact_ids: int = 6,
+    max_artifact_ids: int = 3,
 ) -> tuple[dict[str, Any], list[str]]:
     updated = dict(record)
     notes: list[str] = []
-    existing = set(str(item) for item in updated.get("related_artifact_ids") or [])
+    existing_raw = [str(item) for item in updated.get("related_artifact_ids") or [] if str(item or "").strip()]
+    existing_kept = [
+        artifact_id
+        for artifact_id in existing_raw
+        if not is_weak_evidence_artifact(
+            next((item for item in artifacts if str(item.get("artifact_id")) == artifact_id), {}) or {}
+        )
+    ]
+    existing = set(existing_kept)
     matched = find_matching_artifact_ids(
         updated,
         artifacts,
         existing_ids=existing,
         max_results=max_artifact_ids,
+        min_score=24,
     )
-    related_artifact_ids = merge_artifact_ids(list(existing), matched, max_results=max_artifact_ids)
+    related_artifact_ids = merge_artifact_ids(existing_kept, matched, max_results=max_artifact_ids)
     if related_artifact_ids != list(updated.get("related_artifact_ids") or []):
         notes.append(
             f"Linked artifacts for context '{updated.get('context_id', '?')}': "
@@ -282,7 +477,7 @@ def enrich_context_record(
     for artifact_id in related_artifact_ids:
         if artifact_id not in image_refs:
             image_refs.append(artifact_id)
-    updated["image_refs"] = image_refs[:max_artifact_ids]
+    updated["image_refs"] = [item for item in image_refs if item in related_artifact_ids][:max_artifact_ids]
     return updated, notes
 
 
@@ -290,7 +485,7 @@ def enrich_context_records(
     records: list[dict[str, Any]],
     artifacts: list[dict[str, Any]],
     *,
-    max_artifact_ids: int = 6,
+    max_artifact_ids: int = 3,
 ) -> tuple[list[dict[str, Any]], list[str]]:
     enriched: list[dict[str, Any]] = []
     notes: list[str] = []
@@ -308,19 +503,65 @@ def collect_candidate_artifact_ids(
     *,
     max_results: int = 8,
 ) -> list[str]:
-    existing = set(str(item) for item in candidate.get("related_artifact_ids") or [])
+    existing = {
+        str(item)
+        for item in candidate.get("related_artifact_ids") or []
+        if str(item or "").strip()
+        and not is_weak_evidence_artifact(
+            next((art for art in artifacts if str(art.get("artifact_id")) == str(item)), {}) or {}
+        )
+    }
     context_ids = [str(item) for item in candidate.get("related_context_ids") or []]
-    from_context = artifact_ids_from_contexts(context_ids, context_index or {})
+    from_context_ids = artifact_ids_from_contexts(context_ids, context_index or {})
+    context_artifacts = [
+        artifact
+        for artifact in artifacts
+        if str(artifact.get("artifact_id") or "") in set(from_context_ids)
+        and not is_weak_evidence_artifact(artifact)
+    ]
+    preferred_section_ids = {
+        str(ref.get("section_id") or "").strip()
+        for ref in candidate.get("source_refs") or []
+        if isinstance(ref, dict) and ref.get("section_id")
+    }
+    preferred_section_ids.discard("")
+    rescored_context = find_matching_artifact_ids(
+        candidate,
+        context_artifacts,
+        existing_ids=existing,
+        max_results=min(2, max_results),
+        page_margin=1,
+        min_score=24,
+        preferred_section_ids=preferred_section_ids,
+    )
+    same_section = [
+        artifact
+        for artifact in artifacts
+        if str(artifact.get("section_id") or "").strip() in preferred_section_ids
+        and not is_weak_evidence_artifact(artifact)
+    ]
+    matched_same = find_matching_artifact_ids(
+        candidate,
+        same_section or artifacts,
+        existing_ids=existing | set(rescored_context),
+        max_results=max_results,
+        page_margin=1 if preferred_section_ids else 5,
+        min_score=24 if preferred_section_ids else 18,
+        preferred_section_ids=preferred_section_ids,
+    )
     matched = find_matching_artifact_ids(
         candidate,
         artifacts,
-        existing_ids=existing | set(from_context),
+        existing_ids=existing | set(rescored_context) | set(matched_same),
         max_results=max_results,
-        page_margin=5,
+        page_margin=2,
+        min_score=30,
+        preferred_section_ids=preferred_section_ids,
     )
     return merge_artifact_ids(
         list(existing),
-        from_context,
+        rescored_context,
+        matched_same,
         matched,
         max_results=max_results,
     )

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Verify Sorter Sweeper UPS chat message flow for tote induction, sorting, closeout, and label printing</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Verify Sorter Sweeper UPS chat message flow for tote induction, sorting, closeout, and label printing</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_verify_sorter_sweeper_ups_chat_message_flow_v1</td></tr>
+<tr><th>Title</th><td>Verify Sorter Sweeper UPS chat message flow for tote induction, sorting, closeout, and label printing</td></tr>
+<tr><th>Procedure Type</th><td>diagnostic</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>wcs_api_responsiveness, gateway_health, sorter_item_or_scan_state</td></tr>
+<tr><th>Access Surface</th><td>stunnel, wcs_api, wcs_sql</td></tr>
+<tr><th>Audience Roles</th><td>L2_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>api_unresponsive, gateway_unhealthy, system_fault</td></tr>
+<tr><th>Validation Status</th><td>needs_smeme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Remote diagnostic to confirm the UPS-facing chat message sequence used by the Sorter Sweeper orchestration (tote inducted → destination enabled → scan data collection → sort → sort confirmation/final destination → hot bin closeout exchange when applicable → destination close before exchange → print label message). Use the missing/absent message stage as the evidence point for escalation to the responsible module (Sorter Sweeper vs XLE COM vs UPS chat integration).</p>
+<h2>When To Use</h2>
+<p>Use when you need to verify that the documented UPS chat message flow for tote processing at the sorter is occurring in the expected order and that the Sorter Sweeper orchestration is acting on each stage (including closeout and label printing).</p>
+<h2>Visual References</h2>
+<figure><img src="assets/ad817609844d3adb.jpg" alt="artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500" /><figcaption>Diagram/frame describing the Sorter Sweeper orchestration and the UPS chat message flow stages (tote inducted, destination enabled, scan data, sort, sort confirmation, hot bin closeout, sure post, destination close, print label).</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Confirm Sorter Sweeper orchestration and its communication path to UPS chat</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>On the live system, use the known architecture to anchor where the UPS chat messages originate/are handled: Sorter Sweeper (tote state machine) orchestrates tote movement; XLE COM manages communication between Sorter Sweeper and the UPS chat server; OPC COM manages communication between the robotics module and Geek Plus RMS server.</p>
+<p><strong>Expected result:</strong></p>
+<p>You can map each observed message stage to the described path: Sorter Sweeper sends/receives via XLE COM to the UPS chat server, and Sorter Sweeper updates tote state based on received UPS chat messages (including scan data and sort confirmation).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If you cannot observe any UPS chat message exchange at all, stop and escalate for deeper system-side investigation of the Sorter Sweeper ↔ XLE COM ↔ UPS chat integration.</li>
+</ul>
+<hr>
+<h3>Step 2 — Validate tote arrival triggers “tote inducted” and “destination enabled” messages to chat</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Trigger/observe a tote arrival at the sorter and verify that Sorter Sweeper sends a “tote inducted” message and a “destination enabled” message to the UPS chat server.</p>
+<p><strong>Expected result:</strong></p>
+<p>For the observed tote arrival, both “tote inducted” and “destination enabled” messages appear in the UPS chat message exchange as described.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If “tote inducted” and/or “destination enabled” are missing for the tote arrival, stop and escalate for deeper system-side investigation of the responsible module (Sorter Sweeper vs XLE COM vs UPS chat integration).</li>
+</ul>
+<hr>
+<h3>Step 3 — Verify scan data collection from scan tunnel and parcel dimensions/load category</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>During the same tote processing window, verify that scan data from the scan tunnel is received/listened to on the chat and that parcel dimensions and load category are collected.</p>
+<p><strong>Expected result:</strong></p>
+<p>Scan data is present and parcel dimensions and load category are collected for the parcel/tote being processed.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If scan data (or the derived dimensions/load category collection) is missing, stop and escalate for deeper system-side investigation of the scan data → chat integration and/or Sorter Sweeper handling.</li>
+</ul>
+<hr>
+<h3>Step 4 — Verify “sort” is sent from XLE (UPS version of WCS) and destinations are collected</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Observe the sort stage for the parcel/tote and verify that “sort” is sent from XLE (described as the UPS version of WCS) onto the chat, and that possible destinations are collected for each parcel.</p>
+<p><strong>Expected result:</strong></p>
+<p>A “sort” exchange occurs on the chat and possible destinations for the parcel are collected.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If “sort” is missing or possible destinations are not collected, stop and escalate for deeper system-side investigation of the XLE COM / UPS chat sort integration.</li>
+</ul>
+<hr>
+<h3>Step 5 — Verify “sort confirmation” is received/sent and final destination is determined</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Observe the chat exchange for the parcel/tote and verify that a “sort confirmation” is received/sent from the sorter onto the chat and that the final destination is determined.</p>
+<p><strong>Expected result:</strong></p>
+<p>A “sort confirmation” stage is present in the chat exchange and the final destination for the parcel is determined.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If “sort confirmation” is missing or final destination is not determined, stop and escalate for deeper system-side investigation of Sorter Sweeper’s confirmation handling and/or XLE COM chat integration.</li>
+</ul>
+<hr>
+<h3>Step 6 — If closeout is involved, verify hot bin closeout via “hot bin message” and immediate exchange</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>For totes that are expected to be “hot bin,” verify that UPS can trigger a hot bin closeout by sending a “hot bin message,” and that an exchange is performed immediately as described.</p>
+<p><strong>Expected result:</strong></p>
+<p>When a tote is “hot bin,” a “hot bin message” is observed and the exchange occurs immediately.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If hot bin closeout is missing for hot bin totes (no “hot bin message” and/or no immediate exchange), stop and escalate for deeper system-side investigation of the closeout trigger handling.</li>
+</ul>
+<hr>
+<h3>Step 7 — Verify “sure post” notification and tipper bag switching notification before the tip</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>Observe the chat exchange for the destination load status and verify that UPS notifies when the load for a destination is a “sure post,” and that the system notifies the tipper before the tip so they can switch out the bag to a Poly bag.</p>
+<p><strong>Expected result:</strong></p>
+<p>A “sure post” notification is observed for the destination load, and the tipper is notified before the tip (enabling the poly bag switch).</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If “sure post” notification is missing or tipper pre-tip notification is missing, stop and escalate for deeper system-side investigation of the sure post handling and tipper notification path.</li>
+</ul>
+<hr>
+<h3>Step 8 — Verify “destination close” message is sent before exchange when tote is ready to leave</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>When the tote is ready to leave for the exchange, verify that a “destination close” message is sent onto the chat before the exchange.</p>
+<p><strong>Expected result:</strong></p>
+<p>For the tote ready to leave, “destination close” appears on the chat before the exchange occurs.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If “destination close” is missing or not ordered before exchange, stop and escalate for deeper system-side investigation of the destination close stage handling.</li>
+</ul>
+<hr>
+<h3>Step 9 — Verify “print label message” is sent to the printer at the tipper</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>At the tipper stage for the processed tote, verify that a “print label message” is sent to the printer so it can print a label provided by XLE.</p>
+<p><strong>Expected result:</strong></p>
+<p>A “print label message” is observed being sent to the printer for the tote at the tipper stage.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>If “print label message” is missing, stop and escalate for deeper system-side investigation of the label printing trigger path (Sorter Sweeper ↔ XLE COM ↔ printer integration).</li>
+</ul>
+<hr>
+</body>
+</html>

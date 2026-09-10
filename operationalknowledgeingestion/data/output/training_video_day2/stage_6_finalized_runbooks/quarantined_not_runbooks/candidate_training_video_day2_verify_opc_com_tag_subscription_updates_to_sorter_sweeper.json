@@ -1,0 +1,326 @@
+{
+  "procedure_id": "proc_verify_opc_com_tag_subscription_update_behavior_between_ignition_opc_server_and_sorter_sweeper_v1",
+  "candidate_id": "candidate_training_video_day2_verify_opc_com_tag_subscription_updates_to_sorter_sweeper",
+  "title": "Verify OPC COM tag subscription/update behavior between Ignition, OPC server, and Sorter Sweeper (hospital/tippers tags)",
+  "procedure_type": "diagnostic",
+  "summary": "Validate the tag-based communication loop described in the source segment: Ignition’s built-in tag provider connects to hospital and tippers tags; the OPC communication module connects to the OPC server and subscribes to tags; when a tag updates, the update is forwarded to Sorter Sweeper for processing; Sorter Sweeper sends data back to the OPC communication module, which writes to the OPC server; and the tag provider reflects the updated data back to the system.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "wcs_api_responsiveness"
+  ],
+  "access_surface": [
+    "wcs_api"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when you need to confirm that the OPC COM tag subscription/update loop is functioning end-to-end between Ignition’s tag provider, the OPC server, the OPC communication module (OPC COM), and Sorter Sweeper, specifically for hospital and tippers tag behavior.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the diagnostic checks to confirm tag subscription, tag update propagation to Sorter Sweeper, and write-back from Sorter Sweeper through OPC COM to the OPC server."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Access to the OPC COM module runtime/logging or an equivalent way to observe tag update propagation (the source does not specify the exact tool).",
+    "Access to Ignition tag provider behavior for hospital/tippers tags (the source does not specify the exact Ignition screen).",
+    "OPC server connectivity/visibility (the source does not specify the exact method)."
+  ],
+  "prerequisites": {
+    "access_required": [],
+    "system_preconditions": [],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_opc_com_tag_flow_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500",
+      "description": "Segment frame describing the OPC COM / Ignition tag provider / OPC server subscription and the forwarding of tag updates to Sorter Sweeper, plus write-back to the OPC server.",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Confirm the described components and tag flow boundaries (Ignition tag provider ↔ hospital/tippers ↔ OPC COM ↔ OPC server ↔ Sorter Sweeper)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish the exact loop you are validating so subsequent observations map to the correct module responsibilities.",
+      "instruction": "Using the source-described architecture, confirm you are validating: (1) Ignition’s built-in tag provider connecting to the hospital and tippers relaying relevant tags, (2) the OPC communication module connecting to the OPC server and subscribing to tags, (3) tag updates being forwarded to Sorter Sweeper for processing, and (4) Sorter Sweeper sending messages back to the OPC communication module, which writes data to the OPC server via the tag provider.",
+      "expected_result": "You can identify the loop endpoints as: Ignition tag provider (hospital/tippers tags) → OPC communication module (OPC server subscriptions) → Sorter Sweeper (processing on tag update) → OPC communication module (writes back to OPC server) → tag provider reflects updated data back to the system.",
+      "healthy_condition": "The observed behavior you check later aligns with the responsibilities above (subscription on OPC COM, forwarding to Sorter Sweeper on tag update, and write-back to OPC server).",
+      "failure_condition": "Any later observation contradicts the responsibilities above (e.g., tag updates do not reach Sorter Sweeper, or Sorter Sweeper outputs do not result in writes back to the OPC server).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Map the loop endpoints",
+          "exact_action": "Confirm the described components: Ignition’s built-in tag provider connects to the hospital and tippers relaying relevant tags; OPC communication module connects to the OPC server and subscribes to tags; when a tag is updated, it sends the update to the Sorter Sweeper module for processing; Sorter Sweeper sends messages to the OPC communication module, which writes the data to the OPC server and using tag provider gets back to Todd. Sorter.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 4,
+          "section_id": "training_video_day2_segment_0004",
+          "quote_or_summary": "Ignition's built in tag provider is used to connect to the hospital and the tippers... The OPC communication module connects to the OPC server and subscribes to tags. When A tag is updated, it sends the update to the Sortersweeper module for processing. Sortersweeper also sends messages to the OPC communication module, which writes the data to the OPC server and using tag provider gets back to Todd. Sorter.",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Verify OPC communication module subscribes to OPC server tags",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure the OPC COM side is receiving tag updates from the OPC server via subscriptions.",
+      "instruction": "Check that the OPC communication module is connected to the OPC server and has active tag subscriptions for the relevant tags (hospital/tippers tags as described). Use the available OPC COM runtime/logging or equivalent observation method in your environment (the source does not specify the exact tool).",
+      "expected_result": "OPC COM is connected to the OPC server and is subscribed to tags such that tag updates can be received and forwarded.",
+      "healthy_condition": "You can observe evidence of active OPC server connectivity and tag subscription behavior for the relevant tags.",
+      "failure_condition": "OPC COM is not connected to the OPC server or tag subscriptions are not active (so tag updates cannot be forwarded to Sorter Sweeper).",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm OPC COM subscription behavior",
+          "exact_action": "Verify that the OPC communication module connects to the OPC server and subscribes to tags.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot confirm OPC COM connectivity/subscription evidence, stop and escalate for deeper OPC COM/OPC server troubleshooting (the source provides no remediation steps)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 4,
+          "section_id": "training_video_day2_segment_0004",
+          "quote_or_summary": "The OPC communication module connects to the OPC server and subscribes to tags.",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Verify tag updates propagate from OPC COM subscriptions to Sorter Sweeper processing",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the forwarding leg of the loop: OPC COM receives an updated tag and sends it to Sorter Sweeper.",
+      "instruction": "Trigger or observe a tag update on the OPC server side (for the relevant hospital/tippers tags) and confirm that the update is sent to the Sorter Sweeper module for processing. Use your available observation method for Sorter Sweeper processing behavior (the source does not specify the exact UI/log/DB to check).",
+      "expected_result": "When a tag is updated, Sorter Sweeper receives the update for processing.",
+      "healthy_condition": "You observe that a tag update results in corresponding Sorter Sweeper processing activity (i.e., the update is not dropped between OPC COM and Sorter Sweeper).",
+      "failure_condition": "Tag updates do not reach Sorter Sweeper for processing.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Observe update forwarding to Sorter Sweeper",
+          "exact_action": "Check that when a tag is updated, the update is sent to the Sorter Sweeper module for processing.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If tag updates are not reaching Sorter Sweeper, stop and escalate for deeper OPC COM/OPC server/Tag provider troubleshooting (the segment does not provide specific remediation steps)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 4,
+          "section_id": "training_video_day2_segment_0004",
+          "quote_or_summary": "When A tag is updated, it sends the update to the Sortersweeper module for processing.",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify Sorter Sweeper writes back through OPC COM to the OPC server",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the return leg of the loop: Sorter Sweeper outputs are written back to the OPC server via OPC COM.",
+      "instruction": "After confirming Sorter Sweeper processes the tag update, verify that Sorter Sweeper sends messages to the OPC communication module and that OPC communication module writes the data to the OPC server.",
+      "expected_result": "Sorter Sweeper outputs result in OPC COM writing data back to the OPC server.",
+      "healthy_condition": "You observe write-back behavior consistent with Sorter Sweeper sending messages to OPC COM and OPC COM writing to the OPC server.",
+      "failure_condition": "Sorter Sweeper outputs are not being written back to the OPC server.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm write-back path",
+          "exact_action": "Verify that Sorter Sweeper sends messages to the OPC communication module, and that OPC communication module writes the data to the OPC server.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If Sorter Sweeper outputs are not being written back to the OPC server, stop and escalate for deeper OPC COM/OPC server/Tag provider troubleshooting (the segment does not provide specific remediation steps)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 4,
+          "section_id": "training_video_day2_segment_0004",
+          "quote_or_summary": "Sortersweeper also sends messages to the OPC communication module, which writes the data to the OPC server.",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Confirm tag provider reflects updated data back through the loop (Ignition tag provider gets back updated data)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Validate the end-to-end behavior described: the tag provider receives the updated data back into the system.",
+      "instruction": "Using the described loop, confirm that after OPC COM writes data to the OPC server, the tag provider gets back the updated data (described as “using tag provider gets back to Todd. Sorter.”). Observe the updated data availability using your available Ignition/tag provider observation method (the source does not specify the exact screen).",
+      "expected_result": "Updated data is observable via the tag provider path back into the system (Todd/Sorter side as described).",
+      "healthy_condition": "You can observe that the updated values are reflected back through the tag provider after the write-back step.",
+      "failure_condition": "Updated data is not reflected back through the tag provider path.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm updated data returns via tag provider",
+          "exact_action": "Confirm that using the tag provider, the system gets back the updated data (as described: “using tag provider gets back to Todd. Sorter.”).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the updated data does not return via the tag provider path, stop and escalate for deeper OPC COM/OPC server/Tag provider troubleshooting (the segment does not provide specific remediation steps)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 4,
+          "section_id": "training_video_day2_segment_0004",
+          "quote_or_summary": "Sortersweeper... OPC communication module... writes the data to the OPC server and using tag provider gets back to Todd. Sorter.",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "You confirm OPC COM subscribes to OPC server tags.",
+    "You confirm a tag update results in an update being sent to Sorter Sweeper for processing.",
+    "You confirm Sorter Sweeper sends messages to OPC COM and OPC COM writes data back to the OPC server.",
+    "You confirm the tag provider reflects updated data back into the system."
+  ],
+  "healthy_conditions": [
+    "OPC COM is connected to the OPC server and subscribed to tags.",
+    "Tag updates propagate to Sorter Sweeper for processing.",
+    "Sorter Sweeper outputs propagate back through OPC COM to the OPC server.",
+    "Tag provider returns updated data back to the system."
+  ],
+  "failure_conditions": [
+    "OPC COM is not connected to the OPC server or subscriptions are not active.",
+    "Tag updates do not reach Sorter Sweeper.",
+    "Sorter Sweeper outputs are not written back to the OPC server.",
+    "Updated data does not return via the tag provider path."
+  ],
+  "escalation_guidance": [
+    "If tag updates are not reaching Sorter Sweeper or Sorter Sweeper outputs are not being written back to the OPC server, stop and escalate for deeper OPC COM/OPC server/Tag provider troubleshooting. The source segment does not provide specific remediation steps."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 4,
+      "section_id": "training_video_day2_segment_0004",
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500",
+      "what_to_look_at": "Segment frame describing the OPC COM / Ignition tag provider / OPC server subscription and the forwarding of tag updates to Sorter Sweeper, plus write-back to the OPC server."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_verify_opc_com_tag_subscription_updates_to_sorter_sweeper"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not specify the exact live observation surface (Ignition screen, OPC COM log view, or OPC server tag browser) to confirm subscription status and tag update propagation.",
+    "The source does not provide specific tag names/paths for the hospital/tippers tags to use as concrete verification targets."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "not a live runbook: instructions cite source/OCR/training playback; end users do not have the training source",
+    "access_surface tags do not match Ignition evidence (prefer ignition_gateway)"
+  ]
+}

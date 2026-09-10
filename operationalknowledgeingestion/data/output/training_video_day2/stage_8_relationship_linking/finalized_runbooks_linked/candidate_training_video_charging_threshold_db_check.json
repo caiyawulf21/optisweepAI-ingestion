@@ -1,0 +1,273 @@
+{
+  "procedure_id": "proc_inspect_charging_threshold_values_in_ssms_helix_db_v1",
+  "candidate_id": "candidate_training_video_charging_threshold_db_check",
+  "title": "Inspect Charging Threshold Values in SSMS / Helix DB",
+  "procedure_type": "diagnostic",
+  "summary": "Use the WCS / Helix DB (SSMS) to inspect the charging threshold database model and relate its configured values to the AGV charging state under investigation. The model stores values used by OptiSweep to determine whether an AGV needs charge, can be released from a charger, or needs emergency charge.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "agv_charging_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "charging_abnormal"
+  ],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this WCS / Helix DB (SSMS) diagnostic when investigating an AGV charging state and determining whether the configured charging threshold records support the observed charge-required, charger-release, or emergency-charge behavior.",
+  "not_for": [
+    "Do not use this read-only diagnostic to modify charging threshold values.",
+    "Do not use this procedure to validate numeric healthy ranges; the source does not provide exact column names or numeric ranges."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Use WCS / Helix DB (SSMS) to inspect the charging threshold records and compare their presence and readability with the AGV charging state under investigation."
+    },
+    {
+      "role": "L3_support",
+      "responsibility": "Review or take escalation when threshold records are missing, null, unreadable, or inconsistent with charging behavior."
+    }
+  ],
+  "safety_notes": [
+    "This is a read-only diagnostic. Do not alter charging threshold values.",
+    "Escalate rather than changing configuration when records are missing, null, unreadable, or inconsistent with observed charging behavior."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "Charging threshold database model table"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2 or L3 access to the WCS / Helix DB through SSMS."
+    ],
+    "system_preconditions": [
+      "An AGV charging state or charging-related behavior is available for comparison."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_charging_database_models_v1",
+    "ctx_training_video_charging_threshold_reference_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0013_let_s_see_and_the_last_primary_00_53_44_500",
+      "description": "Robotics database frame describing the charging database model, charging location model, and charging threshold database model. Use it to identify the charging threshold model's purpose and its relationship to charging areas and chargers.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the charging threshold model in WCS / Helix DB (SSMS)",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Locate the database model that contains the values used by OptiSweep for charging decisions.",
+      "instruction": "Open the WCS / Helix DB in SSMS and locate the charging threshold database model table. Distinguish it from the separate charging database model tables for charging areas and individual charging locations.",
+      "expected_result": "The charging threshold database model table is located in the WCS / Helix DB and is identifiable as the model containing charging decision variables.",
+      "healthy_condition": "The charging threshold model is present and can be opened for read-only inspection in SSMS.",
+      "failure_condition": "The charging threshold model cannot be located or opened, or the available tables cannot be distinguished from the charging-area and charging-location models.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate charging threshold model",
+          "exact_action": "Open the WCS / Helix DB in SSMS and locate the charging threshold database model table.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L3 support if the charging threshold model is missing or inaccessible in the WCS / Helix DB."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0013",
+          "timestamp_start": "00:35:50.000",
+          "timestamp_end": "01:11:39.000",
+          "quote_or_summary": "The charging threshold database model table stores values used in code to decide whether an AGV needs charge, can be kicked off the charger, or needs emergency charge."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Inspect the charging decision records",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Determine whether the threshold records contain interpretable values for the three charging decisions described by the source.",
+      "instruction": "Inspect the threshold records in the WCS / Helix DB (SSMS) and record the configured values associated with charge required, charger release, and emergency charge decisions. Do not edit the records.",
+      "expected_result": "The charging threshold records are present, readable, and contain values associated with charge-required, charger-release, and emergency-charge decisions.",
+      "healthy_condition": "Each documented charging decision has a present and interpretable record value.",
+      "failure_condition": "A documented charging decision has a missing, null, unreadable, or otherwise uninterpretable value.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review threshold values",
+          "exact_action": "Inspect the threshold records and record the configured values associated with charge required, charger release, and emergency charge decisions.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Do not modify the threshold records.",
+        "Escalate to L3 support or engineering if threshold records are missing, null, or unreadable."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0013",
+          "timestamp_start": "00:35:50.000",
+          "timestamp_end": "01:11:39.000",
+          "quote_or_summary": "The charging threshold database model stores variables used within the code to determine if an AGV needs charging, can be released from the charger, or needs emergency charging."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Compare threshold records with the AGV charging state",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Assess whether the available charging threshold records provide a concrete basis for interpreting the AGV behavior under investigation.",
+      "instruction": "Compare the relevant values in the WCS / Helix DB (SSMS) with the AGV charging state under investigation. Verify that the records are present and interpretable for the observed charge-required, charger-release, or emergency-charge behavior.",
+      "expected_result": "The threshold records can be related to the observed AGV charging state, or a specific missing, null, unreadable, or inconsistent record is identified for escalation.",
+      "healthy_condition": "The records are present and interpretable, and they provide a concrete basis for understanding why the application may keep an AGV charging, release it, or request emergency charging.",
+      "failure_condition": "The records do not provide an interpretable basis for the observed charging behavior, or the values are missing, null, unreadable, or inconsistent with that behavior.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Compare with AGV charging state",
+          "exact_action": "Compare the relevant threshold values with the AGV charging state under investigation; verify that the records are present and interpretable rather than missing or null.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2 support or engineering if the threshold values are inconsistent with the charging behavior being investigated.",
+        "Escalate if the available records do not support interpretation of the observed charging state."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "section_id": "training_video_day2_segment_0013",
+          "timestamp_start": "00:35:50.000",
+          "timestamp_end": "01:11:39.000",
+          "quote_or_summary": "Threshold values are used in code to determine whether an AGV needs charge, can be released from a charger, or needs emergency charge."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The charging threshold database model is located in the WCS / Helix DB (SSMS).",
+    "Records associated with charge required, charger release, and emergency charge are present and readable.",
+    "The records provide an interpretable basis for the AGV charging state under investigation, or any inconsistency is clearly identified for escalation.",
+    "No threshold values are modified."
+  ],
+  "healthy_conditions": [
+    "The charging threshold model is available for read-only inspection.",
+    "Threshold records contain present and interpretable values for charge-required, charger-release, and emergency-charge decisions.",
+    "The records can be related to the observed AGV charging state."
+  ],
+  "failure_conditions": [
+    "The charging threshold model is missing or inaccessible.",
+    "Threshold records are missing, null, unreadable, or otherwise uninterpretable.",
+    "The available threshold values are inconsistent with the AGV charging behavior being investigated.",
+    "The source does not provide exact column names or numeric healthy ranges, so numeric validation cannot be completed from this procedure alone."
+  ],
+  "escalation_guidance": [
+    "Escalate to L3 support or engineering when threshold records are missing, null, unreadable, or inconsistent with the observed charging behavior.",
+    "Do not change threshold values as part of this diagnostic."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0013",
+      "timestamp_start": "00:35:50.000",
+      "timestamp_end": "01:11:39.000",
+      "quote_or_summary": "The charging threshold database model stores values used to determine whether an AGV needs charge, can be released from a charger, or needs emergency charge."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0013_let_s_see_and_the_last_primary_00_53_44_500"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_charging_threshold_db_check"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide exact charging threshold column names.",
+    "The source does not provide numeric threshold values or healthy ranges.",
+    "The packet does not identify a specific live AGV charging-state field or surface for the comparison; the observed state must be supplied by the investigation context.",
+    "The source describes the charging threshold model but does not provide a complete SSMS navigation path or query."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0013_let_s_see_and_the_last_primary_00_53_44_500"
+  ]
+}

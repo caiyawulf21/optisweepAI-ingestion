@@ -1,0 +1,361 @@
+{
+  "procedure_id": "proc_wcs_helix_db_ssms_agv_state_inspection_v1",
+  "candidate_id": "candidate_incident_228086_ssms_agv_state_diagnostic",
+  "title": "WCS / Helix DB (SSMS) AGV state inspection",
+  "procedure_type": "diagnostic",
+  "summary": "Use the WCS / Helix DB (SSMS) live read-only database surface to inspect robotics-related AGV state records when the RMS / fleet status UI reports AGVs out of sync or the robotic system is stopped. Compare the populated SSMS State results with the live RMS / fleet status UI; the listed state values do not independently establish a fault.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "fleet_system_status",
+    "agv_active_errors"
+  ],
+  "access_surface": [
+    "wcs_sql",
+    "rms_ui"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use the live WCS / Helix DB (SSMS) surface to inspect AGV state records when the RMS / fleet status UI reports AGVs out of sync or the robotic system is stopped.",
+  "not_for": [
+    "Do not use this diagnostic to infer that a listed AGV State value is abnormal without corresponding live RMS / fleet status UI context or SME interpretation.",
+    "Do not use it to modify database records or perform recovery actions.",
+    "Do not use it as a substitute for physical E-stop or other site safety actions."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support performs the read-only inspection in WCS / Helix DB (SSMS) and compares the results with the live RMS / fleet status UI.",
+    "Interpretation of whether a listed AGV State value is abnormal requires corresponding live context or SME review."
+  ],
+  "safety_notes": [
+    "This procedure is supported as a read-only diagnostic; do not modify database values.",
+    "Do not treat the displayed AGV State values as proof of a fault by themselves.",
+    "Escalate if the WCS / Helix DB (SSMS) connection or query execution fails, or if expected AGV results are unavailable."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "Robotics-related database context in WCS / Helix DB (SSMS)",
+    "AGV State column in the WCS / Helix DB (SSMS) results grid",
+    "RMS / fleet status UI"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2_support access to the WCS / Helix DB (SSMS) live surface",
+      "L2_support access to the RMS / fleet status UI"
+    ],
+    "system_preconditions": [
+      "A live robotics-related database context is available in WCS / Helix DB (SSMS).",
+      "The RMS / fleet status UI is available for comparison."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [],
+  "related_event_ids": [
+    "incident_228086_event_034",
+    "incident_228086_event_039"
+  ],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_incident_228086_page_024_embedded_image_01",
+      "description": "Incident screenshot showing WCS / Helix DB (SSMS) with a robotics-related query results grid, an AGV State column, and successful query execution status.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open WCS / Helix DB (SSMS) and connect to the robotics-related database context",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish the live WCS / Helix DB (SSMS) context needed to inspect AGV state records.",
+      "instruction": "Open WCS / Helix DB (SSMS) and connect to the robotics-related database context shown in the incident evidence. Do not substitute an undocumented database name or context.",
+      "expected_result": "WCS / Helix DB (SSMS) shows an active connection to the robotics-related database context and is ready to execute the source-provided AGV state check.",
+      "healthy_condition": "The WCS / Helix DB (SSMS) connection is active and the robotics-related database context is available for the diagnostic query.",
+      "failure_condition": "WCS / Helix DB (SSMS) cannot connect or the robotics-related database context is unavailable.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Connect in SSMS",
+          "exact_action": "Open WCS / Helix DB (SSMS) and connect to the robotics-related database context shown in the incident evidence.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if WCS / Helix DB (SSMS) cannot connect.",
+        "Stop and escalate if the robotics-related database context is not available."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_24",
+          "artifact_id": "artifact_incident_228086_page_024_embedded_image_01",
+          "event_id": "incident_228086_event_034",
+          "chunk_id": "stage4_page_chunk_003",
+          "support_type": "enriched_artifact",
+          "quote_or_summary": "Shared SSMS window connected to a robotics-related database shows populated AGV state query results.",
+          "site_label": "UPS Fort Worth, TX (Haslet)",
+          "site_code": ""
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_034"
+      ]
+    },
+    {
+      "step_number": 2,
+      "title": "Run the source-provided AGV state check in WCS / Helix DB (SSMS)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Obtain the live AGV state result set without introducing undocumented query text.",
+      "instruction": "In WCS / Helix DB (SSMS), run the source-provided robotics AGV state check without adding undocumented query text. Wait for the SSMS status bar to show that the query executed successfully.",
+      "expected_result": "WCS / Helix DB (SSMS) shows a populated query results grid and a successful execution indication in the SSMS status bar.",
+      "healthy_condition": "The source-provided check completes successfully and the SSMS results grid contains AGV records.",
+      "failure_condition": "The query does not execute successfully, the results grid is not populated, or the SSMS status bar does not indicate successful execution.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Execute AGV state check",
+          "exact_action": "Run the source-provided robotics AGV state check without adding undocumented query text, and wait for the SSMS status bar to show that the query executed successfully.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the query does not execute successfully.",
+        "Stop and escalate if the expected AGV state results are unavailable."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_24",
+          "artifact_id": "artifact_incident_228086_page_024_embedded_image_01",
+          "event_id": "incident_228086_event_034",
+          "chunk_id": "stage4_page_chunk_003",
+          "support_type": "enriched_artifact",
+          "quote_or_summary": "SSMS query results show AGV State values and successful execution.",
+          "site_label": "UPS Fort Worth, TX (Haslet)",
+          "site_code": ""
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_034"
+      ]
+    },
+    {
+      "step_number": 3,
+      "title": "Inspect the AGV State column in WCS / Helix DB (SSMS)",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Capture the live AGV state values returned by the WCS / Helix DB (SSMS) check for comparison with the RMS / fleet status UI.",
+      "instruction": "Inspect the returned State column in the WCS / Helix DB (SSMS) results grid and record the visible values. Incident examples include LeavingCharger, MovingToChargerExitQueue, MovingToSorterExitQueue, MovingToTipperQueue, SQExchanging, SQStagingExchange, SWaitingForExchange, and SWaitingInzone. Do not assign fault meaning to a value without live context.",
+      "expected_result": "The WCS / Helix DB (SSMS) results grid visibly contains AGV records with State values that can be recorded for comparison.",
+      "healthy_condition": "AGV records and their State values are visible in the WCS / Helix DB (SSMS) results grid.",
+      "failure_condition": "The State column is absent, empty, unreadable, or the expected AGV records are unavailable.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect State column",
+          "exact_action": "Inspect the returned State column and record the visible values, including examples shown in the incident such as LeavingCharger, MovingToChargerExitQueue, MovingToSorterExitQueue, MovingToTipperQueue, SQExchanging, SQStagingExchange, SWaitingForExchange, and SWaitingInzone.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the expected AGV state results are unavailable.",
+        "Do not infer that a listed state is abnormal without corresponding live RMS / fleet status UI context or SME interpretation."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_24",
+          "artifact_id": "artifact_incident_228086_page_024_embedded_image_01",
+          "event_id": "incident_228086_event_034",
+          "chunk_id": "stage4_artifact_chunk_002",
+          "support_type": "artifact_visual",
+          "quote_or_summary": "SSMS results grid contains State values including LeavingCharger, MovingToChargerExitQueue, MovingToSorterExitQueue, MovingToTipperQueue, SQExchanging, SQStagingExchange, SWaitingForExchange, and SWaitingInzone.",
+          "site_label": "UPS Fort Worth, TX (Haslet)",
+          "site_code": ""
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_034"
+      ]
+    },
+    {
+      "step_number": 4,
+      "title": "Compare WCS / Helix DB (SSMS) states with the RMS / fleet status UI",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Correlate backend AGV state records with the live RMS / fleet status UI to identify records requiring further interpretation.",
+      "instruction": "Compare the recorded AGV State values from WCS / Helix DB (SSMS) with the corresponding live AGV information in the RMS / fleet status UI. Keep this diagnostic read-only and do not change database values.",
+      "expected_result": "The WCS / Helix DB (SSMS) AGV records and the corresponding RMS / fleet status UI information are available for side-by-side diagnostic comparison.",
+      "healthy_condition": "The returned WCS / Helix DB (SSMS) records can be correlated with visible AGV information in the RMS / fleet status UI.",
+      "failure_condition": "AGV records cannot be correlated between WCS / Helix DB (SSMS) and the RMS / fleet status UI, or a database modification is required to proceed.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Compare live AGV status",
+          "exact_action": "Compare the returned AGV state records with the live RMS / fleet status UI; do not change database values from this read-only diagnostic.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if the SSMS records cannot be compared with the live RMS / fleet status UI.",
+        "Stop if any action would modify database values.",
+        "Escalate for SME interpretation when a State value appears inconsistent with the live RMS / fleet status UI."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_228086:page_26",
+          "artifact_id": "artifact_incident_228086_page_026_nested_image_01",
+          "event_id": "incident_228086_event_039",
+          "chunk_id": "stage4_page_chunk_004",
+          "support_type": "case_comment",
+          "quote_or_summary": "Incident comments state that RMS was used to locate AGVs that were out of sync after the OptiSweep service reset.",
+          "site_label": "UPS Fort Worth, TX (Haslet)",
+          "site_code": ""
+        },
+        {
+          "page_ref": "case_228086:page_24",
+          "artifact_id": "artifact_incident_228086_page_024_embedded_image_01",
+          "event_id": "incident_228086_event_034",
+          "chunk_id": "stage4_page_chunk_003",
+          "support_type": "enriched_artifact",
+          "quote_or_summary": "Shared SSMS window shows robotics-related AGV state results for comparison with RMS context.",
+          "site_label": "UPS Fort Worth, TX (Haslet)",
+          "site_code": ""
+        }
+      ],
+      "related_event_ids": [
+        "incident_228086_event_034",
+        "incident_228086_event_039"
+      ]
+    }
+  ],
+  "success_criteria": [
+    "WCS / Helix DB (SSMS) connects to the available robotics-related database context.",
+    "The source-provided AGV state check executes successfully and produces a populated results grid.",
+    "Visible State values are recorded and compared with the live RMS / fleet status UI without modifying database records."
+  ],
+  "healthy_conditions": [
+    "WCS / Helix DB (SSMS) shows an active robotics-related database connection.",
+    "The SSMS status bar indicates successful query execution.",
+    "The SSMS results grid contains visible AGV records and State values.",
+    "Corresponding AGV information is available in the RMS / fleet status UI for comparison."
+  ],
+  "failure_conditions": [
+    "WCS / Helix DB (SSMS) cannot connect to the robotics-related database context.",
+    "The source-provided check fails to execute or produces no usable results.",
+    "The State column or expected AGV records are unavailable.",
+    "SSMS records cannot be correlated with the RMS / fleet status UI.",
+    "The diagnostic would require modifying database values."
+  ],
+  "escalation_guidance": [
+    "Stop and escalate to the appropriate L2/L3 support or SME contact when SSMS cannot connect, the query fails, or expected AGV results are unavailable.",
+    "Escalate for interpretation when a State value appears inconsistent with the live RMS / fleet status UI.",
+    "Do not perform database modifications as part of this runbook."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_incident_228086_page_024_embedded_image_01",
+      "what_to_look_at": "WCS / Helix DB (SSMS) robotics-related database window, populated AGV query results grid, State column, and successful SSMS execution status."
+    }
+  ],
+  "source_refs": [
+    {
+      "page_ref": "case_228086:page_24",
+      "artifact_id": "artifact_incident_228086_page_024_embedded_image_01",
+      "event_id": "incident_228086_event_034",
+      "chunk_id": "stage4_page_chunk_003",
+      "support_type": "enriched_artifact",
+      "quote_or_summary": "Shared SSMS window connected to a robotics-related database shows a populated State column with multiple AGV state values and successful query execution.",
+      "site_label": "UPS Fort Worth, TX (Haslet)",
+      "site_code": ""
+    },
+    {
+      "page_ref": "case_228086:page_26",
+      "artifact_id": "artifact_incident_228086_page_026_full_page_01",
+      "event_id": "incident_228086_event_039",
+      "chunk_id": "stage4_page_chunk_004",
+      "support_type": "case_comment",
+      "quote_or_summary": "Incident comments state that RMS was used to locate AGVs that were out of sync after the OptiSweep service reset.",
+      "site_label": "UPS Fort Worth, TX (Haslet)",
+      "site_code": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_incident_228086_page_024_embedded_image_01",
+      "what_to_look_at": "WCS / Helix DB (SSMS) robotics-related database window, populated AGV query results grid, State column, and successful SSMS execution status."
+    },
+    {
+      "artifact_id": "artifact_incident_228086_page_026_full_page_01",
+      "what_to_look_at": "Incident comments state that RMS was used to locate AGVs that were out of sync after the OptiSweep service reset."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_incident_228086_ssms_agv_state_diagnostic"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "source_case_228086",
+      "source_type": "incident_case",
+      "source_title": "Case 228086 Data",
+      "source_case_id": "228086",
+      "ingestion_batch_id": "batch_20260629T175753Z",
+      "site": "UPS Fort Worth, TX (Haslet)",
+      "site_code": "",
+      "site_location": {}
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide a reliable database name.",
+    "The packet does not provide a table name, model name, or complete SQL statement.",
+    "The operational meaning of the listed AGV State values is not established by the incident evidence.",
+    "The source-package site_location ingestion object is empty; no site_code or structured site-location fields were supplied.",
+    "The candidate confidence is low and the procedure requires SME review."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_incident_runbook_finalization",
+    "source_id": "source_case_228086",
+    "source_type": "incident_case",
+    "source_title": "Case 228086 Data",
+    "source_version": "",
+    "ingestion_batch_id": "batch_20260629T175753Z",
+    "source_quality": "incident_case",
+    "incident_context": {
+      "case_id": "228086",
+      "site": "UPS Fort Worth, TX (Haslet)",
+      "site_code": "",
+      "site_location": {},
+      "incident_start_time": "2026-02-20T07:19:00",
+      "incident_resolved_time": "2026-02-20T14:58:00",
+      "time_to_resolve": "7h 39m",
+      "resolution_confirmed": true
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_incident_228086_page_024_embedded_image_01",
+    "artifact_incident_228086_page_026_full_page_01"
+  ],
+  "linked_event_ids": [
+    "incident_228086_event_034",
+    "incident_228086_event_039"
+  ]
+}

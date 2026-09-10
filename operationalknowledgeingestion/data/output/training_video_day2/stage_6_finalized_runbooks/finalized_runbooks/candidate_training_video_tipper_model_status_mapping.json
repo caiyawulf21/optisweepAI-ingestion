@@ -1,0 +1,363 @@
+{
+  "procedure_id": "proc_check_tipper_model_station_printer_and_tipper_status_fields_v1",
+  "candidate_id": "candidate_training_video_tipper_model_status_mapping",
+  "title": "Check Tipper Model Station, Printer, and Tipper Status Fields",
+  "procedure_type": "diagnostic",
+  "summary": "Use the WCS / Helix DB (SSMS) read-only surface to inspect the Sorter Sweeper Database Tipper model for the relevant operator station. Verify the Tipper ID and station association, Printer Name and printer IP when configured, Location ID, and Tipper Status.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "L3_support"
+  ],
+  "capability_tags": [
+    "tipper_station_fault"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "L3_support"
+  ],
+  "failure_pattern_tags": [
+    "tipper_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this diagnostic when support needs to verify the live tipper configuration used by the system, including the station-to-tipper association, printer configuration, location association, or current Tipper Status in the WCS / Helix DB (SSMS).",
+  "not_for": [
+    "Changing printer, location, station, or tipper-status configuration.",
+    "Operating or recovering a tipper through the Tipper HMI / WebVisu / VISU.",
+    "Replacing a live equipment fault investigation with configuration inspection alone."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Perform the read-only inspection in the WCS / Helix DB (SSMS) and record the observed Tipper model values."
+    },
+    {
+      "role": "L3_support",
+      "responsibility": "Review or assist with inconsistent, missing, Not Ready, or Disabled Tipper model records."
+    }
+  ],
+  "safety_notes": [
+    "Use read-only inspection only. This procedure does not authorize changing printer, location, station, or status configuration.",
+    "A Not Ready or Disabled value is an observed configuration/status condition and requires escalation rather than an in-procedure change."
+  ],
+  "access_or_tools_needed": [
+    "WCS / Helix DB (SSMS)",
+    "Sorter Sweeper Database",
+    "Tipper model",
+    "Tipper ID",
+    "Printer Name and printer IP",
+    "Location ID",
+    "Tipper Status"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2/L3 access to the WCS / Helix DB (SSMS) read-only surface."
+    ],
+    "system_preconditions": [
+      "The relevant operator station or tipper must be identified before inspecting the Tipper model record."
+    ],
+    "external_references": [
+      "Tipper station reference: standard and GLD operator stations are described as having two tippers per station."
+    ]
+  },
+  "related_context_ids": [
+    "ctx_training_video_tipper_stations_v1",
+    "ctx_training_video_configuration_tables_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Open the Tipper model in the Sorter Sweeper Database",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Access the live configuration record for the operator station being investigated.",
+      "instruction": "In the WCS / Helix DB (SSMS), use the read-only view of the Sorter Sweeper Database and locate the Tipper model records for the relevant operator station.",
+      "expected_result": "The relevant Tipper model record or records are available for inspection in the Sorter Sweeper Database.",
+      "healthy_condition": "A Tipper model record is present for the identified station.",
+      "failure_condition": "The relevant Tipper model record cannot be located or is missing.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate Tipper model records",
+          "exact_action": "Open the WCS / Helix DB (SSMS) read-only view of the Sorter Sweeper Database and locate the Tipper model records for the relevant operator station.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if the relevant Tipper model record is missing."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "source_document_id": "training_video_day2_video",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:48:01.000",
+          "timestamp_end": "02:01:19.000",
+          "quote_or_summary": "The tipper model defines the tipper configuration used by the Sorter Sweeper system; the supplied source reference identifies Tipper ID, printer name with printer IP, location ID, and tipper status."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Verify Tipper ID and station association",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Confirm that the Tipper model identifies the expected tipper and its operator-station relationship.",
+      "instruction": "In the live Tipper model record in the WCS / Helix DB (SSMS), inspect the Tipper ID and station association. Confirm the documented left/right representation used for the station.",
+      "expected_result": "The record identifies a Tipper ID associated with the relevant operator station and shows the applicable left/right representation.",
+      "healthy_condition": "The Tipper ID and station association are present and consistent with the identified operator station.",
+      "failure_condition": "The Tipper ID is absent, the station association is inconsistent, or the left/right representation cannot be reconciled with the station.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check station-to-tipper mapping",
+          "exact_action": "Check the Tipper ID and station association, including the documented left/right representation used for the station.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if the station or Tipper ID association is inconsistent."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "source_document_id": "training_video_day2_video",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:48:01.000",
+          "timestamp_end": "02:01:19.000",
+          "quote_or_summary": "Tipper stations represent operator stations; each station has two tippers. The candidate identifies the Tipper ID, station association, and left/right representation as inspection fields."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Check printer name and printer IP",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Verify the printer information associated with the tipper when label printing is configured.",
+      "instruction": "In the live Tipper model record in the WCS / Helix DB (SSMS), inspect Printer Name and the associated printer IP. Perform this check when a printer is configured for the tipper.",
+      "expected_result": "The Tipper model shows the configured Printer Name and associated printer IP when printer configuration is applicable.",
+      "healthy_condition": "Printer Name and printer IP are present when the tipper is expected to use a configured printer.",
+      "failure_condition": "Printer information is absent when a printer is required, or the displayed printer information does not match the expected tipper configuration.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check printer configuration",
+          "exact_action": "Check the Printer Name and associated printer IP used for label directives, when a printer is configured for the tipper.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if printer information is absent when required."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "source_document_id": "training_video_day2_video",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:48:01.000",
+          "timestamp_end": "02:01:19.000",
+          "quote_or_summary": "The tipper model includes printer name with printer IP."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Verify the Location ID",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Confirm that the tipper is associated with the expected station location.",
+      "instruction": "In the live Tipper model record in the WCS / Helix DB (SSMS), inspect the Location ID and compare it with the expected location for the relevant operator station.",
+      "expected_result": "The Tipper model contains a Location ID that can be compared with the expected station location.",
+      "healthy_condition": "The Location ID is present and matches the expected station location.",
+      "failure_condition": "The Location ID is absent or does not match the expected station location.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check tipper location",
+          "exact_action": "Check the Location ID associated with the tipper and compare it with the expected station location.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if the location association is inconsistent."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "source_document_id": "training_video_day2_video",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:48:01.000",
+          "timestamp_end": "02:01:19.000",
+          "quote_or_summary": "The tipper model includes Location ID; the source discusses location relationships for station configuration."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "Inspect Tipper Status",
+      "responsible_role": "L2_support",
+      "supporting_role": "L3_support",
+      "purpose": "Determine the current observable status of the tipper configuration record.",
+      "instruction": "In the live Tipper model record in the WCS / Helix DB (SSMS), inspect Tipper Status and record whether the value is Ready, Not Ready, or Disabled.",
+      "expected_result": "The Tipper Status field displays one of the documented values: Ready, Not Ready, or Disabled.",
+      "healthy_condition": "Tipper Status is Ready.",
+      "failure_condition": "Tipper Status is Not Ready or Disabled, or the field does not contain an observable documented status value.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check Tipper Status",
+          "exact_action": "Inspect Tipper Status and record whether the value is Ready, Not Ready, or Disabled.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Escalate to L2/L3 support if Tipper Status is Not Ready or Disabled."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "source_version": null,
+          "source_document_id": "training_video_day2_video",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:48:01.000",
+          "timestamp_end": "02:01:19.000",
+          "quote_or_summary": "The tipper model includes tipper status values Ready, Not Ready, or Disabled."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The relevant Tipper model record is located in the WCS / Helix DB (SSMS) Sorter Sweeper Database.",
+    "Tipper ID and station association, including left/right representation, are observable.",
+    "Printer Name and printer IP are observable when a printer is configured for the tipper.",
+    "Location ID is observable and can be compared with the expected station location.",
+    "Tipper Status is observable as Ready, Not Ready, or Disabled, with Ready representing the healthy status for this inspection."
+  ],
+  "healthy_conditions": [
+    "The relevant Tipper model record exists.",
+    "Tipper ID and station association are consistent with the operator station.",
+    "Configured printer information is present when required.",
+    "Location ID matches the expected station location.",
+    "Tipper Status is Ready."
+  ],
+  "failure_conditions": [
+    "The Tipper model record is missing.",
+    "Tipper ID, station association, or left/right representation is inconsistent.",
+    "Printer Name or printer IP is absent when required.",
+    "Location ID is missing or inconsistent with the expected station location.",
+    "Tipper Status is Not Ready or Disabled."
+  ],
+  "escalation_guidance": [
+    "Escalate to L2/L3 support when the Tipper model record is missing or station, location, or printer associations are inconsistent.",
+    "Escalate to L2/L3 support when Tipper Status is Not Ready or Disabled.",
+    "Do not modify the Tipper model configuration as part of this read-only diagnostic."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 22,
+      "section_id": "training_video_day2_segment_0022",
+      "timestamp_start": "01:48:01.000",
+      "timestamp_end": "02:01:19.000",
+      "quote_or_summary": "The tipper model includes tipper ID, printer name with printer IP, location ID, and tipper status values Ready, Not Ready, or Disabled."
+    }
+  ],
+  "image_refs": [],
+  "source_candidate_ids": [
+    "candidate_training_video_tipper_model_status_mapping"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide the exact Tipper model table name or SSMS navigation/query needed to locate the record.",
+    "The packet does not provide a site-specific mapping of expected operator-station locations or printer requirements.",
+    "The supplied artifacts do not show a matching Tipper model table; no visual artifact is attached to avoid using unrelated database, API, RMS, or Ignition frames as evidence.",
+    "The source lists Ready, Not Ready, and Disabled but does not define the underlying operational cause or remediation for each status.",
+    "The candidate is based on low-confidence manual extraction and requires SME validation."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

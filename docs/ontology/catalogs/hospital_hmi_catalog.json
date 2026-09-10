@@ -1,0 +1,426 @@
+{
+  "schema_version": "0.4",
+  "catalog_id": "hospital_hmi",
+  "access_surface": "hospital_hmi",
+  "title": "Hospital HMI / lane / stacklight UI",
+  "aliases": [
+    "hospital_ui",
+    "hospital HMI",
+    "hospital lane",
+    "hospital stacklight",
+    "hospital controller",
+    "Hospital HMI / lane UI",
+    "hospital_hmi"
+  ],
+  "purpose": "Hospital station / lane / stacklight UI for diversion and lane alarms. Corroborate with RMS routing and SSMS Hospital*/HospitalTags/Location models.",
+  "when_to_use": [
+    "Hospital diversion suspected",
+    "Stacklight color / lane alarm at hospital",
+    "AGVs diverting to hospital unexpectedly"
+  ],
+  "not_for": [
+    "Tipper VISU screens",
+    "Building ACB overview alone without hospital context"
+  ],
+  "architecture_notes": [
+    "Architecture overview includes Hospital Controller alongside tippers and Geek+ RMS.",
+    "OPC path also connects hospital tags via Ignition."
+  ],
+  "audience_roles_typical": [
+    "operator",
+    "L1_support",
+    "L2_support",
+    "L3_support"
+  ],
+  "role_paths": {
+    "operator": "Primary hospital HMI / stacklight.",
+    "L1_support": "Ask stacklight/lane; RMS routing cues.",
+    "L2_support": "Remote HMI if available + SSMS hospital models.",
+    "L3_support": "Persistent diversion ownership."
+  },
+  "screens_or_views": [
+    {
+      "id": "hospital_lane_ui",
+      "title": "Hospital lane / station UI",
+      "purpose": "Lane alarms and hospital station state.",
+      "aliases": [
+        "hospital lane"
+      ],
+      "key_points": [
+        "lane alarm",
+        "diversion active"
+      ]
+    },
+    {
+      "id": "hospital_stacklight",
+      "title": "Hospital stacklight",
+      "purpose": "At-a-glance diversion/alarm color.",
+      "aliases": [
+        "stacklight"
+      ],
+      "key_points": [
+        "ask color if remote"
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "hospital_tags",
+      "label": "HospitalTagsModel / hospital tags",
+      "capability_hints": [
+        "hospital_diversion"
+      ]
+    },
+    {
+      "id": "hospital_db",
+      "label": "HospitalDatabaseModel",
+      "capability_hints": [
+        "hospital_diversion"
+      ]
+    }
+  ],
+  "activities": [
+    {
+      "id": "hospital_stacklight_lane",
+      "label": "Hospital stacklight / lane alarm",
+      "observables": [
+        "stacklight color",
+        "lane alarm"
+      ],
+      "capability_hints": [
+        "hospital_diversion",
+        "lane_or_chute_state"
+      ],
+      "audience_roles": [
+        "operator",
+        "L1_support",
+        "L2_support"
+      ]
+    }
+  ],
+  "related_capabilities": [
+    "hospital_diversion"
+  ],
+  "related_failure_patterns": [
+    "hospital_diversion"
+  ],
+  "distinguish_from": {
+    "tipper_hmi": "Operator tipper stations — different HMI family.",
+    "building_acb_hmi": "Area/bin overview — don't confuse with hospital lane.",
+    "rms_ui": "Fleet routing view vs hospital local UI."
+  },
+  "gaps": [
+    "Full hospital HMI screen dictionary thinner than tipper VISU — expand from OM if sections exist."
+  ],
+  "evidence": [
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "So Sorter Sweeper module orchestrates the movement of totes tote tippers and the Sorter Robotics module manages the HV tasks based on Sorter sweeper directives. OPC COM module manages communication between the Robot Robotics module and Geek Plus RMS server, and then XLE COM module manages the communication between the "
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "The Robot Location database model table contains all the information about the locations, including the station number, whether it's occupied or not, zone, it's closeout zone, the location type, the Max number of Agvs allowed at that location, and whether the location should be tracked for dwell time there. Listed belo"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Let's see and the last one sorted side database module I what's the damage? That's just which sort of side it's on. You know, you have remember the past one we had solar side 1A1B2A2B. So those all associate with one or two or three or four. Oh, it's a model ID. It's just a model ID. OK, it's names and all right. The c"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "So everybody's at a location for some point for some time that's dwelling at that, at that location. But what is the impact? I think it's just information that UPS wants, statistic that UPS wants. And so you can see specific locate. You know there is a robot location database model. It says dwell tracking, right? It's "
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "So moving on, System Error Definition table stores the definition of the system errors. The System Active Error model, which Mitchell went over I think with you guys yesterday, shows any active errors that are currently in the system. The information includes the name, area, and area code, as well as a description of t"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "And like I said, usually because they push each stats, there's a lot of paths. And as soon as the E stats release, then they'll just play around. I mean, do you see a ton of them for saying, hey, remove the E stats? Let's see that. Also another pretty important thing, they still do it. That means like when we add a whe"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "All right, finish with brother. Send this order seeker. You have to go up there for this. This is just a overview as well, just like robotics on the tables and some foreign keys and how it's connected. This one has 22 storage, Yeah. And where you're talking about a lot of it is, you know, storage data like. So you look"
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "transcript",
+      "snippet": "Wait, do we need to stay here for a 2nd? The hospital tags model is to process the data from the hospital controller. We have a list of tags that we subscribe to and action on based on the tag type parent. The tag type parent just whether it's an in or out. Yeah. So these are just list of tags that we use to communicat"
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI Main Menu: This artifact is a figure from the OptiSweep Operation and Maintenance Manual depicting the main menu screen for the Hospital Station HMI. The screen provides access to three primary sub-menus: Operator, Maintenance, and Alarms."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI Operations Screen: This artifact is a screenshot of the Hospital HMI Operations screen, as referenced in the OptiSweep Operation and Maintenance Manual. The screen displays read-only information received from the Warehouse Control System (WCS) for both the induct and extract sides of a hospital station."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI Add Tote Screen: This artifact is a screenshot of the Hospital HMI 'Add Tote' screen, as documented in the OptiSweep Operation and Maintenance Manual. The screen provides the interface for an operator to reintroduce a tote into the automated system."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI Remove Tote Screen: This artifact is a screenshot of the Hospital HMI Remove Tote screen, as described in the OptiSweep Operation and Maintenance Manual. The screen provides an interface for an operator to remove a tote from the system."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI No Read Bar Code Screen: This artifact depicts the Hospital HMI No Read Bar Code Screen, which is displayed when a tote is diverted to the Hospital Station because its bar code could not be scanned at the Operator Station."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI Bar Code Mismatch Screen: This artifact is a screenshot of the Hospital HMI Bar Code Mismatch screen from the OptiSweep Operation and Maintenance Manual. It depicts the interface presented to an operator when a tote is diverted to the Hospital Station because its scanned bar code does not match the tote ID the Warehouse Control System (WCS)..."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI Tote Failed to Empty Screen: This artifact is a reference to the Hospital HMI screen displayed when a tote fails to empty at the extract side of a station. The screen provides the operator with controls to identify the tote by scanning its barcode and to remove it from the system once it is properly positioned."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI Sent from Bagging Station Screen: This artifact is a screenshot of the Hospital HMI 'Sent from Bagging Station' screen, as referenced in the OptiSweep Operation and Maintenance Manual. The screen provides the operator interface for managing totes arriving at a bagging station."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI Add/Remove AGV Screen: This artifact is a reference to the Hospital HMI Add/Remove AGV Screen (Figure 4-37) from the OptiSweep Operation and Maintenance Manual. The screen provides the interface for two critical operational workflows: removing an AGV from the active system for maintenance or shift adjustments, and inserting an AGV back into..."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI Maintenance Menu Screen: This artifact is a screenshot of the Hospital HMI Maintenance Menu screen, referenced as Figure 4-38 in the OptiSweep Operation and Maintenance Manual. The screen provides access to four sub-menus: Manual Control, IO Diagnostics, Persistent Variables, and Default."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI 2.1 Manual Control Screen: This artifact is a screenshot of the 'Manual Control' screen from the Hospital HMI 2.1 interface, as documented in the OptiSweep Operation and Maintenance Manual."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI 2.4 Default Screen: This artifact is a screenshot of the Hospital HMI 2.4 Default screen from the OptiSweep Operation and Maintenance Manual. According to the nearby text, this screen displays the currently installed software version and the IP address of the Hospital Station. It also provides user login and logout functionality."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI Alarms Screen: This artifact is a screenshot of the Hospital HMI Alarms Screen, as referenced in the OptiSweep Operation and Maintenance Manual. According to the manual, this screen provides a comprehensive list of all system alarms along with their corresponding time stamps."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep HMI Interfaces: The three HMI interfaces are: System API, Operator station HMI, and Hospital HMI. The manual details screens associated with each interface in subsequent sections."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep HMI Interfaces Overview: The System HMI ties into the existing customer system. The Operator Station HMI and Hospital HMI are separate panels. Each interface has associated screens detailed in the manual."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI Purpose: The Hospital Station is a destination within the OptiSweep system where totes are routed for exception handling. The Hospital HMI screens provide the interface for operators to manage these totes."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI Main Menu Controls: The six function buttons and their descriptions are: F5 navigates to the Main menu, F3 navigates to the Previous screen, F1 navigates to the Operator menu, F2 navigates to the Maintenance menu, F4 navigates to the Setup menu, and F6 navigates to the Alarms screen."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI Induct Position Fields: The Induct Position fields are: AGV# (the ID number of the AGV at the induct side of the station), Tote ID (the ID number of the tote at the induct side of the station), Bar Code (the information received from the tote bar code), and Status (a status message received from the WCS about the tote)."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI Extract Position Fields: The Extract Position fields are: AGV# (the ID number of the AGV at the extract side of the station), Tote ID (the ID number of the tote at the extract side of the station), Bar Code (the information received from the tote bar code), and Status (a status message received from the WCS about the tote)."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI Manual Control Access: Button 2.1 on the Maintenance Menu provides access to Manual Control functionality. This is a maintenance-level function within the Hospital HMI system."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI IO Diagnostics Access: Button 2.2 on the Maintenance Menu provides access to IO Diagnostics functionality. This is a maintenance-level function within the Hospital HMI system."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI Persistent Variables Access: Button 2.3 on the Maintenance Menu provides access to Persistent Variables functionality. This is a maintenance-level function within the Hospital HMI system."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI Default Access: Button 2.4 on the Maintenance Menu provides access to Default functionality. This is a maintenance-level function within the Hospital HMI system."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI 2.2 IO Diagnostics Screen: This screen corresponds to the switch mounted on the station and conveys which inputs are on and off. The temperature readings and voltages pertain to the HMI itself, providing hardware health information."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital HMI REBOOT TO SETUP Function: Located on the 2.4 Default screen, the REBOOT TO SETUP button should only be used by maintenance personnel when they need to update the date or time on the HMI."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Faulted AGV with Tote Recovery Concept: The recovery concept for a 'Faulted AGV with Tote' involves a sequence of actions: E-stop the RMS, remove the AGV from the RMS, take the tote to the Hospital and remove the AGV via the Hospital HMI, add the AGV back into the RMS, press the E-Stop again, and resume the RMS."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Hospital controller role in tote removal and addition: In the transcript, the speaker states that there is a hospital controller for removing and adding totes. The overview slide includes Hospital Controller as one of the core elements in the architecture."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "AGV location presence notifications: When an AGV reports the same cell code as an induction or hospital location, the training segment states that the hospital controller is notified of the AGV presence."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital Station: This artifact is a photo of a hospital station as depicted in the OptiSweep Operation and Maintenance Manual. The image shows the physical station where Automated Guided Vehicles (AGVs) can be brought for operator attention."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "OptiSweep Hospital Station Function: In the event of a mis-sort, bad tip, or tote overload, the WCS directs the AGV to take the tote to the right side of the hospital station to be handled by an operator. The AGV then moves to the left side of the hospital station to pick up an empty tote and re-enters the sorter area to await further instructions."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital Station Overview: In the event of a mis-sort, bad tip, or tote overload, the AGV is directed by the WCS to take the tote to a hospital station to be manually handled by an operator. A stacklight indicates a tote is present. An operator uses a scanner (green scanner) to determine the reason the tote was brought to the station."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital Station Operator Workflow: The AGV brings the tote to the right side (based on the perspective of the operator) of the hospital station, then moves to the left side where an operator places an empty tote on the AGV. The AGV will re-enter the sorter area after it has a tote to return with."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital Station Green Scanner: An operator uses a scanner (green scanner) to determine the reason the tote was brought to the station. The specific reason codes or interface are not detailed in this source."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "RMS Error Indicator at Hospital Station: This is a specific alarm state of the hospital station stacklight. The simultaneous illumination of all three sections (red, yellow, green) signals an RMS error condition."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Fault Indicator at Hospital Station: This is a specific alarm state of the hospital station stacklight. The flashing red light signals a fault has occurred at the station."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital Request Alarm: For the Left Tipper, alarm ID 18, 'Left Tipper: Hospital Request', is triggered by a manual or automatic request to send the tote to the hospital. The controller response is that the WCS will send the AGV/tote to the hospital for diagnosis. There is no corrective action listed for the operator station."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital Station PC: The Hospital station PC is referenced as the interface for removing and adding AGVs during recovery scenarios, such as when an AGV has lost a tote. The operator is instructed to use this PC to remove the AGV and then add it back into the system."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Inbound Hospital Station QR Code: After an AGV is power cycled and its lights turn green during the 'AGV Lost Tote No Fault' recovery, the operator must roll the AGV over the QR code in front of the Inbound Hospital Station."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital Station HMI Screen: To extract a tote from the system at the Hospital Station, an operator must open the corresponding screen on the HMI. The specific screen to open is determined by information displayed in the status fields."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital Station Manual Task Performance: Once a tote has been extracted from the system at the Hospital Station, the operator must perform a required task. The nature of this task is not predefined but is determined by the information displayed in the status fields on the HMI."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital Station Daily Preventive Maintenance: The hospital station is a component of the OptiSweep system. Daily preventive maintenance tasks for each hospital station are: 1) Verify the barcode scanner is operational. 2) Verify the stacklight is operational. 3) Ensure the tabletop is free of debris."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Daily Preventive Maintenance for Hospital Station: Each hospital station must be inspected daily for: an operational barcode scanner, an operational stacklight, and a tabletop free of debris."
+    },
+    {
+      "source": "manual_optisweep_om_v3",
+      "kind": "operational_claim",
+      "snippet": "Hospital Station Daily Inspection Items: During daily preventive maintenance, each hospital station must be inspected to ensure the barcode scanner is operational, the stacklight is operational, and the tabletop is free of debris."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Hospital area for exception handling: In the discussion, the speaker explains that an AGB may be sent to the hospital when photo sensors cannot see the tote correctly, such as when the tote is pushed back too far or positioned abnormally, or when the mechanism cannot clamp down fully on the tote."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Hospital module flow and queue structure: According to the transcript, after the prior stage an AGV goes to the hospital entrance queue first. If the drop-off location is free, it drops off there and then moves to its pickup location. If a tote is present, it picks it up; otherwise it waits for a tote to be picked up. After leaving, it goes to the exit queue."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Hospital use as reject handling and AGV home base: In the discussion, the speaker clarifies that the hospital is used when an AGV cannot tip at the tipper and characterizes it as a 'reject state' or 'reject detection' context rather than simply meaning the AGV is sick. The hospital is also described as a place used to initialize new AGVs and as a kind of home base."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Hospital as a reject station for operator handling: In the discussion, the speaker clarifies that the hospital is not itself the tipper problem but a place where totes/packages are sent when something did not get sorted and still needs to remain on the system."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Hospital location as a recovery drop-off point: The transcript gives an example where an AGV is removed and added back, then sent using Go-to to the hospital. At the hospital, the tote can be removed, after which the AGV drops, reinitializes, and comes back to pick up a new tote."
+    },
+    {
+      "source": "training_video_day1",
+      "kind": "operational_claim",
+      "snippet": "Hospital location referenced as an AGV drop-off destination: In the example text, the operator may remove and add the AGV and use the Go-to function to drop it off at the hospital. This indicates that 'hospital' is a named destination or area relevant to AGV handling in the training material. The source does not further define the hospital location."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Hospital tags model: The model contains a list of tags to subscribe to and act on. Tag behavior is associated with a tag type parent indicating whether the tag is an input or an output. The transcript identifies hospital, tipper, and display communications as uses of these tags."
+    },
+    {
+      "source": "training_video_day2",
+      "kind": "operational_claim",
+      "snippet": "Hospital pickup and drop-off location identifiers: The discussion describes hospital locations as having pickup and drop-off relationships. It states that the hospital station pickup ID and hospital station drop-off ID correspond to location IDs, while noting that the primary key or ID column was not shown in the referenced table view."
+    }
+  ],
+  "source_refs": [
+    {
+      "source": "training_video_day2"
+    },
+    {
+      "source": "training_video_day1"
+    },
+    {
+      "source": "support_roles_components_and_adjacency.md"
+    },
+    {
+      "source": "docs/ontology/catalogs/capability_catalog.json"
+    }
+  ]
+}

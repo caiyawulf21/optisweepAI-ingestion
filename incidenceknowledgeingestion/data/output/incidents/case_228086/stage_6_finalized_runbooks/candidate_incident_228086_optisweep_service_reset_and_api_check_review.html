@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check and reset the OptiSweep service in Windows Event Viewer / Services, then validate through Apidog / WCS API</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+figcaption { font-style: italic; color: #555; margin-top: 0.5rem; }
+hr { margin: 2rem 0; }
+</style>
+</head>
+<body>
+<h1>Check and reset the OptiSweep service in Windows Event Viewer / Services, then validate through Apidog / WCS API</h1>
+<h2>Runbook Header</h2>
+<table>
+<tr><th>Procedure ID</th><td>proc_optisweep_service_reset_and_api_check_v1</td></tr>
+<tr><th>Title</th><td>Check and reset the OptiSweep service in Windows Event Viewer / Services, then validate through Apidog / WCS API</td></tr>
+<tr><th>Procedure Type</th><td>recovery</td></tr>
+<tr><th>Primary Role</th><td>L2_support</td></tr>
+<tr><th>Support Safe</th><td>Yes</td></tr>
+<tr><th>Capability Tags</th><td>wcs_service_health, wcs_api_responsiveness</td></tr>
+<tr><th>Access Surface</th><td>event_viewer, apidog, wcs_api</td></tr>
+<tr><th>Audience Roles</th><td>L2_support, L3_support</td></tr>
+<tr><th>Failure Pattern Tags</th><td>service_crash_or_restart, unplanned_restart, api_unresponsive</td></tr>
+<tr><th>Validation Status</th><td>needs_sme_review</td></tr>
+<tr><th>Merge Status</th><td>source_finalized</td></tr>
+</table>
+<h2>Summary</h2>
+<p>Use Windows Event Viewer / services to identify an OptiSweep service termination, inspect the OptiSweep service state in Windows Services, use the visible Restart the service control when a reset is required, and validate recovery through Apidog / WCS API with GetAgvStatuses.</p>
+<h2>When To Use</h2>
+<p>Use Windows Event Viewer / services and Apidog / WCS API when OptiSweep or the robotic system is not responding, the system has stopped, AGVs are out of sync, or a service termination is suspected. Confirm the service state and API response before treating the reset as successful.</p>
+<h2>Visual References</h2>
+<figure><img src="assets/dabb6bbd62f07c7c.png" alt="artifact_incident_228086_page_029_embedded_image_01" /><figcaption>Windows Event Viewer System log showing Service Control Manager Event 7031 for OptiSweep, including unexpected termination and the configured 60000-millisecond restart action.</figcaption></figure>
+<figure><img src="assets/3832c5ce44b05a86.png" alt="artifact_incident_228086_page_019_embedded_image_01" /><figcaption>Windows Services console showing OptiSweep selected, Running, Automatic startup, and the visible Restart the service control.</figcaption></figure>
+<figure><img src="assets/8625154eb02b186c.png" alt="artifact_incident_228086_page_017_embedded_image_01" /><figcaption>Apidog / WCS API client showing GetAgvStatuses with HTTP 200 and returned AGV records, including visible NORMAL values.</figcaption></figure>
+<figure><img src="assets/20e26ee29beb72ba.png" alt="artifact_incident_228086_page_026_full_page_01" /><figcaption>Incident Teams update stating that OptiSweep was reset and RMS was then used to locate and correct out-of-sync AGVs.</figcaption></figure>
+<h2>Procedure Steps</h2>
+<h3>Step 1 — Inspect the OptiSweep termination event in Windows Event Viewer / services</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In Windows Event Viewer / services, inspect the System log for Service Control Manager Event 7031 for OptiSweep. Check that the event reports an unexpected termination and identifies the 60000-millisecond restart action.</p>
+<p><strong>Expected result:</strong></p>
+<p>The live Windows Event Viewer / services System log displays an OptiSweep Event 7031 at Error level with an unexpected-termination message and a configured restart action after 60000 milliseconds.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>The event indicates repeated OptiSweep termination.</li>
+<li>The event confirms a configured restart but the service state cannot be confirmed in Windows Services.</li>
+</ul>
+<hr>
+<h3>Step 2 — Inspect the OptiSweep service in Windows Event Viewer / services</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In Windows Event Viewer / services, open Windows Services, select the service named OptiSweep, and inspect its live Status, Startup Type, and available service controls.</p>
+<p><strong>Expected result:</strong></p>
+<p>Windows Services displays OptiSweep with an observable Status and Startup Type; the incident evidence showed Running, Automatic, and a visible Restart the service control.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>OptiSweep is stopped and cannot be restarted.</li>
+<li>The Windows Services state is inconsistent with the Event Viewer evidence and cannot be confirmed.</li>
+</ul>
+<hr>
+<h3>Step 3 — Reset the OptiSweep service in Windows Event Viewer / services</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In Windows Event Viewer / services, use the visible Restart the service control for OptiSweep when the service requires the documented reset. Do not make other service or configuration changes.</p>
+<p><strong>Expected result:</strong></p>
+<p>The Windows Services console completes the selected OptiSweep restart operation and displays the resulting service state for subsequent Apidog / WCS API validation.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>OptiSweep cannot be restarted.</li>
+<li>OptiSweep remains stopped after the restart control is used.</li>
+<li>The service restarts but the subsequent Apidog / WCS API validation is unsuccessful.</li>
+</ul>
+<hr>
+<h3>Step 4 — Validate OptiSweep through Apidog / WCS API</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>In Apidog / WCS API, send the GetAgvStatuses request and inspect the live response status and returned AGV records.</p>
+<p><strong>Expected result:</strong></p>
+<p>Apidog / WCS API returns HTTP 200 for GetAgvStatuses and the response contains AGV records; visible records may include NORMAL status values.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>GetAgvStatuses has no response after the OptiSweep reset.</li>
+<li>The response is not HTTP 200 or contains no usable AGV records.</li>
+<li>The response is successful but the AGV state remains inconsistent and requires an undocumented RMS correction.</li>
+</ul>
+<hr>
+<h3>Step 5 — Escalate when Windows Event Viewer / services or Apidog / WCS API validation fails</h3>
+<p><strong>Responsible role:</strong> L2_support</p>
+<p><strong>Instruction:</strong></p>
+<p>If OptiSweep cannot be restarted in Windows Event Viewer / services or GetAgvStatuses does not return a response through Apidog / WCS API, stop this procedure and transfer ownership to L3_support. Do not attempt undocumented RMS state changes.</p>
+<p><strong>Expected result:</strong></p>
+<p>The unresolved service or API condition is assigned to L3_support with the observed Windows Services state, Event Viewer evidence, and Apidog / WCS API response condition available for review.</p>
+<p><strong>Stop or Escalate If:</strong></p><ul>
+<li>OptiSweep remains stopped or cannot be restarted.</li>
+<li>GetAgvStatuses does not return a response after the reset.</li>
+<li>A required RMS correction control is not identified.</li>
+</ul>
+<hr>
+</body>
+</html>

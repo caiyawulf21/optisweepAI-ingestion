@@ -1,0 +1,493 @@
+{
+  "procedure_id": "proc_acknowledge_hmi_fault_and_retry_v1",
+  "candidate_id": "candidate_incident_218550_acknowledge_hmi_fault_and_retry",
+  "title": "Acknowledge HMI fault at the hospital area and retry operation",
+  "procedure_type": "recovery",
+  "summary": "Source-specific incident recovery for an HMI fault reported at the hospital area within the UPS Haslet TX (TXRTH) incident context. The evidence supports viewing the faulted HMI, not unplugging the HMI, using the on-screen acknowledge action, retrying, confirming whether the tote is ID 28, and validating that the condition is cleared and reported as all good.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "operator"
+  ],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when the HMI associated with the hospital area is reported as showing a fault in the UPS Haslet TX (TXRTH) incident context, and the source-supported response is to acknowledge the fault on the HMI and retry the operation without unplugging the HMI.",
+  "not_for": [
+    "Do not use this runbook as justification to unplug the HMI; the source explicitly says not to unplug it.",
+    "Do not use this runbook for HMI project updates, stuck-task recovery creation, or undocumented task-debug procedures; those were discussed later in the incident but not performed as this recovery.",
+    "Do not use this runbook when the faulted device or tote context cannot be matched to the hospital-area HMI evidence in this case."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Guide the acknowledge-and-retry recovery, confirm the tote ID requested in the support exchange, and validate whether the condition clears."
+    },
+    {
+      "role": "operator",
+      "responsibility": "Access or view the HMI at the hospital area, perform the on-screen acknowledge action when directed, retry, and report the tote ID and recovery status."
+    }
+  ],
+  "safety_notes": [
+    "Do not unplug the HMI during this procedure; the source-supported response explicitly rejected unplugging.",
+    "Use only the on-screen acknowledge-and-retry action supported by the incident evidence.",
+    "Do not perform undocumented HMI changes or recovery modifications based on this case alone."
+  ],
+  "access_or_tools_needed": [
+    "Access to the HMI associated with the hospital area",
+    "Ability to use the HMI acknowledge control",
+    "Communication with site personnel to confirm tote ID and recovery status"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the HMI associated with the hospital area",
+      "Communication path with site personnel or operator at the HMI"
+    ],
+    "system_preconditions": [
+      "The HMI is powered and connected so the on-screen acknowledge action can be used.",
+      "A fault is currently visible or has just been reported on the hospital-area HMI."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [],
+  "related_event_ids": [
+    "incident_218550_event_024",
+    "incident_218550_event_025",
+    "incident_218550_event_026"
+  ],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_incident_218550_page_012_nested_image_01",
+      "description": "Small embedded screenshot of the hospital-area HMI/tote screen associated with the reported fault; text is mostly unreadable but supports the visual context of a faulted HMI screen.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "View the hospital-area HMI fault",
+      "responsible_role": "operator",
+      "supporting_role": "L2_support",
+      "purpose": "Confirm that the procedure is being applied to the same symptom shown in the incident evidence.",
+      "instruction": "Open or view the HMI associated with the hospital area and confirm that it is showing a fault before taking further action.",
+      "expected_result": "The HMI fault is visible or confirmed in the same hospital-area context referenced in the incident.",
+      "healthy_condition": "The HMI can be viewed and the reported fault context is identifiable.",
+      "failure_condition": "The HMI cannot be accessed, the fault cannot be confirmed, or the device/context does not match the hospital-area HMI described in the incident.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Inspect HMI fault state",
+          "exact_action": "Open or view the HMI associated with the hospital area and confirm it is showing a fault.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_incident_218550_page_012_nested_image_01",
+          "what_to_look_at": "HMI-like screen associated with the chat message stating that the HMI at the hospital is showing a fault."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The HMI cannot be accessed or viewed.",
+        "The visible issue does not match the hospital-area HMI fault context from this incident."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_218550:page_12",
+          "artifact_id": null,
+          "event_id": "incident_218550_event_024",
+          "chunk_id": "stage4_page_chunk_002",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "support_type": "teams_message",
+          "quote_or_summary": "The HMI at the hospital is showing a fault ... Should I unplug it?"
+        },
+        {
+          "page_ref": "case_218550:page_12",
+          "artifact_id": "artifact_incident_218550_page_012_nested_image_01",
+          "event_id": "incident_218550_event_024",
+          "chunk_id": "stage4_page_chunk_002",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "support_type": "artifact_visual",
+          "quote_or_summary": "Small HMI-like screenshot associated with chat context saying the HMI at the hospital is showing a fault"
+        }
+      ],
+      "related_event_ids": [
+        "incident_218550_event_024"
+      ]
+    },
+    {
+      "step_number": 2,
+      "title": "Keep the HMI connected",
+      "responsible_role": "operator",
+      "supporting_role": "L2_support",
+      "purpose": "Prevent an unsupported recovery action and keep the procedure aligned with the incident evidence.",
+      "instruction": "Do not unplug the HMI. Keep the device connected and prepare to use the on-screen acknowledge action instead.",
+      "expected_result": "The HMI remains connected and available for the acknowledge-and-retry action.",
+      "healthy_condition": "The HMI stays connected and no unplug action is taken.",
+      "failure_condition": "The next intended action is to unplug the HMI or otherwise remove it from service without source support.",
+      "actions": [
+        {
+          "action_type": "physical_action",
+          "label": "Do not unplug HMI",
+          "exact_action": "Do not unplug the HMI; keep the device connected.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_incident_218550_page_012_nested_image_01",
+          "what_to_look_at": "Use the same faulted HMI context; do not disconnect the device shown in this incident context."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Someone proposes unplugging the HMI as the next step.",
+        "The HMI cannot remain connected long enough to perform the acknowledge action."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_218550:page_12",
+          "artifact_id": null,
+          "event_id": "incident_218550_event_024",
+          "chunk_id": "stage4_page_chunk_002",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "support_type": "teams_message",
+          "quote_or_summary": "The HMI at the hospital is showing a fault ... Should I unplug it?"
+        },
+        {
+          "page_ref": "case_218550:page_12",
+          "artifact_id": null,
+          "event_id": "incident_218550_event_025",
+          "chunk_id": "stage4_page_chunk_002",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "support_type": "teams_message",
+          "quote_or_summary": "Hit acknowledge and try again. No. Is the tote ID 28?"
+        }
+      ],
+      "related_event_ids": [
+        "incident_218550_event_024",
+        "incident_218550_event_025"
+      ]
+    },
+    {
+      "step_number": 3,
+      "title": "Acknowledge the fault and retry",
+      "responsible_role": "operator",
+      "supporting_role": "L2_support",
+      "purpose": "Apply the exact recovery action supported by the incident evidence.",
+      "instruction": "Use the HMI acknowledge control, then try the operation again.",
+      "expected_result": "The fault is acknowledged and the operation is retried without unplugging the HMI.",
+      "healthy_condition": "The HMI accepts the acknowledge action and the retry proceeds.",
+      "failure_condition": "The HMI does not allow acknowledge, the retry cannot be attempted, or the fault remains after retry.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Acknowledge HMI fault",
+          "exact_action": "Hit acknowledge on the HMI.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "hmi_action",
+          "label": "Retry operation",
+          "exact_action": "Try again.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_incident_218550_page_012_nested_image_01",
+          "what_to_look_at": "Faulted HMI interface where the acknowledge action would be taken; screenshot text is unreadable, so rely on the chat-supported acknowledge instruction."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "Acknowledge-and-retry does not clear the issue.",
+        "The HMI still shows the fault after retry.",
+        "The required acknowledge control is not available on the HMI."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_218550:page_12",
+          "artifact_id": null,
+          "event_id": "incident_218550_event_025",
+          "chunk_id": "stage4_page_chunk_002",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "support_type": "teams_message",
+          "quote_or_summary": "Hit acknowledge and try again. No. Is the tote ID 28?"
+        },
+        {
+          "page_ref": "case_218550:page_12",
+          "artifact_id": "artifact_incident_218550_page_012_nested_image_01",
+          "event_id": "incident_218550_event_024",
+          "chunk_id": "stage4_page_chunk_002",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "support_type": "artifact_visual",
+          "quote_or_summary": "Small HMI-like screenshot associated with chat context saying the HMI at the hospital is showing a fault"
+        }
+      ],
+      "related_event_ids": [
+        "incident_218550_event_025"
+      ]
+    },
+    {
+      "step_number": 4,
+      "title": "Confirm whether the tote is ID 28",
+      "responsible_role": "operator",
+      "supporting_role": "L2_support",
+      "purpose": "Verify the tote identity explicitly requested during the support exchange.",
+      "instruction": "Check the HMI context or confirm with site personnel whether the tote involved at the hospital area is tote ID 28.",
+      "expected_result": "The tote involved is identified and can be reported back to support.",
+      "healthy_condition": "The tote ID is confirmed from the HMI context or site confirmation.",
+      "failure_condition": "The tote ID cannot be confirmed or does not match the requested context.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check tote ID on HMI context",
+          "exact_action": "Check whether the tote involved is tote ID 28.",
+          "role_required": "operator"
+        },
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm tote ID with site",
+          "exact_action": "Confirm with site personnel whether the tote at the hospital is 28.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_incident_218550_page_012_nested_image_01",
+          "what_to_look_at": "Hospital-area HMI/tote context associated with the support question about whether the tote ID is 28."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The tote ID cannot be determined from the HMI or site confirmation.",
+        "The tote context appears unrelated to the hospital-area HMI fault discussed in this incident."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_218550:page_12",
+          "artifact_id": null,
+          "event_id": "incident_218550_event_025",
+          "chunk_id": "stage4_page_chunk_002",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "support_type": "teams_message",
+          "quote_or_summary": "Hit acknowledge and try again. No. Is the tote ID 28?"
+        },
+        {
+          "page_ref": "case_218550:page_13",
+          "artifact_id": null,
+          "event_id": "incident_218550_event_026",
+          "chunk_id": "stage4_page_chunk_002",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "support_type": "teams_message",
+          "quote_or_summary": "Yes the tote at hospital is 28 Yes Sir all good"
+        }
+      ],
+      "related_event_ids": [
+        "incident_218550_event_025",
+        "incident_218550_event_026"
+      ]
+    },
+    {
+      "step_number": 5,
+      "title": "Validate recovery status",
+      "responsible_role": "L2_support",
+      "supporting_role": "operator",
+      "purpose": "Confirm that the acknowledge-and-retry action restored normal condition in this incident context.",
+      "instruction": "Verify with the site or from the HMI context that the tote at the hospital is 28 and that the condition is now cleared or reported as all good.",
+      "expected_result": "The site confirms the tote at the hospital is 28 and reports that the condition is all good.",
+      "healthy_condition": "The issue is reported cleared and the site confirms normal status.",
+      "failure_condition": "The site cannot confirm recovery, the fault remains visible, or the condition is not all good after retry.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Confirm recovery with site",
+          "exact_action": "Verify with the site that the tote at the hospital is 28 and that the condition is all good.",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "hmi_inspection",
+          "label": "Check cleared condition",
+          "exact_action": "Verify on the HMI context that the condition is now cleared if that status is visible.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The site does not confirm that the condition is all good.",
+        "The HMI still shows the issue after acknowledge-and-retry.",
+        "Recovery cannot be validated in the hospital-area context."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_218550:page_13",
+          "artifact_id": null,
+          "event_id": "incident_218550_event_026",
+          "chunk_id": "stage4_page_chunk_002",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "support_type": "teams_message",
+          "quote_or_summary": "Yes the tote at hospital is 28 Yes Sir all good"
+        }
+      ],
+      "related_event_ids": [
+        "incident_218550_event_026"
+      ]
+    }
+  ],
+  "success_criteria": [
+    "The hospital-area HMI fault is acknowledged without unplugging the HMI.",
+    "The operation is retried successfully.",
+    "The tote involved is confirmed as ID 28.",
+    "The site reports the condition is all good."
+  ],
+  "healthy_conditions": [
+    "The HMI remains connected throughout the procedure.",
+    "The acknowledge action is available and accepted on the HMI.",
+    "The tote at the hospital is confirmed as 28.",
+    "The post-retry status is reported as all good."
+  ],
+  "failure_conditions": [
+    "The HMI cannot be accessed or the fault cannot be confirmed.",
+    "The only contemplated next step is unplugging the HMI.",
+    "Acknowledge-and-retry does not clear the fault.",
+    "The tote ID cannot be confirmed.",
+    "The site does not confirm that the condition is all good after retry."
+  ],
+  "escalation_guidance": [
+    "Escalate if acknowledge-and-retry does not clear the fault or the HMI still shows the issue after retry.",
+    "Escalate if the HMI cannot remain connected or cannot be operated using the acknowledge control.",
+    "Escalate if the tote ID or recovery status cannot be confirmed in the hospital-area context.",
+    "Do not proceed into HMI update work, stuck-task recovery changes, or other undocumented remediation based on this runbook alone."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_incident_218550_page_012_nested_image_01",
+      "what_to_look_at": "Hospital-area HMI screenshot associated with the reported fault and acknowledge-and-retry guidance."
+    }
+  ],
+  "source_refs": [
+    {
+      "page_ref": "case_218550:page_12",
+      "artifact_id": null,
+      "event_id": "incident_218550_event_024",
+      "chunk_id": "stage4_page_chunk_002",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)",
+      "support_type": "teams_message",
+      "quote_or_summary": "The HMI at the hospital is showing a fault ... Should I unplug it?"
+    },
+    {
+      "page_ref": "case_218550:page_12",
+      "artifact_id": "artifact_incident_218550_page_012_nested_image_01",
+      "event_id": "incident_218550_event_024",
+      "chunk_id": "stage4_page_chunk_002",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)",
+      "support_type": "artifact_visual",
+      "quote_or_summary": "Small HMI-like screenshot associated with chat context saying the HMI at the hospital is showing a fault"
+    },
+    {
+      "page_ref": "case_218550:page_12",
+      "artifact_id": null,
+      "event_id": "incident_218550_event_025",
+      "chunk_id": "stage4_page_chunk_002",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)",
+      "support_type": "teams_message",
+      "quote_or_summary": "Hit acknowledge and try again. No. Is the tote ID 28?"
+    },
+    {
+      "page_ref": "case_218550:page_13",
+      "artifact_id": null,
+      "event_id": "incident_218550_event_026",
+      "chunk_id": "stage4_page_chunk_002",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)",
+      "support_type": "teams_message",
+      "quote_or_summary": "Yes the tote at hospital is 28 Yes Sir all good"
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_incident_218550_page_012_nested_image_01",
+      "what_to_look_at": "Hospital-area HMI screenshot associated with the reported fault and acknowledge-and-retry guidance."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_incident_218550_acknowledge_hmi_fault_and_retry"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "source_case_218550",
+      "source_type": "incident_case",
+      "source_title": "Case 218550 Data",
+      "source_version": "0.1",
+      "ingestion_batch_id": "batch_20260720T121856Z",
+      "candidate_id": "candidate_incident_218550_acknowledge_hmi_fault_and_retry",
+      "case_id": "218550",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)"
+    }
+  ],
+  "missing_details": [
+    "The HMI screenshot text is mostly unreadable, so exact on-screen labels and fields for the acknowledge control are not available from the artifact.",
+    "The source does not provide a precise estimated completion time.",
+    "The source does not specify whether production stop or LOTO is required.",
+    "The source does not provide exact retry mechanics beyond 'try again.'",
+    "The term 'hospital' is preserved from the incident chat as an internal area reference; the packet site metadata remains UPS Haslet TX (TXRTH)."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_incident_runbook_finalization",
+    "source_id": "source_case_218550",
+    "source_type": "incident_case",
+    "source_title": "Case 218550 Data",
+    "source_version": "0.1",
+    "ingestion_batch_id": "batch_20260720T121856Z",
+    "source_quality": "incident_case",
+    "incident_context": {
+      "case_id": "218550",
+      "site": "UPS Haslet TX (TXRTH)",
+      "site_code": "ups_haslet_tx",
+      "site_location": {
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "customer": "UPS",
+        "city": "Haslet",
+        "state": "TX",
+        "country": "US",
+        "hub_code": "TXRTH",
+        "region_label": "Fort Worth, TX"
+      },
+      "incident_start_time": "2025-04-03T04:28:00",
+      "incident_resolved_time": "2025-04-03",
+      "time_to_resolve": "same_day",
+      "resolution_confirmed": true
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_incident_218550_page_012_nested_image_01"
+  ],
+  "linked_event_ids": [
+    "incident_218550_event_024",
+    "incident_218550_event_025",
+    "incident_218550_event_026"
+  ]
+}

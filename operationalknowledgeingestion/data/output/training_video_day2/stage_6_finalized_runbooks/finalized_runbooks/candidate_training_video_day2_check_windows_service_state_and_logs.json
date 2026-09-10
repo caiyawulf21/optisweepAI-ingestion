@@ -1,0 +1,368 @@
+{
+  "procedure_id": "proc_check_windows_service_state_and_logs_gateway_unavailable_v1",
+  "candidate_id": "candidate_training_video_day2_check_windows_service_state_and_logs",
+  "title": "Check Windows Service State and Logs When the OptiSweep Gateway Is Unavailable",
+  "procedure_type": "diagnostic",
+  "summary": "Use Windows Event Viewer / services to inspect the relevant OptiSweep-related service, determine whether it is running or stopped, review available service or Event Viewer logs for crash or inactive-period evidence, and correlate the service state with gateway availability.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "wcs_service_health"
+  ],
+  "access_surface": [
+    "event_viewer"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "service_crash_or_restart"
+  ],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use this Windows Event Viewer / services diagnostic when the OptiSweep gateway is unavailable, does not open, or does not appear to be running, and a stopped service or service crash is suspected.",
+  "not_for": [
+    "Do not use this procedure to restart a service or change service configuration; the supplied evidence supports inspection only.",
+    "Do not use this procedure as a complete recovery procedure when the service state or logs do not explain the gateway outage."
+  ],
+  "roles_and_responsibilities": [
+    "L2_support performs the read-only Windows Event Viewer / services inspection and correlates service evidence with gateway availability.",
+    "Escalate when the service is stopped or inactive, the gateway remains unavailable, or available logs do not explain the outage."
+  ],
+  "safety_notes": [
+    "This is a read-only diagnostic procedure.",
+    "Do not perform an unsupported service restart or configuration change based only on this procedure."
+  ],
+  "access_or_tools_needed": [
+    "event_viewer: Windows Event Viewer / services",
+    "Windows Services MMC",
+    "Windows service logs or Event Viewer logs"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2_support access to the Windows host running the OptiSweep-related services",
+      "Access to Windows Services MMC and Windows Event Viewer"
+    ],
+    "system_preconditions": [
+      "The OptiSweep gateway is reported as unavailable, not opening, or not running."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_service_crash_stopped_gateway_impact_v1",
+    "ctx_training_video_windows_service_visibility_logs_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0049_check_to_make_sure_that_tippers_primary_03_13_10_000",
+      "description": "Windows Services view showing the OptiSweep service and service status fields.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500",
+      "description": "Windows Services view showing the OptiSweep service and the running-service state used when correlating service health with operation.",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0047_so_this_is_actually_pulled_premier_primary_03_12_33_000",
+      "description": "Service reference identifying Ignition, Stunnel, and OptiSweep as programs required for system operation.",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Inspect the OptiSweep-related service in Windows Services",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Identify the relevant OptiSweep-related service and observe its current live service state during the gateway outage.",
+      "instruction": "In the Windows Event Viewer / services surface, open Windows Services MMC and inspect the relevant OptiSweep-related service. The source identifies OptiSweep as a service involved in coordinating system operation; it also identifies Ignition and Stunnel as primary services used by the system.",
+      "expected_result": "The relevant service entry is visible with an observable status such as Running or a stopped/inactive state.",
+      "healthy_condition": "The relevant OptiSweep-related service is visible and its status is Running.",
+      "failure_condition": "The relevant service is stopped or inactive, or the service entry cannot be identified from the available Windows Services view.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open Windows Services",
+          "exact_action": "Open Windows Services MMC and inspect the relevant OptiSweep-related service.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The relevant service is stopped or inactive.",
+        "The relevant service cannot be identified from the available Windows Services view."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0044",
+          "timestamp_start": "03:05:01.000",
+          "timestamp_end": "03:09:34.000",
+          "quote_or_summary": "The discussion refers to checking Windows Services to determine whether a service has stopped or gone inactive.",
+          "site_code": null,
+          "site_label": null
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0047",
+          "timestamp_start": "03:12:33.000",
+          "timestamp_end": "03:12:33.000",
+          "quote_or_summary": "The primary services identified for system operation are Ignition, Stunnel, and OptiSweep.",
+          "site_code": null,
+          "site_label": null
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Record the observed service state",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Capture the live service state that can explain whether the gateway outage is associated with an inactive service.",
+      "instruction": "In Windows Services MMC, record whether the relevant OptiSweep-related service is Running, stopped, or otherwise inactive. Do not restart or reconfigure the service as part of this diagnostic.",
+      "expected_result": "The current service state is explicitly identified and can be compared with the reported gateway condition.",
+      "healthy_condition": "The relevant service is Running and the gateway is not showing the service-unavailable symptom.",
+      "failure_condition": "The relevant service is stopped or inactive while the gateway does not open or run.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Inspect service status",
+          "exact_action": "Record whether the relevant service is running or stopped/inactive.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The service is stopped or inactive.",
+        "The gateway does not open or run while the service is stopped or inactive."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0044",
+          "timestamp_start": "03:05:01.000",
+          "timestamp_end": "03:09:34.000",
+          "quote_or_summary": "The discussion connects a stopped service with the gateway not opening or running and refers to an approximately 10–12 minute inactive period.",
+          "site_code": null,
+          "site_label": null
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Review service and Event Viewer logs",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Determine whether available Windows log evidence shows a service crash, restart, or inactive interval associated with the gateway outage.",
+      "instruction": "Use Windows Event Viewer / services to review the available Windows service logs or Event Viewer entries for the relevant service and the reported outage period. Look for observable evidence of a crash, restart, or period in which service activity was absent.",
+      "expected_result": "Available log entries either correlate the outage with a service crash, restart, or inactive interval, or show that the available logs do not explain the outage.",
+      "healthy_condition": "The logs show continuous or otherwise explainable service activity without a crash or unexplained inactive interval during the gateway-availability check.",
+      "failure_condition": "The logs show a service crash, restart, or inactive interval corresponding to the gateway outage, or contain no explanatory evidence for the observed outage.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Review Windows logs",
+          "exact_action": "Review the associated Windows service logs or available Windows Event Viewer entries for evidence of a crash, restart, or inactive interval.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "A crash, restart, or inactive interval is identified.",
+        "The logs do not explain the observed gateway outage."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0044",
+          "timestamp_start": "03:05:01.000",
+          "timestamp_end": "03:09:34.000",
+          "quote_or_summary": "The discussion states that logs should be checked to determine whether a service stopped or went inactive after a crash.",
+          "site_code": null,
+          "site_label": null
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Correlate service state with gateway operation",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm whether the observed service state corresponds to the live gateway-availability symptom.",
+      "instruction": "Confirm the current gateway condition while the relevant service state is known. Compare whether the gateway opens or runs when the service is Running with the reported condition when the service is stopped or inactive. Do not perform a service restart as part of this step.",
+      "expected_result": "The service state and gateway condition are correlated as either consistent or unexplained.",
+      "healthy_condition": "The relevant service is Running and the gateway is operating or opening normally.",
+      "failure_condition": "The gateway does not open or run while the relevant service is stopped or inactive, or the gateway remains unavailable even though the service is Running.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check gateway availability",
+          "exact_action": "Confirm whether the gateway is operating while the service is running.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The gateway does not open or run while the service is stopped or inactive.",
+        "The gateway remains unavailable while the relevant service is Running.",
+        "The service state and available logs do not explain the outage."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "source_title": "FORTNA OptiSweep Training Day 2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0044",
+          "timestamp_start": "03:05:01.000",
+          "timestamp_end": "03:09:34.000",
+          "quote_or_summary": "The discussion associates a stopped service with the gateway not opening or running.",
+          "site_code": null,
+          "site_label": null
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "The relevant OptiSweep-related service state is observed in Windows Services MMC.",
+    "Available Windows service or Event Viewer logs are reviewed for crash, restart, or inactive-period evidence.",
+    "The service state is correlated with whether the gateway opens or runs.",
+    "Any unexplained outage or stopped/inactive service is escalated without performing an unsupported restart or configuration change."
+  ],
+  "healthy_conditions": [
+    "The relevant OptiSweep-related service is Running in Windows Services MMC.",
+    "Available logs do not show a crash, restart, or unexplained inactive interval during the checked period.",
+    "The gateway opens or runs while the relevant service is Running."
+  ],
+  "failure_conditions": [
+    "The relevant service is stopped or inactive.",
+    "Windows logs show a crash, restart, or inactive interval associated with the outage.",
+    "The gateway does not open or run while the service is stopped or inactive.",
+    "The gateway remains unavailable even though the relevant service is Running.",
+    "Available logs do not explain the observed outage."
+  ],
+  "escalation_guidance": [
+    "Escalate when the relevant service is stopped or inactive.",
+    "Escalate when the gateway does not open or run in correlation with a stopped or inactive service.",
+    "Escalate when logs show a crash, restart, or inactive interval.",
+    "Escalate when the service is Running but the gateway remains unavailable.",
+    "Do not restart the service or change service configuration under this diagnostic procedure; the source does not provide verified recovery steps."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0049_check_to_make_sure_that_tippers_primary_03_13_10_000",
+      "what_to_look_at": "Windows Services MMC view showing the OptiSweep service, Status column, and available service actions. Use it to observe state; do not infer a restart action from the image."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500",
+      "what_to_look_at": "Windows Services MMC view showing the OptiSweep service with its live status and the surrounding service list."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0047_so_this_is_actually_pulled_premier_primary_03_12_33_000",
+      "what_to_look_at": "Reference view identifying Ignition, Stunnel, and OptiSweep as the three primary programs described as required for system operation."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "section_id": "training_video_day2_segment_0044",
+      "timestamp_start": "03:05:01.000",
+      "timestamp_end": "03:09:34.000",
+      "quote_or_summary": "The discussion says that a stopped service can prevent the gateway from opening or running and refers to checking Windows Services and logs to determine whether a service has stopped or gone inactive.",
+      "site_code": null,
+      "site_label": null
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0049_check_to_make_sure_that_tippers_primary_03_13_10_000",
+      "what_to_look_at": "Windows Services MMC view showing the OptiSweep service, Status column, and available service actions. Use it to observe state; do not infer a restart action from the image."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0051_you_know_this_is_like_you_primary_03_13_45_500",
+      "what_to_look_at": "Windows Services MMC view showing the OptiSweep service with its live status and the surrounding service list."
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0047_so_this_is_actually_pulled_premier_primary_03_12_33_000",
+      "what_to_look_at": "Reference view identifying Ignition, Stunnel, and OptiSweep as the three primary programs described as required for system operation."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_check_windows_service_state_and_logs"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The exact Windows service name to inspect is not specified beyond the OptiSweep-related service shown in the supplied evidence.",
+    "The service host name or server location is not specified.",
+    "No specific Windows Event Viewer log name, event identifier, timestamp query, or retention period is provided.",
+    "The source does not provide verified service restart, recovery, or configuration-change steps.",
+    "The source does not define a confirmed gateway health field or endpoint beyond whether the gateway opens or runs."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

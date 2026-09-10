@@ -1,0 +1,402 @@
+{
+  "procedure_id": "proc_use_hospital_tags_model_map_hospital_controller_tags_to_plc_v1",
+  "candidate_id": "candidate_training_video_d2_hospital_tags_model_map_tags_to_plc",
+  "title": "Use the Hospital Tags Model to map hospital controller tags to PLC communication (TagTypeParent in/out)",
+  "procedure_type": "diagnostic",
+  "summary": "Verify that the Hospital Tags Model is configured to process hospital controller data via a subscribed list of tags, and that TagTypeParent classifies tags as in vs out to determine which tags the system acts on for PLC communication (including Todd’s tippers and the hospital/display).",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "wcs_api_responsiveness",
+    "opc_connection_or_tipper_heartbeat",
+    "gateway_health"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive",
+    "opc_connection_faulted",
+    "system_fault"
+  ],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use when you need to confirm how hospital controller data is represented as subscribed tags and how TagTypeParent (in/out) drives which tags are read/written for PLC communication (hospital and tipper PLC communication).",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Validate the configured Hospital Tags Model behavior (subscribed tag list and TagTypeParent in/out classification) and determine whether the expected in/out tag sets align with the hospital controller vs tipper PLC communication described by the model."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Access to the configured hospital tags model (where the hospital tag list and TagTypeParent are defined)",
+    "A way to view hospital tag configuration (database/config UI not specified in source)"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Access to the configured hospital tags model (where the hospital tag list and TagTypeParent are defined)",
+      "A way to view hospital tag configuration (database/config UI not specified in source)"
+    ],
+    "system_preconditions": [],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_hospital_tags_model_v1",
+    "ctx_training_video_tag_type_parent_in_out_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+      "description": "Frame showing: Hospital tags model processes hospital controller data via subscribed tags; TagTypeParent indicates in vs out; tags are used to communicate with the PLC (Todd’s tippers, hospital, and display).",
+      "required_level": "required"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Identify the configured Hospital Tags Model used for hospital controller tag processing",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Establish which configured model is responsible for processing hospital controller data into subscribed tags that the system acts on.",
+      "instruction": "Open the configured Hospital Tags Model in the live environment (the model that processes data from the hospital controller via a subscribed list of tags).",
+      "expected_result": "You can point to the configured Hospital Tags Model that is described as processing hospital controller data using a list of tags that are subscribed to and actioned on.",
+      "healthy_condition": "The live configuration contains a Hospital Tags Model definition that includes a subscribed tag list concept and TagTypeParent-based actioning.",
+      "failure_condition": "You cannot locate the configured Hospital Tags Model in the live environment, or the configuration does not expose a subscribed tag list / TagTypeParent concept.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Locate Hospital Tags Model configuration",
+          "exact_action": "Identify the configured “hospital tags model” used to process data from the hospital controller.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop if the source evidence is insufficient to locate the actual configured tag list in the live system; request access to the relevant database/configuration view."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:48:01.000",
+          "timestamp_end": "02:01:19.000",
+          "quote_or_summary": "“The hospital tags model is to process the data from the hospital controller. We have a list of tags that we subscribe to and action on based on the tag type parent.”",
+          "site_code": "",
+          "site_label": ""
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "01:54:40.000",
+          "timestamp_end": "01:54:40.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+          "segment_id": "segment_training_video_0022",
+          "quote_or_summary": "Frame text: “Hospital Tags Model… subscribe… action on based on the TagTypeParent… TagTypeParent… in or out.”",
+          "site_code": "",
+          "site_label": ""
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Locate the subscribed hospital tag list that is actioned based on TagTypeParent",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the model contains the list of hospital controller tags that are subscribed to and used for PLC communication.",
+      "instruction": "In the Hospital Tags Model configuration, locate the list of hospital tags that are subscribed to and actioned on based on TagTypeParent.",
+      "expected_result": "The configuration shows a list of hospital tags that are subscribed to and that the system uses for PLC communication.",
+      "healthy_condition": "The subscribed tag list is present and is associated with TagTypeParent-based actioning (in/out).",
+      "failure_condition": "The subscribed hospital tag list is missing, empty, or not associated with TagTypeParent-based actioning.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Find subscribed hospital tags list",
+          "exact_action": "Locate the list of hospital tags that are “subscribed to” and “action on based on the tag type parent.”",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop if the source evidence is insufficient to locate the actual configured tag list in the live system; request access to the relevant database/configuration view."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:48:01.000",
+          "timestamp_end": "02:01:19.000",
+          "quote_or_summary": "“We have a list of tags that we subscribe to and action on based on the tag type parent.”"
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "01:54:40.000",
+          "timestamp_end": "01:54:40.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+          "segment_id": "segment_training_video_0022",
+          "quote_or_summary": "Frame text: “subscribe… action on based on the TagTypeParent…”."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Confirm TagTypeParent is used to classify tags as in vs out",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure TagTypeParent is the mechanism that determines whether a tag is treated as an input (in) or output (out) for PLC communication.",
+      "instruction": "In the Hospital Tags Model configuration, verify that TagTypeParent is present and explicitly indicates whether each tag is an in or out tag.",
+      "expected_result": "TagTypeParent is configured such that it classifies tags as in vs out.",
+      "healthy_condition": "For the hospital tag entries, TagTypeParent values map to in/out classification used by the system.",
+      "failure_condition": "TagTypeParent is not present, not populated, or does not classify tags as in vs out as described.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify TagTypeParent in/out classification",
+          "exact_action": "Confirm TagTypeParent is used to classify tags as in vs out.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If TagTypeParent is not being used as described (in/out classification), escalate to deeper configuration review by L2/L3 support."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:48:01.000",
+          "timestamp_end": "02:01:19.000",
+          "quote_or_summary": "“The tag type parent just whether it's an in or out.”"
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "01:54:40.000",
+          "timestamp_end": "01:54:40.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+          "segment_id": "segment_training_video_0022",
+          "quote_or_summary": "Frame text: “TagTypeParent… in or out.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Confirm hospital tags are used for PLC communication via read/write actions",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Validate that the subscribed hospital tags (classified by TagTypeParent) are used to communicate with the PLC, including Todd’s tippers and the hospital/display.",
+      "instruction": "Using the Hospital Tags Model configuration, confirm that the in/out-tag classification drives read/write actions to PLC-related tags used for Todd’s tippers and the hospital/display communication.",
+      "expected_result": "The configured hospital tags are described/linked to PLC communication actions (read/write) and include Todd’s tippers and the hospital/display.",
+      "healthy_condition": "The model’s tag list includes both hospital-related tags and tipper-related tags that are used for PLC communication, with TagTypeParent determining in vs out behavior.",
+      "failure_condition": "The configuration does not connect the hospital tags model to PLC communication (read/write), or it omits tipper/hospital/display tag groups described by the model.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify PLC communication linkage",
+          "exact_action": "Confirm the hospital tags are used to communicate with the PLC by reading/writing to PLC-related tags (described as including Todd’s tippers and the hospital/display).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If TagTypeParent is not being used as described (in/out classification), or the expected hospital tags list is missing/incorrect, escalate to deeper configuration review by L2/L3 support."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:48:01.000",
+          "timestamp_end": "02:01:19.000",
+          "quote_or_summary": "“These are just list of tags that we use to communicate with the PLC like with Todd's tippers and the hospital and all the display.”"
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "01:54:40.000",
+          "timestamp_end": "01:54:40.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+          "segment_id": "segment_training_video_0022",
+          "quote_or_summary": "Frame text includes: “subscribe… action on based on the TagTypeParent… in or out.”"
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "timestamp_start": "00:05:52.500",
+          "timestamp_end": "00:05:52.500",
+          "artifact_id": "artifact_training_video_training_video_day2_0004_so_sorter_sweeper_module_orchestrates_the_primary_00_05_52_500",
+          "segment_id": "segment_training_video_0004",
+          "quote_or_summary": "“The OPC COM module… is used to connect to the hospital and the tippers relaying the relevant tags.” and “The OPC communication module connects to the OPC server and subscribes to tags.”"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 5,
+      "title": "If troubleshooting, record which tags should be in vs out based on TagTypeParent and expected hospital vs tipper communication",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Create an evidence-based expectation set for troubleshooting: which tags should be classified as in vs out and which correspond to hospital controller vs tipper PLC communication described by the model.",
+      "instruction": "When troubleshooting, use the Hospital Tags Model configuration to record the expected in/out tag sets based on TagTypeParent, and map them to the hospital controller vs tipper PLC communication described by the model (Todd’s tippers and the hospital/display).",
+      "expected_result": "You have a recorded expectation of which tags should be in vs out and which tags correspond to hospital controller vs tipper PLC communication.",
+      "healthy_condition": "The recorded expectation aligns with the configured subscribed tag list and TagTypeParent in/out classification.",
+      "failure_condition": "The expected in/out mapping does not align with the configured tag list or TagTypeParent classification, indicating a configuration mismatch.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Record expected in/out tag mapping",
+          "exact_action": "If troubleshooting, record which tag(s) are expected to be in vs out based on TagTypeParent and whether they correspond to the hospital controller vs tipper PLC communication described by the model.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If TagTypeParent is not being used as described (in/out classification), or the expected hospital tags list is missing/incorrect, escalate to deeper configuration review by L2/L3 support."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:48:01.000",
+          "timestamp_end": "02:01:19.000",
+          "quote_or_summary": "“We have a list of tags that we subscribe to and action on based on the tag type parent… Tag type parent just whether it's an in or out.”"
+        },
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "page": 22,
+          "section_id": "training_video_day2_segment_0022",
+          "timestamp_start": "01:48:01.000",
+          "timestamp_end": "02:01:19.000",
+          "quote_or_summary": "“These are just list of tags that we use to communicate with the PLC like with Todd's tippers and the hospital and all the display.”"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Hospital Tags Model configuration is located and shows a subscribed list of hospital tags.",
+    "TagTypeParent is present and classifies tags as in vs out.",
+    "The configured hospital tags are used for PLC communication actions, including Todd’s tippers and the hospital/display."
+  ],
+  "healthy_conditions": [
+    "Subscribed hospital tag list exists and is actioned based on TagTypeParent.",
+    "TagTypeParent values map to in/out classification used to decide read/write behavior for PLC communication.",
+    "Hospital tags model includes tags used to communicate with the PLC for Todd’s tippers and the hospital/display."
+  ],
+  "failure_conditions": [
+    "TagTypeParent is missing, not populated, or does not classify tags as in vs out.",
+    "Subscribed hospital tags list is missing/incorrect or cannot be located in the live configuration.",
+    "Hospital tags model is not linked to PLC communication actions (read/write) for hospital/display and tipper tags."
+  ],
+  "escalation_guidance": [
+    "Escalate to deeper configuration review by L2/L3 support if TagTypeParent is not being used as described (in/out classification), or if the expected hospital tags list is missing/incorrect."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+      "what_to_look_at": "Frame text stating: Hospital tags model processes hospital controller data; subscribe to tags; action on based on TagTypeParent; TagTypeParent indicates in or out; tags used to communicate with the PLC (Todd’s tippers, hospital, and display)."
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "source_document_id": "training_video_day2_video",
+      "page": 22,
+      "section_id": "training_video_day2_segment_0022",
+      "timestamp_start": "01:48:01.000",
+      "timestamp_end": "02:01:19.000",
+      "quote_or_summary": "Hospital tags model processes data from the hospital controller via a list of tags subscribed to and actioned on based on TagTypeParent; TagTypeParent indicates in or out."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0022_wait_do_we_need_to_stay_primary_01_54_40_000",
+      "what_to_look_at": "Frame showing: Hospital tags model processes hospital controller data via subscribed tags; TagTypeParent indicates in vs out; tags are used to communicate with the PLC (Todd’s tippers, hospital, and display)."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_d2_hospital_tags_model_map_tags_to_plc"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "source_version": null,
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not name the exact live UI/DB tables/fields to inspect for the configured Hospital Tags Model and TagTypeParent values.",
+    "The source does not specify the exact live configuration view/tool (e.g., SSMS table names, Helix DB model names, or a specific configuration UI path) to locate the subscribed hospital tag list."
+  ],
+  "validation_status": "rejected_not_a_runbook",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "quarantine_reasons": [
+    "expected results are not concrete/observable on a live surface"
+  ]
+}

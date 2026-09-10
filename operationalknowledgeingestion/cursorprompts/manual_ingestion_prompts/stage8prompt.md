@@ -31,8 +31,18 @@ Playbook linking + finalization
 
         ↓
 
-Shared Stage 9+
-Relationship linking, validation, publish
+Shared Stage 9
+Corpus validation
+
+        ↓
+
+Shared Stage 10
+Vector embedding generation
+
+        ↓
+
+Shared Stage 11
+Cosmos DB publishing and manifest
 ```
 
 ---

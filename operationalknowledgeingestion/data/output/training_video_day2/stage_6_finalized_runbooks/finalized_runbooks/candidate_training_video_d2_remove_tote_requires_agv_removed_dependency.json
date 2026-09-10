@@ -1,0 +1,305 @@
+{
+  "procedure_id": "proc_remove_tote_requires_toteid_agv_removed_dependency_v1",
+  "candidate_id": "candidate_training_video_d2_remove_tote_requires_agv_removed_dependency",
+  "title": "Remove a tote from the system (Remove tote requires tote ID; AGV must be removed first)",
+  "procedure_type": "recovery",
+  "summary": "Remove a tote from the system using the OptiSweep / WCS API, but only after confirming the required dependency: the AGV must be removed before the tote can be removed. The tote removal request requires a ToteID.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "bag_out_or_closeout_state",
+    "wcs_api_responsiveness"
+  ],
+  "access_surface": [
+    "wcs_api",
+    "apidog"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [
+    "api_unresponsive"
+  ],
+  "support_safe": false,
+  "requires_production_stop": null,
+  "requires_loto": null,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to remove a tote from the system and the system enforces the dependency that the AGV must be removed first; the tote removal request requires a ToteID.",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the tote removal request via the OptiSweep / WCS API client (Apidog / WCS API) using the required ToteID, and verify the API result indicates the tote was removed."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "Apidog / WCS API client (OptiSweep / WCS API)"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "Apidog / WCS API client access"
+    ],
+    "system_preconditions": [
+      "AGV removal dependency must be satisfied before attempting tote removal (AGV must be removed before the tote can be removed)."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_tote_removal_dependency_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0031_for_totes_we_have_exchange_sorter_primary_02_44_11_000",
+      "description": "Frame showing tote API behavior: 'Remove to requires a tote ID' and dependency: 'AGV must be removed before the tote can be removed.'",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0029_remove_agv_this_requires_the_robot_primary_02_42_03_000",
+      "description": "Frame showing AGV removal API concept: 'RemoveAgv: Requires the robotld ... remove the specified AGV from the system.' Used to support the AGV-removed dependency.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+      "description": "Frame stating APIs are available via Apidog and feed Ignition (supports using Apidog as the API client).",
+      "required_level": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Confirm the AGV is removed before attempting tote removal",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "The system dependency requires AGV removal before tote removal can succeed.",
+      "instruction": "Before you attempt the tote removal request in the OptiSweep / WCS API client (Apidog / WCS API), confirm the AGV-removed dependency is satisfied (AGV must be removed before the tote can be removed).",
+      "expected_result": "You have confirmed that the AGV removal dependency is satisfied prior to sending the tote removal request.",
+      "healthy_condition": "AGV is already removed such that tote removal is allowed to proceed.",
+      "failure_condition": "You attempt tote removal while the AGV-removed dependency is not satisfied.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify AGV removed dependency",
+          "exact_action": "Confirm the AGV is removed before attempting tote removal (the segment explicitly states the AGV must be removed before the tote can be removed).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot confirm the AGV-removed dependency is satisfied, do not proceed with tote removal; resolve the AGV removal first."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0031",
+          "page": 31,
+          "segment_id": "segment_training_video_0031",
+          "timestamp_start": "02:43:37.000",
+          "timestamp_end": "02:44:45.000",
+          "quote_or_summary": "Remove to requires a tote ID and will remove the tote from the system. Note that the AGV must be removed before the tote can be removed."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Send tote removal request using required ToteID via Apidog / WCS API",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Tote removal requires a tote ID and is performed via the OptiSweep / WCS API client.",
+      "instruction": "In the OptiSweep / WCS API client (Apidog / WCS API), perform the tote removal action using the required ToteID.",
+      "expected_result": "A tote removal request is sent that includes the required ToteID.",
+      "healthy_condition": "The request includes the ToteID required for tote removal.",
+      "failure_condition": "The request is missing the required ToteID or is sent before the AGV-removed dependency is satisfied.",
+      "actions": [
+        {
+          "action_type": "command_action",
+          "label": "Remove tote (ToteID required)",
+          "exact_action": "Use the OptiSweep / WCS API client (Apidog / WCS API) to perform the tote removal action using the required ToteID.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If the request cannot be formed with the required ToteID, stop and correct the input before retrying."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0031",
+          "page": 31,
+          "segment_id": "segment_training_video_0031",
+          "timestamp_start": "02:43:37.000",
+          "timestamp_end": "02:44:45.000",
+          "quote_or_summary": "Remove to requires a tote ID and will remove the tote from the system."
+        },
+        {
+          "source_id": "training_video_day2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0027",
+          "page": 27,
+          "segment_id": "segment_training_video_0027",
+          "timestamp_start": "02:39:55.500",
+          "timestamp_end": "02:39:55.500",
+          "quote_or_summary": "We have Apidog installed on the primary servers."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Verify API response confirms tote removal",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Ensure the tote is actually removed from the system after the request.",
+      "instruction": "Observe the API response/result from the tote removal request to confirm the tote is removed from the system.",
+      "expected_result": "The API response/result indicates success/removal confirmation for the tote removal request.",
+      "healthy_condition": "The response indicates the tote was removed from the system.",
+      "failure_condition": "The response indicates failure/rejection, or the tote remains present after the request.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Check removal result",
+          "exact_action": "Observe the API response/result to confirm the tote is removed from the system.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If tote removal fails, stop and verify the AGV removed dependency is satisfied before retrying.",
+        "Escalate if the API continues to reject removal even after AGV removal."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "section_id": "training_video_day2_segment_0031",
+          "page": 31,
+          "segment_id": "segment_training_video_0031",
+          "timestamp_start": "02:43:37.000",
+          "timestamp_end": "02:44:45.000",
+          "quote_or_summary": "Remove to requires a tote ID and will remove the tote from the system. Note that the AGV must be removed before the tote can be removed."
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "Tote removal succeeds only after the AGV is removed.",
+    "The tote is removed from the system when the tote removal request includes the required ToteID."
+  ],
+  "healthy_conditions": [
+    "AGV removed dependency is satisfied before tote removal is attempted.",
+    "Tote removal request includes ToteID.",
+    "API response indicates tote removal confirmation."
+  ],
+  "failure_conditions": [
+    "Tote removal fails due to AGV not removed dependency.",
+    "API rejects tote removal even after AGV removal."
+  ],
+  "escalation_guidance": [
+    "If tote removal continues to be rejected after confirming the AGV-removed dependency is satisfied, escalate because the API continues to reject removal even after AGV removal."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0031_for_totes_we_have_exchange_sorter_primary_02_44_11_000",
+      "description": "Tote removal dependency and ToteID requirement ('Remove to requires a tote ID' and 'AGV must be removed before the tote can be removed').",
+      "required_level": "recommended"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0029_remove_agv_this_requires_the_robot_primary_02_42_03_000",
+      "description": "AGV removal API concept used to support the prerequisite dependency.",
+      "required_level": "optional"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500",
+      "description": "Apidog availability statement to support using Apidog as the API client.",
+      "required_level": "optional"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 31,
+      "section_id": "training_video_day2_segment_0031",
+      "segment_id": "segment_training_video_0031",
+      "timestamp_start": "02:43:37.000",
+      "timestamp_end": "02:44:45.000",
+      "quote_or_summary": "Remove to requires a tote ID and will remove the tote from the system. Note that the AGV must be removed before the tote can be removed."
+    },
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "page": 27,
+      "section_id": "training_video_day2_segment_0027",
+      "segment_id": "segment_training_video_0027",
+      "timestamp_start": "02:39:55.500",
+      "timestamp_end": "02:39:55.500",
+      "quote_or_summary": "We have Apidog installed on the primary servers."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0031_for_totes_we_have_exchange_sorter_primary_02_44_11_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0029_remove_agv_this_requires_the_robot_primary_02_42_03_000"
+    },
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0027_apis_up_db_suite_provides_apis_primary_02_39_55_500"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_d2_remove_tote_requires_agv_removed_dependency"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The source does not provide the specific tote-removal API endpoint name, request field names (beyond the requirement for ToteID), or the exact success/failure response payload/status fields to check in Apidog.",
+    "The source does not provide a live UI/API evidence frame showing the tote removal request form fields (ToteID input) or the removal response payload/status."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  }
+}

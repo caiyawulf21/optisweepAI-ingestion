@@ -1,0 +1,840 @@
+[
+  {
+    "id": "playbook:one_per_incident:228086:sitewide_robotic_stoppage",
+    "type": "playbook",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_228086:event_002",
+      "evidence:case_228086:event_003",
+      "evidence:case_228086:event_018",
+      "evidence:case_228086:event_019",
+      "evidence:case_228086:event_021",
+      "evidence:case_228086:event_022",
+      "evidence:case_228086:event_023",
+      "evidence:case_228086:event_025",
+      "evidence:case_228086:event_026",
+      "evidence:case_228086:event_027",
+      "evidence:case_228086:event_028",
+      "evidence:case_228086:event_029",
+      "evidence:case_228086:event_030",
+      "evidence:case_228086:event_033",
+      "evidence:case_228086:event_034",
+      "evidence:case_228086:event_035",
+      "evidence:case_228086:event_039",
+      "evidence:case_228086:event_040",
+      "evidence:case_228086:event_041",
+      "evidence:case_228086:event_042",
+      "evidence:case_228086:event_043",
+      "evidence:case_228086:event_044",
+      "evidence:case_228086:event_045",
+      "evidence:case_228086:event_046",
+      "evidence:case_228086:event_049",
+      "evidence:case_228086:event_050",
+      "evidence:case_228086:stage8_playbook_one_per_incident_playbook_incident_228086_sitewide_robotic_stoppage"
+    ],
+    "constraints": {
+      "sites": [
+        "ups_haslet"
+      ],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T17:02:12.824374Z",
+    "updated_at": "2026-09-08T17:02:12.824374Z",
+    "title": "[one_per_incident] Site-wide robotic stoppage with AGV synchronization loss",
+    "playbook_goal": "Restore stable robotic and sort operation by distinguishing a site-wide control-system or service interruption from a localized AGV condition, then validating service responsiveness, AGV state, and resumed automated operation.",
+    "entry_symptom_entity_ids": [
+      "entity:symptom:site_stoppage",
+      "entity:symptom:service_crash_or_restart",
+      "entity:symptom:unplanned_restart",
+      "entity:symptom:web_app_fault",
+      "entity:symptom:gateway_unhealthy",
+      "entity:state:device_roster_mapping_and_fleet_membership_state"
+    ],
+    "affected_entity_ids": [],
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm the observable scope of the stoppage",
+        "capability_id": "capability:confirm_fleet_system_status",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:symptom:site_stoppage",
+        "intent": "Determine whether the report represents a site-wide or broad robotic stoppage with abnormal control-system presentation rather than an isolated robot issue.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "If the scope cannot be confirmed or the evidence is limited to an unreadable interface, leave this path for retriage rather than assuming a system-wide service fault.",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Site confirms broad non-movement and RMS overview shows abnormal/blank presentation.",
+            "next_node_id": "node_2",
+            "source_refs": [
+              "evidence:case_228086:event_002",
+              "evidence:case_228086:event_003",
+              "evidence:case_228086:event_030",
+              "evidence:case_228086:event_035"
+            ]
+          },
+          {
+            "outcome": "healthy",
+            "condition": "Site indicates localized issue or broad pattern not confirmed.",
+            "next_node_id": "node_8",
+            "source_refs": [
+              "evidence:case_228086:event_002",
+              "evidence:case_228086:event_003",
+              "evidence:case_228086:event_030",
+              "evidence:case_228086:event_035"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:event_002",
+          "evidence:case_228086:event_003",
+          "evidence:case_228086:event_030",
+          "evidence:case_228086:event_035"
+        ]
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "diagnostic_decision",
+        "title": "Check for a named service or application failure",
+        "capability_id": "capability:confirm_windows_service_and_event_log_evidence",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:symptom:service_crash_or_restart",
+        "intent": "Determine whether Windows evidence indicates an OptiSweep service termination or clustered WCSWebApplication/application errors that correlate with the broad stoppage.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Event Viewer shows OptiSweep terminated unexpectedly and/or clustered WCSWebApplication/Application Error entries correlated with stoppage timing.",
+            "next_node_id": "node_3",
+            "source_refs": [
+              "evidence:case_228086:event_044",
+              "evidence:case_228086:event_045",
+              "evidence:case_228086:event_046",
+              "evidence:case_228086:event_049",
+              "evidence:case_228086:event_050"
+            ]
+          },
+          {
+            "outcome": "healthy",
+            "condition": "Windows evidence does not show a service termination/app fault cluster that correlates with the stoppage.",
+            "next_node_id": "node_8",
+            "source_refs": [
+              "evidence:case_228086:event_044",
+              "evidence:case_228086:event_045",
+              "evidence:case_228086:event_046",
+              "evidence:case_228086:event_049",
+              "evidence:case_228086:event_050"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:event_044",
+          "evidence:case_228086:event_045",
+          "evidence:case_228086:event_046",
+          "evidence:case_228086:event_049",
+          "evidence:case_228086:event_050"
+        ]
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "procedure_reference",
+        "title": "Restore the affected OptiSweep or gateway service through an approved procedure",
+        "capability_id": null,
+        "procedure_id": "procedure:confirm_ignition_gateway_health:case_228086_proc_ignition_gateway_restart_and_optisweep_response_validation_v1",
+        "symptom_entity_id": null,
+        "intent": "Perform the source-supported recovery direction for the affected control service or gateway when the authorized support role confirms an abnormal service or gateway state.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Do not proceed with unsupported configuration, database, or server changes. Stop if the authorized recovery procedure or its safety prerequisites are unavailable.",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "Approved recovery completed and confirmed via observable status evidence.",
+            "next_node_id": "node_4",
+            "source_refs": [
+              "evidence:case_228086:event_018",
+              "evidence:case_228086:event_022",
+              "evidence:case_228086:event_029",
+              "evidence:case_228086:event_039"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "No completed status evidence or repeated failure/unsupported action boundary exceeded.",
+            "next_node_id": "node_8",
+            "source_refs": [
+              "evidence:case_228086:event_018",
+              "evidence:case_228086:event_022",
+              "evidence:case_228086:event_029",
+              "evidence:case_228086:event_039"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:event_018",
+          "evidence:case_228086:event_022",
+          "evidence:case_228086:event_029",
+          "evidence:case_228086:event_039"
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "validation_gate",
+        "title": "Validate service and API responsiveness",
+        "capability_id": "capability:confirm_wcs_api_responsiveness",
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Confirm that the recovered control path responds before attempting residual AGV correction or releasing the site to automated operation.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "GetAgvStatuses returns usable records; corroborating service/gateway status indicates responsiveness.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_228086:event_019",
+              "evidence:case_228086:event_023",
+              "evidence:case_228086:event_025",
+              "evidence:case_228086:event_026",
+              "evidence:case_228086:event_029"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "Responsiveness cannot be confirmed; do not proceed to residual correction.",
+            "next_node_id": "node_8",
+            "source_refs": [
+              "evidence:case_228086:event_019",
+              "evidence:case_228086:event_023",
+              "evidence:case_228086:event_025",
+              "evidence:case_228086:event_026",
+              "evidence:case_228086:event_029"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:event_019",
+          "evidence:case_228086:event_023",
+          "evidence:case_228086:event_025",
+          "evidence:case_228086:event_026",
+          "evidence:case_228086:event_029"
+        ]
+      },
+      {
+        "node_id": "node_5",
+        "node_order": 5,
+        "node_type": "diagnostic_decision",
+        "title": "Determine whether residual AGV synchronization issues remain",
+        "capability_id": "capability:confirm_device_roster_state",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:state:device_roster_mapping_and_fleet_membership_state",
+        "intent": "Identify whether individual AGVs remain out of sync after service responsiveness has returned.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Backend corroboration supports residual synchronization problem(s).",
+            "next_node_id": "node_6",
+            "source_refs": [
+              "evidence:case_228086:event_021",
+              "evidence:case_228086:event_025",
+              "evidence:case_228086:event_033",
+              "evidence:case_228086:event_034",
+              "evidence:case_228086:event_039"
+            ]
+          },
+          {
+            "outcome": "healthy",
+            "condition": "RMS/cohorted backend state shows normal/resolved synchronization.",
+            "next_node_id": "node_7",
+            "source_refs": [
+              "evidence:case_228086:event_021",
+              "evidence:case_228086:event_025",
+              "evidence:case_228086:event_033",
+              "evidence:case_228086:event_034",
+              "evidence:case_228086:event_039"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:event_021",
+          "evidence:case_228086:event_025",
+          "evidence:case_228086:event_033",
+          "evidence:case_228086:event_034",
+          "evidence:case_228086:event_039"
+        ]
+      },
+      {
+        "node_id": "node_6",
+        "node_order": 6,
+        "node_type": "procedure_reference",
+        "title": "Correct residual AGV synchronization state",
+        "capability_id": null,
+        "procedure_id": "procedure:recover_agv_physically:manual_optisweep_om_v3_proc_recover_from_agv_fault_during_exchange_recovery_v1",
+        "symptom_entity_id": null,
+        "intent": "Use the authorized RMS recovery procedure to correct individually identified out-of-sync AGVs after the control service is responsive.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Stop if the identified AGV requires physical handling, an E-stop decision, configuration change, database mutation, or another action not covered by the authorized procedure.",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "RMS state updates show corrected AGVs no longer out of sync.",
+            "next_node_id": "node_7",
+            "source_refs": [
+              "evidence:case_228086:event_039",
+              "evidence:case_228086:event_040"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "Residual abnormality persists or next corrective action would exceed boundaries.",
+            "next_node_id": "node_8",
+            "source_refs": [
+              "evidence:case_228086:event_039",
+              "evidence:case_228086:event_040"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:event_039",
+          "evidence:case_228086:event_040"
+        ]
+      },
+      {
+        "node_id": "node_7",
+        "node_order": 7,
+        "node_type": "validation_gate",
+        "title": "Validate stable automated operation",
+        "capability_id": "capability:confirm_fleet_system_status",
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Confirm that service responsiveness, AGV state, and the affected automated workflows have recovered sufficiently to declare the technical response successful.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "If validation fails after the authorized recovery and AGV correction path, stop and prepare an evidence-based technical handoff rather than repeating unsupported recovery actions.",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "Operational validation passes after recovered control path and residual correction.",
+            "next_node_id": "node_8",
+            "source_refs": [
+              "evidence:case_228086:event_025",
+              "evidence:case_228086:event_028",
+              "evidence:case_228086:event_029",
+              "evidence:case_228086:event_041"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "Validation indicates recovery not stable or not complete.",
+            "next_node_id": "node_8",
+            "source_refs": [
+              "evidence:case_228086:event_025",
+              "evidence:case_228086:event_028",
+              "evidence:case_228086:event_029",
+              "evidence:case_228086:event_041"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:event_025",
+          "evidence:case_228086:event_028",
+          "evidence:case_228086:event_029",
+          "evidence:case_228086:event_041"
+        ]
+      },
+      {
+        "node_id": "node_8",
+        "node_order": 8,
+        "node_type": "escalation_gate",
+        "title": "Stop when the supported recovery path cannot be validated",
+        "capability_id": null,
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Hand off when the authorized diagnostic, recovery, or validation path is unavailable, unsafe, unauthorized, or does not restore stable operation.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Escalate only for an unsafe, unauthorized, unsupported, or unresolved technical path; do not use this gate merely because another team participated historically.",
+        "branches": [
+          {
+            "outcome": "escalate",
+            "condition": "Any failure/uncertainty that prevents safe completion of the supported recovery path.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_228086:event_026",
+              "evidence:case_228086:event_027",
+              "evidence:case_228086:event_042",
+              "evidence:case_228086:event_043",
+              "evidence:case_228086:event_049"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:event_026",
+          "evidence:case_228086:event_027",
+          "evidence:case_228086:event_042",
+          "evidence:case_228086:event_043",
+          "evidence:case_228086:event_049"
+        ]
+      }
+    ],
+    "entry_node_id": "node_1",
+    "confidence": "high"
+  },
+  {
+    "id": "playbook:multi_flow:228086:sitewide_robotic_stoppage",
+    "type": "playbook",
+    "schema_version": "1.0",
+    "source_refs": [
+      "evidence:case_228086:event_001",
+      "evidence:case_228086:event_002",
+      "evidence:case_228086:event_003",
+      "evidence:case_228086:event_007",
+      "evidence:case_228086:event_008",
+      "evidence:case_228086:event_014",
+      "evidence:case_228086:event_017",
+      "evidence:case_228086:event_018",
+      "evidence:case_228086:event_019",
+      "evidence:case_228086:event_021",
+      "evidence:case_228086:event_022",
+      "evidence:case_228086:event_023",
+      "evidence:case_228086:event_024",
+      "evidence:case_228086:event_025",
+      "evidence:case_228086:event_026",
+      "evidence:case_228086:event_027",
+      "evidence:case_228086:event_029",
+      "evidence:case_228086:event_030",
+      "evidence:case_228086:event_033",
+      "evidence:case_228086:event_034",
+      "evidence:case_228086:event_035",
+      "evidence:case_228086:event_039",
+      "evidence:case_228086:event_040",
+      "evidence:case_228086:event_041",
+      "evidence:case_228086:event_044",
+      "evidence:case_228086:event_045",
+      "evidence:case_228086:event_046",
+      "evidence:case_228086:event_047",
+      "evidence:case_228086:event_049",
+      "evidence:case_228086:event_050",
+      "evidence:case_228086:stage8_playbook_multi_flow_playbook_incident_228086_sitewide_robotic_stoppage"
+    ],
+    "constraints": {
+      "sites": [
+        "ups_haslet"
+      ],
+      "product_versions": [],
+      "environments": []
+    },
+    "validation_status": "needs_sme_review",
+    "created_at": "2026-09-08T17:02:12.881302Z",
+    "updated_at": "2026-09-08T17:02:12.881302Z",
+    "title": "[multi_flow] Robotic system not responding with AGVs stopped or out of sync",
+    "playbook_goal": "Determine whether the site-wide stoppage is associated with an abnormal OptiSweep, WCSWebApplication, or related gateway state; support authorized recovery; identify residual AGV synchronization or state issues; and confirm stable robotic operation before release.",
+    "entry_symptom_entity_ids": [
+      "entity:symptom:site_stoppage",
+      "entity:symptom:service_crash_or_restart",
+      "entity:symptom:unplanned_restart",
+      "entity:symptom:web_app_fault",
+      "entity:symptom:gateway_unhealthy",
+      "entity:state:device_roster_mapping_and_fleet_membership_state"
+    ],
+    "affected_entity_ids": [],
+    "nodes": [
+      {
+        "node_id": "node_1",
+        "node_order": 1,
+        "node_type": "diagnostic_decision",
+        "title": "Confirm the stoppage pattern and abnormal control-system presentation",
+        "capability_id": "capability:confirm_fleet_system_status",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:symptom:site_stoppage",
+        "intent": "Determine whether the report represents a broad robotic-operation stoppage with an abnormal RMS or HMI presentation rather than an isolated AGV issue.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Multi-area stoppage plus RMS/HMI blank or abnormal control message; small sort and hospital handling are also affected.",
+            "next_node_id": "node_2",
+            "source_refs": [
+              "evidence:case_228086:event_001",
+              "evidence:case_228086:event_002",
+              "evidence:case_228086:event_003",
+              "evidence:case_228086:event_007",
+              "evidence:case_228086:event_030",
+              "evidence:case_228086:event_035"
+            ]
+          },
+          {
+            "outcome": "healthy",
+            "condition": "No dominant site-wide stoppage; scope does not match broad stoppage classification.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_228086:event_001",
+              "evidence:case_228086:event_002",
+              "evidence:case_228086:event_003",
+              "evidence:case_228086:event_007",
+              "evidence:case_228086:event_030",
+              "evidence:case_228086:event_035"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "Only one area affected or RMS message unreadable/meaning uncertain; issue active state cannot be confirmed.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_228086:event_001",
+              "evidence:case_228086:event_002",
+              "evidence:case_228086:event_003",
+              "evidence:case_228086:event_007",
+              "evidence:case_228086:event_030",
+              "evidence:case_228086:event_035"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:event_001",
+          "evidence:case_228086:event_002",
+          "evidence:case_228086:event_003",
+          "evidence:case_228086:event_007",
+          "evidence:case_228086:event_030",
+          "evidence:case_228086:event_035"
+        ]
+      },
+      {
+        "node_id": "node_2",
+        "node_order": 2,
+        "node_type": "diagnostic_decision",
+        "title": "Determine whether a named service or application failure correlates with the stoppage",
+        "capability_id": "capability:confirm_windows_service_and_event_log_evidence",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:symptom:service_crash_or_restart",
+        "intent": "Use the available Windows log evidence to determine whether OptiSweep or WCSWebApplication entered an abnormal state near the onset of the operational stoppage.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "7031 termination and/or WCSWebApplication/Application Error clusters and failed database command correlate temporally with the stoppage.",
+            "next_node_id": "node_3",
+            "source_refs": [
+              "evidence:case_228086:event_044",
+              "evidence:case_228086:event_045",
+              "evidence:case_228086:event_046",
+              "evidence:case_228086:event_047",
+              "evidence:case_228086:event_049",
+              "evidence:case_228086:event_050"
+            ]
+          },
+          {
+            "outcome": "healthy",
+            "condition": "Service/application logs do not support the named service/application path as correlated cause.",
+            "next_node_id": "node_8",
+            "source_refs": [
+              "evidence:case_228086:event_044",
+              "evidence:case_228086:event_045",
+              "evidence:case_228086:event_046",
+              "evidence:case_228086:event_047",
+              "evidence:case_228086:event_049",
+              "evidence:case_228086:event_050"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "Events exist but cannot be correlated or evidence is incomplete/unavailable.",
+            "next_node_id": "node_3",
+            "source_refs": [
+              "evidence:case_228086:event_044",
+              "evidence:case_228086:event_045",
+              "evidence:case_228086:event_046",
+              "evidence:case_228086:event_047",
+              "evidence:case_228086:event_049",
+              "evidence:case_228086:event_050"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:event_044",
+          "evidence:case_228086:event_045",
+          "evidence:case_228086:event_046",
+          "evidence:case_228086:event_047",
+          "evidence:case_228086:event_049",
+          "evidence:case_228086:event_050"
+        ]
+      },
+      {
+        "node_id": "node_3",
+        "node_order": 3,
+        "node_type": "diagnostic_decision",
+        "title": "Check whether Ignition gateway health is abnormal or merely a related observation",
+        "capability_id": "capability:confirm_ignition_gateway_health",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:symptom:gateway_unhealthy",
+        "intent": "Determine whether the Ignition gateway shows a current responsiveness problem or whether the memory observation is only follow-up context.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Gateway cannot be reached or shows clear abnormal performance correlated with the stoppage.",
+            "next_node_id": "node_4",
+            "source_refs": [
+              "evidence:case_228086:event_008",
+              "evidence:case_228086:event_014",
+              "evidence:case_228086:event_017",
+              "evidence:case_228086:event_023",
+              "evidence:case_228086:event_024"
+            ]
+          },
+          {
+            "outcome": "healthy",
+            "condition": "Ignition appears healthy now; treat memory as follow-up context and still proceed based on earlier OptiSweep/service failure evidence.",
+            "next_node_id": "node_4",
+            "source_refs": [
+              "evidence:case_228086:event_008",
+              "evidence:case_228086:event_014",
+              "evidence:case_228086:event_017",
+              "evidence:case_228086:event_023",
+              "evidence:case_228086:event_024"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:event_008",
+          "evidence:case_228086:event_014",
+          "evidence:case_228086:event_017",
+          "evidence:case_228086:event_023",
+          "evidence:case_228086:event_024"
+        ]
+      },
+      {
+        "node_id": "node_4",
+        "node_order": 4,
+        "node_type": "procedure_reference",
+        "title": "Perform authorized recovery of the affected gateway or OptiSweep service",
+        "capability_id": null,
+        "procedure_id": "procedure:confirm_ignition_gateway_health:case_228086_proc_ignition_gateway_restart_and_optisweep_response_validation_v1",
+        "symptom_entity_id": null,
+        "intent": "Use the approved role-specific recovery procedure for the service or gateway identified by the diagnostic evidence.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Do not proceed if the recovery action is unauthorized, safety preconditions are not met, or the target component cannot be identified from the diagnostic evidence.",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "Progress indicators confirm completion enough for residual state checks.",
+            "next_node_id": "node_5",
+            "source_refs": [
+              "evidence:case_228086:event_018",
+              "evidence:case_228086:event_022",
+              "evidence:case_228086:event_029",
+              "evidence:case_228086:event_039",
+              "evidence:case_228086:event_040"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "Recovery cannot be completed or evidence suggests repeat termination/unavailability.",
+            "next_node_id": "node_8",
+            "source_refs": [
+              "evidence:case_228086:event_018",
+              "evidence:case_228086:event_022",
+              "evidence:case_228086:event_029",
+              "evidence:case_228086:event_039",
+              "evidence:case_228086:event_040"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:event_018",
+          "evidence:case_228086:event_022",
+          "evidence:case_228086:event_029",
+          "evidence:case_228086:event_039",
+          "evidence:case_228086:event_040"
+        ]
+      },
+      {
+        "node_id": "node_5",
+        "node_order": 5,
+        "node_type": "diagnostic_decision",
+        "title": "Determine whether residual AGV state requires correction after service recovery",
+        "capability_id": "capability:confirm_device_roster_state",
+        "procedure_id": null,
+        "symptom_entity_id": "entity:state:device_roster_mapping_and_fleet_membership_state",
+        "intent": "Identify whether AGVs remain out of sync, unmapped, or otherwise abnormal after the service or gateway recovery.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "unhealthy",
+            "condition": "Out-of-sync/unmapped/abnormal AGVs remain visible after recovery.",
+            "next_node_id": "node_6",
+            "source_refs": [
+              "evidence:case_228086:event_021",
+              "evidence:case_228086:event_033",
+              "evidence:case_228086:event_034",
+              "evidence:case_228086:event_039",
+              "evidence:case_228086:event_040"
+            ]
+          },
+          {
+            "outcome": "healthy",
+            "condition": "No residual out-of-sync indicators; proceed without correction.",
+            "next_node_id": "node_7",
+            "source_refs": [
+              "evidence:case_228086:event_021",
+              "evidence:case_228086:event_033",
+              "evidence:case_228086:event_034",
+              "evidence:case_228086:event_039",
+              "evidence:case_228086:event_040"
+            ]
+          },
+          {
+            "outcome": "inconclusive",
+            "condition": "Insufficient evidence to conclude residual state.",
+            "next_node_id": "node_7",
+            "source_refs": [
+              "evidence:case_228086:event_021",
+              "evidence:case_228086:event_033",
+              "evidence:case_228086:event_034",
+              "evidence:case_228086:event_039",
+              "evidence:case_228086:event_040"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:event_021",
+          "evidence:case_228086:event_033",
+          "evidence:case_228086:event_034",
+          "evidence:case_228086:event_039",
+          "evidence:case_228086:event_040"
+        ]
+      },
+      {
+        "node_id": "node_6",
+        "node_order": 6,
+        "node_type": "procedure_reference",
+        "title": "Apply authorized correction for residual AGV synchronization or state issues",
+        "capability_id": "capability:confirm_device_roster_state",
+        "procedure_id": "procedure:recover_agv_physically:manual_optisweep_om_v3_proc_recover_from_agv_fault_during_exchange_recovery_v1",
+        "symptom_entity_id": null,
+        "intent": "Perform the approved correction for AGVs identified as out of sync or otherwise abnormal, without treating the historical correction as a universal procedure.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Do not substitute physical AGV handling, E-stop, or configuration changes for this node. Stop if the approved RMS correction scope or safety preconditions are not clear.",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "Affected AGV(s) return to expected state and fleet can proceed.",
+            "next_node_id": "node_7",
+            "source_refs": [
+              "evidence:case_228086:event_039",
+              "evidence:case_228086:event_040"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "Residual abnormality persists or correction requires unsupported/unsafe actions.",
+            "next_node_id": "node_8",
+            "source_refs": [
+              "evidence:case_228086:event_039",
+              "evidence:case_228086:event_040"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:event_039",
+          "evidence:case_228086:event_040"
+        ]
+      },
+      {
+        "node_id": "node_7",
+        "node_order": 7,
+        "node_type": "validation_gate",
+        "title": "Validate service responsiveness, AGV status, and resumed operation",
+        "capability_id": "capability:confirm_wcs_api_responsiveness",
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Confirm that the recovered service and fleet state support stable automated operation before declaring the troubleshooting path complete.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "",
+        "branches": [
+          {
+            "outcome": "healthy",
+            "condition": "All validation signals are healthy and consistent; stable operation confirmed by site.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_228086:event_019",
+              "evidence:case_228086:event_025",
+              "evidence:case_228086:event_026",
+              "evidence:case_228086:event_027",
+              "evidence:case_228086:event_029",
+              "evidence:case_228086:event_041"
+            ]
+          },
+          {
+            "outcome": "unhealthy",
+            "condition": "Validation fails or remains insufficient; especially when schema warning prevents reliable interpretation.",
+            "next_node_id": "node_8",
+            "source_refs": [
+              "evidence:case_228086:event_019",
+              "evidence:case_228086:event_025",
+              "evidence:case_228086:event_026",
+              "evidence:case_228086:event_027",
+              "evidence:case_228086:event_029",
+              "evidence:case_228086:event_041"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:event_019",
+          "evidence:case_228086:event_025",
+          "evidence:case_228086:event_026",
+          "evidence:case_228086:event_027",
+          "evidence:case_228086:event_029",
+          "evidence:case_228086:event_041"
+        ]
+      },
+      {
+        "node_id": "node_8",
+        "node_order": 8,
+        "node_type": "escalation_gate",
+        "title": "Stop and escalate when recovery or validation remains unsupported or fails",
+        "capability_id": null,
+        "procedure_id": null,
+        "symptom_entity_id": null,
+        "intent": "Hand off only when the supported diagnostic, recovery, and validation path cannot safely continue or does not restore stable operation.",
+        "allowed_role_entity_ids": [],
+        "stop_or_escalation_note": "Escalate because the supported path is unsafe, unauthorized, unsupported, or unresolved after available diagnostics and validation—not merely because the historical incident involved collaboration or was unfamiliar.",
+        "branches": [
+          {
+            "outcome": "escalate",
+            "condition": "Stop gate conditions met; do not continue unsupported troubleshooting.",
+            "next_node_id": null,
+            "source_refs": [
+              "evidence:case_228086:event_026",
+              "evidence:case_228086:event_027",
+              "evidence:case_228086:event_029",
+              "evidence:case_228086:event_049",
+              "evidence:case_228086:event_050"
+            ]
+          }
+        ],
+        "source_refs": [
+          "evidence:case_228086:event_026",
+          "evidence:case_228086:event_027",
+          "evidence:case_228086:event_029",
+          "evidence:case_228086:event_049",
+          "evidence:case_228086:event_050"
+        ]
+      }
+    ],
+    "entry_node_id": "node_1",
+    "confidence": "high"
+  }
+]

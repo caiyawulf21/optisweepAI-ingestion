@@ -1,0 +1,59 @@
+{
+  "id": "playbook:tote_state_inconsistency",
+  "type": "playbook",
+  "schema_version": "1.0",
+
+  "title": "Tote state inconsistency triage",
+  "playbook_goal": "Route from an operator-reported tote state discrepancy to the correct backend verification and, if needed, escalation.",
+
+  "entry_symptom_entity_ids": ["entity:symptom:tote_state_inconsistent"],
+  "affected_entity_ids": ["entity:system:wcs"],
+
+  "nodes": [
+    {
+      "node_id": "node_1",
+      "node_order": 1,
+      "node_type": "diagnostic_decision",
+      "title": "Verify tote state against backend task history",
+      "capability_id": "capability:verify_tote_state",
+      "procedure_id": "procedure:verify_tote_state:training_day2",
+      "symptom_entity_id": "entity:symptom:tote_state_inconsistent",
+      "intent": "Confirm whether the discrepancy is a display lag or a genuine backend state mismatch.",
+      "allowed_role_entity_ids": ["entity:role:l2"],
+      "branches": [
+        {
+          "outcome": "healthy",
+          "condition": "Backend task history matches the operator screen.",
+          "next_node_id": null,
+          "source_refs": ["evidence:training_day2:segment_042"]
+        },
+        {
+          "outcome": "unhealthy",
+          "condition": "Backend task history does not match, or no history rows exist.",
+          "next_node_id": "node_2",
+          "source_refs": ["evidence:training_day2:segment_042"]
+        }
+      ],
+      "source_refs": ["evidence:training_day2:segment_042"]
+    },
+    {
+      "node_id": "node_2",
+      "node_order": 2,
+      "node_type": "escalation_gate",
+      "title": "Escalate unresolved tote state mismatch",
+      "intent": "Hand off to L3 when the backend record itself is inconsistent.",
+      "allowed_role_entity_ids": ["entity:role:l2"],
+      "stop_or_escalation_note": "Escalate to L3 support with the ToteTaskHistory query results attached.",
+      "branches": [],
+      "source_refs": ["evidence:training_day2:segment_042"]
+    }
+  ],
+  "entry_node_id": "node_1",
+
+  "confidence": "needs_review",
+  "validation_status": "needs_sme_review",
+  "source_refs": ["evidence:training_day2:segment_042"],
+  "constraints": {},
+  "created_at": "2026-09-02T00:00:00Z",
+  "updated_at": "2026-09-02T00:00:00Z"
+}

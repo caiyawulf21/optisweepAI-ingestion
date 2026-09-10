@@ -38,13 +38,17 @@ Incident-derived runbooks may also include `related_event_ids` on the runbook an
 | `procedure_id` | `proc_<slug>_v1` derived from candidate title or `candidate_id` |
 | `title` | From candidate |
 | `procedure_type` | One of: `operation`, `diagnostic`, `recovery`, `reference` |
-| `role_required` | One of: `operator`, `L1_support`, `L2_support`, `L3_support` |
+| `role_required` | One of: `operator`, `L1_support`, `L2_support`, `L3_support`. Respect the Role / Component Access Matrix appended at runtime (site E-stop only; RMS soft stop L2/L3 only; AVEVA site-only; FORTNA remotes on Zscaler). |
 | `supporting_roles` | Subset of allowed roles |
 | `support_safe` | Boolean when known from candidate/source |
 | `requires_production_stop` | Boolean; omit or null if unknown |
 | `requires_loto` | Boolean; omit or null if unknown |
 | `estimated_time_minutes` | Integer only if source supports an estimate |
 | `validation_status` | `needs_sme_review` for Stage 6 outputs |
+| `capability_tags` | List of taxonomy capability IDs (1–3 preferred). Constrained vocab appended at runtime. |
+| `access_surface` | List of taxonomy access-surface IDs (e.g. `rms_ui`, `wcs_sql`). How the job is done. |
+| `audience_roles` | List of taxonomy audience role IDs; align with `role_required` / access matrix. |
+| `failure_pattern_tags` | Optional list of taxonomy failure-pattern IDs when source-supported. |
 
 ---
 
@@ -59,10 +63,10 @@ Each `rough_step` from the candidate should become one structured step. Use this
 - `responsible_role`: primary executor role
 - `supporting_role`: guide/reviewer role when applicable
 - `purpose`: why this step exists
-- `instruction`: operator-facing instruction text
-- `expected_result`: observable outcome
-- `healthy_condition`: what "good" looks like
-- `failure_condition`: what "bad" looks like
+- `instruction`: operator/support-facing instruction on the **live** tool/surface (name SSMS/DB/module/API Dog/HMI — not “training material”)
+- `expected_result`: observable live outcome (field/value/state/response/ownership) — not “documented intent captured” or a restatement of the step title
+- `healthy_condition`: what "good" looks like on that live surface
+- `failure_condition`: what "bad" looks like on that live surface
 - `actions`: one or more action objects:
 
 | Field | Requirement |
@@ -74,6 +78,7 @@ Each `rough_step` from the candidate should become one structured step. Use this
 
 - `commands`: terminal/API/service commands only when explicitly present in source evidence; otherwise `[]`
 - `screens_or_images`: attach packet artifact IDs with `what_to_look_at`; convert Stage 5 `[Image support needed: ...]` notes into structured refs when matching artifacts exist
+- **Do not duplicate images on a step** when the same `artifact_id` is already on the runbook-level `screens_or_images` / `image_refs` / `visual_references`. Keep the runbook-level ref; leave the step's `screens_or_images` empty (or omit that artifact) rather than repeating it.
 - `stop_or_escalate_if`: bullet list of stop/escalate triggers supported by source
 - `source_evidence`: source refs / quotes / page refs / event refs supporting this step
 - `related_event_ids` (incident only): event IDs from packet when applicable
@@ -104,6 +109,10 @@ The `runbook` object must include:
   "role_required": "operator",
   "responsible_role": "operator",
   "supporting_roles": [],
+  "capability_tags": ["agv_active_errors"],
+  "access_surface": ["rms_ui"],
+  "audience_roles": ["operator", "L1_support"],
+  "failure_pattern_tags": [],
   "support_safe": true,
   "requires_production_stop": false,
   "requires_loto": false,
@@ -180,10 +189,29 @@ The `runbook` object must include:
     "source_title": "",
     "source_version": "",
     "ingestion_batch_id": "",
-    "source_quality": ""
+    "source_quality": "",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
   }
 }
 ```
+
+Preserve `site_code` and `site_label` on `source_refs` and step-level
+`source_evidence` when they are present on the packet source refs or
+`source_package.site_location`.
 
 ---
 
@@ -194,3 +222,4 @@ The `runbook` object must include:
 - If the source does not support a field, leave it empty or note the gap in `missing_details`.
 - Do not create playbook nodes, workflow logic, trigger conditions, routing keys, or canonical cross-source merge decisions.
 - Do not bind to published/canonical runbook IDs from other sources.
+- For training-derived runbooks: write live-support steps on named surfaces (SSMS/DB/API Dog/HMI). Do not use “from the training material” / “record that the source says.” `expected_result` must be observable on the live job.

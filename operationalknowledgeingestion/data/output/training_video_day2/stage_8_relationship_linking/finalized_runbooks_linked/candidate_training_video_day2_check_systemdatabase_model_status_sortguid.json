@@ -1,0 +1,301 @@
+{
+  "procedure_id": "proc_check_systemdatabasemodel_state_and_sortguid_helix2x_1prod_robotics_v1",
+  "candidate_id": "candidate_training_video_day2_check_systemdatabase_model_status_sortguid",
+  "title": "Check SystemDatabaseModel state and SortGuid in Helix2x_1Prod_Robotics (Robotics Database)",
+  "procedure_type": "diagnostic",
+  "summary": "Use WCS / Helix DB (SSMS) to view the Robotics database model [Helix2x_1Prod_Robotics].[dbo].[SystemDatabaseModel] and confirm the current Status value and the current SortGuid.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [],
+  "capability_tags": [
+    "sort_lifecycle_state"
+  ],
+  "access_surface": [
+    "wcs_sql"
+  ],
+  "audience_roles": [
+    "L2_support"
+  ],
+  "failure_pattern_tags": [],
+  "support_safe": true,
+  "requires_production_stop": false,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "When you need to verify the current system lifecycle state and the current sort GUID by checking the Robotics database model fields Status and SortGuid in [Helix2x_1Prod_Robotics].[dbo].[SystemDatabaseModel].",
+  "not_for": [],
+  "roles_and_responsibilities": [
+    "L2_support: Execute the SSMS/SQL read to confirm SystemDatabaseModel.Status and SystemDatabaseModel.SortGuid, and escalate if the values are missing or outside the documented set."
+  ],
+  "safety_notes": [],
+  "access_or_tools_needed": [
+    "SSMS / WCS SQL access (allowed surface: wcs_sql)",
+    "Helix database: [Helix2x_1Prod_Robotics]",
+    "Table/model: [dbo].[SystemDatabaseModel]",
+    "Fields/columns: Status, SortGuid"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "SSMS / WCS SQL access to query the Helix database [Helix2x_1Prod_Robotics]"
+    ],
+    "system_preconditions": [
+      "The [dbo].[SystemDatabaseModel] view/table is available in the target database"
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [
+    "ctx_training_video_system_database_model_overview_v1",
+    "ctx_training_video_status_reference_system_database_model_statuses_v1",
+    "ctx_training_video_hmi_screen_reference_robotics_database_view_v1"
+  ],
+  "related_event_ids": [],
+  "visual_references": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000",
+      "description": "Frame showing the query context for [Helix2x_1Prod_Robotics].[dbo].[SystemDatabaseModel] (WITH (SNAPSHOT)) and the presence of Status and SortGuid fields.",
+      "required_level": "recommended"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Query [dbo].[SystemDatabaseModel] in [Helix2x_1Prod_Robotics] using SSMS",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Get the live Robotics database model result set that contains the system state (Status) and current sort identifier (SortGuid).",
+      "instruction": "Using SSMS on the WCS / Helix DB (allowed surface: wcs_sql), connect to the Helix database named [Helix2x_1Prod_Robotics], and open a query against [dbo].[SystemDatabaseModel] (the source shows it using WITH (SNAPSHOT)).",
+      "expected_result": "You have a result set/grid for [Helix2x_1Prod_Robotics].[dbo].[SystemDatabaseModel] that includes columns labeled Status and SortGuid.",
+      "healthy_condition": "The result grid shows both Status and SortGuid columns populated for the current row(s).",
+      "failure_condition": "The result set cannot be opened, or the grid does not include Status and SortGuid columns.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Open SSMS and connect to [Helix2x_1Prod_Robotics]",
+          "exact_action": "Open SSMS and connect to the Helix database named in the slide: [Helix2x_1Prod_Robotics].",
+          "role_required": "L2_support"
+        },
+        {
+          "action_type": "command_action",
+          "label": "Run query for [dbo].[SystemDatabaseModel] (WITH (SNAPSHOT))",
+          "exact_action": "Query [Helix2x_1Prod_Robotics].[dbo].[SystemDatabaseModel] WITH (SNAPSHOT).",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If you cannot access the Helix2x_1Prod_Robotics database or the SystemDatabaseModel view/table, stop and escalate for access/DB connectivity."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0018",
+          "page": 18,
+          "timestamp_start": "01:35:39.000",
+          "timestamp_end": "01:35:39.000",
+          "artifact_id": "artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000",
+          "quote": "FROM [Helix2x_1Prod_Robotics]. [dbo]. [SystemDatabaseModel] WITH (SNAPSHOT)"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 2,
+      "title": "Locate Status and SortGuid in the SystemDatabaseModel result",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Identify the exact fields needed to validate the system lifecycle state and current sort GUID.",
+      "instruction": "In the SSMS result grid for [dbo].[SystemDatabaseModel], locate the columns labeled Status and SortGuid.",
+      "expected_result": "The result grid clearly shows columns labeled Status and SortGuid.",
+      "healthy_condition": "Status and SortGuid columns are visible in the grid (as shown in the source frame).",
+      "failure_condition": "Status and/or SortGuid columns are missing from the grid.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify Status and SortGuid columns",
+          "exact_action": "Locate the fields/columns labeled Status and SortGuid.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "If Status and SortGuid columns are not present, stop and escalate (DB query/view mismatch or access issue)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0018",
+          "page": 18,
+          "artifact_id": "artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000",
+          "quote": "The SystemDatabaseModel shows the state of the system and the current sort GUID... [Status] ... SortGuid"
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 3,
+      "title": "Validate Status is one of the documented system states",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Confirm the current system lifecycle state stored in SystemDatabaseModel.Status matches the documented set of values.",
+      "instruction": "Read the current Status value from the live [dbo].[SystemDatabaseModel] result and confirm it matches one of the documented states: StartingUp, StartUpRequested, Running, ShutDownRequested, Shutdown, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, CloseOutStaged.",
+      "expected_result": "The Status value shown in the live result is exactly one of: StartingUp, StartUpRequested, Running, ShutDownRequested, Shutdown, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, CloseOutStaged.",
+      "healthy_condition": "Status is within the documented set (e.g., Running / ZoneConfigRequested / CloseOutStaged as applicable).",
+      "failure_condition": "Status is outside the documented set.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Read Status value",
+          "exact_action": "Read the current Status value and confirm it matches one of the documented states.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if Status is not one of the documented values."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0018",
+          "page": 18,
+          "artifact_id": "artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000",
+          "quote": "the status which can be starting up startup, requested, running, shut down, requested, shut down, zone config, requested, zone config staging closeout, requested, closeout, staging closeout staged."
+        }
+      ],
+      "related_event_ids": []
+    },
+    {
+      "step_number": 4,
+      "title": "Record SortGuid and ensure it is present",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Capture the current sort identifier stored in SystemDatabaseModel.SortGuid and ensure it is not blank/missing when a system state is expected.",
+      "instruction": "Read the current SortGuid value from the live [dbo].[SystemDatabaseModel] result and record it. Confirm SortGuid is present (not blank/missing).",
+      "expected_result": "A non-blank SortGuid value is visible in the live result set.",
+      "healthy_condition": "SortGuid is populated alongside a valid Status value.",
+      "failure_condition": "SortGuid is missing/blank.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Read SortGuid value",
+          "exact_action": "Record the observed Status and the current SortGuid value from the live result set.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Stop and escalate if SortGuid is missing/blank (no valid current sort GUID shown)."
+      ],
+      "source_evidence": [
+        {
+          "source_id": "training_video_day2",
+          "source_type": "training_video",
+          "ingestion_batch_id": "batch_training_video_day2",
+          "segment_id": "segment_training_video_0018",
+          "page": 18,
+          "artifact_id": "artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000",
+          "quote": "SystemDatabaseModel shows the state of the system and the current sort GUID"
+        }
+      ],
+      "related_event_ids": []
+    }
+  ],
+  "success_criteria": [
+    "SystemDatabaseModel.Status is one of the documented values: StartingUp, StartUpRequested, Running, ShutDownRequested, Shutdown, ZoneConfigRequested, ZoneConfigStaging, CloseOutRequested, CloseOutStaging, CloseOutStaged.",
+    "SystemDatabaseModel.SortGuid is present (not blank) in the live result set."
+  ],
+  "healthy_conditions": [
+    "Status value is within the documented set.",
+    "SortGuid is populated in the live result set."
+  ],
+  "failure_conditions": [
+    "Status value is outside the documented set.",
+    "SortGuid is missing/blank while a system state is expected.",
+    "Unable to access the Helix2x_1Prod_Robotics database or the SystemDatabaseModel view/table."
+  ],
+  "escalation_guidance": [
+    "Escalate if Status is outside the documented set or if SortGuid is missing/blank.",
+    "Escalate if you cannot access the Helix2x_1Prod_Robotics database or the SystemDatabaseModel view/table (access/DB connectivity issue)."
+  ],
+  "commands": [],
+  "screens_or_images": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000",
+      "description": "Reference frame showing [Helix2x_1Prod_Robotics].[dbo].[SystemDatabaseModel] (WITH (SNAPSHOT)) and the presence of Status and SortGuid fields.",
+      "required_level": "recommended"
+    }
+  ],
+  "source_refs": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "ingestion_batch_id": "batch_training_video_day2",
+      "timestamp_start": "01:34:55.000",
+      "timestamp_end": "01:36:23.000",
+      "segment_id": "segment_training_video_0018",
+      "section_id": "training_video_day2_segment_0018",
+      "page": 18,
+      "site_code": "",
+      "site_label": ""
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000"
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_training_video_day2_check_systemdatabase_model_status_sortguid"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "training_video_day2",
+      "source_type": "training_video",
+      "source_title": "FORTNA OptiSweep Training Day 2",
+      "ingestion_batch_id": "batch_training_video_day2"
+    }
+  ],
+  "missing_details": [
+    "The packet does not provide exact SSMS navigation/click-by-click steps (e.g., which SSMS object explorer nodes to expand) beyond the database/table names and that the source uses WITH (SNAPSHOT)."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_runbook_finalization",
+    "source_id": "training_video_day2",
+    "source_type": "training_video",
+    "source_title": "FORTNA OptiSweep Training Day 2",
+    "source_version": "",
+    "ingestion_batch_id": "batch_training_video_day2",
+    "source_quality": "manual",
+    "incident_context": {
+      "case_id": "",
+      "site": "",
+      "site_code": "",
+      "site_location": {
+        "site_code": "",
+        "site_label": "",
+        "customer": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "hub_code": "",
+        "region_label": ""
+      }
+    }
+  },
+  "linked_artifact_ids": [
+    "artifact_training_video_training_video_day2_0018_and_like_i_said_usually_because_primary_01_35_39_000"
+  ]
+}

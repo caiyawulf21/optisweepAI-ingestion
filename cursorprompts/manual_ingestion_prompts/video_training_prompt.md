@@ -129,13 +129,18 @@ Builder            Builder
 
              │
 
-      Stage 9
-      Relationship Linking
+      Shared Stage 9
+      Corpus Validation
 
              │
 
-      Stage 9
-      Validation
+      Shared Stage 10
+      Vector Embedding Generation
+
+             │
+
+      Shared Stage 11
+      Cosmos DB Publishing And Manifest
 ```
 
 The pipeline below `source_bundle.json` should not care where the data originated.

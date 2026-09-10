@@ -20,6 +20,10 @@ class RetrievalCard(BaseModel):
     step_summaries: list[str] = Field(default_factory=list)
     success_criteria: list[str] = Field(default_factory=list)
     failure_conditions: list[str] = Field(default_factory=list)
+    capability_tags: list[str] = Field(default_factory=list)
+    access_surface: list[str] = Field(default_factory=list)
+    audience_roles: list[str] = Field(default_factory=list)
+    failure_pattern_tags: list[str] = Field(default_factory=list)
     source_candidate_ids: list[str] = Field(default_factory=list)
     source_id: str = ""
     source_type: str = ""

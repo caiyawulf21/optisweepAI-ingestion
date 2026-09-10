@@ -531,6 +531,29 @@ L2_support
 L3_support
 ```
 
+## Role / Component Access Matrix
+
+When assigning `role_required`, `responsible_role`, or `supporting_roles`, follow this matrix.
+Do not assign a role that has **No access** to a component the procedure requires.
+
+**Role meanings:** `operator` = site/customer (not FORTNA). `L1_support` / `L2_support` / `L3_support` = FORTNA remote on Zscaler. **Access** = may interact.
+
+| Component | `operator` (site) | `L1_support` | `L2_support` / `L3_support` |
+| --- | --- | --- | --- |
+| RMS (fleet / AGV status web) | Access | Access | Access |
+| RMS soft stop (pause — **not** E-stop) | — | No access | Access |
+| E-stop (physical) | Access | No access | No access |
+| OptiSweep / WCS API | No access | Access | Access |
+| WCS / Helix DB (SSMS) | No access | Access | Access |
+| Event Viewer / Windows Services | No access | Access | Access |
+| Ignition gateway | No access | Access | Access |
+| Tipper HMI / WebVisu / VISU | Access | Access | Access |
+| Hospital HMI / lane UI | Access | Access | Access |
+| Building / ACB overview HMI | Access | Access | Access |
+| AVEVA HMI | Access | No access | No access |
+
+Hard rules: only `operator` may E-stop; RMS soft stop is L2/L3 only; AVEVA is site-only.
+
 Allowed validation statuses:
 
 ```text

@@ -1,0 +1,490 @@
+{
+  "procedure_id": "proc_recover_hospital_tote_flow_apidog_wcs_api_v1",
+  "candidate_id": "candidate_incident_223554_hospital_tote_agv_recovery",
+  "title": "Recover hospital tote flow using Apidog / WCS API and validate AGV operation",
+  "procedure_type": "recovery",
+  "summary": "For the UPS Haslet TX (TXRTH) hospital-station tote-induction condition, use the Tipper HMI / WebVisu / VISU to pause the station when operators are not present at the tippers, then use Apidog / WCS API to remove the inducted or disconnected tote state and recover affected AGV state. Validate tote add/remove operation on the Hospital HMI / lane UI, confirm affected robots are re-added and operating, and confirm the system is running. The incident did not establish a single definitive root cause or provide exact API request names, parameters, or AGV control names.",
+  "role_required": "L2_support",
+  "responsible_role": "L2_support",
+  "supporting_roles": [
+    "operator"
+  ],
+  "capability_tags": [
+    "tote_lifecycle_state",
+    "agv_physical_recovery",
+    "fleet_system_status"
+  ],
+  "access_surface": [
+    "apidog",
+    "wcs_api",
+    "tipper_hmi",
+    "hospital_hmi"
+  ],
+  "audience_roles": [
+    "L2_support",
+    "operator"
+  ],
+  "failure_pattern_tags": [
+    "tote_error_noread_or_mismatch",
+    "zone_agv_mismatch"
+  ],
+  "support_safe": true,
+  "requires_production_stop": null,
+  "requires_loto": false,
+  "estimated_time_minutes": null,
+  "when_to_use": "Use for a hospital-station condition where totes cannot be added or inducted, especially when an inducted tote or disconnected tote association is present and Apidog / WCS API recovery actions are identifiable on the live system. Coordinate the recovery with the Tipper HMI / WebVisu / VISU and validate the result on the Hospital HMI / lane UI.",
+  "not_for": [
+    "Do not use for an undocumented API request, parameter, AGV control, or tote mutation that cannot be identified on the live Apidog / WCS API surface.",
+    "Do not treat the AGV/tote association as the confirmed root cause; the incident recorded multiple possible contributing conditions.",
+    "Do not use as a physical AGV handling or E-stop procedure; the supplied incident evidence does not define physical handling steps.",
+    "Do not continue recovery if tote operations remain unavailable, robots cannot be re-added, or the required Apidog / WCS API action is not identifiable."
+  ],
+  "roles_and_responsibilities": [
+    {
+      "role": "L2_support",
+      "responsibility": "Perform the supported tote and AGV recovery actions on Apidog / WCS API and determine whether the live state supports the next recovery action."
+    },
+    {
+      "role": "operator",
+      "responsibility": "Pause the station on the Tipper HMI / WebVisu / VISU when operators are not present at the tippers and perform or assist with live tote validation on the Hospital HMI / lane UI."
+    }
+  ],
+  "safety_notes": [
+    "When operators are not present at the tippers, pause the station on the Tipper HMI / WebVisu / VISU during recovery so totes do not continue going to the hospital.",
+    "Do not perform an API or AGV state change unless the live Apidog / WCS API surface clearly identifies the supported recovery action."
+  ],
+  "access_or_tools_needed": [
+    "Apidog / WCS API client",
+    "OptiSweep / WCS API",
+    "Tipper HMI / WebVisu / VISU",
+    "Hospital HMI / lane UI",
+    "Affected AGV and tote identifiers from the live incident state"
+  ],
+  "prerequisites": {
+    "access_required": [
+      "L2_support access to Apidog / WCS API client and OptiSweep / WCS API",
+      "Operator or available site personnel to use the Tipper HMI / WebVisu / VISU and assist with Hospital HMI / lane UI validation",
+      "Affected AGV and tote identifiers from the live system state"
+    ],
+    "system_preconditions": [
+      "The hospital tote-induction or tote-add condition is observable on the Hospital HMI / lane UI.",
+      "The affected inducted tote, disconnected tote association, or AGV state is identifiable on the live Apidog / WCS API surface."
+    ],
+    "external_references": []
+  },
+  "related_context_ids": [],
+  "related_event_ids": [
+    "incident_223554_event_020",
+    "incident_223554_event_023",
+    "incident_223554_event_031",
+    "incident_223554_event_032",
+    "incident_223554_event_039",
+    "incident_223554_event_040"
+  ],
+  "visual_references": [],
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Pause the hospital feed at the tippers",
+      "responsible_role": "operator",
+      "supporting_role": "L2_support",
+      "purpose": "Prevent additional totes from being sent to the hospital while the recovery is performed.",
+      "instruction": "On the Tipper HMI / WebVisu / VISU, place the station on pause before recovery when operators are not present at the tippers.",
+      "expected_result": "The Tipper HMI / WebVisu / VISU shows the station in a paused state while recovery is in progress.",
+      "healthy_condition": "The station remains paused and no additional tote flow to the hospital is observed during the recovery actions.",
+      "failure_condition": "The station is not shown as paused or totes continue going to the hospital while recovery is in progress.",
+      "actions": [
+        {
+          "action_type": "hmi_action",
+          "label": "Pause station",
+          "exact_action": "Place the station on pause on the Tipper HMI / WebVisu / VISU when operators are not present at the tippers.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Operators are present at the tippers and the station state cannot be coordinated safely.",
+        "The Tipper HMI / WebVisu / VISU does not identify a pause state."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_223554:page_11",
+          "event_id": "incident_223554_event_031",
+          "chunk_id": "stage4_page_chunk_004",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "Operators at the tippers should pause the station during recovery or everything goes to hospital."
+        }
+      ],
+      "related_event_ids": [
+        "incident_223554_event_031"
+      ]
+    },
+    {
+      "step_number": 2,
+      "title": "Remove the inducted tote through Apidog / WCS API",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Clear the inducted-tote condition that is preventing hospital tote flow.",
+      "instruction": "On the Apidog / WCS API client, identify the inducted tote associated with the hospital flow condition and use the source-supported tote-removal action. Use only the live request or action that is explicitly identifiable; the incident does not provide a request name or parameters.",
+      "expected_result": "The Apidog / WCS API response or live tote state shows that the identified inducted tote has been removed or is no longer blocking the hospital flow.",
+      "healthy_condition": "The affected inducted tote is absent from the blocking state on Apidog / WCS API and the hospital tote condition can proceed to validation.",
+      "failure_condition": "The tote remains in the blocking inducted state, the API action fails, or the required tote-removal action cannot be identified.",
+      "actions": [
+        {
+          "action_type": "api_action",
+          "label": "Remove inducted tote",
+          "exact_action": "Use the source-supported API dog / Apidog tote-removal action to remove the inducted tote and move the system forward.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The required tote-removal action or affected tote is not identifiable on Apidog / WCS API.",
+        "The API response does not show a successful removal or the tote remains in the blocking state."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_223554:page_11",
+          "event_id": "incident_223554_event_031",
+          "chunk_id": "stage4_page_chunk_004",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "Removed inducted tote with API dog to get the system moving forward."
+        }
+      ],
+      "related_event_ids": [
+        "incident_223554_event_031"
+      ]
+    },
+    {
+      "step_number": 3,
+      "title": "Address the disconnected tote association in Apidog / WCS API",
+      "responsible_role": "L2_support",
+      "supporting_role": "",
+      "purpose": "Clear a disconnected tote association when the affected tote cannot be removed from the hospital normally.",
+      "instruction": "On the Apidog / WCS API client, inspect the affected AGV and tote association. For the documented tote 51 condition, use the source-supported API action when the tote cannot be removed from the hospital through the normal live operation. Do not infer or invent an API request name.",
+      "expected_result": "The Apidog / WCS API live state no longer shows the targeted disconnected tote association as blocking the hospital flow, or the API returns the supported removal result.",
+      "healthy_condition": "The affected tote association is cleared or the tote is shown as removed, with no unresolved disconnected association for the targeted AGV and tote.",
+      "failure_condition": "Tote 51 or the applicable live tote remains associated as disconnected, cannot be removed, or the supported API action is unavailable.",
+      "actions": [
+        {
+          "action_type": "api_action",
+          "label": "Remove disconnected tote",
+          "exact_action": "For the documented tote 51 condition, use API dog / Apidog to remove the tote when it cannot be removed from the hospital normally.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "The affected AGV or tote association cannot be identified on Apidog / WCS API.",
+        "The disconnected tote remains after the supported API action.",
+        "The live state does not match the documented tote condition and no supported action is identifiable."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_223554:page_11",
+          "event_id": "incident_223554_event_031",
+          "chunk_id": "stage4_page_chunk_004",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "AGV 012 had disconnected tote 51; tote 51 could not be removed from hospital and API dog was used to remove it."
+        }
+      ],
+      "related_event_ids": [
+        "incident_223554_event_031"
+      ]
+    },
+    {
+      "step_number": 4,
+      "title": "Recover affected AGVs through Apidog / WCS API",
+      "responsible_role": "L2_support",
+      "supporting_role": "operator",
+      "purpose": "Remove affected AGVs from the obstructed or incorrect system state and restore the robot roster needed for hospital flow.",
+      "instruction": "On Apidog / WCS API, identify the affected AGVs and use only the source-supported AGV recovery action to remove them from the obstructed state or location and re-add them as required by the live system state. The incident identified AGVs 1542188, 1555028, and 1555012, but the current live identifiers must be confirmed before any change.",
+      "expected_result": "The affected AGVs are no longer shown in the obstructed or incorrect association state on Apidog / WCS API, and the required robots are re-added to the live system roster.",
+      "healthy_condition": "The affected AGVs appear in the expected live system state and are available for operation without the reported duplicate or misplaced AGV condition.",
+      "failure_condition": "An AGV remains in the obstructed or incorrect state, cannot be re-added, or the supported AGV recovery action cannot be identified.",
+      "actions": [
+        {
+          "action_type": "api_action",
+          "label": "Recover affected AGVs",
+          "exact_action": "Use the source-supported AGV recovery action to take affected AGVs out of the obstructed state or location and re-add the robots as required by the live system state.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [
+        {
+          "artifact_id": "artifact_incident_223554_page_008_nested_image_01",
+          "what_to_look_at": "Annotated HMI-style layout showing the AGV location anomaly and the reported condition of two AGVs under the rack in the same zone."
+        },
+        {
+          "artifact_id": "artifact_incident_223554_page_009_nested_image_01",
+          "what_to_look_at": "Annotated facility layout showing the highlighted AGV or zone location involved in the incident."
+        }
+      ],
+      "stop_or_escalate_if": [
+        "The live AGV identifier or supported recovery action is not identifiable on Apidog / WCS API.",
+        "An AGV cannot be re-added after the supported recovery action.",
+        "The AGV remains in an unexpected location or duplicate-zone condition."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_223554:page_8",
+          "event_id": "incident_223554_event_023",
+          "artifact_id": "artifact_incident_223554_page_008_nested_image_01",
+          "chunk_id": "stage4_page_chunk_003",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "An AGV did not belong in the location and two AGVs were under the rack in the same zone."
+        },
+        {
+          "page_ref": "case_223554:page_11",
+          "event_id": "incident_223554_event_031",
+          "chunk_id": "stage4_page_chunk_004",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "AGVs 1542188 and 1555028 were identified; a few other AGVs were taken out to get the system back up running."
+        }
+      ],
+      "related_event_ids": [
+        "incident_223554_event_023",
+        "incident_223554_event_031"
+      ]
+    },
+    {
+      "step_number": 5,
+      "title": "Validate tote add and remove on the Hospital HMI / lane UI",
+      "responsible_role": "operator",
+      "supporting_role": "L2_support",
+      "purpose": "Confirm that the hospital station's tote workflow has been restored after the API and AGV recovery actions.",
+      "instruction": "On the Hospital HMI / lane UI, verify that the hospital station can add a tote and remove a tote again. Have L2 support observe the live result as needed.",
+      "expected_result": "The Hospital HMI / lane UI accepts both a tote-add operation and a tote-remove operation without the reported hospital induction restriction.",
+      "healthy_condition": "The hospital station visibly permits tote additions and removals, matching the restored state reported in the incident.",
+      "failure_condition": "The Hospital HMI / lane UI still permits removal but does not permit addition, or either tote operation remains unavailable.",
+      "actions": [
+        {
+          "action_type": "hmi_inspection",
+          "label": "Test tote operations",
+          "exact_action": "Verify on the Hospital HMI / lane UI that the hospital station can add and remove totes again.",
+          "role_required": "operator"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Totes cannot be added after the recovery actions.",
+        "Totes cannot be removed or the Hospital HMI / lane UI remains unavailable."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_223554:page_16",
+          "event_id": "incident_223554_event_039",
+          "chunk_id": "stage4_page_chunk_004",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "The site reported that it could add and remove totes again."
+        },
+        {
+          "page_ref": "case_223554:page_8",
+          "event_id": "incident_223554_event_020",
+          "chunk_id": "stage4_page_chunk_003",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "The hospital area could remove totes but could not add them."
+        }
+      ],
+      "related_event_ids": [
+        "incident_223554_event_020",
+        "incident_223554_event_039"
+      ]
+    },
+    {
+      "step_number": 6,
+      "title": "Confirm robots and system are running",
+      "responsible_role": "L2_support",
+      "supporting_role": "operator",
+      "purpose": "Verify that the hospital recovery restored robot availability and overall system operation.",
+      "instruction": "On the Hospital HMI / lane UI and the live Apidog / WCS API state, confirm that the affected robots have been re-added and are operating. Confirm that the system is running after recovery.",
+      "expected_result": "The affected robots are shown as re-added and operating, and the live system state is running.",
+      "healthy_condition": "The Hospital HMI / lane UI supports ongoing tote flow, the affected robots are back up and running, and the system is reported as running.",
+      "failure_condition": "A robot cannot be re-added or remains unavailable, tote flow is not restored, or the system is not running.",
+      "actions": [
+        {
+          "action_type": "inspection_action",
+          "label": "Verify robot and system state",
+          "exact_action": "Confirm that the robots are re-added and back up and running, and confirm that the system is running.",
+          "role_required": "L2_support"
+        }
+      ],
+      "commands": [],
+      "screens_or_images": [],
+      "stop_or_escalate_if": [
+        "Tote operations remain unavailable.",
+        "Robots cannot be re-added or are not back up and running.",
+        "The system is not running after the supported recovery actions."
+      ],
+      "source_evidence": [
+        {
+          "page_ref": "case_223554:page_16",
+          "event_id": "incident_223554_event_040",
+          "chunk_id": "stage4_page_chunk_004",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "The site reported that all robots were re-added and back up and running."
+        },
+        {
+          "page_ref": "case_223554:page_11",
+          "event_id": "incident_223554_event_031",
+          "chunk_id": "stage4_page_chunk_004",
+          "site_code": "ups_haslet_tx",
+          "site_label": "UPS Haslet TX (TXRTH)",
+          "quote_or_summary": "The issue was reported resolved by 9:00 PM ET and the system was running."
+        }
+      ],
+      "related_event_ids": [
+        "incident_223554_event_031",
+        "incident_223554_event_040"
+      ]
+    }
+  ],
+  "success_criteria": [
+    "The Hospital HMI / lane UI accepts tote additions and removals.",
+    "The affected robots are re-added and shown as back up and running.",
+    "The live system is running after recovery.",
+    "No undocumented Apidog / WCS API or AGV state change was performed."
+  ],
+  "healthy_conditions": [
+    "The Tipper HMI / WebVisu / VISU remains paused during recovery when operators are not present at the tippers.",
+    "The Apidog / WCS API state no longer shows the targeted inducted or disconnected tote as blocking hospital flow.",
+    "Affected AGVs are present in the expected live system state and are available for operation.",
+    "The Hospital HMI / lane UI supports both tote add and tote remove operations.",
+    "The system is running."
+  ],
+  "failure_conditions": [
+    "The Hospital HMI / lane UI still cannot add totes.",
+    "The targeted inducted or disconnected tote cannot be removed through the identifiable supported Apidog / WCS API action.",
+    "An affected AGV remains disconnected, obstructed, incorrectly located, or cannot be re-added.",
+    "The required API or AGV recovery action is not identifiable on the live surface.",
+    "The system is not running after recovery."
+  ],
+  "escalation_guidance": [
+    "Escalate to L2/L3 review if the tote cannot be removed through the supported Apidog / WCS API action, the AGV association remains disconnected, or the Hospital HMI / lane UI still cannot add or remove totes.",
+    "Stop before any API or AGV state change that is not explicitly identifiable from the live Apidog / WCS API state.",
+    "Escalate the unresolved condition rather than assigning a definitive root cause; the incident recorded multiple possible contributing conditions.",
+    "Coordinate with the site operator if the Tipper HMI / WebVisu / VISU pause state cannot be established."
+  ],
+  "commands": [],
+  "screens_or_images": [],
+  "source_refs": [
+    {
+      "page_ref": "case_223554:page_11",
+      "artifact_id": null,
+      "event_id": "incident_223554_event_031",
+      "chunk_id": "stage4_page_chunk_004",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)",
+      "support_type": "teams_message",
+      "quote_or_summary": "Summary documents removal of an inducted tote with API dog, removal of tote 51 when it could not be removed from hospital, removal of several AGVs, and pausing the station at the tippers during recovery."
+    },
+    {
+      "page_ref": "case_223554:page_12",
+      "artifact_id": null,
+      "event_id": "incident_223554_event_032",
+      "chunk_id": "stage4_page_chunk_004",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)",
+      "support_type": "teams_message",
+      "quote_or_summary": "AVEVA was described as using the same endpoints as API dog; the incident discussion also described removing an AGV from a zone and adding a tote to a station."
+    },
+    {
+      "page_ref": "case_223554:page_11",
+      "artifact_id": null,
+      "event_id": "incident_223554_event_039",
+      "chunk_id": "stage4_page_chunk_004",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)",
+      "support_type": "case_comment",
+      "quote_or_summary": "The original issue was resolved and the site was able to add and remove totes again."
+    },
+    {
+      "page_ref": "case_223554:page_16",
+      "artifact_id": null,
+      "event_id": "incident_223554_event_040",
+      "chunk_id": "stage4_page_chunk_004",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)",
+      "support_type": "case_comment",
+      "quote_or_summary": "The site reported that all robots were re-added and back up and running."
+    }
+  ],
+  "image_refs": [
+    {
+      "artifact_id": "artifact_incident_223554_page_008_nested_image_01",
+      "what_to_look_at": "Annotated HMI-style layout showing the AGV location anomaly and the reported condition of two AGVs under the rack in the same zone."
+    },
+    {
+      "artifact_id": "artifact_incident_223554_page_009_nested_image_01",
+      "what_to_look_at": "Annotated facility layout showing the highlighted AGV or zone location involved in the incident."
+    }
+  ],
+  "source_candidate_ids": [
+    "candidate_incident_223554_hospital_tote_agv_recovery"
+  ],
+  "source_lineage": [
+    {
+      "source_id": "source_case_223554",
+      "source_case_id": "223554",
+      "source_type": "incident_case",
+      "source_title": "Case 223554 Data",
+      "source_version": "",
+      "ingestion_batch_id": "batch_20260716T212454Z",
+      "site_code": "ups_haslet_tx",
+      "site_label": "UPS Haslet TX (TXRTH)"
+    }
+  ],
+  "missing_details": [
+    "Exact Apidog / WCS API request names, parameters, authentication details, and response codes are not provided.",
+    "Exact AGV recovery or re-add control names are not provided.",
+    "The incident does not establish one normalized root cause.",
+    "The packet does not provide a supported recovery time estimate.",
+    "The packet does not establish whether the station pause constitutes a production stop.",
+    "The incident also references service resets and a Hospital Lane restart, but does not provide enough live control detail to include them as procedure steps."
+  ],
+  "validation_status": "needs_sme_review",
+  "metadata": {
+    "product": "OptiSweep",
+    "version": 1,
+    "merge_status": "source_finalized",
+    "created_by": "stage_6_incident_runbook_finalization",
+    "source_id": "source_case_223554",
+    "source_type": "incident_case",
+    "source_title": "Case 223554 Data",
+    "source_version": "",
+    "ingestion_batch_id": "batch_20260716T212454Z",
+    "source_quality": "incident_case",
+    "incident_context": {
+      "case_id": "223554",
+      "site": "UPS Haslet TX (TXRTH)",
+      "site_code": "ups_haslet_tx",
+      "site_location": {
+        "site_code": "ups_haslet_tx",
+        "site_label": "UPS Haslet TX (TXRTH)",
+        "customer": "UPS",
+        "city": "Haslet",
+        "state": "TX",
+        "country": "US",
+        "hub_code": "TXRTH",
+        "region_label": "Fort Worth, TX"
+      },
+      "incident_start_time": "2025-09-26T02:11:00",
+      "incident_resolved_time": "2025-09-26T21:00:00",
+      "time_to_resolve": "18h 49m",
+      "resolution_confirmed": true
+    }
+  }
+}

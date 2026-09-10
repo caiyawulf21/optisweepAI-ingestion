@@ -12,13 +12,19 @@ import shutil
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = ROOT.parent
 SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
+OPERATIONAL_SRC = REPO_ROOT / "operationalknowledgeingestion" / "src"
+for path in (REPO_ROOT, OPERATIONAL_SRC, SRC):
+    if str(path) not in sys.path:
+        sys.path.insert(0, str(path))
 
 from optisweep_incidence_ingestion.stage1_source_package import build_incident_source_package
 from optisweep_incidence_ingestion.stage2_5_artifact_enrichment_packets import build_artifact_enrichment_packets
-from optisweep_incidence_ingestion.stage2_ocr_artifacts import QwenArtifactGate, extract_incident_ocr_artifacts
+from optisweep_incidence_ingestion.stage2_ocr_artifacts import (
+    AzureComputerVisionArtifactGate,
+    extract_incident_ocr_artifacts,
+)
 from optisweep_incidence_ingestion.stage3_artifact_enrichment import (
     AzureOpenAIIncidentArtifactClient,
     enrich_incident_artifacts,
@@ -36,6 +42,7 @@ from optisweep_incidence_ingestion.stage6_runbook_finalization import (
     AzureOpenAIStage6RunbookFinalizationClient,
     create_stage6_incident_runbooks,
 )
+from optisweep_incidence_ingestion.stage8_relationship_linking import link_incident_relationships
 
 
 STAGE_DIR_NAMES = {
@@ -46,6 +53,7 @@ STAGE_DIR_NAMES = {
     "4": "stage_4_canonical_incident_record",
     "5": "stage_5_runbook_candidates",
     "6": "stage_6_finalized_runbooks",
+    "8": "stage_8_relationship_linking",
 }
 
 
@@ -54,12 +62,34 @@ def main() -> None:
     parser.add_argument("--source-pdf", type=Path, required=True)
     parser.add_argument("--case-id", required=True)
     parser.add_argument("--source-title", default=None)
+    parser.add_argument(
+        "--site-code",
+        default="ups_haslet_tx",
+        help="Known site code for ingestion metadata and source citation (default: ups_haslet_tx).",
+    )
+    parser.add_argument(
+        "--site-location-json",
+        type=Path,
+        default=None,
+        help="Optional JSON file with custom site_location metadata. Overrides --site-code.",
+    )
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--stages", default="1,2", help="Comma-separated stages to run. Supports 1,2,2.5,3,4,5,6.")
+    parser.add_argument("--stages", default="1,2", help="Comma-separated stages to run. Supports 1,2,2.5,3,4,5,6,8.")
     parser.add_argument("--llm", action="store_true", help="Use Azure OpenAI for LLM-backed stages.")
     parser.add_argument("--max-workers", type=int, default=4, help="Concurrent Stage 3 LLM calls.")
     parser.add_argument("--stage3-prompt-path", type=Path, default=None)
-    parser.add_argument("--stage3-no-images", action="store_true", help="Do not send artifact images to the Stage 3 LLM.")
+    parser.add_argument(
+        "--stage3-no-images",
+        action="store_true",
+        help="Deprecated no-op. Stage 3 never sends artifact images to Azure OpenAI; it always "
+        "describes them via Azure Computer Vision first.",
+    )
+    parser.add_argument(
+        "--stage3-vision-descriptions-dir",
+        type=Path,
+        default=None,
+        help="Optional directory to persist per-artifact Azure Computer Vision description JSON for audit.",
+    )
     parser.add_argument("--stage4-canonical-prompt-path", type=Path, default=None)
     parser.add_argument("--stage4-timeline-prompt-path", type=Path, default=None)
     parser.add_argument("--stage4-page-chunk-chars", type=int, default=7000)
@@ -75,14 +105,15 @@ def main() -> None:
     parser.add_argument("--stage5-playbook-prompt-a-path", type=Path, default=None)
     parser.add_argument("--stage5-playbook-prompt-b-path", type=Path, default=None)
     parser.add_argument("--stage6-prompt-path", type=Path, default=None, help="Stage 6 runbook finalization prompt path.")
-    parser.add_argument("--ocr-backend", default="tesseract", choices=["none", "tesseract"])
+    parser.add_argument("--ocr-backend", default="tesseract", choices=["none", "tesseract", "azure_cv"])
     parser.add_argument("--tesseract-command", default=None)
-    parser.add_argument("--stage2-artifact-gate", default="qwen", choices=["none", "qwen"])
-    parser.add_argument("--stage2-qwen-model", default="Qwen/Qwen2.5-VL-3B-Instruct")
-    parser.add_argument("--stage2-qwen-device", default=None)
-    parser.add_argument("--stage2-qwen-max-new-tokens", type=int, default=180)
-    parser.add_argument("--stage2-qwen-local-files-only", action="store_true", default=True)
-    parser.add_argument("--stage2-qwen-allow-download", dest="stage2_qwen_local_files_only", action="store_false")
+    parser.add_argument("--stage2-artifact-gate", default="none", choices=["none", "azure_cv"])
+    parser.add_argument(
+        "--stage2-azure-cv-min-confidence",
+        type=float,
+        default=0.55,
+        help="Confidence threshold used by the Azure Computer Vision artifact gate's suppress decisions.",
+    )
     parser.add_argument("--render-zoom", type=float, default=3.0)
     parser.add_argument(
         "--include-detected-crops",
@@ -101,6 +132,7 @@ def main() -> None:
     stage4_dir = _stage_dir(args.output_dir, "4")
     stage5_dir = _stage_dir(args.output_dir, "5")
     stage6_dir = _stage_dir(args.output_dir, "6")
+    stage8_dir = _stage_dir(args.output_dir, "8")
     source_pdf = args.source_pdf
     if args.copy_source:
         raw_dir = stage1_dir / "raw_source"
@@ -117,22 +149,19 @@ def main() -> None:
             output_dir=stage1_dir,
             case_id=args.case_id,
             source_title=args.source_title,
+            site_code=args.site_code,
+            site_location_json=args.site_location_json,
         )
         print(f"Stage 1 source package written: {stage1_package_path}")
         print(f"Stage 1 page count: {package['page_count']}")
+        print(f"Stage 1 site location: {package['site_location']['site_label']} ({package['site_location']['site_code']})")
     if "2" in stages:
         package_path = _first_existing(stage1_package_path, args.output_dir / "incident_source_package.json")
         if not package_path:
             raise FileNotFoundError(f"Stage 2 requires {stage1_package_path}. Run stage 1 first.")
         artifact_gate = None
-        if args.stage2_artifact_gate == "qwen":
-            qwen_model = _resolve_qwen_model_path(args.stage2_qwen_model, args.stage2_qwen_local_files_only)
-            artifact_gate = QwenArtifactGate(
-                model_name=qwen_model,
-                device=args.stage2_qwen_device,
-                max_new_tokens=args.stage2_qwen_max_new_tokens,
-                local_files_only=args.stage2_qwen_local_files_only,
-            )
+        if args.stage2_artifact_gate == "azure_cv":
+            artifact_gate = AzureComputerVisionArtifactGate(min_confidence=args.stage2_azure_cv_min_confidence)
         artifacts, report = extract_incident_ocr_artifacts(
             source_package_path=package_path,
             source_pdf=source_pdf,
@@ -184,7 +213,8 @@ def main() -> None:
             raise FileNotFoundError(f"Stage 3 requires {stage2_5_dir / 'artifact_enrichment_packets.json'}. Run stage 2.5 first.")
         client = AzureOpenAIIncidentArtifactClient(
             prompt_path=args.stage3_prompt_path,
-            include_images=not args.stage3_no_images,
+            include_images=False,
+            vision_descriptions_dir=args.stage3_vision_descriptions_dir,
         )
         enriched_artifacts, report = enrich_incident_artifacts(
             artifact_enrichment_packets_path=packets_path,
@@ -198,7 +228,7 @@ def main() -> None:
         print(f"Stage 3 artifact enrichment report written: {stage3_dir / 'artifact_enrichment_report.json'}")
         print(f"Stage 3 enriched artifacts: {report['enriched_artifact_count']} of {len(enriched_artifacts)}")
         print(f"Stage 3 failed artifacts: {report['failed_artifact_count']}")
-        if report["failed_artifact_count"] == len(enriched_artifacts):
+        if enriched_artifacts and report["failed_artifact_count"] == len(enriched_artifacts):
             raise RuntimeError("Stage 3 failed for every artifact. See artifact_enrichment_report.json for details.")
     if "4" in stages:
         if not args.llm:
@@ -366,6 +396,16 @@ def main() -> None:
         print(f"Stage 6 finalized runbook count: {len(finalized)}")
         print(f"Stage 6 failed candidates: {report.get('failed_candidate_count', 0)}")
 
+    if "8" in stages:
+        report = link_incident_relationships(output_dir=args.output_dir)
+        print(f"Stage 8 relationship links written: {stage8_dir / 'relationship_links.json'}")
+        print(f"Stage 8 linked artifacts written: {stage8_dir / 'source_artifacts_linked.json'}")
+        print(f"Stage 8 linked incident record written: {stage8_dir / 'canonical_incident_record_linked.json'}")
+        print(f"Stage 8 linked timeline written: {stage8_dir / 'timeline_events_linked.json'}")
+        print(f"Stage 8 linked runbooks written: {stage8_dir / 'finalized_runbooks_linked'}")
+        print(f"Stage 8 linking report written: {stage8_dir / 'relationship_linking_report.json'}")
+        print(f"Stage 8 link count: {report['link_stats']['link_count']}")
+
 
 def _stage_dir(output_dir: Path, stage: str) -> Path:
     return output_dir / STAGE_DIR_NAMES[stage]
@@ -377,7 +417,7 @@ def _normalize_stage(value: str) -> str:
         return "2.5"
     if stage in STAGE_DIR_NAMES:
         return stage
-    raise ValueError(f"Unsupported stage '{value}'. Supported stages: 1,2,2.5,3,4,5,6")
+    raise ValueError(f"Unsupported stage '{value}'. Supported stages: 1,2,2.5,3,4,5,6,8")
 
 
 def _first_existing(*paths: Path) -> Path | None:
@@ -385,22 +425,6 @@ def _first_existing(*paths: Path) -> Path | None:
         if path.exists():
             return path
     return None
-
-
-def _resolve_qwen_model_path(model_name: str, local_files_only: bool) -> str:
-    if not local_files_only or Path(model_name).exists() or "/" not in model_name:
-        return model_name
-    cache_root = Path.home() / ".cache" / "huggingface" / "hub"
-    model_cache_name = "models--" + model_name.replace("/", "--")
-    snapshots_dir = cache_root / model_cache_name / "snapshots"
-    if not snapshots_dir.exists():
-        return model_name
-    snapshots = sorted(
-        [path for path in snapshots_dir.iterdir() if path.is_dir()],
-        key=lambda path: path.stat().st_mtime,
-        reverse=True,
-    )
-    return str(snapshots[0]) if snapshots else model_name
 
 
 if __name__ == "__main__":

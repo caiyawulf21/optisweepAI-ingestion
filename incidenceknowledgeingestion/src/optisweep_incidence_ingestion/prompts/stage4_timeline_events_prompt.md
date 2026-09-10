@@ -11,10 +11,17 @@ workflows, playbooks, routing logic, issue categories, generalized
 recommendations, or root cause analysis.
 
 Use the supplied `evidence_chunk` as the primary timeline source for this call.
-It contains one chunk of page OCR in source order. Use the shared artifact
-evidence chunks from `stage4_packet_context` only as supporting evidence for
-screenshots, logs, service state, command execution, diagnostic charts, and
-validation checks.
+It contains one chunk of page OCR in source order, or in supplemental calls an
+artifact evidence card chunk for pages whose OCR was omitted. When page OCR is
+missing or garbled, use the injected `artifact_evidence_text` and linked
+artifact cards as the primary source for that page.
+
+Use `stage4_packet_context.source_package.site_location` as authoritative
+ingestion metadata for which customer site this case belongs to. When events
+mention site, facility, hub, city, or account location, preserve that text in
+`summary` or `details`. If evidence location text conflicts with ingestion
+metadata, record both and add an uncertainty note rather than silently
+replacing the ingestion site.
 
 The timeline is extracted chunk by chunk to keep future larger cases and
 downstream runbook/playbook stages manageable. Only create events supported by
@@ -99,10 +106,15 @@ Use structured source refs, not bare file names:
   "page_ref": "case_228086:page_2",
   "artifact_id": null,
   "chunk_id": "stage4_page_chunk_001",
+  "site_code": "ups_haslet_tx",
+  "site_label": "UPS Haslet TX (TXRTH)",
   "support_type": "page_ocr | artifact_visual | artifact_ocr | case_comment | teams_message | system_log | enriched_artifact",
   "quote_or_summary": ""
 }
 ```
+
+Preserve `site_code` and `site_label` on source refs when they are present on
+the packet source refs or `source_package.site_location`.
 
 Use actual artifact IDs in `artifact_refs`, not labels such as
 `memory_trend_screenshot`.
@@ -140,6 +152,8 @@ Do not create events for:
 - generalized lessons learned
 - unsupported root cause statements
 - repeated duplicates that add no new sequence information
+- near-duplicate diagnostic evidence for the same screenshot state on adjacent
+  duplicate-group pages unless the source shows a materially different state
 - unreadable screenshot details unless the enriched artifact provides a clear
   supported summary
 - events found only in other chunks
@@ -154,3 +168,7 @@ Do not create events for:
    crash and another says memory usage contributed to a fault, record both as
    attributed evidence with uncertainty rather than resolving the conflict.
 5. If OCR is garbled, lower confidence and add an uncertainty.
+6. Prefer one consolidated event per distinct incident action or evidence state
+   rather than multiple paraphrased events for the same page artifact.
+7. When both page OCR and artifact evidence exist for a page, prefer the clearer
+   source and cite both refs when they reinforce the same fact.
