@@ -55,7 +55,7 @@ Stage 11 defaults (ingestion `.env` / `shared_pipeline_stages/stage_11/container
 | `COSMOS_CONTAINER_CANONICAL_IMAGES` | **`publish_canonical_images`** | `doc_type=canonical_image` with `storage_uri` (SAS HTTPS URL) |
 | `COSMOS_CONTAINER_GATE_PHRASE_TABLES` | `gate_phrase_tables` | One `doc_type=gate_phrase_table` / `id=gate_phrases` per publish version — see `GATE_PHRASE_TABLE_CONTRACT.md` |
 
-**Appcode:** set `COSMOS_CONTAINER_SOURCE_ARTIFACTS=publish_source_artifacts` (not the empty Phase-1 leftover named `source_artifacts`). Cleanup audit + pending delete approval: `docs/cosmos_phase1_container_cleanup.md`.
+**Appcode:** set `COSMOS_CONTAINER_SOURCE_ARTIFACTS=publish_source_artifacts`. The Phase-1 leftover named `source_artifacts` (`/incident_id`) was deleted 2026-09-16 after appcode approval. Cleanup audit: `docs/cosmos_phase1_container_cleanup.md`.
 
 ---
 

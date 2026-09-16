@@ -4,18 +4,11 @@ Account: `optisweepsupportdev`
 Database: `optisweep_knowledge_phase0`  
 Resource group: `optisweepai`
 
-## Action required — appcode (optisweepAI-phase0)
+## Appcode approval — legacy `source_artifacts`
 
-Please confirm whether the empty legacy Cosmos container **`source_artifacts`** (partition key `/incident_id`) may be deleted.
+**Approved** (chat 2026-09-16). Deleted empty Phase-1 leftover `source_artifacts` (`/incident_id`, count=0).
 
-| Fact | Detail |
-|------|--------|
-| Live Stage 11 publish target | **`publish_source_artifacts`** (`/publish_version_id`, ~3.5k items) |
-| Env used by ingestion | `COSMOS_CONTAINER_SOURCE_ARTIFACTS=publish_source_artifacts` |
-| Leftover container | `source_artifacts` — empty, PK `/incident_id` (Phase-1 shape) |
-| Why not deleted yet | Hard stop: do not delete `source_artifacts` without appcode sign-off |
-
-Reply in this PR (or ticket) with **approve delete** or **keep** and a short reason. If approved, ingestion will run:
+Live publish remains **`publish_source_artifacts`** (`/publish_version_id`, ~3.5k items). App env must use `COSMOS_CONTAINER_SOURCE_ARTIFACTS=publish_source_artifacts`.
 
 ```text
 az cosmosdb sql container delete \
@@ -25,8 +18,6 @@ az cosmosdb sql container delete \
   --name source_artifacts --yes
 ```
 
-Also confirm app `.env` / `container_config.py` maps source artifacts to **`publish_source_artifacts`**, not `source_artifacts`.
-
 ---
 
 ## What was deleted (empty; unused by Stage 11 / Brain)
@@ -35,6 +26,7 @@ All had item count `0`. No backup copy (nothing to copy).
 
 | Container | Former partition key | Replaced by |
 |-----------|----------------------|-------------|
+| `source_artifacts` | `/incident_id` | `publish_source_artifacts` |
 | `canonical_images` | `/category` | `publish_canonical_images` |
 | `workflow_definitions` | `/issue_category` | `playbooks_prompt_a` / `playbooks_prompt_b` |
 | `canonical_workflow_definitions` | `/issue_category` | same |
@@ -87,10 +79,6 @@ Ingestion repo grep: no Stage 11 or Brain create/upsert/query targeted those Cos
 - `brain_evidence`, `brain_entities`, `brain_claims`, `brain_relationships`
 - `brain_capabilities`, `brain_procedures`, `brain_playbooks`, `brain_reviews`
 - `brain_ingestion_runs`, `brain_embeddings`
-
-### Skipped pending appcode
-
-- `source_artifacts` — empty Phase-1 leftover (`/incident_id`)
 
 ## Not found in Cosmos
 
