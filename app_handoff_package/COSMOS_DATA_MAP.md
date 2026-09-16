@@ -42,16 +42,20 @@ AZURE_EMBEDDINGS_DEPLOYMENT=<same model used in Stage 10>
 
 ## Container map
 
-| Env var | Logical dataset | What is stored |
-|---------|-----------------|----------------|
-| `COSMOS_CONTAINER_RUNBOOKS` | Canonical procedures | `doc_type=runbook` documents + `doc_type=embedding` where `record_type=canonical_runbook` |
-| `COSMOS_CONTAINER_PLAYBOOKS_A` | Prompt A playbooks | `doc_type=playbook` + embeddings `record_type=playbook_prompt_a` |
-| `COSMOS_CONTAINER_PLAYBOOKS_B` | Prompt B playbooks | `doc_type=playbook` + embeddings `record_type=playbook_prompt_b` |
-| `COSMOS_CONTAINER_OPERATIONAL_CONTEXT` | Manual context RAG | `doc_type=embedding` (`record_type=operational_context`) + `doc_type=rag_record` metadata |
-| `COSMOS_CONTAINER_SOURCE_ARTIFACTS` | Screenshot/evidence RAG | `doc_type=embedding` (`record_type=source_artifact`) + `doc_type=rag_record` metadata |
-| `COSMOS_CONTAINER_RELATIONSHIP_LINKS` | Link graph shards | `doc_type=relationship_graph` (sharded, up to 2000 links/doc) |
-| `COSMOS_CONTAINER_CANONICAL_IMAGES` | Image metadata + Blob URI | `doc_type=canonical_image` with `storage_uri` (SAS HTTPS URL); default container `publish_canonical_images` |
-| `COSMOS_CONTAINER_GATE_PHRASE_TABLES` | Keyword gate phrases | One `doc_type=gate_phrase_table` / `id=gate_phrases` per publish version — see `GATE_PHRASE_TABLE_CONTRACT.md` |
+Stage 11 defaults (ingestion `.env` / `shared_pipeline_stages/stage_11/container_config.py`):
+
+| Env var | Default Cosmos container | What is stored |
+|---------|--------------------------|----------------|
+| `COSMOS_CONTAINER_RUNBOOKS` | `runbooks` | `doc_type=runbook` documents + `doc_type=embedding` where `record_type=canonical_runbook` |
+| `COSMOS_CONTAINER_PLAYBOOKS_A` | `playbooks_prompt_a` | `doc_type=playbook` + embeddings `record_type=playbook_prompt_a` |
+| `COSMOS_CONTAINER_PLAYBOOKS_B` | `playbooks_prompt_b` | `doc_type=playbook` + embeddings `record_type=playbook_prompt_b` |
+| `COSMOS_CONTAINER_OPERATIONAL_CONTEXT` | `operational_context` | `doc_type=embedding` (`record_type=operational_context`) + `doc_type=rag_record` metadata |
+| `COSMOS_CONTAINER_SOURCE_ARTIFACTS` | **`publish_source_artifacts`** | `doc_type=embedding` (`record_type=source_artifact`) + `doc_type=rag_record` metadata |
+| `COSMOS_CONTAINER_RELATIONSHIP_LINKS` | `relationship_links` | `doc_type=relationship_graph` (sharded, up to 2000 links/doc) |
+| `COSMOS_CONTAINER_CANONICAL_IMAGES` | **`publish_canonical_images`** | `doc_type=canonical_image` with `storage_uri` (SAS HTTPS URL) |
+| `COSMOS_CONTAINER_GATE_PHRASE_TABLES` | `gate_phrase_tables` | One `doc_type=gate_phrase_table` / `id=gate_phrases` per publish version — see `GATE_PHRASE_TABLE_CONTRACT.md` |
+
+**Appcode:** set `COSMOS_CONTAINER_SOURCE_ARTIFACTS=publish_source_artifacts`. The Phase-1 leftover named `source_artifacts` (`/incident_id`) was deleted 2026-09-16 after appcode approval. Cleanup audit: `docs/cosmos_phase1_container_cleanup.md`.
 
 ---
 
